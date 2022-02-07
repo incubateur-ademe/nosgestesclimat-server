@@ -5,16 +5,16 @@ const Answers = require("./AnswerSchema");
 
 const router = express.Router();
 
-router.route("/").get((req, res, next) => {
-  if (!req.params.survey) {
-    console.log("oups");
+router.route("/:room").get((req, res, next) => {
+  if (req.params.room == null) {
+    throw new Error("Unauthorized. A valid survey name must be provided");
   }
-  res.setHeader("Content-Type", "application/json");
-  res.statusCode = 200;
 
   connectdb.then((db) => {
-    let data = Answers.find({ survey: req.params.survey });
-    Answers.find({}).then((answers) => {
+    let data = Answers.find({ survey: req.params.room });
+    data.then((answers) => {
+      res.setHeader("Content-Type", "application/json");
+      res.statusCode = 200;
       res.json(answers);
     });
   });

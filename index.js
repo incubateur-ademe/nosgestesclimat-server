@@ -22,11 +22,11 @@ app.use("/answers", answersRoute);
 const http = require("http").Server(app);
 
 // require the socket.io module
-const io = require("socket.io");
+const socketio = require("socket.io");
 
 const port = 3000;
 
-const socket = io(http, {
+const io = socketio(http, {
   cors: { origin: "http://localhost:8080", methods: ["GET", "POST"] },
 });
 
@@ -36,15 +36,17 @@ const connect = require("./database");
 //create an event listener
 //
 //To listen to messages
-socket.on("connection", (socket) => {
+io.on("connection", (socket) => {
   console.log("user connected");
+
   socket.on("disconnect", function () {
     console.log("user disconnected");
   });
-  socket.on("answer", function (answer) {
+  socket.on("answer", function ({ room, answer }) {
+    socket.join(room);
     console.log("message: " + JSON.stringify(answer, null, 2));
     //broadcast message to everyone in port:5000 except yourself.
-    socket.broadcast.emit("received", { answer });
+    socket.to(room).emit("received", { answer });
 
     connect.then((db) => {
       console.log("connected correctly to the server");
