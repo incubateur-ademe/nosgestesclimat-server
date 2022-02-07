@@ -1,13 +1,14 @@
 //Require the express moule
 const express = require("express");
 const answersRoute = require("./answersRoute");
+const surveysRoute = require("./surveysRoute");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 
 //create a new express application
 const app = express();
 
-app.use(bodyParser.json());
+app.use(express.json());
 
 app.use(
   cors({
@@ -17,6 +18,7 @@ app.use(
 
 //routes
 app.use("/answers", answersRoute);
+app.use("/surveys", surveysRoute);
 
 //require the http module
 const http = require("http").Server(app);
