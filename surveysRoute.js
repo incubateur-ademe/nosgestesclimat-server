@@ -20,22 +20,34 @@ router.route("/:room").get((req, res, next) => {
   });
 });
 
-router.route("/").post((req, res) => {
+router.route("/").post(async (req, res, next) => {
   if (req.body.room == null) {
-    throw new Error("Error. A survey name must be provided");
+    return next("Error. A survey name must be provided");
   }
 
-  connectdb.then((db) => {
-    const survey = new Survey({ name: req.body.room });
-    survey.save((error) => {
-      if (error) {
-        res.send(error);
-      }
+  const db = connectdb;
 
-      res.setHeader("Content-Type", "application/json");
-      res.statusCode = 200;
-      res.json(survey);
-    });
+  const found = await Survey.find({ name: req.body.room });
+  if (found.length) {
+    res.setHeader("Content-Type", "application/json");
+    res.statusCode = 409;
+    res.json(found[0]);
+
+    console.log("Survey exists", req.body.room);
+    return;
+  }
+
+  const survey = new Survey({ name: req.body.room });
+  survey.save((error) => {
+    if (error) {
+      res.send(error);
+    }
+
+    res.setHeader("Content-Type", "application/json");
+    res.statusCode = 200;
+    res.json(survey);
+
+    console.log("New survey create", req.body.room);
   });
 });
 

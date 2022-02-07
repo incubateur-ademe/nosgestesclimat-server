@@ -33,6 +33,7 @@ const io = socketio(http, {
 });
 
 const Answer = require("./AnswerSchema");
+const Survey = require("./SurveySchema");
 const connect = require("./database");
 
 //create an event listener
