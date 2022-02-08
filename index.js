@@ -1,18 +1,24 @@
-//Require the express moule
 const express = require('express')
 const answersRoute = require('./answersRoute')
 const surveysRoute = require('./surveysRoute')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 
-//create a new express application
 const app = express()
 
 app.use(express.json())
 
+const origin =
+  process.env.NODE_ENV === 'developement'
+    ? 'http://localhost:8080'
+    : [
+        'https://nosgestesclimat.fr',
+        'https://sondage-mongo--nosgestesclimat.netlify.app',
+      ]
+
 app.use(
   cors({
-    origin: 'http://localhost:8080',
+    origin,
   })
 )
 
@@ -29,7 +35,7 @@ const socketio = require('socket.io')
 const port = process.env.PORT || 3000
 
 const io = socketio(http, {
-  cors: { origin: 'http://localhost:8080', methods: ['GET', 'POST'] },
+  cors: { origin, methods: ['GET', 'POST'] },
 })
 
 const Answer = require('./AnswerSchema')
