@@ -26,7 +26,7 @@ const http = require("http").Server(app);
 // require the socket.io module
 const socketio = require("socket.io");
 
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 const io = socketio(http, {
   cors: { origin: "http://localhost:8080", methods: ["GET", "POST"] },
@@ -70,5 +70,7 @@ io.on("connection", (socket) => {
 
 //wire up the server to listen to our port 500
 http.listen(port, () => {
-  console.log("connected to port: " + port);
+  var host = http.address().address;
+  var port = http.address().port;
+  console.log("App listening at http://%s:%s", host, port);
 });
