@@ -55,9 +55,7 @@ io.on('connection', (socket) => {
     socket.join(room)
     console.log('message: ' + JSON.stringify(answer, null, 2))
 
-    console.log('will emit', answer)
-    const { id, ...safeAnswer } = answer
-    socket.to(room).emit('received', { answer: safeAnswer })
+    socket.to(room).emit('received', { answer })
 
     connect.then((db) => {
       console.log('connected correctly to the server')
