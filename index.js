@@ -54,8 +54,10 @@ io.on('connection', (socket) => {
   socket.on('answer', function ({ room, answer }) {
     socket.join(room)
     console.log('message: ' + JSON.stringify(answer, null, 2))
-    //broadcast message to everyone in port:5000 except yourself.
-    socket.to(room).emit('received', { answer })
+
+    console.log('will emit', answer)
+    const { id, ...safeAnswer } = answer
+    socket.to(room).emit('received', { answer: safeAnswer })
 
     connect.then((db) => {
       console.log('connected correctly to the server')

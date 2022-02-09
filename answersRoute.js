@@ -15,7 +15,13 @@ router.route('/:room').get((req, res, next) => {
     data.then((answers) => {
       res.setHeader('Content-Type', 'application/json')
       res.statusCode = 200
-      res.json(answers)
+      res.json(
+        answers.map(({ byCategory, data, progress }) => ({
+          byCategory,
+          data,
+          progress,
+        }))
+      )
     })
   })
 })
