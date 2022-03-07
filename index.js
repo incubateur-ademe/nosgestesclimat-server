@@ -46,29 +46,29 @@ const connect = require('./database')
 //
 //To listen to messages
 io.on('connection', (socket) => {
-  console.log('user connected')
+  console.log('user connected to io')
 
   socket.on('disconnect', function () {
-    console.log('user disconnected')
+    console.log('user disconnected from io')
   })
   socket.on('answer', function ({ room, answer }) {
     socket.join(room)
-    console.log('message: ' + JSON.stringify(answer, null, 2))
+    console.log(
+      `update ${answer.id} user's data in survey ${room} with total ${answer.data.total}`
+    )
 
     socket.to(room).emit('received', { answer })
 
     connect.then((db) => {
-      console.log('connected correctly to the server')
-
       const query = { id: answer.id },
         update = answer,
         options = { upsert: true, new: true, setDefaultsOnInsert: true }
 
       // Find the document
       Answer.findOneAndUpdate(query, update, options, function (error, result) {
-        if (error) return
-
-        // do something with the document
+        if (error) {
+          console.log('Error updating database with user answer')
+        }
       })
     })
   })
