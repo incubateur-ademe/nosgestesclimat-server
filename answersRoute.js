@@ -4,7 +4,18 @@ const connectdb = require('./database')
 const Answers = require('./AnswerSchema')
 
 const { Parser } = require('json2csv')
-const fields = ['byCategory', 'total', 'progress']
+// const fields = ['byCategory', 'total', 'progress']
+const fields = [
+  'alimentation',
+  'transport',
+  'logement',
+  'divers',
+  'numérique',
+  'services publics',
+  'total',
+  'progress',
+]
+
 const parser = new Parser({ fields })
 
 const router = express.Router()
@@ -27,7 +38,11 @@ router.route('/:room').get((req, res, next) => {
         try {
           const json = answers.map((answer) =>
             Object.fromEntries(
-              fields.map((field) => [field, answer.data[field]])
+              fields.map((field) => {
+                return answer.data[field]
+                  ? [field, answer.data[field]]
+                  : [field, answer.data.byCategory.get(field)]
+              })
             )
           )
           const csv = parser.parse(json)
