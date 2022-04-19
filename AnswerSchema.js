@@ -9,6 +9,9 @@ const AnswerSchema = new Schema(
         type: Map,
         of: Number,
       },
+      context: {
+        type: Map,
+      },
     },
     survey: String,
     id: String,
