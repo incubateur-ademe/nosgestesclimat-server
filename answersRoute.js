@@ -4,7 +4,7 @@ const connectdb = require('./database')
 const Answers = require('./AnswerSchema')
 
 const { Parser } = require('json2csv')
-const fields = [
+const csvHeader = [
   'alimentation',
   'transport',
   'logement',
@@ -22,6 +22,7 @@ router.route('/:room').get((req, res, next) => {
     throw new Error('Unauthorized. A valid survey name must be provided')
   }
 
+  // Depending on the request, we serve JSON (designed for nosgestesclimat.fr) or CSV (to be opened by a LibreOffice or similar)
   const csv = req.query.format === 'csv'
 
   connectdb.then((db) => {
@@ -33,16 +34,18 @@ router.route('/:room').get((req, res, next) => {
         res.json(answers.map(({ data, id }) => ({ data, id })))
       } else {
         try {
+          // Context data depend of each survey
+          // Hence we build the data schema here based on the first answer of a survey
           const firstAnswer = answers[0]
           if (firstAnswer.data.context.size !== 0) {
             for (const key of firstAnswer.data.context.keys()) {
-              fields.unshift(key)
+              csvHeader.unshift(key)
             }
           }
-          const parser = new Parser({ fields })
+          const parser = new Parser({ csvHeader })
           const json = answers.map((answer) =>
             Object.fromEntries(
-              fields.map((field) => {
+              csvHeader.map((field) => {
                 return answer.data[field]
                   ? [field, answer.data[field]]
                   : answer.data.context.get(field)
