@@ -4,6 +4,7 @@ const SurveySchema = new Schema(
   {
     name: String,
     id: String,
+    contextFile: String,
   },
   {
     timestamps: true,

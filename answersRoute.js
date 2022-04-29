@@ -2,20 +2,47 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const connectdb = require('./database')
 const Answers = require('./AnswerSchema')
+const Surveys = require('./SurveySchema')
 
 const { Parser } = require('json2csv')
-const csvHeader = [
-  'alimentation',
-  'transport',
-  'logement',
-  'divers',
-  'numérique',
-  'services publics',
-  'total',
-  'progress',
-]
-
 const router = express.Router()
+
+const fs = require('fs')
+const yaml = require('yaml')
+
+const getCsvHeader = async (req) => {
+  const defaultCsvHeader = [
+    'alimentation',
+    'transport',
+    'logement',
+    'divers',
+    'numérique',
+    'services publics',
+    'total',
+    'progress',
+  ]
+
+  let survey = await Surveys.find({ name: req.params.room })
+  const contextFileName = survey[0]['contextFile']
+  if (!contextFileName) {
+    return defaultCsvHeader
+  } else {
+    const data = fs.readFileSync(
+      `./contextes-sondage/${contextFileName}.yaml`,
+      'utf8'
+    )
+    let rules = Object.keys(yaml.parse(data))
+    const contextHeaders = [
+      ...new Set(
+        rules.reduce((res, rule) => {
+          rule.split(' . ')[1] && res.push(rule.split(' . ')[1])
+          return res
+        }, [])
+      ),
+    ]
+    return contextHeaders.concat(defaultCsvHeader)
+  }
+}
 
 router.route('/:room').get((req, res, next) => {
   if (req.params.room == null) {
@@ -27,7 +54,7 @@ router.route('/:room').get((req, res, next) => {
 
   connectdb.then((db) => {
     let data = Answers.find({ survey: req.params.room })
-    data.then((answers) => {
+    data.then(async (answers) => {
       if (!csv) {
         res.setHeader('Content-Type', 'application/json')
         res.statusCode = 200
@@ -36,12 +63,8 @@ router.route('/:room').get((req, res, next) => {
         try {
           // Context data depend of each survey
           // Hence we build the data schema here based on the first answer of a survey
-          const firstAnswer = answers[0]
-          if (firstAnswer.data.context.size !== 0) {
-            for (const key of firstAnswer.data.context.keys()) {
-              csvHeader.unshift(key)
-            }
-          }
+
+          const csvHeader = await getCsvHeader(req)
           const parser = new Parser({ csvHeader })
           const json = answers.map((answer) =>
             Object.fromEntries(
