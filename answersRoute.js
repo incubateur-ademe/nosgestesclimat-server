@@ -71,9 +71,9 @@ router.route('/:room').get((req, res, next) => {
               csvHeader.map((field) => {
                 return answer.data[field]
                   ? [field, answer.data[field]]
-                  : answer.data.context.get(field)
-                  ? [field, answer.data.context.get(field)]
                   : [field, answer.data.byCategory.get(field)]
+                  ? [field, answer.data.byCategory.get(field)]
+                  : [field, answer.data.context.get(field)]
               })
             )
           )
