@@ -10,7 +10,7 @@ const router = express.Router()
 const fs = require('fs')
 const yaml = require('yaml')
 
-const getCsvHeader = async (req) => {
+const getCsvHeader = async (roomName) => {
   const defaultCsvHeader = [
     'alimentation',
     'transport',
@@ -22,8 +22,9 @@ const getCsvHeader = async (req) => {
     'progress',
   ]
 
-  let survey = await Surveys.find({ name: req.params.room })
+  let survey = await Surveys.find({ name: roomName })
   const contextFileName = survey[0]['contextFile']
+  console.log(!contextFileName)
   if (!contextFileName) {
     return defaultCsvHeader
   } else {
@@ -45,7 +46,9 @@ const getCsvHeader = async (req) => {
 }
 
 router.route('/:room').get((req, res, next) => {
-  if (req.params.room == null) {
+  const roomName = req.params.room
+
+  if (roomName == null) {
     throw new Error('Unauthorized. A valid survey name must be provided')
   }
 
@@ -53,7 +56,7 @@ router.route('/:room').get((req, res, next) => {
   const csv = req.query.format === 'csv'
 
   connectdb.then((db) => {
-    let data = Answers.find({ survey: req.params.room })
+    let data = Answers.find({ survey: roomName })
     data.then(async (answers) => {
       if (!csv) {
         res.setHeader('Content-Type', 'application/json')
@@ -64,7 +67,7 @@ router.route('/:room').get((req, res, next) => {
           // Context data depend of each survey
           // Hence we build the data schema here based on the first answer of a survey
 
-          const csvHeader = await getCsvHeader(req)
+          const csvHeader = await getCsvHeader(roomName)
           const parser = new Parser({ csvHeader })
           const json = answers.map((answer) =>
             Object.fromEntries(
