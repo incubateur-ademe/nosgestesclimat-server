@@ -65,7 +65,7 @@ router.route('/:room').get((req, res, next) => {
       } else {
         try {
           // Context data depend of each survey
-          // Hence we build the data schema here based on the first answer of a survey
+          // Hence we build the data schema here based on configuration files stored on the disk
 
           const csvHeader = await getCsvHeader(roomName)
           const parser = new Parser({ csvHeader })
