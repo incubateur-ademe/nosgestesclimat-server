@@ -23,7 +23,6 @@ app.use(
 )
 
 // serve static context files
-
 app.use(express.static('contextes-sondage'))
 
 //routes

@@ -36,7 +36,8 @@ const getCsvHeader = async (roomName) => {
     const contextHeaders = [
       ...new Set(
         rules.reduce((res, rule) => {
-          rule.split(' . ')[1] && res.push(rule.split(' . ')[1])
+          const header = rule.split(' . ')[1]
+          header && res.push(header)
           return res
         }, [])
       ),

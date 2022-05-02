@@ -9,6 +9,7 @@ const AnswerSchema = new Schema(
         type: Map,
         of: Number,
       },
+      // context will be empty if there is no context related to the survey.
       context: {
         type: Map,
       },
