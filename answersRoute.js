@@ -76,7 +76,7 @@ router.route('/:room').get((req, res, next) => {
                   ? [field, answer.data[field]]
                   : answer.data.byCategory.get(field)
                   ? [field, answer.data.byCategory.get(field)]
-                  : answer.data.context
+                  : answer.data.context && answer.data.context.get(field) //we take into account old answers with no context and answers with empty context in case of undefined get resultfor the two firts conditions
                   ? [field, answer.data.context.get(field)]
                   : [field, undefined]
               })
