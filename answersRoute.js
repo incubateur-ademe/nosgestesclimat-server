@@ -24,7 +24,6 @@ const getCsvHeader = async (roomName) => {
 
   let survey = await Surveys.find({ name: roomName })
   const contextFileName = survey[0]['contextFile']
-  console.log(!contextFileName)
   if (!contextFileName) {
     return defaultCsvHeader
   } else {
@@ -75,9 +74,11 @@ router.route('/:room').get((req, res, next) => {
               csvHeader.map((field) => {
                 return answer.data[field]
                   ? [field, answer.data[field]]
-                  : [field, answer.data.byCategory.get(field)]
+                  : answer.data.byCategory.get(field)
                   ? [field, answer.data.byCategory.get(field)]
-                  : [field, answer.data.context.get(field)]
+                  : answer.data.context //we make sure a context exists in the data saved to avoid export to fail
+                  ? [field, answer.data.context.get(field)]
+                  : [field, answer.data.context]
               })
             )
           )
