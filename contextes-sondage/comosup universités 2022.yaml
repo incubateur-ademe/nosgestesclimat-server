@@ -15,74 +15,74 @@ comosup universités 2022 . université:
     une possibilité:
       choix obligatoire: oui
       possibilités:
-        - Université de Lorraine
-        - Université Bordeaux Montaigne
-        - Université de Bordeaux
-        - Université Paul Valéry Montpellier 3
-        - Université de Pau et des Pays de l'Adour
-        - Université de Reims Champagne Ardenne
         - Aix Marseille Université
+        - Université d'Angers
         - Université d'Artois
-        - Université de Bourgogne
-        - Université de Haute Alsace
-        - Université d'Orléans
-        - Université Côte d'Azur
-        - Université Paris Saclay
-        - Université de Strasbourg
-        - Université Polytechnique Hauts de France
+        - Avignon Université
+        - Université Bordeaux Montaigne
         - Université Bretagne Sud
-        - Université Toulouse III Paul Sabatier
-        - Université du Littoral Côte d'Opale
-        - Université Paris Est Créteil
-        - Université de Nîmes
-        - Université Sorbonne Paris Nord
-        - Université Paris Panthéon Assas
-        - Université de Perpignan Via Domitia
-        - Sorbonne Université
-        - Université de Limoges
-        - Université des Antilles
-        - Université Gustave Eiffel
-        - Université Sorbonne Nouvelle Paris 3
-        - Université de Picardie Jules Verne
-        - Université de La Réunion
-        - Université Paris 8 Vincennes Saint Denis
-        - Nantes Université
-        - CY Cergy Paris Université
-        - La Rochelle Université
-        - Université Le Havre Normandie
-        - Université Jean Monnet
-        - Université Paris Nanterre
-        - Université Rennes 2
-        - Université Savoie Mont Blanc
         - Université Claude Bernard Lyon 1
         - Université Clermont Auvergne
-        - Université de Corse Pasquale Paoli
-        - Université Paris 1 Panthéon Sorbonne
-        - Université de la Nouvelle Calédonie
-        - Université Grenoble Alpes
-        - Université Lumière Lyon 2
-        - Université de Poitiers
-        - Université Jean Moulin Lyon 3
-        - Université Paris sciences et lettres
-        - Avignon Université
-        - Université d'Angers
-        - Université de Rouen Normandie
+        - Université Côte d'Azur
+        - CY Cergy Paris Université
+        - Université de Bordeaux
+        - Université de Bourgogne
         - Université de Bretagne Occidentale
-        - Université Toulouse Jean Jaurès
-        - Le Mans Université
-        - Université de Rennes 1
         - Université de Caen Normandie
-        - Université de Tours
+        - Université de Corse Pasquale Paoli
         - Université d'Evry Val d'Essonne
-        - Université Toulouse Capitole
-        - Université Paris Cité
-        - Université de Toulon
-        - Université de Guyane
-        - Université de Versailles Saint Quentin en Yvelines
-        - Université de Montpellier
         - Université de Franche Comté
+        - Université de Guyane
+        - Université de Haute Alsace
+        - Université de la Nouvelle Calédonie
         - Université de la Polynésie Française
+        - Université de La Réunion
+        - La Rochelle Université
+        - Le Mans Université
         - Université de Lille
+        - Université de Limoges
+        - Université de Lorraine
+        - Université de Montpellier
+        - Nantes Université
+        - Université de Nîmes
+        - Université d'Orléans
+        - Université de Pau et des Pays de l'Adour
+        - Université de Perpignan Via Domitia
+        - Université de Picardie Jules Verne
+        - Université de Poitiers
+        - Université de Reims Champagne Ardenne
+        - Université de Rennes 1
+        - Université de Rouen Normandie
+        - Sorbonne Université
+        - Université de Strasbourg
+        - Université de Toulon
+        - Université de Tours
+        - Université de Versailles Saint Quentin en Yvelines
+        - Université des Antilles
+        - Université du Littoral Côte d'Opale
+        - Université Grenoble Alpes
+        - Université Gustave Eiffel
+        - Université Jean Monnet
+        - Université Jean Moulin Lyon 3
+        - Université Le Havre Normandie
+        - Université Lumière Lyon 2
+        - Université Paris 1 Panthéon Sorbonne
+        - Université Paris 8 Vincennes Saint Denis
+        - Université Paris Cité
+        - Université Paris Est Créteil
+        - Université Paris Nanterre
+        - Université Paris Panthéon Assas
+        - Université Paris Saclay
+        - Université Paris sciences et lettres
+        - Université Paul Valéry Montpellier 3
+        - Université Polytechnique Hauts de France
+        - Université Rennes 2
+        - Université Savoie Mont Blanc
+        - Université Sorbonne Nouvelle Paris 3
+        - Université Sorbonne Paris Nord
+        - Université Toulouse Capitole
+        - Université Toulouse III Paul Sabatier
+        - Université Toulouse Jean Jaurès
 
 comosup universités 2022 . université . Université de Lorraine:
 comosup universités 2022 . université . Université Bordeaux Montaigne:
