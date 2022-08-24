@@ -1,0 +1,131 @@
+contexte knr:
+  titre: Sondage Kuehne Nagel
+  icônes: 📝
+  couleur: '#87E5F4'
+  non applicable si:
+    une de ces conditions:
+      - agence = '"non"'
+  formule: 0
+
+contexte knr . agence:
+  titre: Agence
+  question: Quelle est votre agence KNR de rattachement ?
+  formule:
+    une possibilité:
+      choix obligatoire: oui
+      possibilités:
+        - d 3 Gannat
+        - d 6 Nice
+        - d 8 Charleville
+        - d 11 Lezignan
+        - d 12 Rodez
+        - d 13 et 13N Salon de Provence et Les Pennes Mirabeau
+        - d 14 Caen
+        - d 15 Aurillac
+        - d 17 St Jean d'Angély
+        - d 18 Bourges
+        - d 21 Beaune
+        - d 22 St Brieuc
+        - d 24 Perigueux
+        - d 25 Besançon
+        - d 26 Valence
+        - d 29 et 29D Lothey et Chateaulin
+        - d 31 et 31N Brugières et Fondeyre
+        - d 33 et 33 bis et 33Z St Médard d'eyrans
+        - d 34 Montpellier
+        - d 35 Rennes
+        - d 37 et 37D Tours et Joué-les-Tours
+        - d 38 Voreppe
+        - d 42 Andrézieux Bouthéon
+        - d 44 Nantes
+        - d 45 Ormes
+        - d 47 Agen
+        - d 49 Angers
+        - d 50 St Lo
+        - d 51 Cormontreuil
+        - d 54 Nancy
+        - d 57 et 57N Ennery et Metz
+        - d 59 Saint Omer
+        - d 60 Longueil sainte Marie
+        - d 62 et 62N Harnes et Lesquin
+        - d 64 Bayonne
+        - d 65 Pau
+        - d 66 Perpignan
+        - d 67 Holtzheim
+        - d 68 Cernay
+        - d 69N et 69E Villefranche sur Saône et Almeca et Vaulx en Velin
+        - d 69N Siège
+        - d 69S et 69I Chaponnay et St Priest
+        - d 72 Le Mans
+        - d 74 Annecy
+        - d 76 St Jean du Cardonnay
+        - d 77 et 77R Compans et Emerainville
+        - d 78 Epone
+        - d 80 Amiens
+        - d 83 Brignoles
+        - d 84 Avignon
+        - d 85 La Roche sur Yon
+        - d 86 Poitiers
+        - d 87 Limoges
+        - d 89 Appoigny
+        - d 91 et 91D Le Plessis Paté et Lieusaint
+        - d 93 et 93Z Garonor et Villepinte
+        - d 94 Créteil
+
+contexte knr . agence . d 3 Gannat:
+contexte knr . agence . d 6 Nice:
+contexte knr . agence . d 8 Charleville:
+contexte knr . agence . d 11 Lezignan:
+contexte knr . agence . d 12 Rodez:
+contexte knr . agence . d 13 et 13N Salon de Provence et Les Pennes Mirabeau:
+contexte knr . agence . d 14 Caen:
+contexte knr . agence . d 15 Aurillac:
+contexte knr . agence . d 17 St Jean d'Angély:
+contexte knr . agence . d 18 Bourges:
+contexte knr . agence . d 21 Beaune:
+contexte knr . agence . d 22 St Brieuc:
+contexte knr . agence . d 24 Perigueux:
+contexte knr . agence . d 25 Besançon:
+contexte knr . agence . d 26 Valence:
+contexte knr . agence . d 29 et 29D Lothey et Chateaulin:
+contexte knr . agence . d 31 et 31N Brugières et Fondeyre:
+contexte knr . agence . d 33 et 33 bis et 33Z St Médard d'eyrans:
+contexte knr . agence . d 34 Montpellier:
+contexte knr . agence . d 35 Rennes:
+contexte knr . agence . d 37 et 37D Tours et Joué-les-Tours:
+contexte knr . agence . d 38 Voreppe:
+contexte knr . agence . d 42 Andrézieux Bouthéon:
+contexte knr . agence . d 44 Nantes:
+contexte knr . agence . d 45 Ormes:
+contexte knr . agence . d 47 Agen:
+contexte knr . agence . d 49 Angers:
+contexte knr . agence . d 50 St Lo:
+contexte knr . agence . d 51 Cormontreuil:
+contexte knr . agence . d 54 Nancy:
+contexte knr . agence . d 57 et 57N Ennery et Metz:
+contexte knr . agence . d 59 Saint Omer:
+contexte knr . agence . d 60 Longueil sainte Marie:
+contexte knr . agence . d 62 et 62N Harnes et Lesquin:
+contexte knr . agence . d 64 Bayonne:
+contexte knr . agence . d 65 Pau:
+contexte knr . agence . d 66 Perpignan:
+contexte knr . agence . d 67 Holtzheim:
+contexte knr . agence . d 68 Cernay:
+contexte knr . agence . d 69N et 69E Villefranche sur Saône et Almeca et Vaulx en Velin:
+contexte knr . agence . d 69N Siège:
+contexte knr . agence . d 69S et 69I Chaponnay et St Priest:
+contexte knr . agence . d 72 Le Mans:
+contexte knr . agence . d 74 Annecy:
+contexte knr . agence . d 76 St Jean du Cardonnay:
+contexte knr . agence . d 77 et 77R Compans et Emerainville:
+contexte knr . agence . d 78 Epone:
+contexte knr . agence . d 80 Amiens:
+contexte knr . agence . d 83 Brignoles:
+contexte knr . agence . d 84 Avignon:
+contexte knr . agence . d 85 La Roche sur Yon:
+contexte knr . agence . d 86 Poitiers:
+contexte knr . agence . d 87 Limoges:
+contexte knr . agence . d 89 Appoigny:
+contexte knr . agence . d 91 et 91D Le Plessis Paté et Lieusaint:
+contexte knr . agence . d 93 et 93Z Garonor et Villepinte:
+contexte knr . agence . d 94 Créteil:
