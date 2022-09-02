@@ -59,7 +59,8 @@ contexte knr . agence:
         - d 72 Le Mans
         - d 74 Annecy
         - d 76 St Jean du Cardonnay
-        - d 77 et 77R Compans et Emerainville
+        - d 77 Compans
+        - d 77R Emerainville
         - d 78 Epone
         - d 80 Amiens
         - d 83 Brignoles
@@ -117,7 +118,8 @@ contexte knr . agence . d 69S et 69I Chaponnay et St Priest:
 contexte knr . agence . d 72 Le Mans:
 contexte knr . agence . d 74 Annecy:
 contexte knr . agence . d 76 St Jean du Cardonnay:
-contexte knr . agence . d 77 et 77R Compans et Emerainville:
+contexte knr . agence . d 77 Compans:
+contexte knr . agence . d 77R Emerainville:
 contexte knr . agence . d 78 Epone:
 contexte knr . agence . d 80 Amiens:
 contexte knr . agence . d 83 Brignoles:
