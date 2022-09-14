@@ -18,6 +18,9 @@ sudo service mongod start # Sur ubuntu
 yarn dev
 ```
 
+Pour se connecter à la base de données, on peut utiliser la commande utilisant le CLI `scalingo`. 
+Pour une interface graphique, on peut utiliser MongoDB Compass en suivant [ce guide](https://doc.scalingo.com/databases/mongodb/compass#connection-via-the-db-tunnel-of-our-cli) (la connexion est compliquée sans ce guide). 
+
 ## Contextualisation des sondages
 
 Une fonctionnalité a été implémentée afin de permettre aux organisateurs de sondages de recueillir des informations supplémentaires sur les sondés via un questionnaire de quelques questions en début de simulation (questions qui ne sont pas liées au test Nos Gestes Climat : par exemple leur âge, leur métier, etc.). Un [guide dédié](https://nosgestesclimat.fr/groupe/documentation-contexte) explique de manière détaillée le principe de cette feature !
