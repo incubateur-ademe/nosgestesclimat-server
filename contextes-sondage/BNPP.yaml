@@ -9,7 +9,7 @@ BNPP:
 
 BNPP . entité:
   titre: Sondage BNPP
-  question: Où travaillez vous dans le Groupe BNPP ?
+  question: Où travaillez-vous dans le Groupe BNP Paribas ?
   formule:
     une possibilité:
       choix obligatoire: oui
