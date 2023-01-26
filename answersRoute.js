@@ -16,8 +16,7 @@ const getCsvHeader = async (roomName) => {
     'transport',
     'logement',
     'divers',
-    'numérique',
-    'services publics',
+    'services sociétaux',
     'total',
     'progress',
   ]
