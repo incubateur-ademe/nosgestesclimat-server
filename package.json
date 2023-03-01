@@ -11,6 +11,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "apicache": "^1.6.3",
     "bluebird": "^3.7.2",
     "cors": "^2.8.5",
     "express": "^4.17.2",

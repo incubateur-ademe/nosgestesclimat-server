@@ -1,6 +1,14 @@
 const express = require('express')
+const apicache = require('apicache')
 
 const router = express.Router()
+
+const cache = apicache.options({
+  headers: {
+    'cache-control': 'no-cache',
+  },
+  debug: true,
+}).middleware
 
 const authorizedMethods = [
   'VisitsSummary.getVisits',
@@ -16,14 +24,12 @@ const authorizedMethods = [
   'Events.getAction',
 ]
 
-router.route('/').get(async (req, res, next) => {
+router.route('/').get(cache('1 day'), async (req, res, next) => {
   const rawRequestParams = decodeURIComponent(req.query.requestParams),
     requestParams = new URLSearchParams(rawRequestParams)
 
   const matomoMethod = requestParams.get('method'),
     idSite = requestParams.get('idSite')
-
-  console.log(req.query, matomoMethod, idSite)
 
   if (!matomoMethod || !idSite) {
     res.statusCode = 401
@@ -39,12 +45,13 @@ router.route('/').get(async (req, res, next) => {
     return next('Error. Not Authorized')
   }
 
-  const response = await fetch(
+  const url =
     'https://stats.data.gouv.fr/?' +
-      requestParams +
-      '&token_auth=' +
-      process.env.MATOMO_TOKEN
-  )
+    requestParams +
+    '&token_auth=' +
+    process.env.MATOMO_TOKEN
+  console.log('will make matomo request', url)
+  const response = await fetch(url)
 
   const json = await response.json()
 
