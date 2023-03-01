@@ -1,6 +1,7 @@
 const express = require('express')
 const answersRoute = require('./answersRoute')
 const surveysRoute = require('./surveysRoute')
+const statsRoute = require('./statsRoute')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 
@@ -11,10 +12,7 @@ app.use(express.json())
 const origin =
   process.env.NODE_ENV === 'developement'
     ? 'http://localhost:8080'
-    : [
-        'https://nosgestesclimat.fr',
-        'https://sondage-mongo--nosgestesclimat.netlify.app',
-      ]
+    : ['https://nosgestesclimat.fr']
 
 app.use(
   cors({
@@ -28,6 +26,7 @@ app.use(express.static('contextes-sondage'))
 //routes
 app.use('/answers', answersRoute)
 app.use('/surveys', surveysRoute)
+app.use('/get-stats', statsRoute)
 
 //require the http module
 const http = require('http').Server(app)
