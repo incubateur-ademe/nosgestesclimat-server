@@ -50,7 +50,8 @@ router.route('/').get(cache('1 day'), async (req, res, next) => {
     requestParams +
     '&token_auth=' +
     process.env.MATOMO_TOKEN
-  console.log('will make matomo request', url)
+
+  console.log('will make matomo request', requestParams)
   const response = await fetch(url)
 
   const json = await response.json()
