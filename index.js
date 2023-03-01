@@ -1,6 +1,7 @@
 const express = require('express')
 const answersRoute = require('./answersRoute')
 const surveysRoute = require('./surveysRoute')
+const statsRoutes = require('./statsRoute')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 
@@ -28,6 +29,7 @@ app.use(express.static('contextes-sondage'))
 //routes
 app.use('/answers', answersRoute)
 app.use('/surveys', surveysRoute)
+app.use('/stats', statsRoute)
 
 //require the http module
 const http = require('http').Server(app)
