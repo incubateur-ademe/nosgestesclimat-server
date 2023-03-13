@@ -52,26 +52,34 @@ router.route('/').get(cache('1 day'), async (req, res, next) => {
     process.env.MATOMO_TOKEN
 
   console.log('will make matomo request', requestParams)
-  const response = await fetch(url)
+  try {
+    const response = await fetch(url)
 
-  const json = await response.json()
+    const json = await response.json()
 
-  // Remove secret pages that would reveal groupe names that should stay private
-  if (rawRequestParams.includes('Page')) {
+    // Remove secret pages that would reveal groupe names that should stay private
+    if (rawRequestParams.includes('Page')) {
+      res.setHeader('Content-Type', 'application/json')
+      res.statusCode = 200
+      return res.json(
+        json.filter(
+          (el) =>
+            !isPrivate(el.label) &&
+            !(el.subtable && el.subtable.find((t) => isPrivate(t.url)))
+        )
+      )
+    }
+
     res.setHeader('Content-Type', 'application/json')
     res.statusCode = 200
-    return res.json(
-      json.filter(
-        (el) =>
-          !isPrivate(el.label) &&
-          !(el.subtable && el.subtable.find((t) => isPrivate(t.url)))
-      )
-    )
-  }
+    return res.json(json)
+  } catch (e) {
+    console.log('Erreur lors de la requête ou le parsing de la requête', url)
+    console.log(e)
 
-  res.setHeader('Content-Type', 'application/json')
-  res.statusCode = 200
-  return res.json(json)
+    res.statusCode = 500
+    return next('Error fetching or parsing stats ')
+  }
 })
 
 const privateURLs = ['conférence/', 'conference/', 'sondage/']
