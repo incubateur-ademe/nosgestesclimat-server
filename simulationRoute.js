@@ -5,14 +5,18 @@ const Simulation = require('./SimulationSchema')
 
 const router = express.Router()
 
-router.route('/:id').get((req, res, next) => {
+router.route('/:id?').get((req, res, next) => {
+  console.log('SALUT', req.params.id)
   if (req.params.id == null) {
-    res.status(404).send('Simulation not found')
+    return res.status(404).send('You must provide a simulation id')
   }
 
   connectdb.then((db) => {
     let data = Simulation.find({ name: req.params.id })
-    data.then((simulation) => {
+    data.then((simulations) => {
+      if (!simulations.length) {
+        return res.status(404).send('This simulation does not exist')
+      }
       res.setHeader('Content-Type', 'application/json')
       res.statusCode = 200
       res.json(simulation)
