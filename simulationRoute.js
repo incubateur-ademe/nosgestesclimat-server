@@ -38,6 +38,8 @@ router.route('/').post(async (req, res, next) => {
     ? found[0]
     : new Simulation({ id: req.body.id })
 
+  simulation.data = req.body.data
+
   simulation.save((error) => {
     if (error) {
       res.send(error)
