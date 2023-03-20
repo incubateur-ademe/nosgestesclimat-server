@@ -12,14 +12,14 @@ router.route('/:id?').get((req, res, next) => {
   }
 
   connectdb.then((db) => {
-    let data = Simulation.find({ name: req.params.id })
+    let data = Simulation.find({ id: req.params.id })
     data.then((simulations) => {
       if (!simulations.length) {
         return res.status(404).send('This simulation does not exist')
       }
       res.setHeader('Content-Type', 'application/json')
       res.statusCode = 200
-      res.json(simulation)
+      res.json(simulations)
     })
   })
 })
@@ -27,16 +27,16 @@ router.route('/:id?').get((req, res, next) => {
 // This POST route creates or updates a property. It's a backup API.
 router.route('/').post(async (req, res, next) => {
   if (req.body.id == null) {
-    return next('Error. A simulation id must be provided')
+    return res.status(422).send('You must provide a simulation id')
   }
 
   const db = connectdb
 
-  const found = await Simulation.find({ name: req.body.id })
+  const found = await Simulation.find({ id: req.body.id })
 
   const simulation = found.length
     ? found[0]
-    : new Simulation({ name: req.body.id })
+    : new Simulation({ id: req.body.id })
 
   simulation.save((error) => {
     if (error) {
