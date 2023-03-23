@@ -42,7 +42,7 @@ router.route('/').post(async (req, res, next) => {
 
   simulation.save((error) => {
     if (error) {
-      res.send(error)
+      return res.send(error)
     }
 
     res.setHeader('Content-Type', 'application/json')
