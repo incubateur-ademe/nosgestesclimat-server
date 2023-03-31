@@ -10,13 +10,13 @@ contexte défi carbone:
       - région = '"non"'
       - age = '"non"'
   formule: 0
-  
+
 contexte défi carbone . genre:
   titre: Genre
-  question: Vous êtes :
+  question: Vous êtes ?
   avec:
     une femme:
-    un homme: 
+    un homme:
     autre:
     je ne souhaite pas répondre:
   formule:
