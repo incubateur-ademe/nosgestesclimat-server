@@ -33,7 +33,6 @@ app.use('/answers', answersRoute)
 app.use('/surveys', surveysRoute)
 app.use('/get-stats', statsRoute)
 app.use('/simulation', simulationRoute)
-app.use('/export-simulations', exportSimulationRoute)
 
 //require the http module
 const http = require('http').Server(app)
