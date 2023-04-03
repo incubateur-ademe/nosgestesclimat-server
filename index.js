@@ -3,7 +3,6 @@ const answersRoute = require('./answersRoute')
 const surveysRoute = require('./surveysRoute')
 const statsRoute = require('./statsRoute')
 const simulationRoute = require('./simulationRoute')
-const exportSimulationRoute = require('./exportSimulationRoute')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 
