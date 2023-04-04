@@ -46,6 +46,9 @@ const toCSV = async (list) => {
     const header = ['userID', ...categories, 'total', ...questionDottedNames]
     const questionValue = (data, question) => {
       const value = data.situation[question]
+      if (value == null) return ''
+      if (value != null && !data.answeredQuestions.includes(question))
+        return '_defaultValue'
       if (typeof value === 'object') return value.valeur
       else return value
     }
