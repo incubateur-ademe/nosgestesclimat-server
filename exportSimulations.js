@@ -2,18 +2,18 @@ const connectdb = require('./database')
 const Simulation = require('./SimulationSchema')
 const fs = require('fs')
 
-const dateFileExtension = () =>
-  new Date().toLocaleDateString('fr-FR').replace(/\//g, '-')
+const dateFileExtension = (date) =>
+  date.toLocaleDateString('fr-FR').replace(/\//g, '-')
 connectdb.then((db) => {
   let request = Simulation.find()
   request.then((simulations) => {
     fs.writeFileSync(
-      `./export/simulations-${dateFileExtension()}.json`,
+      `./export/simulations-${dateFileExtension(new Date())}.json`,
       JSON.stringify(simulations)
     )
     toCSV(simulations).then((content) =>
       fs.writeFileSync(
-        `./export/simulations-${dateFileExtension()}.csv`,
+        `./export/simulations-${dateFileExtension(new Date())}.csv`,
         content
       )
     )
@@ -66,8 +66,8 @@ const toCSV = async (list) => {
         (simulation) =>
           isValidSimulation(simulation) && [
             simulation.id,
-            simulation.createdAt,
-            simulation.updatedAt,
+            dateFileExtension(simulation.createdAt), //haven't check if the hour is correct, but the day looks good
+            dateFileExtension(simulation.updatedAt),
             ...categories.map(
               (category) => simulation.data.results.categories[category]
             ),
