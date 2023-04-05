@@ -29,8 +29,6 @@ const categories = [
 
 const toCSV = async (list) => {
   try {
-    console.log(list)
-    console.log('will fetch rules')
     const response = await fetch(url)
     if (!response.ok) console.log('Oups')
     const rules = await response.json()
@@ -71,7 +69,6 @@ const toCSV = async (list) => {
       separate(header),
       ...newList.map((list) => separate(list)),
     ].join('\r\n')
-    console.log(csv)
     return csv
   } catch (e) {
     console.log(e)
