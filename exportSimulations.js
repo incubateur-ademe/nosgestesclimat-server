@@ -45,7 +45,14 @@ const toCSV = async (list) => {
 
     // We need to expose the full list of questions of the model in order to index the CSV
     // Then fill with value | 'default' | ''
-    const header = ['userID', ...categories, 'total', ...questionDottedNames]
+    const header = [
+      'userID',
+      'createdAt',
+      'updatedAt',
+      ...categories,
+      'total',
+      ...questionDottedNames,
+    ]
     const questionValue = (data, question) => {
       const value = data.situation[question]
       if (value == null) return ''
@@ -59,6 +66,8 @@ const toCSV = async (list) => {
         (simulation) =>
           isValidSimulation(simulation) && [
             simulation.id,
+            simulation.createdAt,
+            simulation.updatedAt,
             ...categories.map(
               (category) => simulation.data.results.categories[category]
             ),
