@@ -2,16 +2,20 @@ const connectdb = require('./database')
 const Simulation = require('./SimulationSchema')
 const fs = require('fs')
 
+const dateFileExtension = () =>
+  new Date().toLocaleDateString('fr-FR').replace(/\//g, '-')
 connectdb.then((db) => {
   let request = Simulation.find()
   request.then((simulations) => {
-    const date = new Date().toLocaleDateString('fr-FR').replace(/\//g, '-')
     fs.writeFileSync(
-      `./export/simulations-${date}.json`,
+      `./export/simulations-${dateFileExtension()}.json`,
       JSON.stringify(simulations)
     )
     toCSV(simulations).then((content) =>
-      fs.writeFileSync('./export/simulations.csv', content)
+      fs.writeFileSync(
+        `./export/simulations-${dateFileExtension()}.csv`,
+        content
+      )
     )
     db.disconnect()
     return console.log('Fichier écrit')
