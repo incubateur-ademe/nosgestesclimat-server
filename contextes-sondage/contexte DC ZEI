@@ -1,0 +1,25 @@
+# Rule name has to be the same as the file name.
+template de contexte:
+  titre: Mon defi carbone avec ZEI
+  icônes: 📝
+  non applicable si:
+    une de ces conditions:
+      - enjeux rse = '"non"'
+  formule: 0
+
+contexte mon defi carbone avec zei . enjeux rse:
+  titre: Enjeux RSE
+  question: Quels enjeux RSE souhaitez-vous que votre entreprise priorise ?
+  formule:
+    une possibilité:
+      choix obligatoire: non
+      possibilités:
+        - le climat
+        - le numérique responsable
+        - les transports doux
+        - la biodiversité
+        - le mécénat
+        - la solidarité
+        - la grande précarité
+        - la lutte contre les discriminations
+        - la formation
