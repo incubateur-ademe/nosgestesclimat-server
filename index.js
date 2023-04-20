@@ -16,6 +16,7 @@ const origin =
     : [
         'https://nosgestesclimat.fr',
         'https://deploy-preview-885--nosgestesclimat.netlify.app',
+        'https://enquete--nosgestesclimat.netlify.app',
       ]
 
 app.use(
