@@ -22,7 +22,8 @@ connectdb.then((db) => {
   })
 })
 
-const url = 'https://data.nosgestesclimat.fr/co2-model.FR-lang.fr.json'
+const url =
+  'https://deploy-preview-1809--ecolab-data.netlify.app/co2-model.FR-lang.fr.json'
 const categories = [
   'logement',
   'transport',
