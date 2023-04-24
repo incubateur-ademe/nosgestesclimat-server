@@ -32,6 +32,7 @@ const categories = [
   'services sociétaux',
 ]
 
+const defaultValueToken = '_defaultValue'
 const toCSV = async (list) => {
   try {
     const response = await fetch(url)
@@ -56,9 +57,12 @@ const toCSV = async (list) => {
     ]
     const questionValue = (data, question) => {
       const value = data.situation[question]
-      if (value == null) return ''
+      if (value == null) {
+        if (data.answeredQuestions.includes(question)) return defaultValueToken
+        return ''
+      }
       if (value != null && !data.answeredQuestions.includes(question))
-        return '_defaultValue'
+        return defaultValueToken
       if (typeof value === 'object') return value.valeur
       else return value
     }
