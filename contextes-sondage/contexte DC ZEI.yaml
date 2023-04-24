@@ -8,6 +8,16 @@ contexte mon defi carbone avec zei:
   formule: 0
 
 contexte mon defi carbone avec zei . enjeux rse:
+  avec:
+    le climat:
+    le numérique responsable:
+    les transports doux:
+    la biodiversité:
+    le mécénat:
+    la solidarité:
+    la grande précarité:
+    la lutte contre les discriminations:
+    la formation:
   titre: Enjeux RSE
   question: Quels enjeux RSE souhaitez-vous que votre entreprise priorise ?
   formule:
