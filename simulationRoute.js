@@ -24,7 +24,7 @@ router.route('/:id?').get((req, res, next) => {
   })
 })
 
-// This POST route creates or updates a property. It's a backup API.
+// This POST route creates or updates a property. It's a backup API. One-way only.
 router.route('/').post(async (req, res, next) => {
   if (req.body.id == null) {
     return res.status(422).send('You must provide a simulation id')
