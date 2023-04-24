@@ -62,9 +62,11 @@ const toCSV = async (list) => {
         return ''
       }
       if (value != null && !data.answeredQuestions.includes(question)) {
-        // I'm not sure at all this condition can happen
-        console.log('UNSUREWHATHAPPENEDHERE', question, value)
-        return defaultValueToken
+        // This can happen for some mosaic questions where the selection of "Aucun" triggers a value of "O" in the simulation (is it a bug ?)
+        // See https://github.com/datagir/nosgestesclimat-site/issues/994
+        // It can also of course happen when this is the last question of the user : he's input something, but did not validate.
+        // Hence we don't consider this question answered
+        return ''
       }
       if (typeof value === 'object') return value.valeur
       else return value
