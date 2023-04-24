@@ -1,5 +1,5 @@
 # Rule name has to be the same as the file name.
-contexte mon defi carbone avec zei:
+contexte DC ZEI:
   titre: Mon defi carbone avec ZEI
   icônes: 📝
   non applicable si:
@@ -7,7 +7,7 @@ contexte mon defi carbone avec zei:
       - enjeux rse = '"non"'
   formule: 0
 
-contexte mon defi carbone avec zei . enjeux rse:
+contexte DC ZEI . enjeux rse:
   avec:
     le climat:
     le numérique responsable:
