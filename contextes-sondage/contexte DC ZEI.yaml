@@ -9,6 +9,7 @@ contexte DC ZEI:
 
 contexte DC ZEI . enjeux rse:
   avec:
+    aucun:
     le climat:
     le numérique responsable:
     les transports doux:
@@ -22,8 +23,9 @@ contexte DC ZEI . enjeux rse:
   question: Quels enjeux RSE souhaitez-vous que votre entreprise priorise ?
   formule:
     une possibilité:
-      choix obligatoire: non
+      choix obligatoire: oui
       possibilités:
+        - aucun
         - le climat
         - le numérique responsable
         - les transports doux
