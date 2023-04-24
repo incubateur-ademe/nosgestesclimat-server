@@ -63,7 +63,7 @@ const toCSV = async (list) => {
       }
       if (value != null && !data.answeredQuestions.includes(question)) {
         // I'm not sure at all this condition can happen
-        console.log('UNSUREWHATHAPPENEDHERE', question)
+        console.log('UNSUREWHATHAPPENEDHERE', question, value)
         return defaultValueToken
       }
       if (typeof value === 'object') return value.valeur
