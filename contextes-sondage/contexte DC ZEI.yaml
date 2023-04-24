@@ -1,7 +1,5 @@
 # Rule name has to be the same as the file name.
 contexte DC ZEI:
-  titre: Mon defi carbone avec ZEI
-  icônes: 📝
   non applicable si:
     une de ces conditions:
       - enjeux rse = '"non"'
