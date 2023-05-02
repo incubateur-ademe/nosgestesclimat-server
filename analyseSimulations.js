@@ -1,7 +1,7 @@
 const fs = require('fs')
 var Stats = require('fast-stats').Stats
 
-let list = JSON.parse(fs.readFileSync('simu25-4.json', 'utf8'))
+let list = JSON.parse(fs.readFileSync('simu26-2.json', 'utf8'))
 const filtered = list.filter(
   (line) => new Date(line.updatedAt) > new Date('2023-04-25T15:00:33.076Z')
 )
