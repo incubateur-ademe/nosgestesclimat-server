@@ -6,7 +6,7 @@ const Simulation = require('./SimulationSchema')
 const router = express.Router()
 
 router.route('/:id?').get((req, res, next) => {
-  console.log('SALUT', req.params.id)
+  console.log("SALUT l'observateur", req.params.id)
   if (req.params.id == null) {
     return res.status(404).send('You must provide a simulation id')
   }

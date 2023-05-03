@@ -13,11 +13,7 @@ app.use(express.json())
 const origin =
   process.env.NODE_ENV === 'development'
     ? 'http://localhost:8080'
-    : [
-        'https://nosgestesclimat.fr',
-        'https://deploy-preview-885--nosgestesclimat.netlify.app',
-        'https://enquete--nosgestesclimat.netlify.app',
-      ]
+    : ['https://nosgestesclimat.fr']
 
 app.use(
   cors({
