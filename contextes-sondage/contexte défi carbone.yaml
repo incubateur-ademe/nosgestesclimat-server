@@ -4,11 +4,29 @@ contexte défi carbone:
   icônes: 📝
   non applicable si:
     une de ces conditions:
+      - genre = '"non"'
       - organisation = '"non"'
       - statut = '"non"'
       - région = '"non"'
       - age = '"non"'
   formule: 0
+
+contexte défi carbone . genre:
+  titre: Genre
+  question: Vous êtes ?
+  avec:
+    une femme:
+    un homme:
+    autre:
+    je ne souhaite pas répondre:
+  formule:
+    une possibilité:
+      choix obligatoire: oui
+      possibilités:
+        - une femme
+        - un homme
+        - autre
+        - je ne souhaite pas répondre
 
 contexte défi carbone . organisation:
   titre: Organisation
