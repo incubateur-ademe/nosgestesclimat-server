@@ -8,7 +8,7 @@ contexte chaville:
       - genre = '"non"'
       - age = '"non"'
       - CSP = '"non"'
-      - ateliers = '"booléen"'
+      - sensibilité = '"booléen"'
   formule: 0
 
 contexte chaville . chaville:
@@ -78,26 +78,19 @@ contexte chaville . CSP . élèves étudiants et stagiaires non rémunérés:
 contexte chaville . CSP . retraités ou plus de 65 ans:
 contexte chaville . CSP . autres inactifs:
 
-contexte chaville . ateliers:
-  titre: Ateliers de sensibilisation
-  question: Souhaiteriez-vous participer à des ateliers de sensibilisation à partir de septembre ?
+contexte chaville . sensibilité:
+  titre: Sensibilité écologique
+  question: Quelle est la phrase qui décrit le mieux votre attitude envers le changement climatique ?
   formule:
     une possibilité:
       choix obligatoire: oui
       possibilités:
-        - semaine journée
-        - semaine soirée
-        - semaine journée ou soirée
-        - week end
-        - sans avis
+        - éloigné du sujet
+        - informé mais peu enclin à changer
+        - informé mais en difficultés à changer
+        - sensible et engagé
 
-contexte chaville . ateliers . semaine journée:
-  titre: Oui, en semaine en journée
-contexte chaville . ateliers . semaine soirée:
-  titre: Oui, en semaine en soirée
-contexte chaville . ateliers . semaine journée ou soirée:
-  titre: Oui, en semaine en journée ou soirée
-contexte chaville . ateliers . week end:
-  titre: Oui, en week-end
-contexte chaville . ateliers . sans avis:
-  titre: Non
+contexte chaville . sensibilité . éloigné du sujet:
+contexte chaville . sensibilité . informé mais peu enclin à changer:
+contexte chaville . sensibilité . informé mais en difficultés à changer:
+contexte chaville . sensibilité . sensible et engagé:
