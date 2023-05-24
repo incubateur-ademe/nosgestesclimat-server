@@ -12,7 +12,13 @@ router.route('/').get((req, res, next) => {
       if (!simulations.length) {
         return res.status(404).send('No ratings found')
       }
-      const ratings = simulations.map((d) => d.ratings)
+      const ratings = simulations
+        .map(({ data, updatedAt, createdAt }) => ({
+          ratings: data?.ratings,
+          createdAt,
+          updatedAt,
+        }))
+        .filter((d) => d.ratings)
       res.setHeader('Content-Type', 'application/json')
       res.statusCode = 200
       res.json(ratings)
