@@ -12,7 +12,6 @@ const cache = apicache.options({
 
 const authorizedMethods = [
   'VisitsSummary.getVisits',
-  'VisitsSummary.getVisits',
   'VisitorInterest.getNumberOfVisitsPerVisitDuration',
   'VisitFrequency.get',
   'Actions.getPageUrl',
@@ -22,6 +21,8 @@ const authorizedMethods = [
   'Actions.getEntryPageUrls',
   'Actions.getPageUrls',
   'Events.getAction',
+  'Events.getCategory',
+  'Actions.getPageUrl',
 ]
 
 router.route('/').get(cache('1 day'), async (req, res, next) => {

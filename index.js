@@ -7,13 +7,17 @@ const ratingsRoute = require('./ratingsRoute')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config()
+}
+
 const app = express()
 
 app.use(express.json())
 
 const origin =
   process.env.NODE_ENV === 'development'
-    ? 'http://localhost:8080'
+    ? ['http://localhost:8080', 'http://localhost:8888']
     : ['https://nosgestesclimat.fr']
 
 app.use(
