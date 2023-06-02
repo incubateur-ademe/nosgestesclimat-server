@@ -1,0 +1,36 @@
+# Rule name has to be the same as the file name.
+contexte DC clinique parc:
+  non applicable si:
+    une de ces conditions:
+      - salarié = '"non"'
+      - co-voiturage = '"non"'
+      
+  formule: 0
+
+contexte DC clinique parc . salarié:
+  avec:
+    aucun:
+    De la Clinique du Parc:
+    De la Maison du Parc:
+  titre: Saralié
+  question: Êtes-vous salarié(e) :
+  formule:
+    une possibilité:
+      choix obligatoire: oui
+      possibilités:
+        - De la Clinique du Parc
+        - De la Maison du Parc
+        
+ contexte DC clinique parc . co-voiturage: 
+   avec:
+    aucun:
+    Oui:
+    Non:
+  titre: Co-voiturage
+  question: Seriez-vous intéressé(e) par une solution de co-voiturage pour venir sur votre lieu de travail ?
+  formule:
+    une possibilité:
+      choix obligatoire: oui
+      possibilités:
+        - Oui
+        - Non
