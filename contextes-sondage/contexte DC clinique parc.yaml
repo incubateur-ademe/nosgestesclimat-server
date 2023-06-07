@@ -3,34 +3,24 @@ contexte DC clinique parc:
   non applicable si:
     une de ces conditions:
       - salarié = '"non"'
-      - co-voiturage = '"non"'
-      
+      - covoiturage = '"booleen"'
   formule: 0
 
 contexte DC clinique parc . salarié:
   avec:
     aucun:
-    De la Clinique du Parc:
-    De la Maison du Parc:
-  titre: Saralié
-  question: Êtes-vous salarié(e) :
+    la Clinique du Parc:
+    la Maison du Parc:
+  titre: Salarié
+  question: Vous salarié(e) de ?
   formule:
     une possibilité:
       choix obligatoire: oui
       possibilités:
-        - De la Clinique du Parc
-        - De la Maison du Parc
-        
- contexte DC clinique parc . co-voiturage: 
-   avec:
-    aucun:
-    Oui:
-    Non:
+        - la Clinique du Parc
+        - la Maison du Parc
+        - aucun
+
+contexte DC clinique parc . covoiturage:
   titre: Co-voiturage
   question: Seriez-vous intéressé(e) par une solution de co-voiturage pour venir sur votre lieu de travail ?
-  formule:
-    une possibilité:
-      choix obligatoire: oui
-      possibilités:
-        - Oui
-        - Non
