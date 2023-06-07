@@ -1,12 +1,11 @@
 const express = require('express')
-const bodyParser = require('body-parser')
-const connectdb = require('./database')
-const Simulation = require('./SimulationSchema')
+const connectdb = require('../scripts/initDatabase')
+const Simulation = require('../schemas/SimulationSchema')
 
 const router = express.Router()
 
 router.route('/').get((req, res, next) => {
-  connectdb.then((db) => {
+  connectdb.then(() => {
     let data = Simulation.find({})
     data.then((simulations) => {
       if (!simulations.length) {
@@ -16,7 +15,7 @@ router.route('/').get((req, res, next) => {
         .map(({ data, updatedAt, createdAt }) => ({
           ratings: data?.ratings,
           createdAt,
-          updatedAt,
+          updatedAt
         }))
         .filter((d) => d.ratings)
       res.setHeader('Content-Type', 'application/json')

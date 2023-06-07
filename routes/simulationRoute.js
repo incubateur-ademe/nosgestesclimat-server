@@ -1,7 +1,6 @@
 const express = require('express')
-const bodyParser = require('body-parser')
-const connectdb = require('./database')
-const Simulation = require('./SimulationSchema')
+const connectdb = require('../scripts/initDatabase')
+const Simulation = require('../schemas/SimulationSchema')
 
 const router = express.Router()
 
@@ -12,7 +11,7 @@ router.route('/:id?').get((req, res, next) => {
   }
 
   connectdb.then((db) => {
-    let data = Simulation.find({ id: req.params.id })
+    const data = Simulation.find({ id: req.params.id })
     data.then((simulations) => {
       if (!simulations.length) {
         return res.status(404).send('This simulation does not exist')
@@ -29,8 +28,6 @@ router.route('/').post(async (req, res, next) => {
   if (req.body.id == null) {
     return res.status(422).send('You must provide a simulation id')
   }
-
-  const db = connectdb
 
   const found = await Simulation.find({ id: req.body.id })
 

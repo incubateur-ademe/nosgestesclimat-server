@@ -1,8 +1,8 @@
 const express = require('express')
 const bodyParser = require('body-parser')
-const connectdb = require('./database')
-const Answers = require('./AnswerSchema')
-const Surveys = require('./SurveySchema')
+const connectdb = require('../scripts/initDatabase')
+const Answers = require('../schemas/AnswerSchema')
+const Surveys = require('../schemas/SurveySchema')
 
 const { Parser } = require('json2csv')
 const router = express.Router()

@@ -1,4 +1,4 @@
-const connectdb = require('./database')
+const connectdb = require('./initDatabase')
 const Simulation = require('./SimulationSchema')
 const fs = require('fs')
 

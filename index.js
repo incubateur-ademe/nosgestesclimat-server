@@ -1,10 +1,10 @@
 const express = require('express')
-const answersRoute = require('./answersRoute')
-const surveysRoute = require('./surveysRoute')
-const statsRoute = require('./statsRoute')
-const simulationRoute = require('./simulationRoute')
-const ratingsRoute = require('./ratingsRoute')
-const bodyParser = require('body-parser')
+const answersRoute = require('./routes/answersRoute')
+const surveysRoute = require('./routes/surveysRoute')
+const statsRoute = require('./routes/statsRoute')
+const simulationRoute = require('./routes/simulationRoute')
+const ratingsRoute = require('./routes/ratingsRoute')
+const emailSimulationRoutes = require('./routes/emailSimulationRoutes')
 const cors = require('cors')
 
 if (process.env.NODE_ENV !== 'production') {
@@ -22,21 +22,22 @@ const origin =
 
 app.use(
   cors({
-    origin,
+    origin
   })
 )
 
 // serve static context files
 app.use(express.static('contextes-sondage'))
 
-//routes
+// routes
 app.use('/answers', answersRoute)
 app.use('/surveys', surveysRoute)
 app.use('/get-stats', statsRoute)
 app.use('/simulation', simulationRoute)
 app.use('/ratings', ratingsRoute)
+app.use('/email-simulation', emailSimulationRoutes)
 
-//require the http module
+// require the http module
 const http = require('http').Server(app)
 
 // require the socket.io module
@@ -45,16 +46,15 @@ const socketio = require('socket.io')
 const port = process.env.PORT || 3000
 
 const io = socketio(http, {
-  cors: { origin, methods: ['GET', 'POST'] },
+  cors: { origin, methods: ['GET', 'POST'] }
 })
 
-const Answer = require('./AnswerSchema')
-const Survey = require('./SurveySchema')
-const connect = require('./database')
+const Answer = require('./schemas/AnswerSchema')
+const connect = require('./scripts/initDatabase')
 
-//create an event listener
+// create an event listener
 //
-//To listen to messages
+// To listen to messages
 io.on('connection', (socket) => {
   console.log('user connected to io')
 
@@ -69,10 +69,10 @@ io.on('connection', (socket) => {
 
     socket.to(room).emit('received', { answer })
 
-    connect.then((db) => {
-      const query = { id: answer.id },
-        update = answer,
-        options = { upsert: true, new: true, setDefaultsOnInsert: true }
+    connect.then(() => {
+      const query = { id: answer.id }
+      const update = answer
+      const options = { upsert: true, new: true, setDefaultsOnInsert: true }
 
       // Find the document
       Answer.findOneAndUpdate(query, update, options, function (error, result) {
@@ -84,9 +84,9 @@ io.on('connection', (socket) => {
   })
 })
 
-//wire up the server to listen to our port 500
+// wire up the server to listen to our port 500
 http.listen(port, () => {
-  var host = http.address().address
-  var port = http.address().port
+  const host = http.address().address
+  const port = http.address().port
   console.log('App listening at http://%s:%s', host, port)
 })

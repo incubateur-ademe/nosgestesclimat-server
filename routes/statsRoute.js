@@ -5,9 +5,9 @@ const router = express.Router()
 
 const cache = apicache.options({
   headers: {
-    'cache-control': 'no-cache',
+    'cache-control': 'no-cache'
   },
-  debug: true,
+  debug: true
 }).middleware
 
 const authorizedMethods = [
@@ -22,15 +22,17 @@ const authorizedMethods = [
   'Actions.getPageUrls',
   'Events.getAction',
   'Events.getCategory',
-  'Actions.getPageUrl',
+  'Actions.getPageUrl'
 ]
 
 router.route('/').get(cache('1 day'), async (req, res, next) => {
-  const rawRequestParams = decodeURIComponent(req.query.requestParams),
-    requestParams = new URLSearchParams(rawRequestParams)
+  const rawRequestParams = decodeURIComponent(req.query.requestParams)
 
-  const matomoMethod = requestParams.get('method'),
-    idSite = requestParams.get('idSite')
+  const requestParams = new URLSearchParams(rawRequestParams)
+
+  const matomoMethod = requestParams.get('method')
+
+  const idSite = requestParams.get('idSite')
 
   if (!matomoMethod || !idSite) {
     res.statusCode = 401

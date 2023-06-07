@@ -1,7 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
-const connectdb = require('./database')
-const Survey = require('./SurveySchema')
+const connectdb = require('../scripts/initDatabase')
+const Survey = require('../schemas/SurveySchema')
 
 const router = express.Router()
 
