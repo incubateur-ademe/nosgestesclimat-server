@@ -8,7 +8,7 @@ contexte chaville:
       - genre = '"non"'
       - age = '"non"'
       - CSP = '"non"'
-      - sensibilité = '"booléen"'
+      - sensibilité = '"non"'
   formule: 0
 
 contexte chaville . chaville:
