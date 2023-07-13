@@ -5,6 +5,7 @@ const statsRoute = require('./routes/statsRoute')
 const simulationRoute = require('./routes/simulationRoute')
 const ratingsRoute = require('./routes/ratingsRoute')
 const emailSimulationRoutes = require('./routes/emailSimulationRoutes')
+const groupRoute = require('./routes/groupsRoute')
 const cors = require('cors')
 
 if (process.env.NODE_ENV !== 'production') {
@@ -36,6 +37,7 @@ app.use('/get-stats', statsRoute)
 app.use('/simulation', simulationRoute)
 app.use('/ratings', ratingsRoute)
 app.use('/email-simulation', emailSimulationRoutes)
+app.use('/group', groupRoute)
 
 // require the http module
 const http = require('http').Server(app)
@@ -88,5 +90,6 @@ io.on('connection', (socket) => {
 http.listen(port, () => {
   const host = http.address().address
   const port = http.address().port
+
   console.log('App listening at http://%s:%s', host, port)
 })

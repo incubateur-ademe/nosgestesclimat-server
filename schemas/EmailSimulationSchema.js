@@ -4,12 +4,6 @@ const Schema = mongoose.Schema
 
 const EmailSimulationSchema = new Schema(
   {
-    _id: {
-      type: mongoose.Schema.Types.ObjectId,
-      index: true,
-      required: true,
-      auto: true
-    },
     data: Object
   },
   {
