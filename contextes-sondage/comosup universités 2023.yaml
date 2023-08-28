@@ -1,0 +1,152 @@
+# Rule name has to be the same as the file name.
+comosup universites 2023:
+  titre: Comosup universités 2023
+  icônes: 📝
+  non applicable si:
+    une de ces conditions:
+      - université = '"non"'
+  formule: 0
+
+template de contexte . université:
+  titre: Université
+  question: Dans quelle université êtes-vous ?
+  formule:
+    une possibilité:
+      choix obligatoire: oui
+      possibilités:
+        - Université de Perpignan Via Domitia
+        - Université Polytechnique Hauts-de-France
+        - Université de Toulon
+        - Avignon Université
+        - Université d'Angers
+        - CY Cergy Paris Université
+        - La Rochelle Université
+        - Université de Bretagne Occidentale
+        - Université Le Havre Normandie
+        - Université Paris Nanterre
+        - Le Mans Université
+        - Université Clermont Auvergne
+        - Université de Caen Normandie
+        - Université de la Nouvelle-Calédonie
+        - Université de Tours
+        - Université des Antilles 
+        - Université Gustave Eiffel
+        - Université Sorbonne Nouvelle - Paris 3
+        - Université Paris Cité
+        - Université de Pau et des Pays de l'Adour
+        - Université de La Réunion
+        - Université de Rouen Normandie
+        - Université Toulouse III - Paul Sabatier
+        - Université d'Orléans
+        - Université du Littoral Côte d’Opale
+        - Université Toulouse Capitole
+        - Université Rennes 2
+        - Université de Lille
+        - Université Paris-Saclay
+        - Sorbonne Université
+        - Université de Bordeaux
+        - Université de Strasbourg
+        - Université d'Évry-Val-d'Essonne
+        - Université Lumière - Lyon 2
+        - Université Paul-Valéry - Montpellier 3
+        - Université de Poitiers
+        - Université de Reims Champagne-Ardenne
+        - Université de Rennes
+        - Université de Bourgogne
+        - Université de Guyane
+        - Université de Haute-Alsace
+        - Université Paris 8 - Vincennes - Saint-Denis
+        - Université Côte d'Azur
+        - Université Savoie Mont Blanc
+        - Université Toulouse - Jean Jaurès
+        - Université de Corse Pasquale Paoli
+        - Université Paris 1 - Panthéon Sorbonne
+        - Université de Limoges
+        - Université Grenoble Alpes
+        - Université de Picardie Jules-Verne
+        - Université de Versailles Saint-Quentin-en-Yvelines
+        - Nantes Université
+        - Université Sorbonne Paris Nord
+        - Université Claude Bernard - Lyon 1
+        - Université Bordeaux Montaigne
+        - Université Jean Moulin - Lyon 3
+        - Aix-Marseille Université
+        - Université d'Artois
+        - Université Bretagne Sud 
+        - Université Paris-Est Créteil
+        - Université de Montpellier
+        - Université de Franche-Comté
+        - Université de la Polynésie Française
+        - Université de Nîmes
+        - Université Jean Monnet
+        - Université Paris-Panthéon-Assas
+
+        
+template de contexte . université . Université de Perpignan Via Domitia:
+template de contexte . université . Université Polytechnique Hauts-de-France:
+template de contexte . université . Université de Toulon:
+template de contexte . université . Université Polytechnique Hauts-de-France:
+template de contexte . université . Université de Toulon:
+template de contexte . université . Avignon Université:
+template de contexte . université . Université d'Angers:
+template de contexte . université . CY Cergy Paris Université:
+template de contexte . université . La Rochelle Université:
+template de contexte . université . Université de Bretagne Occidentale:
+template de contexte . université . Université Le Havre Normandie:
+template de contexte . université . Université Paris Nanterre:
+template de contexte . université . Le Mans Université:
+template de contexte . université . Université Clermont Auvergne:
+template de contexte . université . Université de Caen Normandie:
+template de contexte . université . Université de la Nouvelle-Calédonie:
+template de contexte . université . Université de Tours:
+template de contexte . université . Université des Antilles:
+template de contexte . université . Université Gustave Eiffel:
+template de contexte . université . Université Sorbonne Nouvelle - Paris 3:
+template de contexte . université . Université Paris Cité:
+template de contexte . université . Université de Pau et des Pays de l'Adour:
+template de contexte . université . Université de La Réunion:
+template de contexte . université . Université de Rouen Normandie:
+template de contexte . université . Université Toulouse III - Paul Sabatier:
+template de contexte . université . Université d'Orléans:
+template de contexte . université . Université du Littoral Côte d’Opale:
+template de contexte . université . Université Toulouse Capitole:
+template de contexte . université . Université Rennes 2:
+template de contexte . université . Université de Lille:
+template de contexte . université . Université Paris-Saclay:
+template de contexte . université . Sorbonne Université:
+template de contexte . université . Université de Bordeaux:
+template de contexte . université . Université de Strasbourg:
+template de contexte . université . Université d'Évry-Val-d'Essonne:
+template de contexte . université . Université Lumière - Lyon 2:
+template de contexte . université . Université Paul-Valéry - Montpellier 3:
+template de contexte . université . Université de Poitiers:
+template de contexte . université . Université de Reims Champagne-Ardenne:
+template de contexte . université . Université de Rennes:
+template de contexte . université . Université de Bourgogne:
+template de contexte . université . Université de Guyane:
+template de contexte . université . Université de Haute-Alsace:
+template de contexte . université . Université Paris 8 - Vincennes - Saint-Denis:
+template de contexte . université . Université Côte d'Azur:
+template de contexte . université . Université Savoie Mont Blanc:
+template de contexte . université . Université Toulouse - Jean Jaurès:
+template de contexte . université . Université de Corse Pasquale Paoli:
+template de contexte . université . Université Paris 1 - Panthéon Sorbonne:
+template de contexte . université . Université de Limoges:
+template de contexte . université . Université Grenoble Alpes:
+template de contexte . université . Université de Picardie Jules-Verne:
+template de contexte . université . Université de Versailles Saint-Quentin-en-Yvelines:
+template de contexte . université . Nantes Université:    
+template de contexte . université . Université Sorbonne Paris Nord:
+template de contexte . université . Université Claude Bernard - Lyon 1:
+template de contexte . université . Université Bordeaux Montaigne:
+template de contexte . université . Université Jean Moulin - Lyon 3:
+template de contexte . université . Aix-Marseille Université:
+template de contexte . université . Université d'Artois:
+template de contexte . université . Université Bretagne Sud:
+template de contexte . université . Université Paris-Est Créteil:
+template de contexte . université . Université de Montpellier:
+template de contexte . université . Université de Franche-Comté:
+template de contexte . université . Université de la Polynésie Française:
+template de contexte . université . Université de Nîmes:
+template de contexte . université . Université Jean Monnet:
+template de contexte . université . Université Paris-Panthéon-Assas:
