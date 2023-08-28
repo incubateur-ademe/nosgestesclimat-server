@@ -1,14 +1,14 @@
 # Rule name has to be the same as the file name.
 MSA:
-titre: MSA
+  titre: MSA
   icônes: 📝
   non applicable si:
     une de ces conditions:
       - organisme = '"non"'
       - statut = '"non"'
   formule: 0
-  
-template de contexte . organisme:
+
+MSA . organisme:
   titre: Organisme
   question: De quel organisme faites-vous partie ?
   formule:
@@ -23,7 +23,7 @@ template de contexte . organisme:
         - MSA de la Corse
         - MSA de Bourgogne
         - MSA d'Armorique
-        - MSA Dordogne Lot-et-Garonne 
+        - MSA Dordogne Lot-et-Garonne
         - MSA de Franche-Comté
         - MSA Ardèche Drôme Loire
         - MSA Haute Normandie
@@ -54,56 +54,56 @@ template de contexte . organisme:
         - MSA du Limousin
         - Présence Verte
         - INITIATIV'Retraite
-     
-template de contexte . organisme . MSA du Grand Sud:
-template de contexte . organisme . MSA Midi Pyrénées Nord:
-template de contexte . organisme . MSA Provence Azur:
-template de contexte . organisme . MSA des Côtes Normandes:
-template de contexte . organisme . MSA des Charentes:
-template de contexte . organisme . MSA de la Corse:
-template de contexte . organisme . MSA de Bourgogne:
-template de contexte . organisme . MSA d'Armorique:
-template de contexte . organisme . MSA Dordogne Lot-et-Garonne:
-template de contexte . organisme . MSA de Franche-Comté:
-template de contexte . organisme . MSA Ardèche Drôme Loire:
-template de contexte . organisme . MSA Haute Normandie:
-template de contexte . organisme . MSA Beauce Cœur de Loire:
-template de contexte . organisme . MSA Midi Pyrénées Sud:
-template de contexte . organisme . MSA de Gironde:
-template de contexte . organisme . MSA Portes de Bretagne:
-template de contexte . organisme . MSA Berry Touraine:
-template de contexte . organisme . MSA du Languedoc:
-template de contexte . organisme . MSA de Maine-et-Loire:
-template de contexte . organisme . MSA Marne Ardennes Meuse:
-template de contexte . organisme . MSA Sud Champagne:
-template de contexte . organisme . MSA Lorraine:
-template de contexte . organisme . MSA Nord Pas-de-Calais:
-template de contexte . organisme . MSA Auvergne:
-template de contexte . groupe . MSA Sud Aquitaine:
-template de contexte . groupe . MSA d'Alsace:
-template de contexte . groupe . MSA Ain-Rhône:
-template de contexte . groupe . MSA Mayenne Orne Sarthe:
-template de contexte . groupe . MSA Alpes du Nord:
-template de contexte . groupe . MSA Ile de France:
-template de contexte . groupe . Caisse Centrale MSA:
-template de contexte . groupe . MSA de Picardie:
-template de contexte . groupe . iMSA:
-template de contexte . groupe . MSA Alpes-Vaucluse:
-template de contexte . groupe . MSA Loire-Atlantique Vendée:
-template de contexte . groupe . MSA Poitou:
-template de contexte . groupe . MSA du Limousin:
-template de contexte . groupe . Présence Verte:
-template de contexte . groupe . INITIATIV'Retraite:
 
-template de contexte . statut:
+MSA . organisme . MSA du Grand Sud:
+MSA . organisme . MSA Midi Pyrénées Nord:
+MSA . organisme . MSA Provence Azur:
+MSA . organisme . MSA des Côtes Normandes:
+MSA . organisme . MSA des Charentes:
+MSA . organisme . MSA de la Corse:
+MSA . organisme . MSA de Bourgogne:
+MSA . organisme . MSA d'Armorique:
+MSA . organisme . MSA Dordogne Lot-et-Garonne:
+MSA . organisme . MSA de Franche-Comté:
+MSA . organisme . MSA Ardèche Drôme Loire:
+MSA . organisme . MSA Haute Normandie:
+MSA . organisme . MSA Beauce Cœur de Loire:
+MSA . organisme . MSA Midi Pyrénées Sud:
+MSA . organisme . MSA de Gironde:
+MSA . organisme . MSA Portes de Bretagne:
+MSA . organisme . MSA Berry Touraine:
+MSA . organisme . MSA du Languedoc:
+MSA . organisme . MSA de Maine-et-Loire:
+MSA . organisme . MSA Marne Ardennes Meuse:
+MSA . organisme . MSA Sud Champagne:
+MSA . organisme . MSA Lorraine:
+MSA . organisme . MSA Nord Pas-de-Calais:
+MSA . organisme . MSA Auvergne:
+MSA . organisme . MSA Sud Aquitaine:
+MSA . organisme . MSA d'Alsace:
+MSA . organisme . MSA Ain-Rhône:
+MSA . organisme . MSA Mayenne Orne Sarthe:
+MSA . organisme . MSA Alpes du Nord:
+MSA . organisme . MSA Ile de France:
+MSA . organisme . Caisse Centrale MSA:
+MSA . organisme . MSA de Picardie:
+MSA . organisme . iMSA:
+MSA . organisme . MSA Alpes-Vaucluse:
+MSA . organisme . MSA Loire-Atlantique Vendée:
+MSA . organisme . MSA Poitou:
+MSA . organisme . MSA du Limousin:
+MSA . organisme . Présence Verte:
+MSA . organisme . INITIATIV'Retraite:
+
+MSA . statut:
   titre: Statut
-  question: Je suis :
+  question: 'Je suis :'
   formule:
     une possibilité:
       choix obligatoire: oui
       possibilités:
-        - Salarié(e)
-        - Elu(e) MSA
+        - Salarié-e
+        - Elu-e MSA
 
-template de contexte . statut . Salarié(e):
-template de contexte . statut . Elu(e) MSA:
+MSA . statut . Salarié-e:
+MSA . statut . Elu-e MSA:
