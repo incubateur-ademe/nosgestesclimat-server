@@ -1,5 +1,5 @@
 # Rule name has to be the same as the file name.
-comosup universites 2023:
+comosup universités 2023:
   titre: Comosup universités 2023
   icônes: 📝
   non applicable si:
@@ -7,7 +7,7 @@ comosup universites 2023:
       - université = '"non"'
   formule: 0
 
-comosup universites 2023 . université:
+comosup universités 2023 . université:
   titre: Université
   question: Dans quelle université êtes-vous ?
   formule:
