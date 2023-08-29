@@ -1,0 +1,109 @@
+# Rule name has to be the same as the file name.
+MSA:
+  titre: MSA
+  icônes: 📝
+  non applicable si:
+    une de ces conditions:
+      - organisme = '"non"'
+      - statut = '"non"'
+  formule: 0
+
+MSA . organisme:
+  titre: Organisme
+  question: De quel organisme faites-vous partie ?
+  formule:
+    une possibilité:
+      choix obligatoire: oui
+      possibilités:
+        - MSA du Grand Sud
+        - MSA Midi Pyrénées Nord
+        - MSA Provence Azur
+        - MSA des Côtes Normandes
+        - MSA des Charentes
+        - MSA de la Corse
+        - MSA de Bourgogne
+        - MSA d'Armorique
+        - MSA Dordogne Lot-et-Garonne
+        - MSA de Franche-Comté
+        - MSA Ardèche Drôme Loire
+        - MSA Haute Normandie
+        - MSA Beauce Cœur de Loire
+        - MSA Midi Pyrénées Sud
+        - MSA de Gironde
+        - MSA Portes de Bretagne
+        - MSA Berry Touraine
+        - MSA du Languedoc
+        - MSA de Maine-et-Loire
+        - MSA Marne Ardennes Meuse
+        - MSA Sud Champagne
+        - MSA Lorraine
+        - MSA Nord Pas-de-Calais
+        - MSA Auvergne
+        - MSA Sud Aquitaine
+        - MSA d'Alsace
+        - MSA Ain-Rhône
+        - MSA Mayenne Orne Sarthe
+        - MSA Alpes du Nord
+        - MSA Ile de France
+        - Caisse Centrale MSA
+        - MSA de Picardie
+        - iMSA
+        - MSA Alpes-Vaucluse
+        - MSA Loire-Atlantique Vendée
+        - MSA Poitou
+        - MSA du Limousin
+        - Présence Verte
+        - INITIATIV'Retraite
+
+MSA . organisme . MSA du Grand Sud:
+MSA . organisme . MSA Midi Pyrénées Nord:
+MSA . organisme . MSA Provence Azur:
+MSA . organisme . MSA des Côtes Normandes:
+MSA . organisme . MSA des Charentes:
+MSA . organisme . MSA de la Corse:
+MSA . organisme . MSA de Bourgogne:
+MSA . organisme . MSA d'Armorique:
+MSA . organisme . MSA Dordogne Lot-et-Garonne:
+MSA . organisme . MSA de Franche-Comté:
+MSA . organisme . MSA Ardèche Drôme Loire:
+MSA . organisme . MSA Haute Normandie:
+MSA . organisme . MSA Beauce Cœur de Loire:
+MSA . organisme . MSA Midi Pyrénées Sud:
+MSA . organisme . MSA de Gironde:
+MSA . organisme . MSA Portes de Bretagne:
+MSA . organisme . MSA Berry Touraine:
+MSA . organisme . MSA du Languedoc:
+MSA . organisme . MSA de Maine-et-Loire:
+MSA . organisme . MSA Marne Ardennes Meuse:
+MSA . organisme . MSA Sud Champagne:
+MSA . organisme . MSA Lorraine:
+MSA . organisme . MSA Nord Pas-de-Calais:
+MSA . organisme . MSA Auvergne:
+MSA . organisme . MSA Sud Aquitaine:
+MSA . organisme . MSA d'Alsace:
+MSA . organisme . MSA Ain-Rhône:
+MSA . organisme . MSA Mayenne Orne Sarthe:
+MSA . organisme . MSA Alpes du Nord:
+MSA . organisme . MSA Ile de France:
+MSA . organisme . Caisse Centrale MSA:
+MSA . organisme . MSA de Picardie:
+MSA . organisme . iMSA:
+MSA . organisme . MSA Alpes-Vaucluse:
+MSA . organisme . MSA Loire-Atlantique Vendée:
+MSA . organisme . MSA Poitou:
+MSA . organisme . MSA du Limousin:
+MSA . organisme . Présence Verte:
+MSA . organisme . INITIATIV'Retraite:
+
+MSA . statut:
+  titre: Statut
+  question: 'Je suis :'
+  formule:
+    une possibilité:
+      choix obligatoire: oui
+      possibilités:
+        - Salarié-e
+        - Elu-e MSA
+
+MSA . statut . Salarié-e:
+MSA . statut . Elu-e MSA:
