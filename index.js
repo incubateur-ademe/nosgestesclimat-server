@@ -18,8 +18,12 @@ app.use(express.json())
 
 const origin =
   process.env.NODE_ENV === 'development'
-    ? ['http://localhost:8080', 'http://localhost:8888']
-    : ['https://nosgestesclimat.fr']
+    ? [
+        'http://localhost:8080',
+        'http://localhost:8888',
+        'http://localhost:3000'
+      ]
+    : ['https://nosgestesclimat.fr', 'https://nosgestesclimat.vercel.app']
 
 app.use(
   cors({
