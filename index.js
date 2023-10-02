@@ -23,7 +23,11 @@ const origin =
         'http://localhost:8888',
         'http://localhost:3000'
       ]
-    : ['https://nosgestesclimat.fr', 'https://nosgestesclimat.vercel.app']
+    : [
+        'https://nosgestesclimat.fr',
+        'https://nosgestesclimat.vercel.app',
+        'https://nosgestesclimat-git-preprod-nos-gestes-climat.vercel.app'
+      ]
 
 app.use(
   cors({
