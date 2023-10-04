@@ -26,6 +26,7 @@ const origin =
     : [
         'https://nosgestesclimat.fr',
         'https://sondages.nosgestesclimat.fr',
+        'https://preprod.nosgestesclimat.fr',
         'https://nosgestesclimat.vercel.app',
         'https://nosgestesclimat-git-preprod-nos-gestes-climat.vercel.app'
       ]
