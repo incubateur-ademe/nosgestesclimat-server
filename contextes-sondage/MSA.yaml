@@ -54,6 +54,7 @@ MSA . organisme:
         - MSA du Limousin
         - Présence Verte
         - INITIATIV'Retraite
+        - Génération Mouvement
 
 MSA . organisme . MSA du Grand Sud:
 MSA . organisme . MSA Midi Pyrénées Nord:
@@ -94,6 +95,7 @@ MSA . organisme . MSA Poitou:
 MSA . organisme . MSA du Limousin:
 MSA . organisme . Présence Verte:
 MSA . organisme . INITIATIV'Retraite:
+MSA . organisme . Génération Mouvement:
 
 MSA . statut:
   titre: Statut
