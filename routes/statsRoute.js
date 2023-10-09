@@ -1,14 +1,14 @@
 const express = require('express')
-// const apicache = require('apicache')
+const apicache = require('apicache')
 
 const router = express.Router()
 
-// const cache = apicache.options({
-//   headers: {
-//     'cache-control': 'no-cache'
-//   },
-//   debug: true
-// }).middleware
+const cache = apicache.options({
+  headers: {
+    'cache-control': 'no-cache'
+  },
+  debug: true
+}).middleware
 
 const authorizedMethods = [
   'VisitsSummary.getVisits',
@@ -25,8 +25,7 @@ const authorizedMethods = [
   'Actions.getPageUrl'
 ]
 
-// router.route('/').get(cache('1 day'), async (req, res, next) => {
-router.route('/').get(async (req, res, next) => {
+router.route('/').get(cache('1 day'), async (req, res, next) => {
   const rawRequestParams = decodeURIComponent(req.query.requestParams)
 
   const requestParams = new URLSearchParams(rawRequestParams)
@@ -92,7 +91,7 @@ const isPrivate = (rawString) => {
   const uriComponents = decodeURIComponent(rawString)
 
   return (
-    uriComponents !== undefined &&
+    uriComponents != undefined &&
     privateURLs.some((url) => uriComponents.includes(url))
   )
 }
