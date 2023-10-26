@@ -25,7 +25,7 @@ const origin =
       ]
     : [
         'https://nosgestesclimat.fr',
-        '^https://(.+.)?vercel.app',
+        /\.vercel\.app$/,
         'https://sondages.nosgestesclimat.fr',
         'https://preprod.nosgestesclimat.fr',
         'https://nosgestesclimat.vercel.app',
