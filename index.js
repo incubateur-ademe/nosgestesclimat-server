@@ -26,6 +26,7 @@ const origin =
     : [
         'https://nosgestesclimat.fr',
         /\.vercel\.app$/,
+        'http://localhost:3000',
         'https://sondages.nosgestesclimat.fr',
         'https://preprod.nosgestesclimat.fr',
         'https://nosgestesclimat.vercel.app',
