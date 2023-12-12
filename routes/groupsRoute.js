@@ -2,6 +2,7 @@ const express = require('express')
 const connectdb = require('../scripts/initDatabase')
 const Group = require('../schemas/GroupSchema')
 const { setSuccessfulJSONResponse } = require('../utils/setSuccessfulResponse')
+const mongoose = require('mongoose')
 
 const router = express.Router()
 
@@ -10,7 +11,12 @@ const groupKey = 'groupId'
 router.route(`/:${groupKey}`).get((req, res, next) => {
   const groupId = req.params[groupKey]
 
-  if (!groupId) {
+  if (!groupId || !mongoose.Types.ObjectId.isValid(groupId)) {
+    res.status(500).json({
+      status: false,
+      error: 'Unauthorized. A valid group name must be provided.'
+    })
+
     return next('Unauthorized. A valid group name must be provided.')
   }
 
