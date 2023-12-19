@@ -17,10 +17,12 @@
     "apicache": "^1.6.3",
     "bluebird": "^3.7.2",
     "cors": "^2.8.5",
+    "dayjs": "^1.11.10",
     "dotenv": "^16.0.3",
     "express": "^4.17.2",
     "fast-stats": "^0.0.6",
     "json2csv": "^5.0.7",
+    "jsonwebtoken": "^9.0.2",
     "mongoose": "^6.1.10",
     "socket.io": "^4.4.1",
     "yaml": "^2.0.1"
