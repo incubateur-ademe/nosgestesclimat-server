@@ -46,8 +46,4 @@ export async function sendVerificationCode({
     },
     axiosConf
   )
-
-  return new NextResponse('Email sent.', {
-    status: 200,
-  })
 }

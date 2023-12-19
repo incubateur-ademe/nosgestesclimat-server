@@ -226,13 +226,12 @@ router.post(`/:${orgaKey}`, (req, res, next) => {
   })
 })
 
-// WIP
 router.post(`/:${orgaKey}/update`, async (req, res, next) => {
   const orgaSlug = req.body.slug
   const ownerEmail = req.body.ownerEmail
 
   // Authenticate the JWT
-  authenticateToken({
+  const newToken = authenticateToken({
     req,
     res,
     next,
@@ -253,7 +252,7 @@ router.post(`/:${orgaKey}/update`, async (req, res, next) => {
         return next(error)
       }
 
-      organizationFound.delete((error) => {
+      organizationFound.update((error, orgaUpdated) => {
         if (error) {
           return next(error)
         }
@@ -262,7 +261,10 @@ router.post(`/:${orgaKey}/update`, async (req, res, next) => {
 
         console.log('Organization deleted')
 
-        res.json('Organization deleted')
+        res.json({
+          organization: orgaUpdated,
+          newToken,
+        })
       })
     }
   )
