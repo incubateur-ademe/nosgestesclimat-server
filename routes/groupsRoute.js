@@ -98,12 +98,12 @@ router.route('/delete').post(async (req, res, next) => {
   }
 
   Group.findById(groupId, (error, groupFound) => {
-    if (error) {
+    if (error || !groupFound) {
       return next(error)
     }
 
     // If user is owner, delete group
-    if (groupFound.owner.userId === userId) {
+    if (groupFound?.owner?.userId === userId) {
       groupFound.delete((error, groupDeleted) => {
         if (error) {
           return next(error)
