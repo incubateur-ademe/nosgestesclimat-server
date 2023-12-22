@@ -6,6 +6,7 @@ const simulationRoute = require('./routes/simulationRoute')
 const ratingsRoute = require('./routes/ratingsRoute')
 const emailSimulationRoutes = require('./routes/emailSimulationRoutes')
 const groupRoute = require('./routes/groupsRoute')
+const organizationsRoutes = require('./routes/organizationRoute')
 const cors = require('cors')
 
 if (process.env.NODE_ENV !== 'production') {
@@ -21,7 +22,7 @@ const origin =
     ? [
         'http://localhost:8080',
         'http://localhost:8888',
-        'http://localhost:3000'
+        'http://localhost:3000',
       ]
     : [
         'https://nosgestesclimat.fr',
@@ -30,12 +31,12 @@ const origin =
         'https://sondages.nosgestesclimat.fr',
         'https://preprod.nosgestesclimat.fr',
         'https://nosgestesclimat.vercel.app',
-        'https://nosgestesclimat-git-preprod-nos-gestes-climat.vercel.app'
+        'https://nosgestesclimat-git-preprod-nos-gestes-climat.vercel.app',
       ]
 
 app.use(
   cors({
-    origin
+    origin,
   })
 )
 
@@ -50,6 +51,7 @@ app.use('/simulation', simulationRoute)
 app.use('/ratings', ratingsRoute)
 app.use('/email-simulation', emailSimulationRoutes)
 app.use('/group', groupRoute)
+app.use('/organizations', organizationsRoutes)
 
 // require the http module
 const http = require('http').Server(app)
@@ -60,7 +62,7 @@ const socketio = require('socket.io')
 const port = process.env.PORT || 3000
 
 const io = socketio(http, {
-  cors: { origin, methods: ['GET', 'POST'] }
+  cors: { origin, methods: ['GET', 'POST'] },
 })
 
 const Answer = require('./schemas/AnswerSchema')

@@ -2,13 +2,10 @@ const express = require('express')
 const connectdb = require('../scripts/initDatabase')
 const Organization = require('../schemas/OrganizationSchema')
 const { setSuccessfulJSONResponse } = require('../utils/setSuccessfulResponse')
-const generateRandomNumberWithLength = require('../utils/generateRandomNumberWithLength')
-const {
-  sendVerificationCode,
-} = require('../helpers/email/sendVerificationCode')
+
 const jwt = require('jsonwebtoken')
 const authenticateToken = require('../helpers/middlewares/authentifyToken')
-const dayjs = require('dayjs')
+const handleSendVerificationCodeAndReturnExpirationDate = require('../helpers/verificationCode/handleSendVerificationCodeAndReturnExpirationDate')
 
 const router = express.Router()
 
@@ -17,7 +14,44 @@ const orgaKey = 'orgaSlug'
 /**
  * Signin / Login
  */
-router.post('/create', async (req, res, next) => {
+router.route('/').post(async (req, res, next) => {
+  const ownerEmail = req.body.ownerEmail
+
+  if (!ownerEmail) {
+    return next('Error. An email address must be provided.')
+  }
+
+  try {
+    const organizationFound = await Organization.findOne({
+      'owner.email': ownerEmail,
+    })
+
+    if (!organizationFound) {
+      return next('No organization found.')
+    }
+
+    const expirationDate =
+      await handleSendVerificationCodeAndReturnExpirationDate({
+        organization: organizationFound,
+        ownerEmail,
+      })
+
+    setSuccessfulJSONResponse(res)
+
+    const orgas = await Organization.find()
+
+    res.json({
+      expirationDate,
+      orgas,
+    })
+
+    console.log('Login attempt, sended verification code.')
+  } catch (error) {
+    return next(error)
+  }
+})
+
+router.route('/create').post(async (req, res, next) => {
   const ownerEmail = req.body.ownerEmail
 
   if (!ownerEmail) {
@@ -31,23 +65,27 @@ router.post('/create', async (req, res, next) => {
     polls: [
       {
         simulations: [],
-        // startDate: new Date(),
-        // endDate: new Date()
       },
     ],
   })
 
-  organizationCreated.save((error, organizationSaved) => {
-    if (error) {
-      return next(error)
-    }
+  try {
+    const organizationSaved = await organizationCreated.save()
+
+    const expirationDate =
+      await handleSendVerificationCodeAndReturnExpirationDate({
+        organization: organizationSaved,
+        ownerEmail,
+      })
 
     setSuccessfulJSONResponse(res)
 
-    res.json(organizationSaved)
+    res.json({ expirationDate })
 
     console.log('New organization created')
-  })
+  } catch (error) {
+    return next(error)
+  }
 })
 
 router.post('/send-verification-code', async (req, res, next) => {
@@ -57,41 +95,14 @@ router.post('/send-verification-code', async (req, res, next) => {
     return next('No email provided.')
   }
 
-  Organization.findOne(
-    { owner: { email: ownerEmail } },
-    (error, organizationFound) => {
-      if (error) {
-        return next(error)
-      }
+  const expirationDate =
+    await handleSendVerificationCodeAndReturnExpirationDate()
 
-      // Generate a random code
-      const verificationCode = generateRandomNumberWithLength(6)
+  res.json({
+    expirationDate,
+  })
 
-      organizationFound.verificationCode = {
-        code: verificationCode,
-        expirationDate: dayjs().add(1, 'hour').toDate(),
-      }
-
-      organizationFound.save((error, groupSaved) => {
-        if (error) {
-          return next(error)
-        }
-
-        // Send the code by email
-        sendVerificationCode({
-          email: ownerEmail,
-          verificationCode,
-          isSubscribedToNewsletter,
-        })
-
-        setSuccessfulJSONResponse(res)
-
-        res.json(groupSaved)
-
-        console.log('Verification email sent.')
-      })
-    }
-  )
+  console.log('Verification code sent.')
 })
 
 router.post('/validate-verification-code', async (req, res, next) => {
@@ -102,42 +113,37 @@ router.post('/validate-verification-code', async (req, res, next) => {
     return next('No email or verification code provided.')
   }
 
-  Organization.findOne(
-    { owner: { email: ownerEmail } },
-    (error, organizationFound) => {
-      if (error) {
-        return next(error)
-      }
+  try {
+    const organizationFound = await Organization.findOne({
+      owner: { email: ownerEmail },
+    })
 
-      // Validation of the code
-      const now = new Date()
+    // Validation of the code
+    const now = new Date()
 
-      if (organizationFound.verificationCode.code !== verificationCode) {
-        return next('Invalid code.')
-      }
-
-      if (
-        organizationFound.verificationCode.expirationDate.getTime() <
-        now.getTime()
-      ) {
-        return next('Code expired.')
-      }
-
-      organizationFound.save(async (error, groupSaved) => {
-        if (error) {
-          return next(error)
-        }
-
-        const token = jwt.sign(ownerEmail, process.env.TOKEN_SECRET, {
-          expiresIn: '15min',
-        })
-
-        setSuccessfulJSONResponse(res)
-
-        res.json(token)
-      })
+    if (organizationFound.verificationCode.code !== verificationCode) {
+      return next('Invalid code.')
     }
-  )
+
+    if (
+      organizationFound.verificationCode.expirationDate.getTime() <
+      now.getTime()
+    ) {
+      return next('Code expired.')
+    }
+
+    await organizationFound.save()
+
+    const token = jwt.sign(ownerEmail, process.env.TOKEN_SECRET, {
+      expiresIn: '15min',
+    })
+
+    setSuccessfulJSONResponse(res)
+
+    res.json(token)
+  } catch (error) {
+    return next(error)
+  }
 })
 
 /**

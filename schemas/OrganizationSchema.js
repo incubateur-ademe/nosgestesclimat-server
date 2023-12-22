@@ -3,11 +3,11 @@ const { SimulationPreciseSchema } = require('./SimulationPreciseSchema')
 const Schema = mongoose.Schema
 
 const OwnerSchema = new Schema({
-  name: {
+  name: String,
+  email: {
     type: String,
     required: true,
   },
-  email: String,
   position: String,
   telephone: String,
   numberOfParticipants: Number,

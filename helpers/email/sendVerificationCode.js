@@ -1,4 +1,4 @@
-import axios from 'axios'
+const axios = require('axios')
 
 const axiosConf = {
   headers: {
@@ -6,12 +6,8 @@ const axiosConf = {
   },
 }
 
-export async function sendVerificationCode({
-  email,
-  verificationCode,
-  isSubscribedToNewsletter,
-  organizationURL,
-}) {
+async function sendVerificationCode({ email, verificationCode }) {
+  console.log(process.env.BREVO_API_KEY)
   // Add contact to list
   try {
     await axios.post(
@@ -20,7 +16,7 @@ export async function sendVerificationCode({
         email,
         listIds: ['27'],
         attributes: {
-          OPT_IN: isSubscribedToNewsletter,
+          OPT_IN: false,
         },
       },
       axiosConf
@@ -28,22 +24,26 @@ export async function sendVerificationCode({
   } catch (error) {
     // Do nothing, the contact already exists
   }
-
-  await axios.post(
-    'https://api.brevo.com/v3/smtp/email',
-    {
-      to: [
-        {
-          name: email,
-          email,
+  try {
+    await axios.post(
+      'https://api.brevo.com/v3/smtp/email',
+      {
+        to: [
+          {
+            name: email,
+            email,
+          },
+        ],
+        templateId: 66,
+        params: {
+          VERIFICATION_CODE: verificationCode,
         },
-      ],
-      templateId: 66,
-      params: {
-        VERIFICATION_CODE: verificationCode,
-        ORGANIZATION_URL: organizationURL,
       },
-    },
-    axiosConf
-  )
+      axiosConf
+    )
+  } catch (error) {
+    console.log(error)
+  }
 }
+
+module.exports = sendVerificationCode
