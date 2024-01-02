@@ -6,16 +6,20 @@ function authenticateToken({ req, res, ownerEmail }) {
 
   if (token == null) return res.sendStatus(401)
 
-  jwt.verify(token, process.env.TOKEN_SECRET, (err, emailDecoded) => {
-    if (err || ownerEmail !== emailDecoded) return res.sendStatus(403)
+  jwt.verify(
+    token,
+    process.env.TOKEN_SECRET,
+    (err, { ownerEmail: ownerEmailDecoded }) => {
+      if (err || ownerEmail !== ownerEmailDecoded) return res.sendStatus(403)
 
-    // Generate a new token
-    const newToken = jwt.sign(ownerEmail, process.env.TOKEN_SECRET, {
-      expiresIn: '1h',
-    })
+      // Generate a new token
+      const newToken = jwt.sign(ownerEmail, process.env.TOKEN_SECRET, {
+        expiresIn: '1h',
+      })
 
-    return newToken
-  })
+      return newToken
+    }
+  )
 }
 
 module.exports = authenticateToken

@@ -42,7 +42,7 @@ router.route('/').post(async (req, res, next) => {
 
     res.json({
       expirationDate,
-      orgas,
+      organization,
     })
 
     console.log('Login attempt, sended verification code.')
@@ -115,7 +115,7 @@ router.post('/validate-verification-code', async (req, res, next) => {
 
   try {
     const organizationFound = await Organization.findOne({
-      owner: { email: ownerEmail },
+      'owner.email': ownerEmail,
     })
 
     // Validation of the code
@@ -134,8 +134,8 @@ router.post('/validate-verification-code', async (req, res, next) => {
 
     await organizationFound.save()
 
-    const token = jwt.sign(ownerEmail, process.env.TOKEN_SECRET, {
-      expiresIn: '15min',
+    const token = jwt.sign({ ownerEmail }, process.env.JWT_SECRET, {
+      expiresIn: '1d',
     })
 
     setSuccessfulJSONResponse(res)

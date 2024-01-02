@@ -1,13 +1,12 @@
 const axios = require('axios')
 
-const axiosConf = {
-  headers: {
-    'api-key': process.env.BREVO_API_KEY,
-  },
-}
-
 async function sendVerificationCode({ email, verificationCode }) {
-  console.log(process.env.BREVO_API_KEY)
+  const axiosConf = {
+    headers: {
+      'api-key': process.env.BREVO_API_KEY,
+    },
+  }
+
   // Add contact to list
   try {
     await axios.post(
