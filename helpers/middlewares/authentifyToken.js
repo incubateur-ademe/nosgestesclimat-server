@@ -1,25 +1,33 @@
 const jwt = require('jsonwebtoken')
 
+require('dotenv').config()
+
 function authenticateToken({ req, res, ownerEmail }) {
-  const authHeader = req.headers['authorization']
-  const token = authHeader && authHeader.split(' ')[1]
+  const cookiesHeader = req.headers.cookie
 
-  if (token == null) return res.sendStatus(401)
+  const token = cookiesHeader && cookiesHeader.split('ngcjwt=')?.[1]
 
-  jwt.verify(
-    token,
-    process.env.TOKEN_SECRET,
-    (err, { ownerEmail: ownerEmailDecoded }) => {
-      if (err || ownerEmail !== ownerEmailDecoded) return res.sendStatus(403)
+  if (!token) return res.sendStatus(401)
 
-      // Generate a new token
-      const newToken = jwt.sign(ownerEmail, process.env.TOKEN_SECRET, {
-        expiresIn: '1h',
-      })
+  jwt.verify(token, process.env.JWT_SECRET, (err, result) => {
+    const ownerEmailDecoded = result?.ownerEmail
 
-      return newToken
+    if (err || ownerEmail !== ownerEmailDecoded) {
+      throw new Error('Invalid token')
     }
-  )
+
+    // Generate a new token
+    const newToken = jwt.sign({ ownerEmail }, process.env.JWT_SECRET, {
+      expiresIn: '1h',
+    })
+
+    res.cookie('ngcjwt', newToken, {
+      maxAge: 1000 * 60 * 60 * 24,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'none',
+    })
+  })
 }
 
 module.exports = authenticateToken

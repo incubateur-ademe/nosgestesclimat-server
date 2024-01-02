@@ -38,11 +38,13 @@ router.route('/').post(async (req, res, next) => {
 
     setSuccessfulJSONResponse(res)
 
-    const orgas = await Organization.find()
+    const organizationUpdated = await Organization.findOne({
+      'owner.email': ownerEmail,
+    })
 
     res.json({
       expirationDate,
-      organization,
+      organization: organizationUpdated,
     })
 
     console.log('Login attempt, sended verification code.')
@@ -132,15 +134,19 @@ router.post('/validate-verification-code', async (req, res, next) => {
       return next('Code expired.')
     }
 
-    await organizationFound.save()
-
     const token = jwt.sign({ ownerEmail }, process.env.JWT_SECRET, {
       expiresIn: '1d',
     })
 
     setSuccessfulJSONResponse(res)
 
-    res.json(token)
+    res.cookie('ngcjwt', token, {
+      maxAge: 1000 * 60 * 60 * 24,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'none',
+    })
+    res.json({ jwt: token, organization: organizationFound })
   } catch (error) {
     return next(error)
   }
@@ -190,6 +196,75 @@ router.post('/add-simulation', async (req, res, next) => {
  * Fetching / updating by the owner
  * Needs to be authenticated and generates a new token at each request
  */
+
+// Upon creation of the organization, validate the JWT
+// to allow accessing the information form page
+router.post('/validate-jwt', (req, res, next) => {
+  const ownerEmail = req.body.ownerEmail
+
+  // Authenticate the JWT
+  try {
+    authenticateToken({
+      req,
+      res,
+      ownerEmail,
+    })
+    setSuccessfulJSONResponse(res)
+
+    res.json('JWT validated.')
+  } catch (error) {
+    console.log('HERE', error)
+    res.sendStatus(403)
+  }
+})
+
+router.post('/update-after-creation', async (req, res, next) => {
+  const ownerEmail = req.body.ownerEmail
+  const name = req.body.name
+  const slug = req.body.slug
+  const ownerName = req.body.ownerName
+
+  if (!name || !slug || !ownerName) {
+    return next('Error. A name, a slug and an owner name must be provided.')
+  }
+
+  if (!ownerEmail) {
+    return next('Error. An email address must be provided.')
+  }
+
+  const ownerPosition = req.body.ownerPosition ?? ''
+  const ownerTelephone = req.body.ownerTelephone ?? ''
+  const numberOfParticipants = req.body.numberOfParticipants ?? ''
+
+  try {
+    // Authenticate the JWT
+    authenticateToken({
+      req,
+      res,
+      ownerEmail,
+    })
+
+    const organizationFound = await Organization.findOne({
+      'owner.email': ownerEmail,
+    })
+
+    organizationFound.name = name
+    organizationFound.slug = slug
+    organizationFound.owner.name = ownerName
+    organizationFound.owner.position = ownerPosition
+    organizationFound.owner.telephone = ownerTelephone
+    organizationFound.polls[0].numberOfParticipants = numberOfParticipants
+
+    const organizationSaved = await organizationFound.save()
+
+    setSuccessfulJSONResponse(res)
+
+    res.json(organizationSaved)
+  } catch (error) {
+    return next(error)
+  }
+})
+
 router.post(`/:${orgaKey}`, (req, res, next) => {
   const orgaSlug = req.params[orgaKey]
   const ownerEmail = req.body.ownerEmail

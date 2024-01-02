@@ -10,7 +10,6 @@ const OwnerSchema = new Schema({
   },
   position: String,
   telephone: String,
-  numberOfParticipants: Number,
 })
 
 const PollSchema = new Schema({
@@ -19,6 +18,7 @@ const PollSchema = new Schema({
   endDate: Date,
   name: String,
   additionalQuestions: [String],
+  numberOfParticipants: Number,
 })
 
 const OrganizationSchema = new Schema(
