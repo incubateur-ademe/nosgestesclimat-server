@@ -6,6 +6,7 @@ const { setSuccessfulJSONResponse } = require('../utils/setSuccessfulResponse')
 const jwt = require('jsonwebtoken')
 const authenticateToken = require('../helpers/middlewares/authentifyToken')
 const handleSendVerificationCodeAndReturnExpirationDate = require('../helpers/verificationCode/handleSendVerificationCodeAndReturnExpirationDate')
+const updateBrevoContact = require('../helpers/email/updateBrevoContact')
 
 const router = express.Router()
 
@@ -235,6 +236,7 @@ router.post('/update-after-creation', async (req, res, next) => {
   const ownerPosition = req.body.ownerPosition ?? ''
   const ownerTelephone = req.body.ownerTelephone ?? ''
   const numberOfParticipants = req.body.numberOfParticipants ?? ''
+  const hasOptedInForCommunications = req.body.hasOptedInForCommunications ?? ''
 
   try {
     // Authenticate the JWT
@@ -256,6 +258,12 @@ router.post('/update-after-creation', async (req, res, next) => {
     organizationFound.polls[0].numberOfParticipants = numberOfParticipants
 
     const organizationSaved = await organizationFound.save()
+
+    updateBrevoContact({
+      email: ownerEmail,
+      ownerName,
+      hasOptedInForCommunications,
+    })
 
     setSuccessfulJSONResponse(res)
 

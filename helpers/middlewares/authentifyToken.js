@@ -5,7 +5,8 @@ require('dotenv').config()
 function authenticateToken({ req, res, ownerEmail }) {
   const cookiesHeader = req.headers.cookie
 
-  const token = cookiesHeader && cookiesHeader.split('ngcjwt=')?.[1]
+  const token =
+    cookiesHeader && cookiesHeader.split('ngcjwt=')?.[1].split(';')?.[0]
 
   if (!token) return res.sendStatus(401)
 

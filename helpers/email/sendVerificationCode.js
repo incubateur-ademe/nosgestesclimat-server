@@ -13,7 +13,7 @@ async function sendVerificationCode({ email, verificationCode }) {
       'https://api.brevo.com/v3/contacts',
       {
         email,
-        listIds: ['27'],
+        listIds: [27],
         attributes: {
           OPT_IN: false,
         },

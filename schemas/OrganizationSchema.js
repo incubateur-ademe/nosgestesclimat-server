@@ -26,6 +26,7 @@ const OrganizationSchema = new Schema(
     owner: OwnerSchema,
     polls: [PollSchema],
     name: String,
+    slug: String,
     lastModifiedDate: Date,
     verificationCode: {
       code: {
