@@ -97,12 +97,23 @@ router.route('/create').post(async (req, res, next) => {
 router.post('/send-verification-code', async (req, res, next) => {
   const ownerEmail = req.body.ownerEmail
 
+  const organizationFound = await Organization.findOne({
+    'owner.email': ownerEmail,
+  })
+
   if (!ownerEmail) {
     return next('No email provided.')
   }
 
+  if (!organizationFound) {
+    return next('No matching organization found.')
+  }
+
   const expirationDate =
-    await handleSendVerificationCodeAndReturnExpirationDate()
+    await handleSendVerificationCodeAndReturnExpirationDate({
+      ownerEmail,
+      organization: organizationFound,
+    })
 
   res.json({
     expirationDate,
@@ -170,7 +181,7 @@ router.post('/fetch-organization', async (req, res, next) => {
 
   // Authenticate the JWT
   try {
-    const newToken = authenticateToken({
+    authenticateToken({
       req,
       res,
       ownerEmail,
@@ -178,13 +189,6 @@ router.post('/fetch-organization', async (req, res, next) => {
 
     const organizationFound = await Organization.findOne({
       'owner.email': ownerEmail,
-    })
-
-    res.cookie('ngcjwt', newToken, {
-      maxAge: 1000 * 60 * 60 * 24,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
     })
 
     setSuccessfulJSONResponse(res)
@@ -216,17 +220,10 @@ router.post('/update-after-creation', async (req, res, next) => {
 
   try {
     // Authenticate the JWT
-    const newToken = authenticateToken({
+    authenticateToken({
       req,
       res,
       ownerEmail,
-    })
-
-    res.cookie('ngcjwt', newToken, {
-      maxAge: 1000 * 60 * 60 * 24,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
     })
 
     const organizationFound = await Organization.findOne({
