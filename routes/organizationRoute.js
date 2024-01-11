@@ -203,6 +203,10 @@ router.post('/update-after-creation', async (req, res, next) => {
       'owner.email': ownerEmail,
     })
 
+    if (!organizationFound) {
+      return next('No matching organization found.')
+    }
+
     organizationFound.name = name
     organizationFound.slug = slug
     organizationFound.owner.name = ownerName
