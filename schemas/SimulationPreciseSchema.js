@@ -7,62 +7,70 @@ const SimulationPreciseSchema = new Schema(
     actionChoices: Object,
     conference: {
       type: Object,
-      required: false
+      required: false,
     },
     config: {
       type: Object,
-      required: false
+      required: false,
     },
     date: {
       type: Date,
-      required: true
+      required: true,
     },
     enquête: {
       type: Object,
-      required: false
+      required: false,
     },
     eventsSent: Object,
     foldedSteps: [String],
     hiddenNotifications: [String],
     persona: {
       type: Object,
-      required: false
+      required: false,
     },
     ratings: {
       learned: String,
-      action: String
+      action: String,
     },
     situation: {
       type: Object,
-      required: false
+      required: false,
     },
     storedAmortissementAvion: {
       type: Object,
-      required: false
+      required: false,
     },
     storedTrajets: {
       type: Object,
-      required: false
+      required: false,
     },
     survey: {
       type: Object,
-      required: false
+      required: false,
     },
     targetUnit: {
       type: String,
-      required: false
+      required: false,
     },
     unfoldedStep: {
       type: String,
-      required: false
+      required: false,
     },
     url: {
       type: String,
-      required: false
-    }
+      required: false,
+    },
+    bilan: Number,
+    categories: {
+      transports: Number,
+      logement: Number,
+      alimentation: Number,
+      divers: Number,
+      services: Number,
+    },
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 )
 
@@ -71,5 +79,5 @@ module.exports = {
     'SimulationPrecise',
     SimulationPreciseSchema
   ),
-  SimulationPreciseSchema
+  SimulationPreciseSchema,
 }

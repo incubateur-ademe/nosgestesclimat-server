@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken')
 const authenticateToken = require('../helpers/middlewares/authentifyToken')
 const handleSendVerificationCodeAndReturnExpirationDate = require('../helpers/verificationCode/handleSendVerificationCodeAndReturnExpirationDate')
 const updateBrevoContact = require('../helpers/email/updateBrevoContact')
+const findOrganizationAndSendVerificationCode = require('../helpers/findOrganizationAndSendVerificationCode')
 
 const router = express.Router()
 
@@ -16,26 +17,12 @@ const orgaKey = 'orgaSlug'
  * Signin / Login
  */
 router.route('/login').post(async (req, res, next) => {
-  const ownerEmail = req.body.ownerEmail
-
-  if (!ownerEmail) {
-    return next('Error. An email address must be provided.')
-  }
-
   try {
-    const organizationFound = await Organization.findOne({
-      'owner.email': ownerEmail,
-    })
-
-    if (!organizationFound) {
-      return next('No organization found.')
-    }
-
-    const expirationDate =
-      await handleSendVerificationCodeAndReturnExpirationDate({
-        organization: organizationFound,
-        ownerEmail,
-      })
+    const expirationDate = await findOrganizationAndSendVerificationCode(
+      req,
+      res,
+      next
+    )
 
     setSuccessfulJSONResponse(res)
 
@@ -95,25 +82,11 @@ router.route('/create').post(async (req, res, next) => {
  * Verification code
  */
 router.post('/send-verification-code', async (req, res, next) => {
-  const ownerEmail = req.body.ownerEmail
-
-  const organizationFound = await Organization.findOne({
-    'owner.email': ownerEmail,
-  })
-
-  if (!ownerEmail) {
-    return next('No email provided.')
-  }
-
-  if (!organizationFound) {
-    return next('No matching organization found.')
-  }
-
-  const expirationDate =
-    await handleSendVerificationCodeAndReturnExpirationDate({
-      ownerEmail,
-      organization: organizationFound,
-    })
+  const expirationDate = await findOrganizationAndSendVerificationCode(
+    req,
+    res,
+    next
+  )
 
   res.json({
     expirationDate,
