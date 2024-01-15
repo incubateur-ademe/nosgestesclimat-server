@@ -1,5 +1,4 @@
 const express = require('express')
-const connectdb = require('../scripts/initDatabase')
 const Organization = require('../schemas/OrganizationSchema')
 const { setSuccessfulJSONResponse } = require('../utils/setSuccessfulResponse')
 
@@ -18,54 +17,59 @@ const orgaKey = 'orgaSlug'
  */
 router.route('/login').post(async (req, res, next) => {
   try {
-    const expirationDate = await findOrganizationAndSendVerificationCode(
-      req,
-      res,
-      next
-    )
-
-    setSuccessfulJSONResponse(res)
+    const ownerEmail = req.body.ownerEmail
 
     const organizationUpdated = await Organization.findOne({
       'owner.email': ownerEmail,
     })
+
+    if (!organizationUpdated) {
+      return next('No matching organization found.')
+    }
+
+    const expirationDate = await findOrganizationAndSendVerificationCode(
+      req,
+      next
+    )
+
+    setSuccessfulJSONResponse(res)
 
     res.json({
       expirationDate,
       organization: organizationUpdated,
     })
 
-    console.log('Login attempt, sended verification code.')
+    console.log('Login attempt, sent verification code.')
   } catch (error) {
     return next(error)
   }
 })
 
 router.route('/create').post(async (req, res, next) => {
-  const ownerEmail = req.body.ownerEmail
-
-  if (!ownerEmail) {
-    return next('Error. An email address must be provided.')
-  }
-
-  const organizationCreated = new Organization({
-    owner: {
-      email: ownerEmail,
-    },
-    polls: [
-      {
-        simulations: [],
-      },
-    ],
-  })
-
   try {
-    const organizationSaved = await organizationCreated.save()
+    const ownerEmail = req.body.ownerEmail
+
+    if (!ownerEmail) {
+      return next('Error. An email address must be provided.')
+    }
+
+    const organizationCreated = new Organization({
+      owner: {
+        email: ownerEmail,
+      },
+      polls: [
+        {
+          simulations: [],
+        },
+      ],
+    })
+
+    await organizationCreated.save()
 
     const expirationDate =
       await handleSendVerificationCodeAndReturnExpirationDate({
-        organization: organizationSaved,
         ownerEmail,
+        next,
       })
 
     setSuccessfulJSONResponse(res)
@@ -84,7 +88,6 @@ router.route('/create').post(async (req, res, next) => {
 router.post('/send-verification-code', async (req, res, next) => {
   const expirationDate = await findOrganizationAndSendVerificationCode(
     req,
-    res,
     next
   )
 

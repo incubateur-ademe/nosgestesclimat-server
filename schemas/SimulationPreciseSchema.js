@@ -5,69 +5,40 @@ const SimulationPreciseSchema = new Schema(
   {
     id: String,
     actionChoices: Object,
-    conference: {
-      type: Object,
-      required: false,
-    },
-    config: {
-      type: Object,
-      required: false,
-    },
+    config: Object,
     date: {
       type: Date,
       required: true,
     },
-    enquête: {
-      type: Object,
-      required: false,
-    },
-    eventsSent: Object,
     foldedSteps: [String],
     hiddenNotifications: [String],
-    persona: {
-      type: Object,
-      required: false,
+    persona: Object,
+    situation: Object,
+    unfoldedStep: String,
+    url: String,
+    computedResults: {
+      bilan: Number,
+      categories: {
+        transport: Number,
+        logement: Number,
+        alimentation: Number,
+        divers: Number,
+        services: Number,
+      },
     },
+    // Northstar rating
     ratings: {
       learned: String,
       action: String,
     },
-    situation: {
-      type: Object,
-      required: false,
-    },
-    storedAmortissementAvion: {
-      type: Object,
-      required: false,
-    },
-    storedTrajets: {
-      type: Object,
-      required: false,
-    },
-    survey: {
-      type: Object,
-      required: false,
-    },
-    targetUnit: {
-      type: String,
-      required: false,
-    },
-    unfoldedStep: {
-      type: String,
-      required: false,
-    },
-    url: {
-      type: String,
-      required: false,
-    },
-    bilan: Number,
-    categories: {
-      transports: Number,
-      logement: Number,
-      alimentation: Number,
-      divers: Number,
-      services: Number,
-    },
+    // Legacy
+    conference: Object,
+    enquête: Object,
+    eventsSent: Object,
+    storedAmortissementAvion: Object,
+    storedTrajets: Object,
+    survey: Object,
+    targetUnit: String,
   },
   {
     timestamps: true,

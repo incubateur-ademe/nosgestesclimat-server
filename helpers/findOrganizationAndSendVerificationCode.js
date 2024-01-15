@@ -1,4 +1,7 @@
-async function findOrganizationAndSendVerificationCode(req, res, next) {
+const Organization = require('../schemas/OrganizationSchema')
+const handleSendVerificationCodeAndReturnExpirationDate = require('./verificationCode/handleSendVerificationCodeAndReturnExpirationDate')
+
+async function findOrganizationAndSendVerificationCode(req, next) {
   const ownerEmail = req.body.ownerEmail
 
   const organizationFound = await Organization.findOne({

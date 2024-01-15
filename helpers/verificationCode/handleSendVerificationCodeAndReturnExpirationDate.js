@@ -1,22 +1,35 @@
 const dayjs = require('dayjs')
 const sendVerificationCode = require('../email/sendVerificationCode')
 const generateRandomNumberWithLength = require('../../utils/generateRandomNumberWithLength')
+const Organization = require('../../schemas/OrganizationSchema')
 
 async function handleSendVerificationCodeAndReturnExpirationDate({
-  organization,
   ownerEmail,
+  next,
 }) {
+  const organizationFound = await Organization.findOne({
+    'owner.email': ownerEmail,
+  })
+
+  if (!ownerEmail) {
+    return next('No email provided.')
+  }
+
+  if (!organizationFound) {
+    return next('No matching organization found.')
+  }
+
   // Generate a random code
   const verificationCode = generateRandomNumberWithLength(6)
 
   const expirationDate = dayjs().add(1, 'hour').toDate()
 
-  organization.verificationCode = {
+  organizationFound.verificationCode = {
     code: verificationCode,
     expirationDate,
   }
 
-  await organization.save()
+  await organizationFound.save()
 
   // Send the code by email
   await sendVerificationCode({
