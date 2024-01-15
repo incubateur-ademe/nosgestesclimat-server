@@ -2,34 +2,19 @@ const mongoose = require('mongoose')
 const { SimulationPreciseSchema } = require('./SimulationPreciseSchema')
 const Schema = mongoose.Schema
 
-const OwnerSchema = new Schema({
-  name: {
-    type: String,
-    required: true
-  },
-  email: {
-    type: String,
-    required: false
-  },
-  userId: {
-    type: String,
-    required: true
-  }
-})
-
 const MemberSchema = new Schema({
   email: {
     type: String,
-    required: false
+    required: false,
   },
   name: {
     type: String,
-    required: true
+    required: true,
   },
   simulation: SimulationPreciseSchema,
   userId: {
     type: String,
-    required: true
+    required: true,
   },
   results: {
     total: String,
@@ -37,25 +22,28 @@ const MemberSchema = new Schema({
     alimentation: String,
     logement: String,
     'services sociétaux': String,
-    divers: String
-  }
+    divers: String,
+  },
 })
 
 const GroupSchema = new Schema(
   {
     name: {
       type: String,
-      required: true
+      required: true,
     },
     emoji: {
       type: String,
-      required: true
+      required: true,
     },
-    owner: OwnerSchema,
-    members: [MemberSchema]
+    owner: {
+      type: mongoose.Types.ObjectId,
+      ref: 'User',
+    },
+    members: [MemberSchema],
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 )
 

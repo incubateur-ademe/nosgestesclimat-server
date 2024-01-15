@@ -1,16 +1,7 @@
 const mongoose = require('mongoose')
 const { SimulationPreciseSchema } = require('./SimulationPreciseSchema')
-const Schema = mongoose.Schema
 
-const OwnerSchema = new Schema({
-  name: String,
-  email: {
-    type: String,
-    required: true,
-  },
-  position: String,
-  telephone: String,
-})
+const Schema = mongoose.Schema
 
 const PollSchema = new Schema({
   simulations: [SimulationPreciseSchema],
@@ -23,7 +14,10 @@ const PollSchema = new Schema({
 
 const OrganizationSchema = new Schema(
   {
-    owner: OwnerSchema,
+    owner: {
+      type: mongoose.Types.ObjectId,
+      ref: 'User',
+    },
     polls: [PollSchema],
     name: String,
     slug: String,

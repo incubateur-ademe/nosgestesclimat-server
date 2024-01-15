@@ -6,7 +6,13 @@ const simulationRoute = require('./routes/simulationRoute')
 const ratingsRoute = require('./routes/ratingsRoute')
 const emailSimulationRoutes = require('./routes/emailSimulationRoutes')
 const groupRoute = require('./routes/groupsRoute')
-const organizationsRoutes = require('./routes/organizationRoute')
+const createOrganizationRoute = require('./routes/organizations/create')
+const loginOrganizationRoute = require('./routes/organizations/login')
+const fetchOrganizationRoute = require('./routes/organizations/fetchOrganization')
+const updateAfterCreationRoute = require('./routes/organizations/updateAfterCreation')
+const validateVerificationCodeRoute = require('./routes/organizations/validateVerificationCode')
+const sendVerificationCodeRoute = require('./routes/organizations/sendVerificationCode')
+
 const cors = require('cors')
 
 if (process.env.NODE_ENV !== 'production') {
@@ -52,7 +58,15 @@ app.use('/simulation', simulationRoute)
 app.use('/ratings', ratingsRoute)
 app.use('/email-simulation', emailSimulationRoutes)
 app.use('/group', groupRoute)
-app.use('/organizations', organizationsRoutes)
+app.use('/organizations/create', createOrganizationRoute)
+app.use('/organizations/login', loginOrganizationRoute)
+app.use('/organizations/fetch-organization', fetchOrganizationRoute)
+app.use('/organizations/update-after-creation', updateAfterCreationRoute)
+app.use(
+  '/organizations/validate-verification-code',
+  validateVerificationCodeRoute
+)
+app.use('/organizations/send-verification-code', sendVerificationCodeRoute)
 
 // require the http module
 const http = require('http').Server(app)

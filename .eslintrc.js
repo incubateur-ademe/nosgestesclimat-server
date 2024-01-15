@@ -10,7 +10,7 @@ module.exports = {
     ecmaVersion: 'latest',
   },
   rules: {
-    'no-trailing-commas': '0',
-    'space-before-function-paren': 'off',
+    'comma-dangle': 0,
+    'space-before-function-paren': 0,
   },
 }
