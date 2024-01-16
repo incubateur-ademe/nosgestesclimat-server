@@ -14,6 +14,7 @@ const UserSchema = new Schema(
     },
     position: String,
     telephone: String,
+    hasOptedInForCommunications: Boolean,
   },
   { timestamps: true }
 )

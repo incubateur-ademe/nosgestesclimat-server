@@ -8,7 +8,7 @@ const {
 
 const router = express.Router()
 
-router.post('/validate-verification-code', async (req, res, next) => {
+router.post('/', async (req, res, next) => {
   const ownerEmail = req.body.ownerEmail
   const verificationCode = req.body.verificationCode
 

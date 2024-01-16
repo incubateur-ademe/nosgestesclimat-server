@@ -12,7 +12,7 @@ const router = express.Router()
  * Fetching / updating by the owner
  * Needs to be authenticated and generates a new token at each request
  */
-router.post('/fetch-organization', async (req, res, next) => {
+router.post('/', async (req, res, next) => {
   const ownerEmail = req.body.ownerEmail
 
   if (!ownerEmail) {

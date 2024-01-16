@@ -6,7 +6,7 @@ const router = express.Router()
 
 router.route('/').get((req, res, next) => {
   connectdb.then(() => {
-    let data = Simulation.find({})
+    const data = Simulation.find({})
     data.then((simulations) => {
       if (!simulations.length) {
         return res.status(404).send('No ratings found')

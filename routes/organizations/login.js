@@ -7,13 +7,13 @@ const {
 
 const router = express.Router()
 
-router.route('/login').post(async (req, res, next) => {
+router.route('/').post(async (req, res, next) => {
   try {
     const ownerEmail = req.body.ownerEmail
 
     const organizationUpdated = await Organization.findOne({
       'owner.email': ownerEmail,
-    })
+    }).populate()
 
     if (!organizationUpdated) {
       return next('No matching organization found.')

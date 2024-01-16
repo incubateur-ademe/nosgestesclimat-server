@@ -6,6 +6,7 @@ const {
 } = require('../../utils/setSuccessfulResponse')
 const authenticateToken = require('../../helpers/middlewares/authentifyToken')
 const updateBrevoContact = require('../../helpers/email/updateBrevoContact')
+const { UserModel } = require('../../schemas/UserSchema')
 
 const router = express.Router()
 
@@ -15,21 +16,14 @@ const router = express.Router()
  */
 router.post('/', async (req, res, next) => {
   const ownerEmail = req.body.ownerEmail
-  const name = req.body.name
-  const slug = req.body.slug
-  const ownerName = req.body.ownerName
-
-  if (!name || !slug || !ownerName) {
-    return next('Error. A name, a slug and an owner name must be provided.')
-  }
 
   if (!ownerEmail) {
     return next('Error. An email address must be provided.')
   }
 
-  const ownerPosition = req.body.ownerPosition ?? ''
-  const ownerTelephone = req.body.ownerTelephone ?? ''
-  const numberOfParticipants = req.body.numberOfParticipants ?? ''
+  const name = req.body.name
+  const ownerName = req.body.ownerName
+  const additionalQuestions = req.body.additionalQuestions
   const hasOptedInForCommunications = req.body.hasOptedInForCommunications ?? ''
 
   try {
@@ -48,12 +42,32 @@ router.post('/', async (req, res, next) => {
       return next('No matching organization found.')
     }
 
-    organizationFound.name = name
-    organizationFound.slug = slug
-    organizationFound.owner.name = ownerName
-    organizationFound.owner.position = ownerPosition
-    organizationFound.owner.telephone = ownerTelephone
-    organizationFound.polls[0].numberOfParticipants = numberOfParticipants
+    if (name) {
+      organizationFound.name = name
+    }
+
+    if (additionalQuestions) {
+      organizationFound.polls[0].additionalQuestions = additionalQuestions
+    }
+
+    // Update the owner User document
+    let ownerUserDocument
+    if (ownerName || hasOptedInForCommunications) {
+      ownerUserDocument = await UserModel.findOne({
+        email: ownerEmail,
+      })
+
+      if (ownerName) {
+        ownerUserDocument.name = ownerName
+      }
+
+      if (hasOptedInForCommunications) {
+        ownerUserDocument.hasOptedInForCommunications =
+          hasOptedInForCommunications
+      }
+
+      await ownerUserDocument.save()
+    }
 
     const organizationSaved = await organizationFound.save()
 

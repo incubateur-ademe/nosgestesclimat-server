@@ -6,7 +6,7 @@ const {
 
 const router = express.Router()
 
-router.post('/send-verification-code', async (req, res, next) => {
+router.post('/', async (req, res, next) => {
   const expirationDate = await findOrganizationAndSendVerificationCode(
     req,
     next
