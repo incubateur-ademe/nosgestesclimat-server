@@ -16,6 +16,7 @@ const SimulationPreciseSchema = new Schema(
     situation: Object,
     unfoldedStep: String,
     url: String,
+    // Added by @bjlaa to store en dur les résultats de la simulation
     computedResults: {
       bilan: Number,
       categories: {

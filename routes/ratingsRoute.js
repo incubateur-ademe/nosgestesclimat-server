@@ -1,6 +1,6 @@
 const express = require('express')
 const connectdb = require('../scripts/initDatabase')
-const Simulation = require('../schemas/SimulationSchema')
+const Simulation = require('../schemas/SimulationLegacySchema')
 
 const router = express.Router()
 
@@ -15,7 +15,7 @@ router.route('/').get((req, res, next) => {
         .map(({ data, updatedAt, createdAt }) => ({
           ratings: data?.ratings,
           createdAt,
-          updatedAt
+          updatedAt,
         }))
         .filter((d) => d.ratings)
       res.setHeader('Content-Type', 'application/json')

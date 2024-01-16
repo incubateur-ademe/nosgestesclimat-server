@@ -1,6 +1,6 @@
 const express = require('express')
 const connectdb = require('../scripts/initDatabase')
-const Simulation = require('../schemas/SimulationSchema')
+const Simulation = require('../schemas/SimulationLegacySchema')
 
 const router = express.Router()
 
