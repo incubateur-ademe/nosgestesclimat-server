@@ -24,6 +24,7 @@ router.post('/', async (req, res, next) => {
     const organizationFound = await Organization.findOne({
       'owner.email': ownerEmail,
     })
+    console.log(organizationFound)
 
     authenticateToken({
       req,
@@ -35,6 +36,7 @@ router.post('/', async (req, res, next) => {
 
     res.json(organizationFound)
   } catch (error) {
+    console.log(error)
     res.sendStatus(403).json('No organization found.')
   }
 })
