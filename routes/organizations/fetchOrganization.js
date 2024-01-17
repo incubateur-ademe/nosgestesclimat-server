@@ -27,9 +27,14 @@ router.post('/', async (req, res, next) => {
       ownerEmail,
     })
 
-    const organizationFound = await Organization.findOne({
-      'owner.email': ownerEmail,
-    })
+    let organizationFound
+    try {
+      organizationFound = await Organization.findOne({
+        'owner.email': ownerEmail,
+      })
+    } catch (error) {
+      return next(error)
+    }
 
     setSuccessfulJSONResponse(res)
 
