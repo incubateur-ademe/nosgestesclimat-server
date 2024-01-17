@@ -33,7 +33,7 @@ router.post('/', async (req, res, next) => {
         'owner.email': ownerEmail,
       })
     } catch (error) {
-      return next(error)
+      return res.status(403).error('No organization found.')
     }
 
     setSuccessfulJSONResponse(res)
