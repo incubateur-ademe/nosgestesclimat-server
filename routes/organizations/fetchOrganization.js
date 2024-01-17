@@ -27,7 +27,7 @@ router.post('/', async (req, res, next) => {
       ownerEmail,
     })
   } catch (error) {
-    return next(error)
+    return res.sendStatus(403).json('Invalid token.')
   }
 
   try {
