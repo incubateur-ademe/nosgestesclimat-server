@@ -1,10 +1,10 @@
 const express = require('express')
 
 const Organization = require('../../schemas/OrganizationSchema')
+const authenticateToken = require('../../helpers/middlewares/authentifyToken')
 const {
   setSuccessfulJSONResponse,
 } = require('../../utils/setSuccessfulResponse')
-const authenticateToken = require('../../helpers/middlewares/authentifyToken')
 
 const router = express.Router()
 
@@ -18,25 +18,27 @@ router.post('/', async (req, res, next) => {
   if (!ownerEmail) {
     return next('No email provided.')
   }
-
   // Authenticate the JWT
   try {
-    const organizationFound = await Organization.findOne({
-      'owner.email': ownerEmail,
-    })
-    console.log(organizationFound)
-
     authenticateToken({
       req,
       res,
+      next,
       ownerEmail,
+    })
+  } catch (error) {
+    return next(error)
+  }
+
+  try {
+    const organizationFound = await Organization.findOne({
+      'owner.email': ownerEmail,
     })
 
     setSuccessfulJSONResponse(res)
 
     res.json(organizationFound)
   } catch (error) {
-    console.log(error)
     res.sendStatus(403).json('No organization found.')
   }
 })

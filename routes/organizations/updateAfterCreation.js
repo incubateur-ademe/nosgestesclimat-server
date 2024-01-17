@@ -32,14 +32,19 @@ router.post('/', async (req, res, next) => {
   const numberOfParticipants = req.body.numberOfParticipants ?? ''
   const hasOptedInForCommunications = req.body.hasOptedInForCommunications ?? ''
 
+  // Authenticate the JWT
   try {
-    // Authenticate the JWT
     authenticateToken({
       req,
       res,
+      next,
       ownerEmail,
     })
+  } catch (error) {
+    return next(error)
+  }
 
+  try {
     const organizationFound = await Organization.findOne({
       'owner.email': ownerEmail,
     })

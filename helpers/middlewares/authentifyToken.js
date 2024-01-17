@@ -2,13 +2,15 @@ const jwt = require('jsonwebtoken')
 
 require('dotenv').config()
 
-function authenticateToken({ req, res, ownerEmail }) {
+function authenticateToken({ req, res, next, ownerEmail }) {
   const cookiesHeader = req.headers.cookie
 
   const token =
-    cookiesHeader && cookiesHeader.split('ngcjwt=')?.[1].split(';')?.[0]
+    cookiesHeader && cookiesHeader.split('ngcjwt=')?.[1]?.split(';')?.[0]
 
-  if (!token) return res.sendStatus(401)
+  if (!token) {
+    throw Error('No token provided.')
+  }
 
   jwt.verify(token, process.env.JWT_SECRET, (err, result) => {
     const ownerEmailDecoded = result?.ownerEmail
