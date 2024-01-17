@@ -21,26 +21,21 @@ router.post('/', async (req, res, next) => {
 
   // Authenticate the JWT
   try {
+    const organizationFound = await Organization.findOne({
+      'owner.email': ownerEmail,
+    })
+
     authenticateToken({
       req,
       res,
       ownerEmail,
     })
 
-    let organizationFound
-    try {
-      organizationFound = await Organization.findOne({
-        'owner.email': ownerEmail,
-      })
-    } catch (error) {
-      return res.status(403).error('No organization found.')
-    }
-
     setSuccessfulJSONResponse(res)
 
     res.json(organizationFound)
   } catch (error) {
-    res.sendStatus(403)
+    res.sendStatus(403).json('No organization found.')
   }
 })
 
