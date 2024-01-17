@@ -20,11 +20,13 @@ router.post('/', async (req, res, next) => {
   const ownerName = req.body.ownerName
 
   if (!name || !slug || !ownerName) {
-    return next('Error. A name, a slug and an owner name must be provided.')
+    return res
+      .status(403)
+      .json('Error. A name, a slug and an owner name must be provided.')
   }
 
   if (!ownerEmail) {
-    return next('Error. An email address must be provided.')
+    return res.status(403).json('Error. An email address must be provided.')
   }
 
   const ownerPosition = req.body.ownerPosition ?? ''
@@ -41,7 +43,7 @@ router.post('/', async (req, res, next) => {
       ownerEmail,
     })
   } catch (error) {
-    return res.sendStatus(403).json('Invalid token.')
+    return res.status(403).json('Invalid token.')
   }
 
   try {
@@ -50,7 +52,7 @@ router.post('/', async (req, res, next) => {
     })
 
     if (!organizationFound) {
-      return next('No matching organization found.')
+      return res.status(403).json('No matching organization found.')
     }
 
     organizationFound.name = name
@@ -72,7 +74,7 @@ router.post('/', async (req, res, next) => {
 
     res.json(organizationSaved)
   } catch (error) {
-    return next(error)
+    return res.status(403).json(error)
   }
 })
 

@@ -14,7 +14,7 @@ router.route('/').post(async (req, res, next) => {
     const userId = req.body.userId
 
     if (!ownerEmail) {
-      return next('Error. An email address must be provided.')
+      return res.status(403).json('Error. An email address must be provided.')
     }
 
     const userDocument = getUserDocument({
@@ -49,7 +49,7 @@ router.route('/').post(async (req, res, next) => {
 
     console.log('New organization created')
   } catch (error) {
-    return next(error)
+    return res.status(403).json(error)
   }
 })
 

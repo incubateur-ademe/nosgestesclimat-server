@@ -35,7 +35,7 @@ router.post('/', async (req, res, next) => {
       ownerEmail,
     })
   } catch (error) {
-    return res.sendStatus(403).json('Invalid token.')
+    return res.status(403).json('Invalid token.')
   }
 
   try {
@@ -44,7 +44,7 @@ router.post('/', async (req, res, next) => {
     })
 
     if (!organizationFound) {
-      return next('No matching organization found.')
+      return res.status(403).json('No matching organization found.')
     }
 
     if (name) {
@@ -86,7 +86,7 @@ router.post('/', async (req, res, next) => {
 
     res.json(organizationSaved)
   } catch (error) {
-    return next(error)
+    return res.status(403).json(error)
   }
 })
 

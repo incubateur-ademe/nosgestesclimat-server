@@ -7,18 +7,22 @@ const {
 const router = express.Router()
 
 router.post('/', async (req, res, next) => {
-  const expirationDate = await findOrganizationAndSendVerificationCode(
-    req,
-    next
-  )
+  try {
+    const expirationDate = await findOrganizationAndSendVerificationCode(
+      req,
+      next
+    )
 
-  setSuccessfulJSONResponse(res)
+    setSuccessfulJSONResponse(res)
 
-  res.json({
-    expirationDate,
-  })
+    res.json({
+      expirationDate,
+    })
 
-  console.log('Verification code sent.')
+    console.log('Verification code sent.')
+  } catch (error) {
+    return res.status(403).json("Une erreur s'est produite.")
+  }
 })
 
 module.exports = router

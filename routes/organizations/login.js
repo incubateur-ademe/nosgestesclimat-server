@@ -16,7 +16,7 @@ router.route('/').post(async (req, res, next) => {
     }).populate()
 
     if (!organizationUpdated) {
-      return next('No matching organization found.')
+      return res.status(403).json('No matching organization found.')
     }
 
     const expirationDate = await findOrganizationAndSendVerificationCode(
@@ -33,7 +33,7 @@ router.route('/').post(async (req, res, next) => {
 
     console.log('Login attempt, sent verification code.')
   } catch (error) {
-    return next(error)
+    return res.status(403).json('No organization found.')
   }
 })
 

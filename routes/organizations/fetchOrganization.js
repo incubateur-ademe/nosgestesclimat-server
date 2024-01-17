@@ -12,11 +12,11 @@ const router = express.Router()
  * Fetching / updating by the owner
  * Needs to be authenticated and generates a new token at each request
  */
-router.post('/', async (req, res, next) => {
+router.post('/', async (req, res) => {
   const ownerEmail = req.body.ownerEmail
 
   if (!ownerEmail) {
-    return res.sendStatus(403).json('No owner email provided.')
+    return res.status(403).json('No owner email provided.')
   }
 
   // Authenticate the JWT
@@ -27,7 +27,7 @@ router.post('/', async (req, res, next) => {
       ownerEmail,
     })
   } catch (error) {
-    res.sendStatus(403).json('Invalid token.')
+    res.status(403).json('Invalid token.')
     return
   }
 
@@ -40,7 +40,7 @@ router.post('/', async (req, res, next) => {
 
     res.json(organizationFound)
   } catch (error) {
-    res.sendStatus(403).json('No organization found.')
+    res.status(403).json('No organization found.')
   }
 })
 

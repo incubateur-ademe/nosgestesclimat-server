@@ -13,7 +13,7 @@ router.post('/', async (req, res, next) => {
   const verificationCode = req.body.verificationCode
 
   if (!ownerEmail || !verificationCode) {
-    return next('No email or verification code provided.')
+    return res.status(403).json('No email or verification code provided.')
   }
 
   try {
@@ -25,14 +25,14 @@ router.post('/', async (req, res, next) => {
     const now = new Date()
 
     if (organizationFound.verificationCode.code !== verificationCode) {
-      return next('Invalid code.')
+      return res.status(403).json('Invalid code.')
     }
 
     if (
       organizationFound.verificationCode.expirationDate.getTime() <
       now.getTime()
     ) {
-      return next('Code expired.')
+      return res.status(403).json('Code expired.')
     }
 
     const token = jwt.sign({ ownerEmail }, process.env.JWT_SECRET, {
@@ -50,7 +50,7 @@ router.post('/', async (req, res, next) => {
 
     res.json(organizationFound)
   } catch (error) {
-    return next(error)
+    return res.status(403).json(error)
   }
 })
 
