@@ -16,18 +16,19 @@ router.post('/', async (req, res, next) => {
   const ownerEmail = req.body.ownerEmail
 
   if (!ownerEmail) {
-    return next('No email provided.')
+    return res.sendStatus(403).json('No owner email provided.')
   }
+
   // Authenticate the JWT
   try {
     authenticateToken({
       req,
       res,
-      next,
       ownerEmail,
     })
   } catch (error) {
-    return res.sendStatus(403).json('Invalid token.')
+    res.sendStatus(403).json('Invalid token.')
+    return
   }
 
   try {

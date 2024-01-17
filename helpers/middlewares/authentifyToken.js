@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken')
 
 require('dotenv').config()
 
-function authenticateToken({ req, res, next, ownerEmail }) {
+function authenticateToken({ req, res, ownerEmail }) {
   const cookiesHeader = req.headers.cookie
 
   const token =
