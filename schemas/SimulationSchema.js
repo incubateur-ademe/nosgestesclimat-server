@@ -1,9 +1,14 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
-const SimulationPreciseSchema = new Schema(
+const SimulationSchema = new Schema(
   {
+    // This is the id created by the client !== _id
     id: String,
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
     actionChoices: Object,
     config: Object,
     date: {
@@ -12,27 +17,23 @@ const SimulationPreciseSchema = new Schema(
     },
     foldedSteps: [String],
     hiddenNotifications: [String],
-    persona: Object,
     situation: Object,
     unfoldedStep: String,
-    url: String,
-    // Added by @bjlaa to store en dur les résultats de la simulation
-    computedResults: {
-      bilan: Number,
-      categories: {
-        transport: Number,
-        logement: Number,
-        alimentation: Number,
-        divers: Number,
-        services: Number,
-      },
-    },
+
     // Northstar rating
     ratings: {
       learned: String,
       action: String,
     },
     // Legacy
+    bilan: Number,
+    categories: {
+      transports: Number,
+      logement: Number,
+      alimentation: Number,
+      divers: Number,
+      services: Number,
+    },
     conference: Object,
     enquête: Object,
     eventsSent: Object,
@@ -40,16 +41,12 @@ const SimulationPreciseSchema = new Schema(
     storedTrajets: Object,
     survey: Object,
     targetUnit: String,
+    // Needed to be compatible with the old API
+    data: Object,
   },
   {
     timestamps: true,
   }
 )
 
-module.exports = {
-  SimulationPreciseModel: mongoose.model(
-    'SimulationPrecise',
-    SimulationPreciseSchema
-  ),
-  SimulationPreciseSchema,
-}
+module.exports = mongoose.model('Simulation', SimulationSchema)

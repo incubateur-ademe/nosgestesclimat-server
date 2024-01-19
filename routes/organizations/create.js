@@ -11,23 +11,18 @@ const router = express.Router()
 router.route('/').post(async (req, res, next) => {
   try {
     const ownerEmail = req.body.ownerEmail
-    const userId = req.body.userId
 
     if (!ownerEmail) {
       return res.status(403).json('Error. An email address must be provided.')
     }
 
     const userDocument = getUserDocument({
-      ownerEmail,
-      ownerName: '',
-      userId,
+      email: ownerEmail,
+      name: '',
     })
 
     const organizationCreated = new Organization({
-      owner: {
-        email: ownerEmail,
-        user: userDocument._id,
-      },
+      owner: userDocument._id,
       polls: [
         {
           simulations: [],

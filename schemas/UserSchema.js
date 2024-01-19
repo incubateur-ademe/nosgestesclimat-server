@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+
 const Schema = mongoose.Schema
 
 const UserSchema = new Schema(
@@ -8,13 +9,21 @@ const UserSchema = new Schema(
       type: String,
       unique: true,
     },
-    userId: {
-      type: String,
-      unique: true,
-    },
     position: String,
     telephone: String,
     hasOptedInForCommunications: Boolean,
+    simulations: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Simulation',
+      },
+    ],
+    groups: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Group',
+      },
+    ],
   },
   { timestamps: true }
 )

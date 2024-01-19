@@ -1,27 +1,31 @@
 const mongoose = require('mongoose')
-const { SimulationPreciseSchema } = require('./SimulationPreciseSchema')
 
 const Schema = mongoose.Schema
 
-const PollSchema = new Schema({
-  simulations: [SimulationPreciseSchema],
-  startDate: Date,
-  endDate: Date,
-  name: String,
-  additionalQuestions: [String],
-  numberOfParticipants: Number,
-})
+const PollSchema = new Schema(
+  {
+    simulations: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Simulation',
+      },
+    ],
+    startDate: Date,
+    endDate: Date,
+    name: String,
+    additionalQuestions: [String],
+    numberOfParticipants: Number,
+  },
+  {
+    timestamps: true,
+  }
+)
 
 const OrganizationSchema = new Schema(
   {
-    owner: {
-      // Needed to query the organization when the owner logs in
-      email: String,
-      // Needed to link the organisator to the organization
-      user: {
-        type: mongoose.Types.ObjectId,
-        ref: 'User',
-      },
+    administrator: {
+      type: mongoose.Types.ObjectId,
+      ref: 'User',
     },
     polls: [PollSchema],
     name: String,

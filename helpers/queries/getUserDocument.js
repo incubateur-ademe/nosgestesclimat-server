@@ -1,12 +1,12 @@
 const { UserModel } = require('../../schemas/UserSchema')
 
-async function getUserDocument({ ownerEmail, ownerName, userId }) {
+async function getUserDocument({ email, name }) {
   let userDocument
 
   try {
     // Check if user already exists
     userDocument = await UserModel.findOne({
-      $or: [{ userId }, { email: ownerEmail }],
+      email,
     })
   } catch (error) {
     // Do nothing
@@ -15,9 +15,8 @@ async function getUserDocument({ ownerEmail, ownerName, userId }) {
   // If not, create it
   if (!userDocument) {
     const newUser = new UserModel({
-      name: ownerName,
-      email: ownerEmail,
-      userId,
+      name,
+      email,
     })
 
     userDocument = await newUser.save()
