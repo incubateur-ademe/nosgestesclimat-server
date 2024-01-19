@@ -4,7 +4,7 @@ const { setSuccessfulJSONResponse } = require('../utils/setSuccessfulResponse')
 
 const router = express.Router()
 
-router.route('/delete').post(async (req, res, next) => {
+router.route('/').post(async (req, res, next) => {
   const groupId = req.body.groupId
   const userId = req.body.userId
 

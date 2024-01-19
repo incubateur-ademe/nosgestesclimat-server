@@ -4,7 +4,7 @@ const { setSuccessfulJSONResponse } = require('../utils/setSuccessfulResponse')
 
 const router = express.Router()
 
-router.route('/add-member').post(async (req, res, next) => {
+router.route('/').post(async (req, res, next) => {
   const _id = req.body._id
   const member = req.body.member
 

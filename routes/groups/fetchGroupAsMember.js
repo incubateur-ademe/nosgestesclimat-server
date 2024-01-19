@@ -7,7 +7,7 @@ const router = express.Router()
 
 const userIdkey = 'userId'
 
-router.route(`/user-groups/:${userIdkey}`).get((req, res, next) => {
+router.route('/').get((req, res, next) => {
   const userId = req.params[userIdkey]
 
   if (!userId) {
