@@ -1,5 +1,5 @@
 const express = require('express')
-const SimulationSchema = require('../schemas/SimulationSchema')
+const { Simulation } = require('../../schemas/SimulationSchema')
 const getUserDocument = require('../../helpers/queries/getUserDocument')
 const sendSavedSimulation = require('../../helpers/email/sendSavedSimulation')
 
@@ -15,7 +15,7 @@ router.route('/').post(async (req, res) => {
     name: '',
   })
 
-  const newSimulation = new SimulationSchema({
+  const newSimulation = new Simulation({
     ...req.body.data,
     user: user.toObject()._id,
   })

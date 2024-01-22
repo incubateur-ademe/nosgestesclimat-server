@@ -1,7 +1,7 @@
 const express = require('express')
 const mongoose = require('mongoose')
-const connectdb = require('../scripts/initDatabase')
-const Group = require('../schemas/GroupSchema')
+const connectdb = require('../../scripts/initDatabase')
+const Group = require('../../schemas/GroupSchema')
 
 const {
   setSuccessfulJSONResponse,

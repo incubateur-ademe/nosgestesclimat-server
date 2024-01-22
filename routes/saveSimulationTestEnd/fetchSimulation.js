@@ -1,7 +1,7 @@
 const express = require('express')
-const connectdb = require('../scripts/initDatabase')
+const connectdb = require('../../scripts/initDatabase')
 const mongoose = require('mongoose')
-const SimulationSchema = require('../schemas/SimulationSchema')
+const { Simulation } = require('../../schemas/SimulationSchema')
 const router = express.Router()
 
 router.route('/:id?').get((req, res, next) => {
@@ -17,7 +17,7 @@ router.route('/:id?').get((req, res, next) => {
   }
 
   connectdb.then(async () => {
-    const simulation = await SimulationSchema.findOne({
+    const simulation = await Simulation.findOne({
       _id: objectId,
     })
 

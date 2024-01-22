@@ -1,6 +1,8 @@
 const express = require('express')
-const Group = require('../schemas/GroupSchema')
-const { setSuccessfulJSONResponse } = require('../utils/setSuccessfulResponse')
+const Group = require('../../schemas/GroupSchema')
+const {
+  setSuccessfulJSONResponse,
+} = require('../../utils/setSuccessfulResponse')
 
 const router = express.Router()
 

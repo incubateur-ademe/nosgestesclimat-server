@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const SimulationSchema = require('./SimulationSchema')
+const { SimulationSchema } = require('./SimulationSchema')
 const Schema = mongoose.Schema
 
 const OwnerSchema = new Schema({

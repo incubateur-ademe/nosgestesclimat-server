@@ -1,7 +1,9 @@
 const express = require('express')
-const connectdb = require('../scripts/initDatabase')
-const Group = require('../schemas/GroupSchema')
-const { setSuccessfulJSONResponse } = require('../utils/setSuccessfulResponse')
+const connectdb = require('../../scripts/initDatabase')
+const Group = require('../../schemas/GroupSchema')
+const {
+  setSuccessfulJSONResponse,
+} = require('../../utils/setSuccessfulResponse')
 
 const router = express.Router()
 

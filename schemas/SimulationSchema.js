@@ -49,4 +49,7 @@ const SimulationSchema = new Schema(
   }
 )
 
-module.exports = mongoose.model('Simulation', SimulationSchema)
+module.exports = {
+  SimulationSchema,
+  Simulation: mongoose.model('Simulation', SimulationSchema),
+}
