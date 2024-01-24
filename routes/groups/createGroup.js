@@ -4,6 +4,7 @@ const {
   setSuccessfulJSONResponse,
 } = require('../../utils/setSuccessfulResponse')
 const getUserDocument = require('../../helpers/queries/getUserDocument')
+const { Simulation } = require('../../schemas/SimulationSchema')
 
 const router = express.Router()
 
@@ -13,48 +14,55 @@ router.route('/').post(async (req, res, next) => {
   const ownerName = req.body.ownerName
   const ownerEmail = req.body.ownerEmail
   const simulation = req.body.simulation
-  const results = req.body.results
   const userId = req.body.userId
 
   if (groupName == null) {
-    return next('Error. A group name must be provided.')
+    return res.status(404).send('Error. A group name must be provided.')
   }
 
-  // Get user document or create a new one
-  const userDocument = getUserDocument({
-    ownerEmail,
-    ownerName,
-    userId,
-  })
+  try {
+    // Get user document or create a new one
+    const userDocument = getUserDocument({
+      ownerEmail,
+      ownerName,
+      userId,
+    })
 
-  // Create a new Simulation document but what happens if the user already has one?
-  // this brings up the risk of creating duplicate simulations
+    const simulationCreated = new Simulation({
+      userId: userDocument._id,
+      actionChoices: simulation.actionChoices,
+      config: simulation.config,
+      date: simulation.date,
+      foldedSteps: simulation.foldedSteps,
+      hiddenNotifications: simulation.hiddenNotifications,
+      situation: simulation.situation,
+      unfoldedStep: simulation.unfoldedStep,
+      computedResults: simulation.computedResults,
+    })
 
-  const groupCreated = new Group({
-    name: groupName,
-    emoji: groupEmoji,
-    administrator: userDocument._id,
-    members: [
-      {
-        name: ownerName,
-        email: ownerEmail,
-        userId,
-        simulation,
-        results,
-      },
-    ],
-  })
+    // Create a new Simulation document but what happens if the user already has one?
+    // this brings up the risk of creating duplicate simulations
+    const groupCreated = new Group({
+      name: groupName,
+      emoji: groupEmoji,
+      administrator: userDocument._id,
+      participants: [
+        {
+          name: ownerName,
+          simulation: simulationCreated._id,
+        },
+      ],
+    })
 
-  groupCreated.save((error, groupSaved) => {
-    if (error) {
-      return next(error)
-    }
+    const groupSaved = groupCreated.save()
 
     setSuccessfulJSONResponse(res)
     res.json(groupSaved)
 
     console.log('New group created: ', groupName)
-  })
+  } catch (error) {
+    return res.status(401).send('Error while creating group.')
+  }
 })
 
 module.exports = router

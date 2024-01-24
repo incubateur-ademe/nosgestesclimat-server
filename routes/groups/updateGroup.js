@@ -12,27 +12,23 @@ router.route('/').post(async (req, res, next) => {
   const name = req.body.name
 
   if (_id == null) {
-    return next('No group id provided.')
+    return res.status(401).send('No group id provided.')
   }
-
-  Group.findById(_id, (error, groupFound) => {
-    if (error) {
-      return next(error)
-    }
+  try {
+    const groupFound = await Group.findById(_id)
 
     groupFound.name = name
 
-    groupFound.save((error, groupSaved) => {
-      if (error) {
-        return next(error)
-      }
+    const groupUpdated = await groupFound.save()
 
-      setSuccessfulJSONResponse(res)
-      res.json(groupSaved)
+    setSuccessfulJSONResponse(res)
 
-      console.log('Group updated.')
-    })
-  })
+    res.json(groupUpdated)
+
+    console.log('Group updated.')
+  } catch (error) {
+    return res.status(501).send(error)
+  }
 })
 
 module.exports = router

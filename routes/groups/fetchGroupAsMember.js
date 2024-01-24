@@ -1,5 +1,4 @@
 const express = require('express')
-const connectdb = require('../../scripts/initDatabase')
 const Group = require('../../schemas/GroupSchema')
 const {
   setSuccessfulJSONResponse,
@@ -9,21 +8,25 @@ const router = express.Router()
 
 const userIdkey = 'userId'
 
-router.route('/').get((req, res, next) => {
+router.route('/').get(async (req, res, next) => {
   const userId = req.params[userIdkey]
 
   if (!userId) {
-    return next('Unauthorized. A valid user _id must be provided.')
+    return res
+      .status(401)
+      .send('Unauthorized. A valid user _id must be provided.')
   }
 
-  connectdb.then(() => {
-    const data = Group.find({ 'members.userId': userId })
-
-    data.then((groups) => {
-      setSuccessfulJSONResponse(res)
-      res.json(groups)
-    })
+  const groupsFound = await Group.find({
+    'participants.simulation.user.userId': userId,
   })
+    .populate('administrator')
+    .populate('participants.simulation')
+    .populate('participants.simulation.user')
+
+  setSuccessfulJSONResponse(res)
+
+  res.json(groupsFound)
 })
 
 module.exports = router

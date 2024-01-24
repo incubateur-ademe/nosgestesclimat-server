@@ -1,6 +1,5 @@
 const express = require('express')
 const mongoose = require('mongoose')
-const connectdb = require('../../scripts/initDatabase')
 const Group = require('../../schemas/GroupSchema')
 
 const {
@@ -9,7 +8,7 @@ const {
 
 const router = express.Router()
 
-router.route('/').get((req, res, next) => {
+router.route('/').get(async (req, res, next) => {
   const groupId = req.params.groupId
 
   if (!groupId || !mongoose.Types.ObjectId.isValid(groupId)) {
@@ -20,15 +19,18 @@ router.route('/').get((req, res, next) => {
 
     return next('Unauthorized. A valid group name must be provided.')
   }
+  try {
+    const groupFound = await Group.findById(groupId)
+      .populate('administrator')
+      .populate('participants.simulation')
+      .populate('participants.simulation.user')
 
-  connectdb.then(() => {
-    const data = Group.findById(groupId).populate('owner')
+    setSuccessfulJSONResponse(res)
 
-    data.then((group) => {
-      setSuccessfulJSONResponse(res)
-      res.json(group)
-    })
-  })
+    res.json(groupFound)
+  } catch (error) {
+    res.status(500).json('Error. Group not found.')
+  }
 })
 
 module.exports = router

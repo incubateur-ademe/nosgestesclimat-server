@@ -3,45 +3,70 @@ const Group = require('../../schemas/GroupSchema')
 const {
   setSuccessfulJSONResponse,
 } = require('../../utils/setSuccessfulResponse')
+const { Simulation } = require('../../schemas/SimulationSchema')
 
 const router = express.Router()
 
 // Update results and simulation
 router.route('/').post(async (req, res, next) => {
   const _id = req.body._id
-  const memberUpdates = req.body.memberUpdates
+  const simulation = req.body.simulation
+  const userId = req.body.userId
+  const email = req.body.email
 
-  if (_id == null) {
-    return next('No group id provided.')
+  if (!_id) {
+    return res.status(401).send('No group id provided.')
   }
 
-  Group.findById(_id, (error, groupFound) => {
-    if (error) {
-      return next(error)
+  if (!userId && !email) {
+    return res.status(401).send('No user id or email provided.')
+  }
+
+  if (!simulation) {
+    return res.status(401).send('No simulation provided.')
+  }
+
+  try {
+    const groupFound = await Group.findById(_id)
+      .populate('participants.simulation')
+      .populate('participants.simulation.user')
+
+    const simulationId = groupFound.participants.find(
+      (participant) => participant.simulation.userId === userId
+    )?.simulation?._id
+
+    if (!simulationId) {
+      return res.status(401).send('No participant found matching this user id.')
     }
 
-    const memberIndex = groupFound.members.findIndex(
-      (m) => m.userId === memberUpdates.userId
-    )
+    const simulationFound = await Simulation.findById(simulationId)
 
-    if (memberIndex < 0) {
-      return next('No member found matching this user id.')
+    if (!simulationFound) {
+      return res.status(404).send('Simulation not found.')
     }
 
-    groupFound.members[memberIndex].results = memberUpdates.results
-    groupFound.members[memberIndex].simulation = memberUpdates.simulation
+    simulationFound.computedResults = simulation.computedResults
+    simulationFound.unfoldedStep = simulation.unfoldedStep
+    simulationFound.foldedSteps = simulation.foldedSteps
+    simulationFound.hiddenNotifications = simulation.hiddenNotifications
+    simulationFound.actionChoices = simulation.actionChoices
+    simulationFound.situation = simulation.situation
 
-    groupFound.save((error, groupSaved) => {
-      if (error) {
-        return next(error)
-      }
+    await simulationFound.save()
 
-      setSuccessfulJSONResponse(res)
-      res.json(groupSaved)
+    setSuccessfulJSONResponse(res)
 
-      console.log('Member updated.')
-    })
-  })
+    const groupUpdated = await Group.findById(_id)
+      .populate('administrator')
+      .populate('participants.simulation')
+      .populate('participants.simulation.user')
+
+    res.json(groupUpdated)
+
+    console.log('Member updated.')
+  } catch (error) {
+    res.status(501).send(error)
+  }
 })
 
 module.exports = router
