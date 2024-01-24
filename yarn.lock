@@ -2383,6 +2383,11 @@ proxy-from-env@^1.1.0:
   resolved "https://registry.yarnpkg.com/proxy-from-env/-/proxy-from-env-1.1.0.tgz#e102f16ca355424865755d2c9e8ea4f24d58c3e2"
   integrity sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg==
 
+publicodes@^1.0.0-rc.7:
+  version "1.0.0-rc.7"
+  resolved "https://registry.yarnpkg.com/publicodes/-/publicodes-1.0.0-rc.7.tgz#2ed0ce1d091674646477d5fd4d6411daaa283a0c"
+  integrity sha512-Y5WZ1t9BCRJxGFDsOflq0sFyryp7gFe05A9txHfvsW+DMjejnAgvC9O4enaU4+/4fI7+N62jxCWNsmStwqy/ZQ==
+
 punycode@^2.1.0, punycode@^2.1.1:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-2.3.0.tgz#f67fa67c94da8f4d0cfff981aee4118064199b8f"

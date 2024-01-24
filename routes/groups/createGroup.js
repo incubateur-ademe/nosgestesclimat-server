@@ -20,16 +20,20 @@ router.route('/').post(async (req, res, next) => {
     return next('Error. A group name must be provided.')
   }
 
+  // Get user document or create a new one
   const userDocument = getUserDocument({
     ownerEmail,
     ownerName,
     userId,
   })
 
+  // Create a new Simulation document but what happens if the user already has one?
+  // this brings up the risk of creating duplicate simulations
+
   const groupCreated = new Group({
     name: groupName,
     emoji: groupEmoji,
-    owner: userDocument._id,
+    administrator: userDocument._id,
     members: [
       {
         name: ownerName,

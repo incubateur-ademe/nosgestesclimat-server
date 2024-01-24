@@ -3,12 +3,15 @@ const Schema = mongoose.Schema
 
 const SimulationSchema = new Schema(
   {
-    // This is the id created by the client !== _id
+    // UI stored simulation id
     id: String,
+    // Users that leave their email see a User document created and linked to the simulation
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     },
+    // UI stored user id, which is used to identify anonymous users (no email)
+    userId: String,
     actionChoices: Object,
     config: Object,
     date: {
@@ -19,30 +22,9 @@ const SimulationSchema = new Schema(
     hiddenNotifications: [String],
     situation: Object,
     unfoldedStep: String,
-
-    // Northstar rating
-    ratings: {
-      learned: String,
-      action: String,
-    },
-    // Legacy
-    bilan: Number,
-    categories: {
-      transports: Number,
-      logement: Number,
-      alimentation: Number,
-      divers: Number,
-      services: Number,
-    },
-    conference: Object,
-    enquête: Object,
-    eventsSent: Object,
-    storedAmortissementAvion: Object,
-    storedTrajets: Object,
-    survey: Object,
-    targetUnit: String,
-    // Needed to be compatible with the old API
-    data: Object,
+    // Should this be better typed?
+    // It leaves us free of adding any more data we want later on
+    computedResults: Object,
   },
   {
     timestamps: true,

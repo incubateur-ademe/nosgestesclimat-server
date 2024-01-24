@@ -9,9 +9,12 @@ const UserSchema = new Schema(
       type: String,
       unique: true,
     },
+    userId: {
+      type: String,
+      unique: true,
+    },
     position: String,
     telephone: String,
-    hasOptedInForCommunications: Boolean,
     simulations: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -22,6 +25,12 @@ const UserSchema = new Schema(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Group',
+      },
+    ],
+    organizations: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Organization',
       },
     ],
   },

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const { SimulationSchema } = require('./SimulationSchema')
+const SimulationPreciseSchema = require('./SimulationPreciseSchema')
 const Schema = mongoose.Schema
 
 const OwnerSchema = new Schema({
@@ -26,7 +26,7 @@ const MemberSchema = new Schema({
     type: String,
     required: true,
   },
-  simulation: SimulationSchema,
+  simulation: SimulationPreciseSchema,
   userId: {
     type: String,
     required: true,
@@ -47,10 +47,14 @@ const GroupSchema = new Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     },
-    simulations: [
+    participants: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Simulation',
+        // Username for this specific group
+        name: String,
+        simulation: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Simulation',
+        },
       },
     ],
     // Legacy from previous version

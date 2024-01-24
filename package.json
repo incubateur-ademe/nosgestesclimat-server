@@ -25,6 +25,7 @@
     "json2csv": "^5.0.7",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^6.1.10",
+    "publicodes": "^1.0.0-rc.7",
     "socket.io": "^4.4.1",
     "yaml": "^2.0.1"
   },

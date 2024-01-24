@@ -22,5 +22,6 @@ const AnswerSchema = new Schema(
   }
 )
 
-let Chat = mongoose.model('Answer', AnswerSchema)
+const Chat = mongoose.model('Answer', AnswerSchema)
+
 module.exports = Chat

@@ -14,7 +14,7 @@ const PollSchema = new Schema(
     endDate: Date,
     name: String,
     additionalQuestions: [String],
-    numberOfParticipants: Number,
+    expectedNumberOfParticipants: Number,
   },
   {
     timestamps: true,
@@ -30,7 +30,6 @@ const OrganizationSchema = new Schema(
     polls: [PollSchema],
     name: String,
     slug: String,
-    lastModifiedDate: Date,
     verificationCode: {
       code: {
         type: String,
