@@ -6,7 +6,7 @@ const {
 } = require('../../utils/setSuccessfulResponse')
 const authenticateToken = require('../../helpers/middlewares/authentifyToken')
 const updateBrevoContact = require('../../helpers/email/updateBrevoContact')
-const { UserModel } = require('../../schemas/UserSchema')
+const getUserDocument = require('../../helpers/queries/getUserDocument')
 
 const router = express.Router()
 
@@ -26,19 +26,15 @@ router.post('/', async (req, res, next) => {
   const additionalQuestions = req.body.additionalQuestions
   const hasOptedInForCommunications = req.body.hasOptedInForCommunications ?? ''
 
-  // Authenticate the JWT
   try {
+    // Authenticate the JWT
     authenticateToken({
       req,
       res,
       next,
       ownerEmail,
     })
-  } catch (error) {
-    return res.status(403).json('Invalid token.')
-  }
 
-  try {
     const organizationFound = await Organization.findOne({
       'owner.email': ownerEmail,
     })
@@ -56,20 +52,14 @@ router.post('/', async (req, res, next) => {
     }
 
     // Update the owner User document
-    let ownerUserDocument
-    if (ownerName || hasOptedInForCommunications) {
-      ownerUserDocument = await UserModel.findOne({
+
+    if (ownerName) {
+      const ownerUserDocument = await getUserDocument({
         email: ownerEmail,
+        name: ownerName,
       })
 
-      if (ownerName) {
-        ownerUserDocument.name = ownerName
-      }
-
-      if (hasOptedInForCommunications) {
-        ownerUserDocument.hasOptedInForCommunications =
-          hasOptedInForCommunications
-      }
+      ownerUserDocument.name = ownerName
 
       await ownerUserDocument.save()
     }

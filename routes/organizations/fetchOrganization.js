@@ -33,8 +33,8 @@ router.post('/', async (req, res) => {
 
   try {
     const organizationFound = await Organization.findOne({
-      'owner.email': ownerEmail,
-    })
+      'administrator.email': ownerEmail,
+    }).populate('administrator')
 
     setSuccessfulJSONResponse(res)
 

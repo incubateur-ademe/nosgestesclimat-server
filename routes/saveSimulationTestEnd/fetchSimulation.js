@@ -1,10 +1,12 @@
 const express = require('express')
-const connectdb = require('../../scripts/initDatabase')
 const mongoose = require('mongoose')
 const { Simulation } = require('../../schemas/SimulationSchema')
+const {
+  setSuccessfulJSONResponse,
+} = require('../../utils/setSuccessfulResponse')
 const router = express.Router()
 
-router.route('/:id?').get((req, res, next) => {
+router.route('/:id?').get(async (req, res, next) => {
   if (req.params.id == null) {
     return res.status(404).send('You must provide a simulation id')
   }
@@ -16,7 +18,7 @@ router.route('/:id?').get((req, res, next) => {
     return res.status(404).send('This id is not valid')
   }
 
-  connectdb.then(async () => {
+  try {
     const simulation = await Simulation.findOne({
       _id: objectId,
     })
@@ -24,10 +26,13 @@ router.route('/:id?').get((req, res, next) => {
     if (!simulation) {
       return res.status(404).send('This simulation does not exist')
     }
-    res.setHeader('Content-Type', 'application/json')
-    res.statusCode = 200
+
+    setSuccessfulJSONResponse(res)
+
     res.json(simulation)
-  })
+  } catch (error) {
+    return res.status(500).send('Error while fetching simulation')
+  }
 })
 
 module.exports = router

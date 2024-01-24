@@ -12,8 +12,8 @@ router.route('/').post(async (req, res, next) => {
     const ownerEmail = req.body.ownerEmail
 
     const organizationUpdated = await Organization.findOne({
-      'owner.email': ownerEmail,
-    }).populate()
+      'administrator.email': ownerEmail,
+    }).populate('administrator')
 
     if (!organizationUpdated) {
       return res.status(403).json('No matching organization found.')
