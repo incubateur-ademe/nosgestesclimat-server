@@ -8,37 +8,24 @@ const { Simulation } = require('../../schemas/SimulationSchema')
 const router = express.Router()
 
 // Update results and simulation
-router.route('/').post(async (req, res, next) => {
+router.route('/').post(async (req, res) => {
   const _id = req.body._id
   const simulation = req.body.simulation
-  const userId = req.body.userId
-  const email = req.body.email
+  const simulationId = req.body.simulationId
 
   if (!_id) {
     return res.status(401).send('No group id provided.')
-  }
-
-  if (!userId && !email) {
-    return res.status(401).send('No user id or email provided.')
   }
 
   if (!simulation) {
     return res.status(401).send('No simulation provided.')
   }
 
+  if (!simulationId) {
+    return res.status(401).send('No participant found matching this user id.')
+  }
+
   try {
-    const groupFound = await Group.findById(_id)
-      .populate('participants.simulation')
-      .populate('participants.simulation.user')
-
-    const simulationId = groupFound.participants.find(
-      (participant) => participant.simulation.userId === userId
-    )?.simulation?._id
-
-    if (!simulationId) {
-      return res.status(401).send('No participant found matching this user id.')
-    }
-
     const simulationFound = await Simulation.findById(simulationId)
 
     if (!simulationFound) {
@@ -46,11 +33,10 @@ router.route('/').post(async (req, res, next) => {
     }
 
     simulationFound.computedResults = simulation.computedResults
-    simulationFound.unfoldedStep = simulation.unfoldedStep
     simulationFound.foldedSteps = simulation.foldedSteps
-    simulationFound.hiddenNotifications = simulation.hiddenNotifications
     simulationFound.actionChoices = simulation.actionChoices
     simulationFound.situation = simulation.situation
+    simulationFound.progression = simulation.progression
 
     await simulationFound.save()
 
@@ -58,12 +44,11 @@ router.route('/').post(async (req, res, next) => {
 
     const groupUpdated = await Group.findById(_id)
       .populate('administrator')
-      .populate('participants.simulation')
-      .populate('participants.simulation.user')
+      .populate('participants')
 
     res.json(groupUpdated)
 
-    console.log('Member updated.')
+    console.log('Participant simulation updated.')
   } catch (error) {
     res.status(501).send(error)
   }

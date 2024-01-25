@@ -6,23 +6,22 @@ const {
 
 const router = express.Router()
 
-const userIdkey = 'userId'
+router.route('/').get(async (req, res) => {
+  const simulationIds = req.body.simulationIds
 
-router.route('/').get(async (req, res, next) => {
-  const userId = req.params[userIdkey]
-
-  if (!userId) {
+  if (!simulationIds) {
     return res
       .status(401)
-      .send('Unauthorized. A valid user _id must be provided.')
+      .send('Unauthorized. A value for simulationIds must be provided.')
   }
 
   const groupsFound = await Group.find({
-    'participants.simulation.user.userId': userId,
+    'participants.id': {
+      $in: simulationIds,
+    },
   })
     .populate('administrator')
-    .populate('participants.simulation')
-    .populate('participants.simulation.user')
+    .populate('participants')
 
   setSuccessfulJSONResponse(res)
 

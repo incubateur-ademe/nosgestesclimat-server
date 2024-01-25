@@ -21,9 +21,8 @@ router.route('/').get(async (req, res, next) => {
   }
   try {
     const groupFound = await Group.findById(groupId)
-      .populate('administrator')
-      .populate('participants.simulation')
-      .populate('participants.simulation.user')
+      .populate('administrators')
+      .populate('participants')
 
     setSuccessfulJSONResponse(res)
 

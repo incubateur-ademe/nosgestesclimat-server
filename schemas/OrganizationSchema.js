@@ -1,6 +1,20 @@
 const mongoose = require('mongoose')
+const VerificationCodeSchema = require('./VerificationCodeSchema')
 
 const Schema = mongoose.Schema
+
+const AdministratorSchema = new Schema(
+  {
+    name: String,
+    email: String,
+    telephone: String,
+    position: String,
+    verificationCode: VerificationCodeSchema,
+  },
+  {
+    timestamps: true,
+  }
+)
 
 const PollSchema = new Schema(
   {
@@ -23,20 +37,10 @@ const PollSchema = new Schema(
 
 const OrganizationSchema = new Schema(
   {
-    administrator: {
-      type: mongoose.Types.ObjectId,
-      ref: 'User',
-    },
+    administrator: [AdministratorSchema],
     polls: [PollSchema],
     name: String,
     slug: String,
-    verificationCode: {
-      code: {
-        type: String,
-        length: 6,
-      },
-      expirationDate: Date,
-    },
   },
   {
     timestamps: true,

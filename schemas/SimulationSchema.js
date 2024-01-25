@@ -3,28 +3,29 @@ const Schema = mongoose.Schema
 
 const SimulationSchema = new Schema(
   {
+    // Email stored
+    email: String,
+    name: String,
     // UI stored simulation id
     id: String,
-    // Users that leave their email see a User document created and linked to the simulation
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-    },
-    // UI stored user id, which is used to identify anonymous users (no email)
-    userId: String,
     actionChoices: Object,
-    config: Object,
+    progression: Number,
     date: {
       type: Date,
       required: true,
     },
     foldedSteps: [String],
-    hiddenNotifications: [String],
     situation: Object,
-    unfoldedStep: String,
-    // Should this be better typed?
-    // It leaves us free of adding any more data we want later on
-    computedResults: Object,
+    computedResults: {
+      bilan: Number,
+      categories: {
+        alimentation: Number,
+        transport: Number,
+        logement: Number,
+        divers: Number,
+        services: Number,
+      },
+    },
   },
   {
     timestamps: true,

@@ -1,5 +1,7 @@
 const mongoose = require('mongoose')
+
 const SimulationPreciseSchema = require('./SimulationPreciseSchema')
+
 const Schema = mongoose.Schema
 
 const OwnerSchema = new Schema({
@@ -13,7 +15,7 @@ const OwnerSchema = new Schema({
   },
   userId: {
     type: String,
-    required: true,
+    required: false,
   },
 })
 
@@ -45,20 +47,16 @@ const GroupSchema = new Schema(
     },
     administrator: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: 'Simulation',
     },
     participants: [
       {
-        // Username for this specific group
-        name: String,
-        simulation: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'Simulation',
-        },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Simulation',
       },
     ],
     // Legacy from previous version
-    // We should remove it in a few months perhaps or for groups not updated after a certain date
+    // We should remove it before going to production
     owner: OwnerSchema,
     members: [MemberSchema],
   },
