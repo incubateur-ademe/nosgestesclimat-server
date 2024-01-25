@@ -13,9 +13,9 @@ const router = express.Router()
  * Needs to be authenticated and generates a new token at each request
  */
 router.post('/', async (req, res) => {
-  const ownerEmail = req.body.ownerEmail
+  const administratorEmail = req.body.administratorEmail
 
-  if (!ownerEmail) {
+  if (!administratorEmail) {
     return res.status(403).json('No owner email provided.')
   }
 
@@ -24,7 +24,7 @@ router.post('/', async (req, res) => {
     authenticateToken({
       req,
       res,
-      ownerEmail,
+      email: administratorEmail,
     })
   } catch (error) {
     res.status(403).json('Invalid token.')
@@ -33,8 +33,8 @@ router.post('/', async (req, res) => {
 
   try {
     const organizationFound = await Organization.findOne({
-      'administrator.email': ownerEmail,
-    }).populate('administrator')
+      'administrators.email': administratorEmail,
+    })
 
     setSuccessfulJSONResponse(res)
 

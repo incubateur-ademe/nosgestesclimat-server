@@ -1,43 +1,46 @@
 const jwt = require('jsonwebtoken')
 const express = require('express')
 
-const Organization = require('../../schemas/OrganizationSchema')
 const {
   setSuccessfulJSONResponse,
 } = require('../../utils/setSuccessfulResponse')
+const VerificationCodeSchema = require('../../schemas/VerificationCodeSchema')
 
 const router = express.Router()
 
-router.post('/', async (req, res, next) => {
-  const ownerEmail = req.body.ownerEmail
+router.post('/', async (req, res) => {
+  const administratorEmail = req.body.administratorEmail
   const verificationCode = req.body.verificationCode
 
-  if (!ownerEmail || !verificationCode) {
+  if (!administratorEmail || !verificationCode) {
     return res.status(403).json('No email or verification code provided.')
   }
 
   try {
-    const organizationFound = await Organization.findOne({
-      'owner.email': ownerEmail,
+    const verificationCodeFound = await VerificationCodeSchema.findOne({
+      email: administratorEmail,
     })
 
     // Validation of the code
     const now = new Date()
 
-    if (organizationFound.verificationCode.code !== verificationCode) {
+    if (verificationCodeFound.toObject().code !== verificationCode) {
       return res.status(403).json('Invalid code.')
     }
 
     if (
-      organizationFound.verificationCode.expirationDate.getTime() <
-      now.getTime()
+      verificationCodeFound.toObject().expirationDate.getTime() < now.getTime()
     ) {
       return res.status(403).json('Code expired.')
     }
 
-    const token = jwt.sign({ ownerEmail }, process.env.JWT_SECRET, {
-      expiresIn: '1d',
-    })
+    const token = jwt.sign(
+      { email: administratorEmail },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '1d',
+      }
+    )
 
     setSuccessfulJSONResponse(res)
 
@@ -48,7 +51,7 @@ router.post('/', async (req, res, next) => {
       sameSite: 'none',
     })
 
-    res.json(organizationFound)
+    res.json('Successfully logged in.')
   } catch (error) {
     return res.status(403).json(error)
   }

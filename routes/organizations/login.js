@@ -1,28 +1,29 @@
 const express = require('express')
-const findOrganizationAndSendVerificationCode = require('../../helpers/findOrganizationAndSendVerificationCode')
+
 const Organization = require('../../schemas/OrganizationSchema')
 const {
   setSuccessfulJSONResponse,
 } = require('../../utils/setSuccessfulResponse')
+const handleSendVerificationCodeAndReturnExpirationDate = require('../../helpers/verificationCode/handleSendVerificationCodeAndReturnExpirationDate')
 
 const router = express.Router()
 
-router.route('/').post(async (req, res, next) => {
+router.route('/').post(async (req, res) => {
   try {
-    const ownerEmail = req.body.ownerEmail
+    const administratorEmail = req.body.administratorEmail
 
     const organizationUpdated = await Organization.findOne({
-      'administrator.email': ownerEmail,
-    }).populate('administrator')
+      'administrators.email': administratorEmail,
+    })
 
     if (!organizationUpdated) {
       return res.status(403).json('No matching organization found.')
     }
 
-    const expirationDate = await findOrganizationAndSendVerificationCode(
-      req,
-      next
-    )
+    const expirationDate =
+      await handleSendVerificationCodeAndReturnExpirationDate(
+        administratorEmail
+      )
 
     setSuccessfulJSONResponse(res)
 

@@ -14,7 +14,7 @@ const router = express.Router()
  * Needs to be authenticated and generates a new token at each request
  */
 router.post('/', async (req, res, next) => {
-  const ownerEmail = req.body.ownerEmail
+  const administratorEmail = req.body.administratorEmail
   const name = req.body.name
   const slug = req.body.slug
   const ownerName = req.body.ownerName
@@ -25,7 +25,7 @@ router.post('/', async (req, res, next) => {
       .json('Error. A name, a slug and an owner name must be provided.')
   }
 
-  if (!ownerEmail) {
+  if (!administratorEmail) {
     return res.status(403).json('Error. An email address must be provided.')
   }
 
@@ -39,8 +39,7 @@ router.post('/', async (req, res, next) => {
     authenticateToken({
       req,
       res,
-      next,
-      ownerEmail,
+      email: administratorEmail,
     })
   } catch (error) {
     return res.status(403).json('Invalid token.')
@@ -48,7 +47,7 @@ router.post('/', async (req, res, next) => {
 
   try {
     const organizationFound = await Organization.findOne({
-      'owner.email': ownerEmail,
+      'administrators.email': administratorEmail,
     })
 
     if (!organizationFound) {
@@ -57,15 +56,16 @@ router.post('/', async (req, res, next) => {
 
     organizationFound.name = name
     organizationFound.slug = slug
-    organizationFound.owner.name = ownerName
-    organizationFound.owner.position = ownerPosition
-    organizationFound.owner.telephone = ownerTelephone
-    organizationFound.polls[0].numberOfParticipants = numberOfParticipants
+    organizationFound.administrators[0].name = ownerName
+    organizationFound.administrators[0].position = ownerPosition
+    organizationFound.administrators[0].telephone = ownerTelephone
+    organizationFound.polls[0].expectedNumberOfParticipants =
+      numberOfParticipants
 
     const organizationSaved = await organizationFound.save()
 
     updateBrevoContact({
-      email: ownerEmail,
+      email: administratorEmail,
       ownerName,
       hasOptedInForCommunications,
     })

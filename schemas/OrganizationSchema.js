@@ -37,7 +37,7 @@ const PollSchema = new Schema(
 
 const OrganizationSchema = new Schema(
   {
-    administrator: [AdministratorSchema],
+    administrators: [AdministratorSchema],
     polls: [PollSchema],
     name: String,
     slug: String,

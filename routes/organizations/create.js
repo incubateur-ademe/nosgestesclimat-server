@@ -4,25 +4,23 @@ const {
   setSuccessfulJSONResponse,
 } = require('../../utils/setSuccessfulResponse')
 const handleSendVerificationCodeAndReturnExpirationDate = require('../../helpers/verificationCode/handleSendVerificationCodeAndReturnExpirationDate')
-const getUserDocument = require('../../helpers/queries/getUserDocument')
 
 const router = express.Router()
 
-router.route('/').post(async (req, res, next) => {
+router.route('/').post(async (req, res) => {
   try {
-    const ownerEmail = req.body.ownerEmail
+    const administratorEmail = req.body.administratorEmail
 
-    if (!ownerEmail) {
+    if (!administratorEmail) {
       return res.status(403).json('Error. An email address must be provided.')
     }
 
-    const userDocument = getUserDocument({
-      email: ownerEmail,
-      name: '',
-    })
-
     const organizationCreated = new Organization({
-      owner: userDocument._id,
+      administrators: [
+        {
+          email: administratorEmail,
+        },
+      ],
       polls: [
         {
           simulations: [],
@@ -33,10 +31,9 @@ router.route('/').post(async (req, res, next) => {
     await organizationCreated.save()
 
     const expirationDate =
-      await handleSendVerificationCodeAndReturnExpirationDate({
-        ownerEmail,
-        next,
-      })
+      await handleSendVerificationCodeAndReturnExpirationDate(
+        administratorEmail
+      )
 
     setSuccessfulJSONResponse(res)
 

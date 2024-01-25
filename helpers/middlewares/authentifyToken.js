@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken')
 
 require('dotenv').config()
 
-function authenticateToken({ req, res, ownerEmail }) {
+function authenticateToken({ req, res, email }) {
   const cookiesHeader = req.headers.cookie
 
   const token =
@@ -13,14 +13,14 @@ function authenticateToken({ req, res, ownerEmail }) {
   }
 
   jwt.verify(token, process.env.JWT_SECRET, (err, result) => {
-    const ownerEmailDecoded = result?.ownerEmail
+    const emailDecoded = result?.email
 
-    if (err || ownerEmail !== ownerEmailDecoded) {
+    if (err || email !== emailDecoded) {
       throw new Error('Invalid token')
     }
 
     // Generate a new token
-    const newToken = jwt.sign({ ownerEmail }, process.env.JWT_SECRET, {
+    const newToken = jwt.sign({ email }, process.env.JWT_SECRET, {
       expiresIn: '1h',
     })
 

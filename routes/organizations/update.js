@@ -6,7 +6,6 @@ const {
 } = require('../../utils/setSuccessfulResponse')
 const authenticateToken = require('../../helpers/middlewares/authentifyToken')
 const updateBrevoContact = require('../../helpers/email/updateBrevoContact')
-const getUserDocument = require('../../helpers/queries/getUserDocument')
 
 const router = express.Router()
 
@@ -15,10 +14,10 @@ const router = express.Router()
  * Needs to be authenticated and generates a new token at each request
  */
 router.post('/', async (req, res, next) => {
-  const ownerEmail = req.body.ownerEmail
+  const administratorEmail = req.body.administratorEmail
 
-  if (!ownerEmail) {
-    return next('Error. An email address must be provided.')
+  if (!administratorEmail) {
+    return res.status(401).send('Error. An email address must be provided.')
   }
 
   const name = req.body.name
@@ -31,12 +30,11 @@ router.post('/', async (req, res, next) => {
     authenticateToken({
       req,
       res,
-      next,
-      ownerEmail,
+      email: administratorEmail,
     })
 
     const organizationFound = await Organization.findOne({
-      'owner.email': ownerEmail,
+      'administrators.email': administratorEmail,
     })
 
     if (!organizationFound) {
@@ -51,23 +49,10 @@ router.post('/', async (req, res, next) => {
       organizationFound.polls[0].additionalQuestions = additionalQuestions
     }
 
-    // Update the owner User document
-
-    if (ownerName) {
-      const ownerUserDocument = await getUserDocument({
-        email: ownerEmail,
-        name: ownerName,
-      })
-
-      ownerUserDocument.name = ownerName
-
-      await ownerUserDocument.save()
-    }
-
     const organizationSaved = await organizationFound.save()
 
     updateBrevoContact({
-      email: ownerEmail,
+      email: administratorEmail,
       ownerName,
       hasOptedInForCommunications,
     })

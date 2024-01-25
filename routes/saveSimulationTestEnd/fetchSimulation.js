@@ -1,6 +1,6 @@
 const express = require('express')
 const mongoose = require('mongoose')
-const { Simulation } = require('../../schemas/SimulationSchema')
+const EmailSimulation = require('../../schemas/EmailSimulationSchema')
 const {
   setSuccessfulJSONResponse,
 } = require('../../utils/setSuccessfulResponse')
@@ -19,7 +19,7 @@ router.route('/:id?').get(async (req, res, next) => {
   }
 
   try {
-    const simulation = await Simulation.findOne({
+    const simulation = await EmailSimulation.findOne({
       _id: objectId,
     })
 
