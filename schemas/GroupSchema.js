@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-const SimulationPreciseSchema = require('./SimulationPreciseSchema')
+const { SimulationPreciseSchema } = require('./SimulationPreciseSchema')
 
 const Schema = mongoose.Schema
 

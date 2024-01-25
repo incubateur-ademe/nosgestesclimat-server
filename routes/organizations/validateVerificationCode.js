@@ -4,7 +4,9 @@ const express = require('express')
 const {
   setSuccessfulJSONResponse,
 } = require('../../utils/setSuccessfulResponse')
-const VerificationCodeSchema = require('../../schemas/VerificationCodeSchema')
+const {
+  VerificationCodeModel,
+} = require('../../schemas/VerificationCodeSchema')
 
 const router = express.Router()
 
@@ -17,7 +19,7 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    const verificationCodeFound = await VerificationCodeSchema.findOne({
+    const verificationCodeFound = await VerificationCodeModel.findOne({
       email: administratorEmail,
     })
 

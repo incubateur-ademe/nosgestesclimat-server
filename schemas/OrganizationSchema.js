@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const VerificationCodeSchema = require('./VerificationCodeSchema')
+const { VerificationCodeSchema } = require('./VerificationCodeSchema')
 
 const Schema = mongoose.Schema
 

@@ -7,18 +7,16 @@ const {
 const router = express.Router()
 
 router.route('/').get(async (req, res) => {
-  const simulationIds = req.body.simulationIds
+  const simulationId = req.body.simulationId
 
-  if (!simulationIds) {
+  if (!simulationId) {
     return res
       .status(401)
       .send('Unauthorized. A value for simulationIds must be provided.')
   }
 
   const groupsFound = await Group.find({
-    'participants.id': {
-      $in: simulationIds,
-    },
+    'participants.id': simulationId,
   })
     .populate('administrator')
     .populate('participants')

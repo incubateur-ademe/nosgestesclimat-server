@@ -1,7 +1,9 @@
 const dayjs = require('dayjs')
 const sendVerificationCode = require('../email/sendVerificationCode')
 const generateRandomNumberWithLength = require('../../utils/generateRandomNumberWithLength')
-const VerificationCode = require('../../schemas/VerificationCodeSchema')
+const {
+  VerificationCodeModel,
+} = require('../../schemas/VerificationCodeSchema')
 
 async function handleSendVerificationCodeAndReturnExpirationDate(email) {
   // Generate a random code
@@ -9,7 +11,7 @@ async function handleSendVerificationCodeAndReturnExpirationDate(email) {
 
   const expirationDate = dayjs().add(1, 'hour').toDate()
 
-  const verificationCodeCreated = new VerificationCode({
+  const verificationCodeCreated = new VerificationCodeModel({
     code: verificationCode,
     expirationDate,
     email,
