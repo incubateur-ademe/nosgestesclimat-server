@@ -11,13 +11,14 @@ async function handleSendVerificationCodeAndReturnExpirationDate(email) {
 
   const expirationDate = dayjs().add(1, 'hour').toDate()
 
+  // Create a new verification code
   const verificationCodeCreated = new VerificationCodeModel({
     code: verificationCode,
     expirationDate,
     email,
   })
 
-  await verificationCodeCreated.save()
+  const verificationCodeSaved = await verificationCodeCreated.save()
 
   // Send the code by email
   await sendVerificationCode({
@@ -25,7 +26,7 @@ async function handleSendVerificationCodeAndReturnExpirationDate(email) {
     verificationCode,
   })
 
-  return expirationDate
+  return verificationCodeSaved
 }
 
 module.exports = handleSendVerificationCodeAndReturnExpirationDate

@@ -3,7 +3,7 @@ const axios = require('axios')
 async function updateBrevoContact({
   email,
   hasOptedInForCommunications,
-  ownerName,
+  name,
 }) {
   const axiosConf = {
     headers: {
@@ -18,7 +18,7 @@ async function updateBrevoContact({
       {
         attributes: {
           OPT_IN: hasOptedInForCommunications,
-          PRENOM: ownerName,
+          PRENOM: name,
         },
       },
       axiosConf

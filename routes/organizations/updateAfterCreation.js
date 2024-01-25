@@ -13,24 +13,24 @@ const router = express.Router()
  * Fetching / updating by the owner
  * Needs to be authenticated and generates a new token at each request
  */
-router.post('/', async (req, res, next) => {
+router.post('/', async (req, res) => {
   const administratorEmail = req.body.administratorEmail
   const name = req.body.name
   const slug = req.body.slug
-  const ownerName = req.body.ownerName
+  const administratorName = req.body.administratorName
 
-  if (!name || !slug || !ownerName) {
+  if (!name || !slug || !administratorName) {
     return res
       .status(403)
-      .json('Error. A name, a slug and an owner name must be provided.')
+      .json('Error. A name, a slug and an administrator name must be provided.')
   }
 
   if (!administratorEmail) {
     return res.status(403).json('Error. An email address must be provided.')
   }
 
-  const ownerPosition = req.body.ownerPosition ?? ''
-  const ownerTelephone = req.body.ownerTelephone ?? ''
+  const administratorPosition = req.body.administratorPosition ?? ''
+  const administratorTelephone = req.body.administratorTelephone ?? ''
   const numberOfParticipants = req.body.numberOfParticipants ?? ''
   const hasOptedInForCommunications = req.body.hasOptedInForCommunications ?? ''
 
@@ -56,9 +56,9 @@ router.post('/', async (req, res, next) => {
 
     organizationFound.name = name
     organizationFound.slug = slug
-    organizationFound.administrators[0].name = ownerName
-    organizationFound.administrators[0].position = ownerPosition
-    organizationFound.administrators[0].telephone = ownerTelephone
+    organizationFound.administrators[0].name = administratorName
+    organizationFound.administrators[0].position = administratorPosition
+    organizationFound.administrators[0].telephone = administratorTelephone
     organizationFound.polls[0].expectedNumberOfParticipants =
       numberOfParticipants
 
@@ -66,7 +66,7 @@ router.post('/', async (req, res, next) => {
 
     updateBrevoContact({
       email: administratorEmail,
-      ownerName,
+      name: administratorName,
       hasOptedInForCommunications,
     })
 

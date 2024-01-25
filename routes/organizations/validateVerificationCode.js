@@ -7,6 +7,7 @@ const {
 const {
   VerificationCodeModel,
 } = require('../../schemas/VerificationCodeSchema')
+const OrganizationSchema = require('../../schemas/OrganizationSchema')
 
 const router = express.Router()
 
@@ -53,7 +54,11 @@ router.post('/', async (req, res) => {
       sameSite: 'none',
     })
 
-    res.json('Successfully logged in.')
+    const organization = await OrganizationSchema.findOne({
+      'administrators.email': administratorEmail,
+    })
+
+    res.json(organization)
   } catch (error) {
     return res.status(403).json(error)
   }

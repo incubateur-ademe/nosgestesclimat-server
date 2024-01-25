@@ -28,19 +28,23 @@ router.route('/').post(async (req, res) => {
       ],
     })
 
-    await organizationCreated.save()
+    const newlySavedOrganization = await organizationCreated.save()
 
-    const expirationDate =
+    const verificationCodeObject =
       await handleSendVerificationCodeAndReturnExpirationDate(
         administratorEmail
       )
 
+    newlySavedOrganization.administrators[0].verificationCode =
+      verificationCodeObject
+
     setSuccessfulJSONResponse(res)
 
-    res.json({ expirationDate })
+    res.json({ expirationDate: verificationCodeObject.expirationDate })
 
     console.log('New organization created')
   } catch (error) {
+    console.log(error)
     return res.status(403).json(error)
   }
 })
