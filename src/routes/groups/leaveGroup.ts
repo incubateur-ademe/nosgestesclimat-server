@@ -2,6 +2,8 @@ import express from 'express'
 import { Group } from '../../schemas/GroupSchema'
 
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
+import { User } from '../../schemas/UserSchema'
+import { handleDeleteGroupForUser } from '../../helpers/queries/handleDeleteGroupFromUser'
 
 const router = express.Router()
 
@@ -39,8 +41,15 @@ router.route('/').post(async (req, res, next) => {
         participant.email === email || participant.userId === userId
     )
 
-    // Delete participant from group if found
     if (participant) {
+      await handleDeleteGroupForUser({
+        groupId,
+        userId,
+        email,
+        res,
+      })
+
+      // Delete participant from group if found
       groupFound.participants.pull({ _id: participant._id })
 
       await groupFound.save()

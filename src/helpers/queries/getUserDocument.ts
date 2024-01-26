@@ -25,7 +25,7 @@ export async function getUserDocument({ email, userId, name }: Props) {
     })
 
     userDocument = await newUser.save()
-
-    return userDocument
   }
+
+  return userDocument
 }

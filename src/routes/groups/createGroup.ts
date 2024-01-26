@@ -72,6 +72,12 @@ router.route('/').post(async (req, res) => {
 
     const groupSaved = await groupCreated.save()
 
+    // Update the user document
+    userDocument.groups.push(groupSaved._id)
+
+    await userDocument.save()
+
+    // Send response
     setSuccessfulJSONResponse(res)
 
     res.json(groupSaved)

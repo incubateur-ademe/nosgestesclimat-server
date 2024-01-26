@@ -58,6 +58,7 @@ router.route('/').post(async (req, res) => {
 
     const simulationSaved = await simulationCreated.save()
 
+    // Add participant to group
     groupFound.participants.push({
       name,
       email,
@@ -67,6 +68,12 @@ router.route('/').post(async (req, res) => {
 
     const groupSaved = await groupFound.save()
 
+    // Update user document
+    userDocument.groups.push(groupSaved._id)
+
+    await userDocument.save()
+
+    // Send response
     setSuccessfulJSONResponse(res)
 
     res.json(groupSaved)

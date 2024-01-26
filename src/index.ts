@@ -82,9 +82,9 @@ app.use('/simulations/fetch-simulation', fetchSimulationRoute)
 
 // Group routes
 app.use('/group/create', createGroupRoute)
-app.use('/group/add-member', addParticipantRoute)
+app.use('/group/add-participant', addParticipantRoute)
 app.use('/group/delete', deleteGroupRoute)
-app.use('/group/:groupId', fetchGroupRoute)
+app.use('/group/fetch-group', fetchGroupRoute)
 app.use('/group/fetch-groups', fetchGroupsRoute)
 app.use('/group/leave', leaveGroupRoute)
 app.use('/group/update-name', updateGroupNameRoute)

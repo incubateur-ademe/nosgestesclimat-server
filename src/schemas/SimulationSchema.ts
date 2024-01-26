@@ -25,7 +25,7 @@ export const SimulationSchema = new Schema(
         transport: Number,
         logement: Number,
         divers: Number,
-        services: Number,
+        'services sociétaux': Number,
       },
     },
   },

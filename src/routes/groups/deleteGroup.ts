@@ -2,6 +2,8 @@ import express from 'express'
 import { Group } from '../../schemas/GroupSchema'
 
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
+import { User } from '../../schemas/UserSchema'
+import { handleDeleteGroupForAllParticipants } from '../../helpers/queries/handleDeleteGroupForAllParticipants'
 
 const router = express.Router()
 
@@ -27,6 +29,13 @@ router.route('/').post(async (req, res) => {
     const isAdministrator = groupFound.administrator?.email === email
 
     if (isAdministrator) {
+      // Delete for all participants the group id from their list of groups
+      await handleDeleteGroupForAllParticipants({
+        groupId,
+        res,
+      })
+
+      // Delete the group
       await groupFound.delete()
 
       setSuccessfulJSONResponse(res)
