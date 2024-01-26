@@ -1,9 +1,12 @@
 const mongoose = require('mongoose')
 
-const { SimulationPreciseSchema } = require('./SimulationPreciseSchema')
+const { SimulationPreciseSchema } = require('./_legacy/SimulationPreciseSchema')
 
 const Schema = mongoose.Schema
 
+/*
+ ** Legacy from previous version
+ */
 const OwnerSchema = new Schema({
   name: {
     type: String,
@@ -18,7 +21,6 @@ const OwnerSchema = new Schema({
     required: false,
   },
 })
-
 const MemberSchema = new Schema({
   email: {
     type: String,
@@ -34,6 +36,22 @@ const MemberSchema = new Schema({
     required: true,
   },
 })
+/*
+ ** Legacy from previous version
+ */
+
+const ParticipantSchema = new Schema({
+  name: {
+    type: String,
+    required: true,
+  },
+  email: String,
+  userId: String,
+  simulation: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Simulation',
+  },
+})
 
 const GroupSchema = new Schema(
   {
@@ -46,15 +64,17 @@ const GroupSchema = new Schema(
       required: true,
     },
     administrator: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Simulation',
-    },
-    participants: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Simulation',
+      name: {
+        type: String,
+        required: true,
       },
-    ],
+      email: {
+        type: String,
+        required: false,
+      },
+      userId: String,
+    },
+    participants: [ParticipantSchema],
     // Legacy from previous version
     // We should remove it before going to production
     owner: OwnerSchema,
@@ -65,4 +85,7 @@ const GroupSchema = new Schema(
   }
 )
 
-module.exports = mongoose.model('Group', GroupSchema)
+module.exports = {
+  Group: mongoose.model('Group', GroupSchema),
+  GroupSchema,
+}

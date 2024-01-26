@@ -1,6 +1,6 @@
 const express = require('express')
-const connectdb = require('../scripts/initDatabase')
-const Survey = require('../schemas/SurveySchema')
+const connectdb = require('../../scripts/initDatabase')
+const Survey = require('../../schemas/_legacy/SurveySchema')
 
 const router = express.Router()
 

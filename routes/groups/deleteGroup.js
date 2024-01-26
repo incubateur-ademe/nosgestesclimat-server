@@ -20,8 +20,6 @@ router.route('/').post(async (req, res) => {
 
   try {
     const groupFound = await Group.findById(groupId)
-      .populate('administrator')
-      .populate('participants')
 
     if (!groupFound) {
       return res.status(404).send('Error. Group not found.')

@@ -12,23 +12,21 @@ router.route('/').get(async (req, res, next) => {
   const groupId = req.params.groupId
 
   if (!groupId || !mongoose.Types.ObjectId.isValid(groupId)) {
-    res.status(500).json({
-      status: false,
-      error: 'Unauthorized. A valid group name must be provided.',
-    })
-
-    return next('Unauthorized. A valid group name must be provided.')
+    return res
+      .status(500)
+      .send('Unauthorized. A valid group id must be provided.')
   }
+
   try {
-    const groupFound = await Group.findById(groupId)
-      .populate('administrators')
-      .populate('participants')
+    const groupFound = await Group.findById(groupId).populate(
+      'participants.simulation'
+    )
 
     setSuccessfulJSONResponse(res)
 
     res.json(groupFound)
   } catch (error) {
-    res.status(500).json('Error. Group not found.')
+    res.status(500).send('Error. Group not found.')
   }
 })
 

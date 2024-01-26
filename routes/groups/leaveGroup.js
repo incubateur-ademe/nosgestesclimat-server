@@ -9,7 +9,7 @@ const router = express.Router()
 router.route('/').post(async (req, res, next) => {
   const groupId = req.body.groupId
   const email = req.body.email
-  const simulationId = req.body.simulationId
+  const userId = req.body.userId
 
   if (!groupId) {
     return res.status(401).send('Error. A group id must be provided.')
@@ -21,17 +21,23 @@ router.route('/').post(async (req, res, next) => {
 
   try {
     const groupFound = await Group.findById(groupId)
-      .populate('administrator')
-      .populate('participants')
 
     if (!groupFound) {
       return res.status(404).send('Error. Group not found.')
     }
 
+    if (groupFound.administrator.email === email) {
+      return res
+        .status(401)
+        .send(
+          'Error. You are the group administrator. You cannot leave the group.'
+        )
+    }
+
     // User is listed as a participant
     const participantIndex = groupFound.participants.findIndex(
       (participant) =>
-        participant.email === email || participant.id === simulationId
+        participant.email === email || participant.userId === userId
     )
 
     // Delete participant from group if found

@@ -28,7 +28,7 @@ router.route('/').post(async (req, res, next) => {
     const groupFound = await Group.findOne({
       _id,
       'administrator.email': email,
-    }).populate('administrator')
+    }).populate('participants.simulation')
 
     groupFound.name = name
 

@@ -1,18 +1,20 @@
 const express = require('express')
 
-const Group = require('../../schemas/GroupSchema')
+const { Group } = require('../../schemas/GroupSchema')
 const {
   setSuccessfulJSONResponse,
 } = require('../../utils/setSuccessfulResponse')
 const { Simulation } = require('../../schemas/SimulationSchema')
+const getUserDocument = require('../../helpers/queries/getUserDocument')
 
 const router = express.Router()
 
-router.route('/').post(async (req, res, next) => {
+router.route('/').post(async (req, res) => {
   const _id = req.body._id
   const name = req.body.name
   const simulation = req.body.simulation
   const email = req.body.email
+  const userId = req.body.userId
 
   if (!_id) {
     return res.status(401).send('No group id provided.')
@@ -33,10 +35,16 @@ router.route('/').post(async (req, res, next) => {
       return res.status(404).send('Group not found.')
     }
 
-    const simulationCreated = new Simulation({
-      id: simulation.id,
+    // Get user document or create a new one
+    const userDocument = getUserDocument({
       email,
       name,
+      userId,
+    })
+
+    const simulationCreated = new Simulation({
+      id: simulation.id,
+      user: userDocument._id,
       actionChoices: simulation.actionChoices,
       date: simulation.date,
       foldedSteps: simulation.foldedSteps,
@@ -45,7 +53,14 @@ router.route('/').post(async (req, res, next) => {
       progression: simulation.progression,
     })
 
-    groupFound.participants.push(simulationCreated._id)
+    const simulationSaved = await simulationCreated.save()
+
+    groupFound.participants.push({
+      name,
+      email,
+      userId,
+      simulation: simulationSaved._id,
+    })
 
     const groupSaved = await groupFound.save()
 

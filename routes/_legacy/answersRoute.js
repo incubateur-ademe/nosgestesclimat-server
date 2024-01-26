@@ -1,8 +1,7 @@
 const express = require('express')
-const bodyParser = require('body-parser')
-const connectdb = require('../scripts/initDatabase')
-const Answers = require('../schemas/AnswerSchema')
-const Surveys = require('../schemas/SurveySchema')
+const connectdb = require('../../scripts/initDatabase')
+const Answers = require('../../schemas/_legacy/AnswerSchema')
+const Surveys = require('../../schemas/_legacy/SurveySchema')
 
 const { Parser } = require('json2csv')
 const router = express.Router()
@@ -21,7 +20,7 @@ const getCsvHeader = async (roomName) => {
     'progress',
   ]
 
-  let survey = await Surveys.find({ name: roomName })
+  const survey = await Surveys.find({ name: roomName })
   const contextFileName = survey[0]['contextFile']
   if (!contextFileName) {
     return defaultCsvHeader
@@ -30,7 +29,7 @@ const getCsvHeader = async (roomName) => {
       `./contextes-sondage/${contextFileName}.yaml`,
       'utf8'
     )
-    let rules = Object.keys(yaml.parse(data))
+    const rules = Object.keys(yaml.parse(data))
     const contextHeaders = [
       ...new Set(
         rules.reduce((res, rule) => {
@@ -55,7 +54,7 @@ router.route('/:room').get((req, res, next) => {
   const csv = req.query.format === 'csv'
 
   connectdb.then((db) => {
-    let data = Answers.find({ survey: roomName })
+    const data = Answers.find({ survey: roomName })
     data.then(async (answers) => {
       if (!csv) {
         res.setHeader('Content-Type', 'application/json')
@@ -75,7 +74,7 @@ router.route('/:room').get((req, res, next) => {
                   ? [field, answer.data[field]]
                   : answer.data.byCategory.get(field)
                   ? [field, answer.data.byCategory.get(field)]
-                  : answer.data.context && answer.data.context.get(field) //we take into account old answers with no context and answers with empty context in case of undefined get resultfor the two firts conditions
+                  : answer.data.context && answer.data.context.get(field) // we take into account old answers with no context and answers with empty context in case of undefined get resultfor the two firts conditions
                   ? [field, answer.data.context.get(field)]
                   : [field, undefined]
               })

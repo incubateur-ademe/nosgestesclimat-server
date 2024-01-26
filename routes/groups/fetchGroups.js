@@ -6,30 +6,30 @@ const {
 
 const router = express.Router()
 
-router.route('/').post(async (req, res, next) => {
-  const simulationIds = req.body.simulationIds
-  console.log(simulationIds)
-  if (!simulationIds || simulationIds.length === 0) {
+router.route('/').post(async (req, res) => {
+  const email = req.body.email
+  const userId = req.body.userId
+
+  if (!email && !userId) {
     return res
       .status(401)
-      .send('Unauthorized. A value for simulationIds must be provided.')
+      .send('Unauthorized. A value for email or userId must be provided.')
   }
-  let groupsFound
 
-  await Group.find({
-    'participants.id': {
-      $in: simulationIds,
-    },
-  })
-    .populate('administrator')
-    .populate('participants')
-    .exec(function (err, groups) {
-      if (err) return next(err)
+  const groupsFound = await Group.find({
+    $or: [
+      {
+        'participants.userId': userId,
+      },
+      {
+        'participants.email': email,
+      },
+    ],
+  }).populate('participants.simulation')
 
-      groupsFound = groups.filter(function (group) {
-        return simulationIds.includes(group.participants)
-      })
-    })
+  if (!groupsFound) {
+    return res.status(404).send('Error. No group found.')
+  }
 
   setSuccessfulJSONResponse(res)
 

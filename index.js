@@ -1,9 +1,10 @@
 const express = require('express')
-const answersRoute = require('./routes/answersRoute')
-const surveysRoute = require('./routes/surveysRoute')
-const statsRoute = require('./routes/statsRoute')
-const simulationRoute = require('./routes/simulationRoute')
-const ratingsRoute = require('./routes/ratingsRoute')
+
+const answersRoute = require('./routes/_legacy/answersRoute')
+const surveysRoute = require('./routes/_legacy/surveysRoute')
+const statsRoute = require('./routes/stats/statsRoute')
+const simulationRoute = require('./routes/_legacy/simulationRoute')
+const ratingsRoute = require('./routes/_legacy/ratingsRoute')
 const fetchSimulationViaEmailRoute = require('./routes/saveSimulationTestEnd/fetchSimulation')
 // Groups routes
 const addParticipantRoute = require('./routes/groups/addParticipant')
@@ -21,6 +22,9 @@ const loginOrganizationRoute = require('./routes/organizations/login')
 const sendVerificationCodeRoute = require('./routes/organizations/sendVerificationCode')
 const updateAfterCreationRoute = require('./routes/organizations/updateAfterCreation')
 const validateVerificationCodeRoute = require('./routes/organizations/validateVerificationCode')
+// Simulation routes
+const createSimulationRoute = require('./routes/simulations/create')
+const fetchSimulationRoute = require('./routes/simulations/fetchSimulation')
 
 const cors = require('cors')
 
@@ -60,15 +64,17 @@ app.use(
 // serve static context files
 app.use(express.static('contextes-sondage'))
 
-// routes
+// Legacy routes
 app.use('/answers', answersRoute)
 app.use('/surveys', surveysRoute)
 app.use('/get-stats', statsRoute)
 app.use('/simulation', simulationRoute)
 app.use('/ratings', ratingsRoute)
-
-// Simulation saving / accessing via email
 app.use('/email-simulation/:id?', fetchSimulationViaEmailRoute)
+
+// Simulations route
+app.use('/simulations/create', createSimulationRoute)
+app.use('/simulations/fetch-simulation', fetchSimulationRoute)
 
 // Group routes
 app.use('/group/create', createGroupRoute)
@@ -103,7 +109,7 @@ const io = socketio(http, {
   cors: { origin, methods: ['GET', 'POST'] },
 })
 
-const Answer = require('./schemas/AnswerSchema')
+const Answer = require('./schemas/_legacy/AnswerSchema')
 const connect = require('./scripts/initDatabase')
 
 // create an event listener

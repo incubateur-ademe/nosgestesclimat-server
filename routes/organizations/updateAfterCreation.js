@@ -9,17 +9,13 @@ const updateBrevoContact = require('../../helpers/email/updateBrevoContact')
 
 const router = express.Router()
 
-/**
- * Fetching / updating by the owner
- * Needs to be authenticated and generates a new token at each request
- */
 router.post('/', async (req, res) => {
   const administratorEmail = req.body.administratorEmail
-  const name = req.body.name
+  const organizationName = req.body.name
   const slug = req.body.slug
   const administratorName = req.body.administratorName
 
-  if (!name || !slug || !administratorName) {
+  if (!organizationName || !slug || !administratorName) {
     return res
       .status(403)
       .json('Error. A name, a slug and an administrator name must be provided.')
@@ -54,7 +50,7 @@ router.post('/', async (req, res) => {
       return res.status(403).json('No matching organization found.')
     }
 
-    organizationFound.name = name
+    organizationFound.name = organizationName
     organizationFound.slug = slug
     organizationFound.administrators[0].name = administratorName
     organizationFound.administrators[0].position = administratorPosition

@@ -3,11 +3,12 @@ const Schema = mongoose.Schema
 
 const SimulationSchema = new Schema(
   {
-    // Email stored
-    email: String,
-    name: String,
     // UI stored simulation id
     id: String,
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+    },
     actionChoices: Object,
     progression: Number,
     date: {

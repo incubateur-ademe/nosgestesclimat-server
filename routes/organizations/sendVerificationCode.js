@@ -7,7 +7,7 @@ const handleSendVerificationCodeAndReturnExpirationDate = require('../../helpers
 
 const router = express.Router()
 
-router.post('/', async (req, res, next) => {
+router.post('/', async (req, res) => {
   const administratorEmail = req.body.administratorEmail
 
   if (!administratorEmail) {
@@ -23,15 +23,20 @@ router.post('/', async (req, res, next) => {
       return res.status(403).json('No matching organization found.')
     }
 
-    const expirationDate =
+    const verificationCodeObject =
       await handleSendVerificationCodeAndReturnExpirationDate(
         administratorEmail
       )
 
+    organizationFound.administrators[0].verificationCode =
+      verificationCodeObject
+
+    await organizationFound.save()
+
     setSuccessfulJSONResponse(res)
 
     res.json({
-      expirationDate,
+      expirationDate: verificationCodeObject.expirationDate,
     })
 
     console.log('Verification code sent.')

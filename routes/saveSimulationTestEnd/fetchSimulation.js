@@ -1,6 +1,6 @@
 const express = require('express')
 const mongoose = require('mongoose')
-const EmailSimulation = require('../../schemas/EmailSimulationSchema')
+const EmailSimulation = require('../../schemas/_legacy/EmailSimulationSchema')
 const {
   setSuccessfulJSONResponse,
 } = require('../../utils/setSuccessfulResponse')

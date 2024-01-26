@@ -11,7 +11,8 @@ const router = express.Router()
 router.route('/').post(async (req, res) => {
   const _id = req.body._id
   const simulation = req.body.simulation
-  const simulationId = req.body.simulationId
+  const userId = req.body.userId
+  const email = req.body.email
 
   if (!_id) {
     return res.status(401).send('No group id provided.')
@@ -21,11 +22,32 @@ router.route('/').post(async (req, res) => {
     return res.status(401).send('No simulation provided.')
   }
 
-  if (!simulationId) {
-    return res.status(401).send('No participant found matching this user id.')
+  if (!userId && !email) {
+    return res
+      .status(401)
+      .send('Error : an email or a userId must be provided.')
   }
 
   try {
+    const groupFound = await Group.findOne({
+      _id,
+      $or: [
+        {
+          'participants.userId': userId,
+        },
+        {
+          'participants.email': email,
+        },
+      ],
+    })
+
+    const participant = groupFound.participants.find(
+      (participant) =>
+        participant.userId === userId || participant.email === email
+    )
+
+    const simulationId = participant.simulation
+
     const simulationFound = await Simulation.findById(simulationId)
 
     if (!simulationFound) {
@@ -42,9 +64,9 @@ router.route('/').post(async (req, res) => {
 
     setSuccessfulJSONResponse(res)
 
-    const groupUpdated = await Group.findById(_id)
-      .populate('administrator')
-      .populate('participants')
+    const groupUpdated = await Group.findById(_id).populate(
+      'participants.simulation'
+    )
 
     res.json(groupUpdated)
 
