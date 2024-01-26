@@ -2,8 +2,8 @@ import express from 'express'
 
 import { Organization } from '../../schemas/OrganizationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import authenticateToken from '../../helpers/authentification/authentifyToken'
-import updateBrevoContact from '../../helpers/email/updateBrevoContact'
+import { authenticateToken } from '../../helpers/authentification/authentifyToken'
+import { updateBrevoContact } from '../../helpers/email/updateBrevoContact'
 
 const router = express.Router()
 

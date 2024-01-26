@@ -8,8 +8,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "ts-node index.js",
-    "dev": "NODE_ENV=development ts-node index.js"
+    "start": "ts-node ./src/index.ts",
+    "dev": "NODE_ENV=development ts-node ./src/index.ts"
   },
   "author": "",
   "license": "MIT",

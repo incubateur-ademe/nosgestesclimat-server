@@ -29,6 +29,8 @@ import fetchSimulationRoute from './routes/simulations/fetchSimulation'
 import cors from 'cors'
 import { config } from 'dotenv'
 import { Error } from 'mongoose'
+import Answer from './schemas/_legacy/AnswerSchema'
+import connect from './scripts/initDatabase'
 
 if (process.env.NODE_ENV !== 'production') {
   config()
@@ -111,9 +113,6 @@ const io = socketio(http, {
   cors: { origin, methods: ['GET', 'POST'] },
 })
 
-const Answer = require('./src/schemas/_legacy/AnswerSchema')
-const connect = require('./scripts/initDatabase')
-
 // create an event listener
 //
 // To listen to messages
@@ -133,13 +132,14 @@ io.on('connection', (socket: any) => {
 
       socket.to(room).emit('received', { answer })
 
-      connect.then(() => {
+      connect.then(async () => {
         const query = { id: answer.id }
         const update = answer
         const options = { upsert: true, new: true, setDefaultsOnInsert: true }
 
         // Find the document
-        Answer.findOneAndUpdate(
+        // @ts-ignore
+        await Answer.findOneAndUpdate(
           query,
           update,
           options,
