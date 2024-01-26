@@ -1,0 +1,40 @@
+import mongoose from 'mongoose'
+
+const Schema = mongoose.Schema
+
+export const UserSchema = new Schema(
+  {
+    name: String,
+    email: {
+      type: String,
+      unique: true,
+    },
+    userId: {
+      type: String,
+      unique: true,
+    },
+    position: String,
+    telephone: String,
+    simulations: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Simulation',
+      },
+    ],
+    groups: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Group',
+      },
+    ],
+    organizations: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Organization',
+      },
+    ],
+  },
+  { timestamps: true }
+)
+
+export const User = mongoose.model('User', UserSchema)
