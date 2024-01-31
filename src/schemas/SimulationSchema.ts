@@ -1,8 +1,24 @@
-import mongoose from 'mongoose'
+import mongoose, { ObjectId, RefType } from 'mongoose'
 
 const Schema = mongoose.Schema
 
-export const SimulationSchema = new Schema(
+export type Simulation = {
+  id: string
+  user: RefType
+  actionChoices: Record<string, unknown>
+  progression: number
+  date: Date
+  foldedSteps: string[]
+  situation: Record<string, unknown>
+  computedResults: {
+    bilan: number
+    categories: Record<string, number>
+  }
+  poll?: RefType
+  group?: RefType
+}
+
+export const SimulationSchema = new Schema<Simulation>(
   {
     // UI stored simulation id
     id: String,
@@ -27,6 +43,14 @@ export const SimulationSchema = new Schema(
         divers: Number,
         'services sociétaux': Number,
       },
+    },
+    poll: {
+      type: Schema.Types.ObjectId,
+      ref: 'Poll',
+    },
+    group: {
+      type: Schema.Types.ObjectId,
+      ref: 'Group',
     },
   },
   {
