@@ -19,6 +19,7 @@ type Poll = {
   startDate: Date
   endDate: Date
   name: string
+  slug: string
   additionalQuestions: string[]
   expectedNumberOfParticipants: number
 }
@@ -54,6 +55,7 @@ const PollSchema = new Schema<Poll>(
     startDate: Date,
     endDate: Date,
     name: String,
+    slug: String,
     additionalQuestions: [String],
     expectedNumberOfParticipants: Number,
   },
