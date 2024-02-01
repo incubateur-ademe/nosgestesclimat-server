@@ -4,13 +4,13 @@ const Schema = mongoose.Schema
 
 type User = {
   name: string
-  email: string
+  email?: string
   userId: string
-  position: string
-  telephone: string
-  simulations: RefType[]
-  groups: RefType[]
-  organizations: RefType[]
+  position?: string
+  telephone?: string
+  simulations?: RefType[]
+  groups?: RefType[]
+  organizations?: RefType[]
 }
 
 export const UserSchema = new Schema<User>(
