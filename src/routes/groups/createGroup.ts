@@ -77,6 +77,10 @@ router.route('/').post(async (req, res) => {
 
     await userDocument.save()
 
+    simulationSaved.group = groupSaved._id
+
+    await simulationSaved.save()
+
     // Send response
     setSuccessfulJSONResponse(res)
 
