@@ -5,7 +5,31 @@ import mongoose from 'mongoose'
 
 const Schema = mongoose.Schema
 
-export const SimulationPreciseSchema = new Schema(
+export type SimulationPreciseType = {
+  id: string
+  actionChoices: Record<string, string>
+  conference: Record<string, unknown>
+  config: Record<string, unknown>
+  date: Date
+  enquête: Record<string, unknown>
+  eventsSent: Record<string, unknown>
+  foldedSteps: string[]
+  hiddenNotifications: string[]
+  persona: Record<string, unknown>
+  ratings: {
+    learned: string
+    action: string
+  }
+  situation: Record<string, unknown>
+  storedAmortissementAvion: Record<string, unknown>
+  storedTrajets: Record<string, unknown>
+  survey: Record<string, unknown>
+  targetUnit: string
+  unfoldedStep: string
+  url: string
+}
+
+export const SimulationPreciseSchema = new Schema<SimulationPreciseType>(
   {
     id: String,
     actionChoices: Object,

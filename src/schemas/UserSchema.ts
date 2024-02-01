@@ -1,8 +1,19 @@
-import mongoose from 'mongoose'
+import mongoose, { RefType } from 'mongoose'
 
 const Schema = mongoose.Schema
 
-export const UserSchema = new Schema(
+type User = {
+  name: string
+  email: string
+  userId: string
+  position: string
+  telephone: string
+  simulations: RefType[]
+  groups: RefType[]
+  organizations: RefType[]
+}
+
+export const UserSchema = new Schema<User>(
   {
     name: String,
     email: {

@@ -2,7 +2,13 @@ import mongoose from 'mongoose'
 
 const Schema = mongoose.Schema
 
-export const VerificationCodeSchema = new Schema(
+export type VerificationCodeType = {
+  code: string
+  expirationDate: Date
+  email: string
+}
+
+export const VerificationCodeSchema = new Schema<VerificationCodeType>(
   {
     code: {
       type: String,

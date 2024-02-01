@@ -1,8 +1,38 @@
-import mongoose from 'mongoose'
+import mongoose, { RefType } from 'mongoose'
 
-import { SimulationPreciseSchema } from './_legacy/SimulationPreciseSchema'
+import {
+  SimulationPreciseSchema,
+  SimulationPreciseType,
+} from './_legacy/SimulationPreciseSchema'
 
 const Schema = mongoose.Schema
+
+type Participant = {
+  name: string
+  email: string
+  userId: string
+  simulation: RefType
+}
+
+type GroupType = {
+  name: string
+  emoji: string
+  administrator: Participant
+  participants: Participant[]
+  // Legacy from previous version
+  // We should remove it before going to production
+  owner: {
+    name: string
+    email: string
+    userId: string
+  }
+  members: {
+    name: string
+    email: string
+    userId: string
+    simulation: SimulationPreciseType
+  }[]
+}
 
 /*
  ** Legacy from previous version
@@ -40,7 +70,7 @@ const MemberSchema = new Schema({
  ** Legacy from previous version
  */
 
-const ParticipantSchema = new Schema({
+const ParticipantSchema = new Schema<Participant>({
   name: {
     type: String,
     required: true,
@@ -53,7 +83,7 @@ const ParticipantSchema = new Schema({
   },
 })
 
-export const GroupSchema = new Schema(
+export const GroupSchema = new Schema<GroupType>(
   {
     name: {
       type: String,
