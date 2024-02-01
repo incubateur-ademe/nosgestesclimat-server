@@ -9,13 +9,14 @@ export type Simulation = {
   progression: number
   date: Date
   foldedSteps: string[]
-  situation: Record<string, unknown>
+  situation: Record<string, any>
   computedResults: {
     bilan: number
     categories: Record<string, number>
   }
   poll?: RefType
   group?: RefType
+  additionalQuestions?: Record<string, number | string>
 }
 
 export const SimulationSchema = new Schema<Simulation>(

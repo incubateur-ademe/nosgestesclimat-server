@@ -2,8 +2,8 @@ import express from 'express'
 
 import { Organization } from '../../schemas/OrganizationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import { authenticateToken } from '../../helpers/authentification/authentifyToken'
 import { updateBrevoContact } from '../../helpers/email/updateBrevoContact'
+import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
 
 const router = express.Router()
 
@@ -11,10 +11,10 @@ const router = express.Router()
  * Fetching / updating by the owner
  * Needs to be authenticated and generates a new token at each request
  */
-router.post('/', async (req, res) => {
-  const administratorEmail = req.body.administratorEmail
+router.use(authentificationMiddleware).post('/', async (req, res) => {
+  const email = req.body.email
 
-  if (!administratorEmail) {
+  if (!email) {
     return res.status(401).send('Error. An email address must be provided.')
   }
 
@@ -24,15 +24,8 @@ router.post('/', async (req, res) => {
   const hasOptedInForCommunications = req.body.hasOptedInForCommunications ?? ''
 
   try {
-    // Authenticate the JWT
-    authenticateToken({
-      req,
-      res,
-      email: administratorEmail,
-    })
-
     const organizationFound = await Organization.findOne({
-      'administrators.email': administratorEmail,
+      'administrators.email': email,
     })
 
     if (!organizationFound) {
@@ -50,7 +43,7 @@ router.post('/', async (req, res) => {
     const organizationSaved = await organizationFound.save()
 
     updateBrevoContact({
-      email: administratorEmail,
+      email,
       name: administratorName,
       hasOptedInForCommunications,
     })

@@ -14,7 +14,7 @@ type Administrator = {
   verificationCode: VerificationCodeType
 }
 
-type Poll = {
+export type Poll = {
   simulations: RefType[]
   startDate: Date
   endDate: Date

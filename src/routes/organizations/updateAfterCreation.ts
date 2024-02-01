@@ -4,11 +4,12 @@ import { Organization } from '../../schemas/OrganizationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { authenticateToken } from '../../helpers/authentification/authentifyToken'
 import { updateBrevoContact } from '../../helpers/email/updateBrevoContact'
+import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
 
 const router = express.Router()
 
-router.post('/', async (req, res) => {
-  const administratorEmail = req.body.administratorEmail
+router.use(authentificationMiddleware).post('/', async (req, res) => {
+  const email = req.body.email
   const organizationName = req.body.name
   const slug = req.body.slug
   const administratorName = req.body.administratorName
@@ -19,7 +20,7 @@ router.post('/', async (req, res) => {
       .json('Error. A name, a slug and an administrator name must be provided.')
   }
 
-  if (!administratorEmail) {
+  if (!email) {
     return res.status(403).json('Error. An email address must be provided.')
   }
 
@@ -28,20 +29,9 @@ router.post('/', async (req, res) => {
   const numberOfParticipants = req.body.numberOfParticipants ?? ''
   const hasOptedInForCommunications = req.body.hasOptedInForCommunications ?? ''
 
-  // Authenticate the JWT
-  try {
-    authenticateToken({
-      req,
-      res,
-      email: administratorEmail,
-    })
-  } catch (error) {
-    return res.status(403).send('Invalid token.')
-  }
-
   try {
     const organizationFound = await Organization.findOne({
-      'administrators.email': administratorEmail,
+      'administrators.email': email,
     })
 
     if (!organizationFound) {
@@ -59,7 +49,7 @@ router.post('/', async (req, res) => {
     const organizationSaved = await organizationFound.save()
 
     updateBrevoContact({
-      email: administratorEmail,
+      email,
       name: administratorName,
       hasOptedInForCommunications,
     })

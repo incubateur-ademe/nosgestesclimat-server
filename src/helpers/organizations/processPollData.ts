@@ -1,41 +1,37 @@
-// @ts-nocheck
 import Engine from 'publicodes'
+import { Poll } from '../../schemas/OrganizationSchema'
+import { Simulation } from '../../schemas/SimulationSchema'
 
 type SimulationRecap = {
   bilan: number
   categories: {
     [key: string]: number
   }
+  additionalQuestions: Record<string, number | string>
+  progression: number
 }
 
 type Result = {
-  numberSimulations: number
-  averageCarbonFootprint: number
-  averageCarbonFootprintPerCategory: {
-    [key: string]: number
-  }
   funFacts: {
     percentageOfBicycleUsers: number
     percentageOfVegetarians: number
     percentageOfCarOwners: number
   }
-  simulationsFormatted: SimulationRecap[]
+  simulationsRecap: SimulationRecap[]
 }
 
-const FUN_FACTS_RULES = {
-  percentageOfBicycleUsers: '',
-  percentageOfVegetarians: '',
-  percentageOfCarOwners: '',
+type Situation = {
+  [key: string]: string | number
 }
 
-function getIsBicycleUser({ situation }) {
+function getIsBicycleUser({ situation }: { situation: Situation }) {
   return (
     situation['transport . mobilité douce . vélo . présent'] === 'oui' ||
     situation['transport . mobilité douce . vae . présent'] === 'oui'
   )
 }
 
-function getIsVegetarian({ situation }) {
+function getIsVegetarian({ situation }: { situation: Situation }) {
   return (
     situation['alimentation . plats . viande 1 . nombre'] === 0 &&
     situation['alimentation . plats . viande 2 . nombre'] === 0 &&
@@ -44,9 +40,13 @@ function getIsVegetarian({ situation }) {
   )
 }
 
-export async function processPollData({ poll, rules }): Result {
-  const { simulations } = poll
-
+export async function processPollData({
+  simulations,
+  rules,
+}: {
+  simulations: Simulation[]
+  rules: any
+}): Promise<Result> {
   const engine = new Engine(rules)
 
   let carbonFootprintPerCategory = {
@@ -78,21 +78,29 @@ export async function processPollData({ poll, rules }): Result {
     }
     if (
       simulation.situation['transport . voiture . utilisateur régulier'] ===
-      '"oui"'
+        '"oui"' &&
+      simulation.situation['transport . voiture . km'] <= 0
     ) {
       numberOfCarOwners += 1
     }
 
     return {
-      bilan: engine.evaluate('bilan')?.nodeValue,
+      bilan: engine.evaluate('bilan')?.nodeValue as number,
       categories: Object.keys(carbonFootprintPerCategory).reduce(
         (acc, category) => {
-          acc[category] = engine.evaluate(category)?.nodeValue
-          return acc
+          const accModified = { ...acc }
+
+          accModified[category] =
+            (engine.evaluate(category)?.nodeValue as number) || 0
+
+          return accModified
         },
-        {}
+        {} as {
+          [key: string]: number
+        }
       ),
-      additionalQuestions: simulation.additionalQuestions,
+      additionalQuestions: simulation.additionalQuestions ?? {},
+      progression: simulation.progression,
     }
   })
 
