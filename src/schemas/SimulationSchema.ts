@@ -16,7 +16,7 @@ export type Simulation = {
   }
   poll?: RefType
   group?: RefType
-  additionalQuestions?: Record<string, number | string>
+  defaultAdditionalQuestions?: Record<string, number | string>
 }
 
 export const SimulationSchema = new Schema<Simulation>(
@@ -53,6 +53,7 @@ export const SimulationSchema = new Schema<Simulation>(
       type: Schema.Types.ObjectId,
       ref: 'Group',
     },
+    defaultAdditionalQuestions: Object,
   },
   {
     timestamps: true,

@@ -20,7 +20,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
 
   const organizationName = req.body.name
   const administratorName = req.body.administratorName
-  const additionalQuestions = req.body.additionalQuestions
+  const defaultAdditionalQuestions = req.body.defaultAdditionalQuestions
   const hasOptedInForCommunications = req.body.hasOptedInForCommunications ?? ''
 
   try {
@@ -36,8 +36,9 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
       organizationFound.name = organizationName
     }
 
-    if (additionalQuestions) {
-      organizationFound.polls[0].additionalQuestions = additionalQuestions
+    if (defaultAdditionalQuestions) {
+      organizationFound.polls[0].defaultAdditionalQuestions =
+        defaultAdditionalQuestions
     }
 
     const organizationSaved = await organizationFound.save()

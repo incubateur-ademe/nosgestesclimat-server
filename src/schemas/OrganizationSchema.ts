@@ -20,7 +20,7 @@ export type Poll = {
   endDate: Date
   name: string
   slug: string
-  additionalQuestions: string[]
+  defaultAdditionalQuestions: string[]
   expectedNumberOfParticipants: number
 }
 
@@ -56,7 +56,7 @@ const PollSchema = new Schema<Poll>(
     endDate: Date,
     name: String,
     slug: String,
-    additionalQuestions: [String],
+    defaultAdditionalQuestions: [String],
     expectedNumberOfParticipants: Number,
   },
   {

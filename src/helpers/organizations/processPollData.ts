@@ -7,7 +7,7 @@ type SimulationRecap = {
   categories: {
     [key: string]: number
   }
-  additionalQuestions: Record<string, number | string>
+  defaultAdditionalQuestions: Record<string, number | string>
   progression: number
 }
 
@@ -99,7 +99,7 @@ export async function processPollData({
           [key: string]: number
         }
       ),
-      additionalQuestions: simulation.additionalQuestions ?? {},
+      defaultAdditionalQuestions: simulation.defaultAdditionalQuestions ?? {},
       progression: simulation.progression,
     }
   })
