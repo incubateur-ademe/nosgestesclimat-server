@@ -40,7 +40,7 @@ router.route('/').post(async (req: Request, res: Response) => {
     })
 
     // Add the organization to the user document
-    userDocument.organizations.push(organizationCreated._id)
+    userDocument?.organizations?.push(organizationCreated._id)
 
     await userDocument.save()
 

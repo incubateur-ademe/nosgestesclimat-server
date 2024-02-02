@@ -19,7 +19,11 @@ export async function handleDeleteGroupForAllParticipants({
   }
 
   users.forEach((user) => {
-    user.groups = user.groups.filter((id) => id.toString() !== groupId)
+    if (!user.groups) {
+      return
+    }
+
+    user.groups = user.groups.filter((id) => id && id.toString() !== groupId)
   })
 
   await Promise.all(users.map((user) => user.save()))

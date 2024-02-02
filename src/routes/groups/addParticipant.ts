@@ -69,6 +69,10 @@ router.route('/').post(async (req, res) => {
     const groupSaved = await groupFound.save()
 
     // Update user document
+    if (!userDocument.groups) {
+      userDocument.groups = []
+    }
+
     userDocument.groups.push(groupSaved._id)
 
     await userDocument.save()

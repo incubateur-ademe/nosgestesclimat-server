@@ -6,10 +6,6 @@ import { authentificationMiddleware } from '../../middlewares/authentificationMi
 
 const router = express.Router()
 
-/**
- * Fetching / updating by the owner
- * Needs to be authenticated and generates a new token at each request
- */
 router
   .use(authentificationMiddleware)
   .post('/', async (req: Request, res: Response) => {
@@ -22,7 +18,7 @@ router
     try {
       const organizationFound = await Organization.findOne({
         'administrators.email': email,
-      })
+      }).populate('polls.simulations')
 
       setSuccessfulJSONResponse(res)
 

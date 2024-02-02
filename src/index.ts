@@ -22,6 +22,7 @@ import loginOrganizationRoute from './routes/organizations/login'
 import sendVerificationCodeRoute from './routes/organizations/sendVerificationCode'
 import updateAfterCreationRoute from './routes/organizations/updateAfterCreation'
 import validateVerificationCodeRoute from './routes/organizations/validateVerificationCode'
+import fetchPollProcessedData from './routes/organizations/fetchPollProcessedData'
 // Simulation routes
 import createSimulationRoute from './routes/simulations/create'
 import fetchSimulationRoute from './routes/simulations/fetchSimulation'
@@ -100,6 +101,7 @@ app.use(
   validateVerificationCodeRoute
 )
 app.use('/organizations/send-verification-code', sendVerificationCodeRoute)
+app.use('/organizations/fetch-poll-processed-data', fetchPollProcessedData)
 
 // require the http module
 const http = require('http').Server(app)

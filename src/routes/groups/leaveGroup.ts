@@ -50,7 +50,9 @@ router.route('/').post(async (req, res, next) => {
       })
 
       // Delete participant from group if found
-      groupFound.participants.pull({ _id: participant._id })
+      groupFound.participants = groupFound.participants.filter(
+        (participantFiltered) => participantFiltered._id !== participant._id
+      )
 
       await groupFound.save()
 

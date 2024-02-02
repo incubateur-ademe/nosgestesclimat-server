@@ -8,6 +8,7 @@ import {
 const Schema = mongoose.Schema
 
 type Participant = {
+  _id?: string
   name: string
   email: string
   userId: string
