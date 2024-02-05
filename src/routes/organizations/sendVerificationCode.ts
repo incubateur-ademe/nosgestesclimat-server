@@ -6,15 +6,15 @@ import { handleSendVerificationCodeAndReturnExpirationDate } from '../../helpers
 const router = express.Router()
 
 router.post('/', async (req, res) => {
-  const administratorEmail = req.body.administratorEmail
+  const email = req.body.email
 
-  if (!administratorEmail) {
+  if (!email) {
     return res.status(403).json('No owner email provided.')
   }
 
   try {
     const organizationFound = await Organization.findOne({
-      'administrators.email': administratorEmail,
+      'administrators.email': email,
     })
 
     if (!organizationFound) {
@@ -22,9 +22,7 @@ router.post('/', async (req, res) => {
     }
 
     const verificationCodeObject =
-      await handleSendVerificationCodeAndReturnExpirationDate(
-        administratorEmail
-      )
+      await handleSendVerificationCodeAndReturnExpirationDate(email)
 
     organizationFound.administrators[0].verificationCode =
       verificationCodeObject

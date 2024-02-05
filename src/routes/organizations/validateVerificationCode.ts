@@ -8,17 +8,21 @@ import { Organization } from '../../schemas/OrganizationSchema'
 const router = express.Router()
 
 router.post('/', async (req, res) => {
-  const administratorEmail = req.body.administratorEmail
+  const email = req.body.email
   const verificationCode = req.body.verificationCode
 
-  if (!administratorEmail || !verificationCode) {
+  if (!email || !verificationCode) {
     return res.status(403).json('No email or verification code provided.')
   }
 
   try {
-    const verificationCodeFound = await VerificationCode.findOne({
-      email: administratorEmail,
-    })
+    const verificationCodeFound = await VerificationCode.findOne(
+      {
+        email,
+      },
+      {},
+      { sort: { createdAt: -1 } }
+    )
 
     if (!verificationCodeFound) {
       return res.status(403).json('No matching verification code found.')
@@ -37,13 +41,9 @@ router.post('/', async (req, res) => {
       return res.status(403).json('Code expired.')
     }
 
-    const token = jwt.sign(
-      { email: administratorEmail },
-      process.env.JWT_SECRET as Secret,
-      {
-        expiresIn: '1d',
-      }
-    )
+    const token = jwt.sign({ email }, process.env.JWT_SECRET as Secret, {
+      expiresIn: '1d',
+    })
 
     setSuccessfulJSONResponse(res)
 
@@ -55,7 +55,7 @@ router.post('/', async (req, res) => {
     })
 
     const organization = await Organization.findOne({
-      'administrators.email': administratorEmail,
+      'administrators.email': email,
     })
 
     res.json(organization)
