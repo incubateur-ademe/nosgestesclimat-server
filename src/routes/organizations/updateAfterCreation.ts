@@ -38,13 +38,25 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
       return res.status(403).send('No matching organization found.')
     }
 
+    const administratorModifiedIndex =
+      organizationFound.administrators.findIndex(
+        ({ email: administratorEmail }) => administratorEmail === email
+      )
+
     organizationFound.name = organizationName
     organizationFound.slug = slug
-    organizationFound.administrators[0].name = administratorName
-    organizationFound.administrators[0].position = administratorPosition
-    organizationFound.administrators[0].telephone = administratorTelephone
-    organizationFound.polls[0].expectedNumberOfParticipants =
-      numberOfParticipants
+    organizationFound.administrators[administratorModifiedIndex].name =
+      administratorName
+    organizationFound.administrators[administratorModifiedIndex].position =
+      administratorPosition
+    organizationFound.administrators[administratorModifiedIndex].telephone =
+      administratorTelephone
+    organizationFound.administrators[
+      administratorModifiedIndex
+    ].hasOptedInForCommunications = hasOptedInForCommunications
+    organizationFound.polls[
+      administratorModifiedIndex
+    ].expectedNumberOfParticipants = numberOfParticipants
 
     const organizationSaved = await organizationFound.save()
 

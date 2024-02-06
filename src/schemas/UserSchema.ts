@@ -2,7 +2,7 @@ import mongoose, { RefType } from 'mongoose'
 
 const Schema = mongoose.Schema
 
-type User = {
+export type UserType = {
   name: string
   email?: string
   userId: string
@@ -13,7 +13,7 @@ type User = {
   organizations?: RefType[]
 }
 
-export const UserSchema = new Schema<User>(
+export const UserSchema = new Schema<UserType>(
   {
     name: String,
     email: {

@@ -21,7 +21,8 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
   const organizationName = req.body.name
   const administratorName = req.body.administratorName
   const defaultAdditionalQuestions = req.body.defaultAdditionalQuestions
-  const hasOptedInForCommunications = req.body.hasOptedInForCommunications ?? ''
+  const hasOptedInForCommunications =
+    req.body.hasOptedInForCommunications ?? false
 
   try {
     const organizationFound = await Organization.findOne({
@@ -32,8 +33,25 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
       return res.status(403).json('No matching organization found.')
     }
 
+    // Handle modifications
     if (organizationName) {
       organizationFound.name = organizationName
+    }
+
+    const administratorModifiedIndex =
+      organizationFound.administrators.findIndex(
+        ({ email: administratorEmail }) => administratorEmail === email
+      )
+
+    if (administratorName && administratorModifiedIndex !== -1) {
+      organizationFound.administrators[administratorModifiedIndex].name =
+        administratorName
+    }
+
+    if (administratorModifiedIndex !== -1) {
+      organizationFound.administrators[
+        administratorModifiedIndex
+      ].hasOptedInForCommunications = hasOptedInForCommunications
     }
 
     if (defaultAdditionalQuestions) {
@@ -41,13 +59,16 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
         defaultAdditionalQuestions
     }
 
+    // Save the modifications
     const organizationSaved = await organizationFound.save()
 
-    updateBrevoContact({
-      email,
-      name: administratorName,
-      hasOptedInForCommunications,
-    })
+    if (administratorName || hasOptedInForCommunications !== undefined) {
+      updateBrevoContact({
+        email,
+        name: administratorName,
+        hasOptedInForCommunications,
+      })
+    }
 
     setSuccessfulJSONResponse(res)
 

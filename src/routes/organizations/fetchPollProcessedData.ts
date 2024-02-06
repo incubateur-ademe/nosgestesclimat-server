@@ -13,6 +13,7 @@ router
   .post('/', async (req: Request, res: Response) => {
     const email = req.body.email
     const fileName = req.body.fileName
+    const userId = req.body.userId
 
     if (!email) {
       return res.status(403).json('No owner email provided.')
@@ -30,7 +31,9 @@ router
     try {
       const organizationFound = await Organization.findOne({
         'administrators.email': email,
-      }).populate('polls.simulations')
+      })
+        .populate('polls.simulations')
+        .populate('polls.simulations.user')
 
       if (!organizationFound) {
         return res.status(403).json('No organization found.')
@@ -40,6 +43,7 @@ router
         simulations: organizationFound?.polls[0]
           ?.simulations as unknown as Simulation[],
         rules,
+        userId,
       })
 
       setSuccessfulJSONResponse(res)

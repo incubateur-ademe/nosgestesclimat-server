@@ -1,5 +1,5 @@
 import Engine from 'publicodes'
-import { Poll } from '../../schemas/OrganizationSchema'
+import { User, UserType } from '../../schemas/UserSchema'
 import { Simulation } from '../../schemas/SimulationSchema'
 
 type SimulationRecap = {
@@ -43,9 +43,11 @@ function getIsVegetarian({ situation }: { situation: Situation }) {
 export async function processPollData({
   simulations,
   rules,
+  userId,
 }: {
   simulations: Simulation[]
   rules: any
+  userId: string
 }): Promise<Result> {
   const engine = new Engine(rules)
 
@@ -101,6 +103,8 @@ export async function processPollData({
       ),
       defaultAdditionalQuestions: simulation.defaultAdditionalQuestions ?? {},
       progression: simulation.progression,
+      isCurrentUser:
+        (simulation.user as unknown as UserType)?.userId === userId,
     }
   })
 

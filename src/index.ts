@@ -20,6 +20,7 @@ import createOrganizationRoute from './routes/organizations/create'
 import fetchOrganizationRoute from './routes/organizations/fetchOrganization'
 import loginOrganizationRoute from './routes/organizations/login'
 import sendVerificationCodeRoute from './routes/organizations/sendVerificationCode'
+import updateRoute from './routes/organizations/update'
 import updateAfterCreationRoute from './routes/organizations/updateAfterCreation'
 import validateVerificationCodeRoute from './routes/organizations/validateVerificationCode'
 import fetchPollProcessedData from './routes/organizations/fetchPollProcessedData'
@@ -95,6 +96,7 @@ app.use('/group/update-participant', updateParticipantRoute)
 app.use('/organizations/create', createOrganizationRoute)
 app.use('/organizations/login', loginOrganizationRoute)
 app.use('/organizations/fetch-organization', fetchOrganizationRoute)
+app.use('/organizations/update', updateRoute)
 app.use('/organizations/update-after-creation', updateAfterCreationRoute)
 app.use(
   '/organizations/validate-verification-code',

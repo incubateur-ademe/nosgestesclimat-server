@@ -12,6 +12,7 @@ type Administrator = {
   telephone: string
   position: string
   verificationCode: VerificationCodeType
+  hasOptedInForCommunications: boolean
 }
 
 export type Poll = {
@@ -38,6 +39,7 @@ const AdministratorSchema = new Schema<Administrator>(
     telephone: String,
     position: String,
     verificationCode: VerificationCodeSchema,
+    hasOptedInForCommunications: Boolean,
   },
   {
     timestamps: true,
