@@ -1,24 +1,27 @@
 import mongoose, { RefType } from 'mongoose'
 
-import {
-  SimulationPreciseSchema,
-  SimulationPreciseType,
-} from './_legacy/SimulationPreciseSchema'
+import { SimulationPreciseType } from './_legacy/SimulationPreciseSchema'
+import { MemberSchema, OwnerSchema } from './_legacy/GroupSubSchemas'
 
 const Schema = mongoose.Schema
 
 type Participant = {
   _id?: string
   name: string
-  email: string
+  email?: string
   userId: string
-  simulation: RefType
+  // Conditional because a participant can be added without a simulation
+  simulation?: RefType
 }
 
 type GroupType = {
   name: string
   emoji: string
-  administrator: Participant
+  administrator: {
+    name: string
+    email?: String
+    userId: String
+  }
   participants: Participant[]
   // Legacy from previous version
   // We should remove it before going to production
@@ -35,49 +38,16 @@ type GroupType = {
   }[]
 }
 
-/*
- ** Legacy from previous version
- */
-const OwnerSchema = new Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-  email: {
-    type: String,
-    required: false,
-  },
-  userId: {
-    type: String,
-    required: false,
-  },
-})
-const MemberSchema = new Schema({
-  email: {
-    type: String,
-    required: false,
-  },
-  name: {
-    type: String,
-    required: true,
-  },
-  simulation: SimulationPreciseSchema,
-  userId: {
-    type: String,
-    required: true,
-  },
-})
-/*
- ** Legacy from previous version
- */
-
 const ParticipantSchema = new Schema<Participant>({
   name: {
     type: String,
     required: true,
   },
   email: String,
-  userId: String,
+  userId: {
+    type: String,
+    required: true,
+  },
   simulation: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Simulation',
@@ -99,11 +69,11 @@ export const GroupSchema = new Schema<GroupType>(
         type: String,
         required: true,
       },
-      email: {
+      email: String,
+      userId: {
         type: String,
-        required: false,
+        required: true,
       },
-      userId: String,
     },
     participants: [ParticipantSchema],
     // Legacy from previous version

@@ -1,5 +1,5 @@
 import Engine from 'publicodes'
-import { User, UserType } from '../../schemas/UserSchema'
+import { UserType } from '../../schemas/UserSchema'
 import { Simulation } from '../../schemas/SimulationSchema'
 
 type SimulationRecap = {
@@ -7,7 +7,10 @@ type SimulationRecap = {
   categories: {
     [key: string]: number
   }
-  defaultAdditionalQuestions: Record<string, number | string>
+  defaultAdditionalQuestionsAnswers: {
+    postalCode?: string
+    birthDate?: string
+  }
   progression: number
 }
 
@@ -17,7 +20,7 @@ type Result = {
     percentageOfVegetarians: number
     percentageOfCarOwners: number
   }
-  simulationsRecap: SimulationRecap[]
+  simulationRecaps: SimulationRecap[]
 }
 
 type Situation = {
@@ -67,7 +70,7 @@ export async function processPollData({
   let numberOfCarOwners = 0
 
   // Pour chaque simulation du sondage
-  const simulationsRecap = simulations.map((simulation) => {
+  const simulationRecaps = simulations.map((simulation) => {
     // We update the engine with the simulation situation
     engine.setSituation(simulation.situation)
 
@@ -101,10 +104,12 @@ export async function processPollData({
           [key: string]: number
         }
       ),
-      defaultAdditionalQuestions: simulation.defaultAdditionalQuestions ?? {},
+      defaultAdditionalQuestionsAnswers:
+        simulation.defaultAdditionalQuestionsAnswers ?? {},
       progression: simulation.progression,
       isCurrentUser:
         (simulation.user as unknown as UserType)?.userId === userId,
+      date: simulation.modifiedAt,
     }
   })
 
@@ -114,6 +119,6 @@ export async function processPollData({
       percentageOfVegetarians: numberOfVegetarians / simulations.length,
       percentageOfCarOwners: numberOfCarOwners / simulations.length,
     },
-    simulationsRecap,
+    simulationRecaps,
   }
 }
