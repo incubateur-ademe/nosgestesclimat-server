@@ -25,7 +25,7 @@ export type Poll = {
   expectedNumberOfParticipants: number
 }
 
-type OrganizationType = {
+export type OrganizationType = {
   administrators: Administrator[]
   polls: Poll[]
   name: string

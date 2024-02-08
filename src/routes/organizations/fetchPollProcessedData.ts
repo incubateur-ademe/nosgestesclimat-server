@@ -2,14 +2,14 @@ import express, { Request, Response } from 'express'
 
 import { Organization } from '../../schemas/OrganizationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
 import { processPollData } from '../../helpers/organizations/processPollData'
 import { Simulation } from '../../schemas/SimulationSchema'
+import { authenticatePollMiddleware } from '../../middlewares/authenticatePollMiddleware'
 
 const router = express.Router()
 
 router
-  .use(authentificationMiddleware)
+  .use(authenticatePollMiddleware)
   .post('/', async (req: Request, res: Response) => {
     const email = req.body.email
     const fileName = req.body.fileName
