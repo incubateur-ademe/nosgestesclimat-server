@@ -3,6 +3,7 @@ export type PollPublicInfo = {
   slug: string
   defaultAdditionalQuestions?: string[]
   expectedNumberOfParticipants?: number
+  numberOfParticipants: number
   organisationInfo?: OrganisationInfo
   startDate?: string
   endDate?: string

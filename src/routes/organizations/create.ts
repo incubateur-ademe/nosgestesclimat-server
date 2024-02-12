@@ -2,7 +2,6 @@ import express, { Request, Response } from 'express'
 import { Organization } from '../../schemas/OrganizationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { handleSendVerificationCodeAndReturnExpirationDate } from '../../helpers/verificationCode/handleSendVerificationCodeAndReturnExpirationDate'
-import { generateRandomNumberWithLength } from '../../utils/generateRandomNumberWithLength'
 import { Poll } from '../../schemas/PollSchema'
 
 const router = express.Router()
@@ -17,7 +16,6 @@ router.route('/').post(async (req: Request, res: Response) => {
 
     const pollCreated = new Poll({
       //TODO: it should be unique and not random
-      slug: generateRandomNumberWithLength(6),
       simulations: [],
     })
 

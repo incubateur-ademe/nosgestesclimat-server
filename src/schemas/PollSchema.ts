@@ -1,4 +1,5 @@
 import mongoose, { RefType } from 'mongoose'
+import { nanoid } from 'nanoid'
 
 const Schema = mongoose.Schema
 
@@ -15,6 +16,12 @@ export type PollType = {
 // Should this include a reference to the parent organisation?
 export const PollSchema = new Schema<PollType>(
   {
+    name: String,
+    slug: {
+      type: String,
+      default: () => nanoid(6),
+      unique: true,
+    },
     simulations: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -23,8 +30,6 @@ export const PollSchema = new Schema<PollType>(
     ],
     startDate: Date,
     endDate: Date,
-    name: String,
-    slug: String,
     defaultAdditionalQuestions: [String],
     expectedNumberOfParticipants: Number,
   },
