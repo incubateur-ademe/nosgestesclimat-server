@@ -11,9 +11,6 @@ router.post('/', async (req, res) => {
   const email = req.body.email
   const verificationCode = req.body.verificationCode
 
-  console.log('email', email)
-  console.log('verificationCode', verificationCode)
-
   if (!email || !verificationCode) {
     return res.status(403).json('No email or verification code provided.')
   }
@@ -26,8 +23,6 @@ router.post('/', async (req, res) => {
       {},
       { sort: { createdAt: -1 } }
     )
-
-    console.log('verificationCodeFound', verificationCodeFound)
 
     if (!verificationCodeFound) {
       return res.status(403).json('No matching verification code found.')

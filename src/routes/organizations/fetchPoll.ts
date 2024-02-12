@@ -62,7 +62,6 @@ router
 
         res.json(pollPublicInfos)
       } catch (error) {
-        console.log(error)
         return res.status(500).send('Error while fetching poll')
       }
     }

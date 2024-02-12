@@ -48,12 +48,10 @@ router.route('/').post(async (req, res) => {
     })
 
     // if a poll is associated with the simulation and the simulation is not already in it, we add it , we add the simulation to the poll
-    if (poll) {
-      if (!poll.simulations.includes(simulationSaved._id)) {
-        poll.simulations.push(simulationSaved._id)
-        await poll.save()
-        console.log(`Simulation saved in poll ${poll.slug}.`)
-      }
+    if (poll && !poll.simulations.includes(simulationSaved._id)) {
+      poll.simulations.push(simulationSaved._id)
+      await poll.save()
+      console.log(`Simulation saved in poll ${poll.slug}.`)
     }
 
     setSuccessfulJSONResponse(res)

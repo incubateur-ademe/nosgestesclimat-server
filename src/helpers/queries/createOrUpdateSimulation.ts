@@ -31,11 +31,11 @@ export async function createOrUpdateSimulation({
     simulationFound.defaultAdditionalQuestionsAnswers =
       defaultAdditionalQuestionsAnswers
 
-    await simulationFound.save()
+    const simulationSaved = await simulationFound.save()
 
     console.log(`Simulation ${id} updated.`)
 
-    return simulationFound
+    return simulationSaved
   }
 
   // If the simulation does not exist, create it
