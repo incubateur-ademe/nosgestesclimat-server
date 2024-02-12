@@ -13,7 +13,7 @@ export async function createOrUpdateSimulation({
   group,
   defaultAdditionalQuestionsAnswers,
 }: SimulationType) {
-  // Check if the simulation allready exists
+  // Check if the simulation already exists
   const simulationFound = await Simulation.findOne({
     id,
     user,

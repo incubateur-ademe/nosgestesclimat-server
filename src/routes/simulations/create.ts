@@ -47,7 +47,7 @@ router.route('/').post(async (req, res) => {
         simulation.defaultAdditionalQuestionsAnswers,
     })
 
-    // if a poll is associated with the simulation and the simulation is not allready in it, we add it
+    // if a poll is associated with the simulation and the simulation is not already in it, we add it , we add the simulation to the poll
     if (poll) {
       if (!poll.simulations.includes(simulationSaved._id)) {
         poll.simulations.push(simulationSaved._id)
