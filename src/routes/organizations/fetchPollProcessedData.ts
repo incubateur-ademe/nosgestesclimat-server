@@ -3,7 +3,7 @@ import express, { Request, Response } from 'express'
 import { Organization } from '../../schemas/OrganizationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { processPollData } from '../../helpers/organizations/processPollData'
-import { Simulation } from '../../schemas/SimulationSchema'
+import { SimulationType } from '../../schemas/SimulationSchema'
 import { authenticatePollMiddleware } from '../../middlewares/authenticatePollMiddleware'
 
 const router = express.Router()
@@ -32,6 +32,7 @@ router
       const organizationFound = await Organization.findOne({
         'administrators.email': email,
       })
+        .populate('polls')
         .populate('polls.simulations')
         .populate('polls.simulations.user')
 
@@ -41,7 +42,7 @@ router
 
       const pollData = processPollData({
         simulations: organizationFound?.polls[0]
-          ?.simulations as unknown as Simulation[],
+          ?.simulations as unknown as SimulationType[],
         rules,
         userId,
       })

@@ -3,6 +3,7 @@ import {
   VerificationCodeSchema,
   VerificationCodeType,
 } from './VerificationCodeSchema'
+import { PollType } from './PollSchema'
 
 const Schema = mongoose.Schema
 
@@ -15,19 +16,9 @@ type Administrator = {
   hasOptedInForCommunications: boolean
 }
 
-export type Poll = {
-  simulations: RefType[]
-  startDate: Date
-  endDate: Date
-  name: string
-  slug: string
-  defaultAdditionalQuestions: string[]
-  expectedNumberOfParticipants: number
-}
-
 export type OrganizationType = {
   administrators: Administrator[]
-  polls: Poll[]
+  polls: PollType[]
   name: string
   slug: string
 }
@@ -46,30 +37,15 @@ const AdministratorSchema = new Schema<Administrator>(
   }
 )
 
-const PollSchema = new Schema<Poll>(
-  {
-    simulations: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Simulation',
-      },
-    ],
-    startDate: Date,
-    endDate: Date,
-    name: String,
-    slug: String,
-    defaultAdditionalQuestions: [String],
-    expectedNumberOfParticipants: Number,
-  },
-  {
-    timestamps: true,
-  }
-)
-
 export const OrganizationSchema = new Schema<OrganizationType>(
   {
     administrators: [AdministratorSchema],
-    polls: [PollSchema],
+    polls: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Poll',
+      },
+    ],
     name: String,
     slug: String,
   },

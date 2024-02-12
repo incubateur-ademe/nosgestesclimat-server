@@ -2,7 +2,7 @@ import mongoose, { ObjectId, RefType } from 'mongoose'
 
 const Schema = mongoose.Schema
 
-export type Simulation = {
+export type SimulationType = {
   id: string
   user: RefType
   actionChoices: Record<string, unknown>
@@ -18,13 +18,13 @@ export type Simulation = {
   group?: RefType
   defaultAdditionalQuestionsAnswers?: {
     postalCode?: string
-    birthDate?: string
+    birthdate?: string
   }
   modifiedAt?: Date
   createdAt?: Date
 }
 
-export const SimulationSchema = new Schema<Simulation>(
+export const SimulationSchema = new Schema<SimulationType>(
   {
     // UI stored simulation id
     id: String,
@@ -60,7 +60,7 @@ export const SimulationSchema = new Schema<Simulation>(
     },
     defaultAdditionalQuestionsAnswers: {
       postalCode: String,
-      birthDate: String,
+      birthdate: String,
     },
   },
   {

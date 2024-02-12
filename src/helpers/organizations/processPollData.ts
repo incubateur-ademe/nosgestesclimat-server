@@ -1,6 +1,6 @@
 import Engine from 'publicodes'
 import { UserType } from '../../schemas/UserSchema'
-import { Simulation } from '../../schemas/SimulationSchema'
+import { SimulationType } from '../../schemas/SimulationSchema'
 
 type SimulationRecap = {
   bilan: number
@@ -9,7 +9,7 @@ type SimulationRecap = {
   }
   defaultAdditionalQuestionsAnswers: {
     postalCode?: string
-    birthDate?: string
+    birthdate?: string
   }
   progression: number
 }
@@ -48,7 +48,7 @@ export async function processPollData({
   rules,
   userId,
 }: {
-  simulations: Simulation[]
+  simulations: SimulationType[]
   rules: any
   userId: string
 }): Promise<Result> {

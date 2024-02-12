@@ -2,29 +2,26 @@ import express, { Request, Response } from 'express'
 import { Organization } from '../../schemas/OrganizationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { handleSendVerificationCodeAndReturnExpirationDate } from '../../helpers/verificationCode/handleSendVerificationCodeAndReturnExpirationDate'
-import { getUserDocument } from '../../helpers/queries/getUserDocument'
+import { generateRandomNumberWithLength } from '../../utils/generateRandomNumberWithLength'
+import { Poll } from '../../schemas/PollSchema'
 
 const router = express.Router()
 
 router.route('/').post(async (req: Request, res: Response) => {
   try {
     const administratorEmail = req.body.administratorEmail
-    const userId = req.body.userId
 
     if (!administratorEmail) {
       return res.status(403).json('Error. An email address must be provided.')
     }
 
-    // Get user document or create a new one
-    const userDocument = await getUserDocument({
-      email: administratorEmail,
-      name: undefined,
-      userId,
+    const pollCreated = new Poll({
+      //TODO: it should be unique and not random
+      slug: generateRandomNumberWithLength(6),
+      simulations: [],
     })
 
-    if (!userDocument) {
-      return res.status(403).json('Error while searching for user.')
-    }
+    const newlySavedPoll = await pollCreated.save()
 
     const organizationCreated = new Organization({
       administrators: [
@@ -32,17 +29,8 @@ router.route('/').post(async (req: Request, res: Response) => {
           email: administratorEmail,
         },
       ],
-      polls: [
-        {
-          simulations: [],
-        },
-      ],
+      polls: [newlySavedPoll._id],
     })
-
-    // Add the organization to the user document
-    userDocument?.organizations?.push(organizationCreated._id)
-
-    await userDocument.save()
 
     // Save the organization
     const newlySavedOrganization = await organizationCreated.save()
