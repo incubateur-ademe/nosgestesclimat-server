@@ -2,7 +2,6 @@ import express from 'express'
 
 import { Organization } from '../../schemas/OrganizationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import { authenticateToken } from '../../helpers/authentification/authentifyToken'
 import { updateBrevoContact } from '../../helpers/email/updateBrevoContact'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
 
@@ -54,9 +53,8 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
     organizationFound.administrators[
       administratorModifiedIndex
     ].hasOptedInForCommunications = hasOptedInForCommunications
-    organizationFound.polls[
-      administratorModifiedIndex
-    ].expectedNumberOfParticipants = numberOfParticipants
+    organizationFound.polls[0].expectedNumberOfParticipants =
+      numberOfParticipants
 
     const organizationSaved = await organizationFound.save()
 

@@ -23,6 +23,7 @@ import sendVerificationCodeRoute from './routes/organizations/sendVerificationCo
 import updateRoute from './routes/organizations/update'
 import updateAfterCreationRoute from './routes/organizations/updateAfterCreation'
 import validateVerificationCodeRoute from './routes/organizations/validateVerificationCode'
+import fetchPollRoute from './routes/organizations/fetchPoll'
 import fetchPollProcessedData from './routes/organizations/fetchPollProcessedData'
 // Simulation routes
 import createSimulationRoute from './routes/simulations/create'
@@ -103,6 +104,7 @@ app.use(
   validateVerificationCodeRoute
 )
 app.use('/organizations/send-verification-code', sendVerificationCodeRoute)
+app.use('/organizations/fetch-poll:pollSlug?', fetchPollRoute)
 app.use('/organizations/fetch-poll-processed-data', fetchPollProcessedData)
 
 // require the http module
@@ -111,7 +113,8 @@ const http = require('http').Server(app)
 // require the socket.io module
 const socketio = require('socket.io')
 
-const port = process.env.PORT || 3000
+const port =
+  process.env.PORT || process.env.NODE_ENV === 'development' ? 3001 : 3000
 
 const io = socketio(http, {
   cors: { origin, methods: ['GET', 'POST'] },

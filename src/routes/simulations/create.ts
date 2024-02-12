@@ -1,10 +1,8 @@
 import express from 'express'
-
-import { Simulation } from '../../schemas/SimulationSchema'
-
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-
 import { getUserDocument } from '../../helpers/queries/getUserDocument'
+import { findPollBySlug } from '../../helpers/organizations/findPollBySlug'
+import { createOrUpdateSimulation } from '../../helpers/queries/createOrUpdateSimulation'
 
 const router = express.Router()
 
@@ -30,7 +28,11 @@ router.route('/').post(async (req, res) => {
   }
 
   try {
-    const simulationCreated = new Simulation({
+    // We check if a poll is associated with the simulation
+    const poll = await findPollBySlug(simulation.poll)
+
+    // We create or update the simulation
+    const simulationSaved = await createOrUpdateSimulation({
       id: simulation.id,
       user: userDocument._id,
       actionChoices: simulation.actionChoices,
@@ -39,16 +41,24 @@ router.route('/').post(async (req, res) => {
       situation: simulation.situation,
       computedResults: simulation.computedResults,
       progression: simulation.progression,
+      poll: poll?._id,
+      group: simulation.group,
+      defaultAdditionalQuestionsAnswers:
+        simulation.defaultAdditionalQuestionsAnswers,
     })
 
-    const simulationSaved = simulationCreated.save()
+    // if a poll is associated with the simulation and the simulation is not already in it, we add it , we add the simulation to the poll
+    if (poll && !poll.simulations.includes(simulationSaved._id)) {
+      poll.simulations.push(simulationSaved._id)
+      await poll.save()
+      console.log(`Simulation saved in poll ${poll.slug}.`)
+    }
 
     setSuccessfulJSONResponse(res)
 
     res.json(simulationSaved)
-
-    console.log('New simulation created.')
   } catch (error) {
+    console.error(error)
     return res.status(401).send('Error while creating simulation.')
   }
 })

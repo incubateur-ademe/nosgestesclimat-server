@@ -22,7 +22,7 @@ router
     try {
       const organizationFound = await Organization.findOne({
         'administrators.email': email,
-      })
+      }).populate('polls')
 
       setSuccessfulJSONResponse(res)
 

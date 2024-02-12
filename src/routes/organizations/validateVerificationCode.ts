@@ -51,7 +51,7 @@ router.post('/', async (req, res) => {
       maxAge: 1000 * 60 * 60 * 24,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     })
 
     const organization = await Organization.findOne({
@@ -60,6 +60,7 @@ router.post('/', async (req, res) => {
 
     res.json(organization)
   } catch (error) {
+    console.log('error', error)
     return res.status(403).json(error)
   }
 })
