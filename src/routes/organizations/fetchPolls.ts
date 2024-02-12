@@ -10,16 +10,16 @@ const router = express.Router()
  * Fetching multiple polls public infos
  */
 router.post('/', async (req: Request, res: Response) => {
-  const pollsSlug = req.body.polls
+  const pollSlugs = req.body.polls
 
-  if (!pollsSlug || !pollsSlug.length) {
+  if (!pollSlugs || !pollSlugs.length) {
     return res.status(500).json('You must provide at least one poll slug')
   }
 
   try {
     const pollsPublicInfos: PollPublicInfo[] = []
 
-    for (const pollSlug of pollsSlug) {
+    for (const pollSlug of pollSlugs) {
       const pollPublicInfos = await getPollPublicInfos({ pollSlug })
       if (pollPublicInfos) {
         pollsPublicInfos.push(pollPublicInfos)
