@@ -1,4 +1,5 @@
 import express from 'express'
+import slugify from 'slugify'
 
 import { Organisation } from '../../schemas/OrganisationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
@@ -23,6 +24,10 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
   const defaultAdditionalQuestions = req.body.defaultAdditionalQuestions
   const hasOptedInForCommunications =
     req.body.hasOptedInForCommunications ?? false
+  const shouldSetSlug = req.body.shouldSetSlug ?? false
+  const expectedNumberOfParticipants = req.body.expectedNumberOfParticipants
+  const administratorPosition = req.body.administratorPosition ?? ''
+  const administratorTelephone = req.body.administratorTelephone ?? ''
 
   try {
     const organisationFound = await Organisation.findOne({
@@ -33,9 +38,12 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
       return res.status(403).json('No matching organisation found.')
     }
 
-    // Handle modifications
     if (organisationName) {
       organisationFound.name = organisationName
+    }
+
+    if (shouldSetSlug && !organisationFound.slug) {
+      organisationFound.slug = slugify(organisationName)
     }
 
     const administratorModifiedIndex =
@@ -48,6 +56,16 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
         administratorName
     }
 
+    if (administratorPosition && administratorModifiedIndex !== -1) {
+      organisationFound.administrators[administratorModifiedIndex].position =
+        administratorPosition
+    }
+
+    if (administratorTelephone && administratorModifiedIndex !== -1) {
+      organisationFound.administrators[administratorModifiedIndex].position =
+        administratorTelephone
+    }
+
     if (administratorModifiedIndex !== -1) {
       organisationFound.administrators[
         administratorModifiedIndex
@@ -57,6 +75,9 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
     if (defaultAdditionalQuestions) {
       organisationFound.polls[0].defaultAdditionalQuestions =
         defaultAdditionalQuestions
+
+      organisationFound.polls[0].expectedNumberOfParticipants =
+        expectedNumberOfParticipants
     }
 
     // Save the modifications
