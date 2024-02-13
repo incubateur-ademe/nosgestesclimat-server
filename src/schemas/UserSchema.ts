@@ -10,7 +10,7 @@ export type UserType = {
   telephone?: string
   simulations?: RefType[]
   groups?: RefType[]
-  organizations?: RefType[]
+  organisations?: RefType[]
 }
 
 export const UserSchema = new Schema<UserType>(
@@ -38,10 +38,10 @@ export const UserSchema = new Schema<UserType>(
         ref: 'Group',
       },
     ],
-    organizations: [
+    organisations: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Organization',
+        ref: 'Organisation',
       },
     ],
   },

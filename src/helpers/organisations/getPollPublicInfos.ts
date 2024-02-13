@@ -1,4 +1,4 @@
-import { Organization } from '../../schemas/OrganizationSchema'
+import { Organisation } from '../../schemas/OrganisationSchema'
 import { PollPublicInfo } from '../../types/types'
 import { findPollBySlug } from './findPollBySlug'
 
@@ -14,7 +14,7 @@ export async function getPollPublicInfos({
     return null
   }
 
-  const organisation = await Organization.findOne({
+  const organisation = await Organisation.findOne({
     polls: poll._id,
   })
 

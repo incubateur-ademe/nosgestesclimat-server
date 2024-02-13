@@ -3,7 +3,7 @@ import express from 'express'
 
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { VerificationCode } from '../../schemas/VerificationCodeSchema'
-import { Organization } from '../../schemas/OrganizationSchema'
+import { Organisation } from '../../schemas/OrganisationSchema'
 
 const router = express.Router()
 
@@ -54,11 +54,11 @@ router.post('/', async (req, res) => {
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     })
 
-    const organization = await Organization.findOne({
+    const organisation = await Organisation.findOne({
       'administrators.email': email,
     })
 
-    res.json(organization)
+    res.json(organisation)
   } catch (error) {
     console.log('error', error)
     return res.status(403).json(error)

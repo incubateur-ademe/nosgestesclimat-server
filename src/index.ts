@@ -15,17 +15,17 @@ import fetchGroupsRoute from './routes/groups/fetchGroups'
 import leaveGroupRoute from './routes/groups/leaveGroup'
 import updateGroupNameRoute from './routes/groups/updateGroupName'
 import updateParticipantRoute from './routes/groups/updateParticipant'
-// Organization routes
-import createOrganizationRoute from './routes/organizations/create'
-import fetchOrganizationRoute from './routes/organizations/fetchOrganization'
-import loginOrganizationRoute from './routes/organizations/login'
-import sendVerificationCodeRoute from './routes/organizations/sendVerificationCode'
-import updateRoute from './routes/organizations/update'
-import updateAfterCreationRoute from './routes/organizations/updateAfterCreation'
-import validateVerificationCodeRoute from './routes/organizations/validateVerificationCode'
-import fetchPollRoute from './routes/organizations/fetchPoll'
-import fetchPollsRoute from './routes/organizations/fetchPolls'
-import fetchPollProcessedData from './routes/organizations/fetchPollProcessedData'
+// Organisation routes
+import createOrganisationRoute from './routes/organisations/create'
+import fetchOrganisationRoute from './routes/organisations/fetchOrganisation'
+import loginOrganisationRoute from './routes/organisations/login'
+import sendVerificationCodeRoute from './routes/organisations/sendVerificationCode'
+import updateRoute from './routes/organisations/update'
+import updateAfterCreationRoute from './routes/organisations/updateAfterCreation'
+import validateVerificationCodeRoute from './routes/organisations/validateVerificationCode'
+import fetchPollRoute from './routes/organisations/fetchPoll'
+import fetchPollsRoute from './routes/organisations/fetchPolls'
+import fetchPollProcessedData from './routes/organisations/fetchPollProcessedData'
 // Simulation routes
 import createSimulationRoute from './routes/simulations/create'
 import fetchSimulationRoute from './routes/simulations/fetchSimulation'
@@ -94,20 +94,20 @@ app.use('/group/leave', leaveGroupRoute)
 app.use('/group/update-name', updateGroupNameRoute)
 app.use('/group/update-participant', updateParticipantRoute)
 
-// Organization routes
-app.use('/organizations/create', createOrganizationRoute)
-app.use('/organizations/login', loginOrganizationRoute)
-app.use('/organizations/fetch-organization', fetchOrganizationRoute)
-app.use('/organizations/update', updateRoute)
-app.use('/organizations/update-after-creation', updateAfterCreationRoute)
+// Organisation routes
+app.use('/organisations/create', createOrganisationRoute)
+app.use('/organisations/login', loginOrganisationRoute)
+app.use('/organisations/fetch-organisation', fetchOrganisationRoute)
+app.use('/organisations/update', updateRoute)
+app.use('/organisations/update-after-creation', updateAfterCreationRoute)
 app.use(
-  '/organizations/validate-verification-code',
+  '/organisations/validate-verification-code',
   validateVerificationCodeRoute
 )
-app.use('/organizations/send-verification-code', sendVerificationCodeRoute)
-app.use('/organizations/fetch-poll:pollSlug?', fetchPollRoute)
-app.use('/organizations/fetch-poll-processed-data', fetchPollProcessedData)
-app.use('/organizations/fetch-polls', fetchPollsRoute)
+app.use('/organisations/send-verification-code', sendVerificationCodeRoute)
+app.use('/organisations/fetch-poll:pollSlug?', fetchPollRoute)
+app.use('/organisations/fetch-poll-processed-data', fetchPollProcessedData)
+app.use('/organisations/fetch-polls', fetchPollsRoute)
 
 // require the http module
 const http = require('http').Server(app)

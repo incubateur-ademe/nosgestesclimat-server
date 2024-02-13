@@ -1,6 +1,6 @@
 import express from 'express'
 
-import { Organization } from '../../schemas/OrganizationSchema'
+import { Organisation } from '../../schemas/OrganisationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { handleSendVerificationCodeAndReturnExpirationDate } from '../../helpers/verificationCode/handleSendVerificationCodeAndReturnExpirationDate'
 
@@ -10,12 +10,12 @@ router.route('/').post(async (req, res) => {
   try {
     const administratorEmail = req.body.administratorEmail
 
-    const organizationUpdated = await Organization.findOne({
+    const organisationUpdated = await Organisation.findOne({
       'administrators.email': administratorEmail,
     })
 
-    if (!organizationUpdated) {
-      return res.status(403).json('No matching organization found.')
+    if (!organisationUpdated) {
+      return res.status(403).json('No matching organisation found.')
     }
 
     const expirationDate =
@@ -27,12 +27,12 @@ router.route('/').post(async (req, res) => {
 
     res.json({
       expirationDate,
-      organization: organizationUpdated,
+      organisation: organisationUpdated,
     })
 
     console.log('Login attempt, sent verification code.')
   } catch (error) {
-    return res.status(403).json('No organization found.')
+    return res.status(403).json('No organisation found.')
   }
 })
 

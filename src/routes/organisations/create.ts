@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express'
-import { Organization } from '../../schemas/OrganizationSchema'
+import { Organisation } from '../../schemas/OrganisationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { handleSendVerificationCodeAndReturnExpirationDate } from '../../helpers/verificationCode/handleSendVerificationCodeAndReturnExpirationDate'
 import { Poll } from '../../schemas/PollSchema'
@@ -21,7 +21,7 @@ router.route('/').post(async (req: Request, res: Response) => {
 
     const newlySavedPoll = await pollCreated.save()
 
-    const organizationCreated = new Organization({
+    const organisationCreated = new Organisation({
       administrators: [
         {
           email: administratorEmail,
@@ -30,24 +30,24 @@ router.route('/').post(async (req: Request, res: Response) => {
       polls: [newlySavedPoll._id],
     })
 
-    // Save the organization
-    const newlySavedOrganization = await organizationCreated.save()
+    // Save the organisation
+    const newlySavedOrganisation = await organisationCreated.save()
 
     const verificationCodeObject =
       await handleSendVerificationCodeAndReturnExpirationDate(
         administratorEmail
       )
 
-    newlySavedOrganization.administrators[0].verificationCode =
+    newlySavedOrganisation.administrators[0].verificationCode =
       verificationCodeObject
 
-    await newlySavedOrganization.save()
+    await newlySavedOrganisation.save()
 
     setSuccessfulJSONResponse(res)
 
     res.json({ expirationDate: verificationCodeObject.expirationDate })
 
-    console.log('New organization created')
+    console.log('New organisation created')
   } catch (error) {
     console.log(error)
     return res.status(403).json(error)

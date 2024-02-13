@@ -1,7 +1,7 @@
 import express from 'express'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { getUserDocument } from '../../helpers/queries/getUserDocument'
-import { findPollBySlug } from '../../helpers/organizations/findPollBySlug'
+import { findPollBySlug } from '../../helpers/organisations/findPollBySlug'
 import { createOrUpdateSimulation } from '../../helpers/queries/createOrUpdateSimulation'
 
 const router = express.Router()

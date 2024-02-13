@@ -1,8 +1,8 @@
 import express, { Request, Response } from 'express'
 
-import { Organization } from '../../schemas/OrganizationSchema'
+import { Organisation } from '../../schemas/OrganisationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import { processPollData } from '../../helpers/organizations/processPollData'
+import { processPollData } from '../../helpers/organisations/processPollData'
 import { SimulationType } from '../../schemas/SimulationSchema'
 import { authenticatePollMiddleware } from '../../middlewares/authenticatePollMiddleware'
 
@@ -29,19 +29,19 @@ router
     ).then((module) => module.default)
 
     try {
-      const organizationFound = await Organization.findOne({
+      const organisationFound = await Organisation.findOne({
         'administrators.email': email,
       })
         .populate('polls')
         .populate('polls.simulations')
         .populate('polls.simulations.user')
 
-      if (!organizationFound) {
-        return res.status(403).json('No organization found.')
+      if (!organisationFound) {
+        return res.status(403).json('No organisation found.')
       }
 
       const pollData = processPollData({
-        simulations: organizationFound?.polls[0]
+        simulations: organisationFound?.polls[0]
           ?.simulations as unknown as SimulationType[],
         rules,
         userId,
@@ -51,7 +51,7 @@ router
 
       res.json(pollData)
     } catch (error) {
-      res.status(403).json('No organization found.')
+      res.status(403).json('No organisation found.')
     }
   })
 

@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import { getPollPublicInfos } from '../../helpers/organizations/getPollPublicInfos'
+import { getPollPublicInfos } from '../../helpers/organisations/getPollPublicInfos'
 
 const router = express.Router()
 

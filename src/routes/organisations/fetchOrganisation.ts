@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express'
 
-import { Organization } from '../../schemas/OrganizationSchema'
+import { Organisation } from '../../schemas/OrganisationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
 
@@ -20,15 +20,15 @@ router
     }
 
     try {
-      const organizationFound = await Organization.findOne({
+      const organisationFound = await Organisation.findOne({
         'administrators.email': email,
       }).populate('polls')
 
       setSuccessfulJSONResponse(res)
 
-      res.json(organizationFound)
+      res.json(organisationFound)
     } catch (error) {
-      res.status(403).json('No organization found.')
+      res.status(403).json('No organisation found.')
     }
   })
 

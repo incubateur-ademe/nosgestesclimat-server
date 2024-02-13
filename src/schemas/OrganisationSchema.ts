@@ -16,7 +16,7 @@ type Administrator = {
   hasOptedInForCommunications: boolean
 }
 
-export type OrganizationType = {
+export type OrganisationType = {
   administrators: Administrator[]
   polls: PollType[]
   name: string
@@ -37,7 +37,7 @@ const AdministratorSchema = new Schema<Administrator>(
   }
 )
 
-export const OrganizationSchema = new Schema<OrganizationType>(
+export const OrganisationSchema = new Schema<OrganisationType>(
   {
     administrators: [AdministratorSchema],
     polls: [
@@ -54,4 +54,4 @@ export const OrganizationSchema = new Schema<OrganizationType>(
   }
 )
 
-export const Organization = mongoose.model('Organization', OrganizationSchema)
+export const Organisation = mongoose.model('Organisation', OrganisationSchema)

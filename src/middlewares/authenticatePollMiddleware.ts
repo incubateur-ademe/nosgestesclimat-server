@@ -1,7 +1,7 @@
 import dotenv from 'dotenv'
 import { NextFunction, Request, Response } from 'express'
 import { User } from '../schemas/UserSchema'
-import { Organization, OrganizationType } from '../schemas/OrganizationSchema'
+import { Organisation, OrganisationType } from '../schemas/OrganisationSchema'
 
 dotenv.config()
 
@@ -14,14 +14,14 @@ export async function authenticatePollMiddleware(
   const pollSlug = req.body.pollSlug
 
   try {
-    const organizationFound = await Organization.findOne({
+    const organisationFound = await Organisation.findOne({
       'administrators.email': email,
     }).populate('polls')
 
     // User is an administrator
     if (
-      organizationFound &&
-      organizationFound.polls.some((poll) => poll.slug === pollSlug)
+      organisationFound &&
+      organisationFound.polls.some((poll) => poll.slug === pollSlug)
     ) {
       next()
     }
@@ -29,13 +29,13 @@ export async function authenticatePollMiddleware(
     const userFound = await User.findOne({
       email,
     })
-      .populate('organizations')
+      .populate('organisations')
       .populate('polls')
 
     // User is a participant
     if (
       userFound &&
-      (userFound.organizations as unknown as OrganizationType[])?.some(
+      (userFound.organisations as unknown as OrganisationType[])?.some(
         (organisation) =>
           organisation?.polls?.some((poll) => poll.slug === pollSlug)
       )

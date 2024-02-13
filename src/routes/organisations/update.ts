@@ -1,6 +1,6 @@
 import express from 'express'
 
-import { Organization } from '../../schemas/OrganizationSchema'
+import { Organisation } from '../../schemas/OrganisationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { updateBrevoContact } from '../../helpers/email/updateBrevoContact'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
@@ -18,49 +18,49 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
     return res.status(401).send('Error. An email address must be provided.')
   }
 
-  const organizationName = req.body.name
+  const organisationName = req.body.name
   const administratorName = req.body.administratorName
   const defaultAdditionalQuestions = req.body.defaultAdditionalQuestions
   const hasOptedInForCommunications =
     req.body.hasOptedInForCommunications ?? false
 
   try {
-    const organizationFound = await Organization.findOne({
+    const organisationFound = await Organisation.findOne({
       'administrators.email': email,
     })
 
-    if (!organizationFound) {
-      return res.status(403).json('No matching organization found.')
+    if (!organisationFound) {
+      return res.status(403).json('No matching organisation found.')
     }
 
     // Handle modifications
-    if (organizationName) {
-      organizationFound.name = organizationName
+    if (organisationName) {
+      organisationFound.name = organisationName
     }
 
     const administratorModifiedIndex =
-      organizationFound.administrators.findIndex(
+      organisationFound.administrators.findIndex(
         ({ email: administratorEmail }) => administratorEmail === email
       )
 
     if (administratorName && administratorModifiedIndex !== -1) {
-      organizationFound.administrators[administratorModifiedIndex].name =
+      organisationFound.administrators[administratorModifiedIndex].name =
         administratorName
     }
 
     if (administratorModifiedIndex !== -1) {
-      organizationFound.administrators[
+      organisationFound.administrators[
         administratorModifiedIndex
       ].hasOptedInForCommunications = hasOptedInForCommunications
     }
 
     if (defaultAdditionalQuestions) {
-      organizationFound.polls[0].defaultAdditionalQuestions =
+      organisationFound.polls[0].defaultAdditionalQuestions =
         defaultAdditionalQuestions
     }
 
     // Save the modifications
-    const organizationSaved = await organizationFound.save()
+    const organisationSaved = await organisationFound.save()
 
     if (administratorName || hasOptedInForCommunications !== undefined) {
       updateBrevoContact({
@@ -72,7 +72,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
 
     setSuccessfulJSONResponse(res)
 
-    res.json(organizationSaved)
+    res.json(organisationSaved)
   } catch (error) {
     return res.status(403).json(error)
   }

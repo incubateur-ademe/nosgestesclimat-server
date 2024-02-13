@@ -1,6 +1,6 @@
 import express from 'express'
 
-import { Organization } from '../../schemas/OrganizationSchema'
+import { Organisation } from '../../schemas/OrganisationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { updateBrevoContact } from '../../helpers/email/updateBrevoContact'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
@@ -9,11 +9,11 @@ const router = express.Router()
 
 router.use(authentificationMiddleware).post('/', async (req, res) => {
   const email = req.body.email
-  const organizationName = req.body.name
+  const organisationName = req.body.name
   const slug = req.body.slug
   const administratorName = req.body.administratorName
 
-  if (!organizationName || !slug || !administratorName) {
+  if (!organisationName || !slug || !administratorName) {
     return res
       .status(403)
       .json('Error. A name, a slug and an administrator name must be provided.')
@@ -29,34 +29,34 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
   const hasOptedInForCommunications = req.body.hasOptedInForCommunications ?? ''
 
   try {
-    const organizationFound = await Organization.findOne({
+    const organisationFound = await Organisation.findOne({
       'administrators.email': email,
     })
 
-    if (!organizationFound) {
-      return res.status(403).send('No matching organization found.')
+    if (!organisationFound) {
+      return res.status(403).send('No matching organisation found.')
     }
 
     const administratorModifiedIndex =
-      organizationFound.administrators.findIndex(
+      organisationFound.administrators.findIndex(
         ({ email: administratorEmail }) => administratorEmail === email
       )
 
-    organizationFound.name = organizationName
-    organizationFound.slug = slug
-    organizationFound.administrators[administratorModifiedIndex].name =
+    organisationFound.name = organisationName
+    organisationFound.slug = slug
+    organisationFound.administrators[administratorModifiedIndex].name =
       administratorName
-    organizationFound.administrators[administratorModifiedIndex].position =
+    organisationFound.administrators[administratorModifiedIndex].position =
       administratorPosition
-    organizationFound.administrators[administratorModifiedIndex].telephone =
+    organisationFound.administrators[administratorModifiedIndex].telephone =
       administratorTelephone
-    organizationFound.administrators[
+    organisationFound.administrators[
       administratorModifiedIndex
     ].hasOptedInForCommunications = hasOptedInForCommunications
-    organizationFound.polls[0].expectedNumberOfParticipants =
+    organisationFound.polls[0].expectedNumberOfParticipants =
       numberOfParticipants
 
-    const organizationSaved = await organizationFound.save()
+    const organisationSaved = await organisationFound.save()
 
     updateBrevoContact({
       email,
@@ -66,7 +66,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
 
     setSuccessfulJSONResponse(res)
 
-    res.json(organizationSaved)
+    res.json(organisationSaved)
   } catch (error) {
     return res.status(500).json(error)
   }

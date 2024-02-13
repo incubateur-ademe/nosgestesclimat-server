@@ -1,6 +1,6 @@
 import express from 'express'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import { Organization } from '../../schemas/OrganizationSchema'
+import { Organisation } from '../../schemas/OrganisationSchema'
 import { handleSendVerificationCodeAndReturnExpirationDate } from '../../helpers/verificationCode/handleSendVerificationCodeAndReturnExpirationDate'
 
 const router = express.Router()
@@ -13,21 +13,21 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    const organizationFound = await Organization.findOne({
+    const organisationFound = await Organisation.findOne({
       'administrators.email': email,
     })
 
-    if (!organizationFound) {
-      return res.status(403).json('No matching organization found.')
+    if (!organisationFound) {
+      return res.status(403).json('No matching organisation found.')
     }
 
     const verificationCodeObject =
       await handleSendVerificationCodeAndReturnExpirationDate(email)
 
-    organizationFound.administrators[0].verificationCode =
+    organisationFound.administrators[0].verificationCode =
       verificationCodeObject
 
-    await organizationFound.save()
+    await organisationFound.save()
 
     setSuccessfulJSONResponse(res)
 
