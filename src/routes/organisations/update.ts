@@ -24,7 +24,6 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
   const defaultAdditionalQuestions = req.body.defaultAdditionalQuestions
   const hasOptedInForCommunications =
     req.body.hasOptedInForCommunications ?? false
-  const shouldSetSlug = req.body.shouldSetSlug ?? false
   const expectedNumberOfParticipants = req.body.expectedNumberOfParticipants
   const administratorPosition = req.body.administratorPosition ?? ''
   const administratorTelephone = req.body.administratorTelephone ?? ''
@@ -42,7 +41,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
       organisationFound.name = organisationName
     }
 
-    if (shouldSetSlug && !organisationFound.slug) {
+    if (!organisationFound.slug) {
       organisationFound.slug = slugify(organisationName)
     }
 
