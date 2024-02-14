@@ -4,7 +4,7 @@ const Schema = mongoose.Schema
 
 export type SimulationType = {
   id: string
-  user: RefType
+  user?: RefType
   actionChoices: Record<string, unknown>
   progression: number
   date: Date

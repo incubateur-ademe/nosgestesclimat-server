@@ -43,25 +43,23 @@ function getIsVegetarian({ situation }: { situation: Situation }) {
   )
 }
 
-export async function processPollData({
+export function processPollData({
   simulations,
-  rules,
   userId,
 }: {
   simulations: SimulationType[]
-  rules: any
   userId: string
-}): Promise<Result> {
-  const engine = new Engine(rules)
-
-  let carbonFootprintPerCategory = {
-    alimentation: 0,
-    logement: 0,
-    transport: 0,
-    divers: 0,
-    'services sociétaux': 0,
+}): Result {
+  if (!simulations.length) {
+    return {
+      funFacts: {
+        percentageOfBicycleUsers: 0,
+        percentageOfVegetarians: 0,
+        percentageOfCarOwners: 0,
+      },
+      simulationRecaps: [],
+    }
   }
-
   // Condition: "oui" to transport.mobilité_douce.vélo ou transport.mobilité_douce.vae
   let numberOfBicycleUsers = 0
   // Condition: has only vegeterian and vegan meals
@@ -71,9 +69,6 @@ export async function processPollData({
 
   // Pour chaque simulation du sondage
   const simulationRecaps = simulations.map((simulation) => {
-    // We update the engine with the simulation situation
-    engine.setSituation(simulation.situation)
-
     // We get the value for each fun fact
     if (getIsBicycleUser({ situation: simulation.situation })) {
       numberOfBicycleUsers += 1
@@ -90,20 +85,8 @@ export async function processPollData({
     }
 
     return {
-      bilan: engine.evaluate('bilan')?.nodeValue as number,
-      categories: Object.keys(carbonFootprintPerCategory).reduce(
-        (acc, category) => {
-          const accModified = { ...acc }
-
-          accModified[category] =
-            (engine.evaluate(category)?.nodeValue as number) || 0
-
-          return accModified
-        },
-        {} as {
-          [key: string]: number
-        }
-      ),
+      bilan: simulation.computedResults.bilan,
+      categories: simulation.computedResults.categories,
       defaultAdditionalQuestionsAnswers:
         simulation.defaultAdditionalQuestionsAnswers ?? {},
       progression: simulation.progression,

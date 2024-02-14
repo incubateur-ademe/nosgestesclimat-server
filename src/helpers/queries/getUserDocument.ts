@@ -9,6 +9,10 @@ type Props = {
 export async function getUserDocument({ email, userId, name }: Props) {
   let userDocument
 
+  if (!email && !userId) {
+    return undefined
+  }
+
   try {
     // Check if user already exists
     userDocument = await User.findOne({ $or: [{ email }, { userId }] })

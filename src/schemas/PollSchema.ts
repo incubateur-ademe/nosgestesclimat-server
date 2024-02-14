@@ -11,6 +11,7 @@ export type PollType = {
   slug: string
   defaultAdditionalQuestions: string[]
   expectedNumberOfParticipants: number
+  _id: string
 }
 
 // Should this include a reference to the parent organisation?

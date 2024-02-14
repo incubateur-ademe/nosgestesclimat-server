@@ -5,6 +5,7 @@ import { Organisation } from '../../schemas/OrganisationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { updateBrevoContact } from '../../helpers/email/updateBrevoContact'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
+import { Poll } from '../../schemas/PollSchema'
 
 const router = express.Router()
 
@@ -31,7 +32,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
   try {
     const organisationFound = await Organisation.findOne({
       'administrators.email': email,
-    })
+    }).populate('polls')
 
     if (!organisationFound) {
       return res.status(403).json('No matching organisation found.')
@@ -42,7 +43,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
     }
 
     if (!organisationFound.slug) {
-      organisationFound.slug = slugify(organisationName)
+      organisationFound.slug = slugify(organisationName.toLowerCase())
     }
 
     const administratorModifiedIndex =
@@ -71,16 +72,25 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
       ].hasOptedInForCommunications = hasOptedInForCommunications
     }
 
-    if (defaultAdditionalQuestions) {
-      organisationFound.polls[0].defaultAdditionalQuestions =
-        defaultAdditionalQuestions
+    const pollUpdated = await Poll.findById(organisationFound.polls[0]._id)
 
-      organisationFound.polls[0].expectedNumberOfParticipants =
-        expectedNumberOfParticipants
+    if (pollUpdated && defaultAdditionalQuestions) {
+      pollUpdated.defaultAdditionalQuestions = defaultAdditionalQuestions
+    }
+
+    if (pollUpdated && expectedNumberOfParticipants) {
+      pollUpdated.expectedNumberOfParticipants = expectedNumberOfParticipants
+    }
+
+    if (
+      pollUpdated &&
+      (defaultAdditionalQuestions || expectedNumberOfParticipants)
+    ) {
+      await pollUpdated.save()
     }
 
     // Save the modifications
-    const organisationSaved = await organisationFound.save()
+    await organisationFound.save()
 
     if (administratorName || hasOptedInForCommunications !== undefined) {
       updateBrevoContact({
@@ -92,7 +102,11 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
 
     setSuccessfulJSONResponse(res)
 
-    res.json(organisationSaved)
+    const organisationResult = await Organisation.findOne({
+      'administrators.email': email,
+    }).populate('polls')
+
+    res.json(organisationResult)
   } catch (error) {
     return res.status(403).json(error)
   }
