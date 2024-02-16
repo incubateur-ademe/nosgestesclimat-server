@@ -1,6 +1,5 @@
 import { UserType } from '../../schemas/UserSchema'
 import { SimulationType } from '../../schemas/SimulationSchema'
-import { get } from 'http'
 
 function formatDottedName(dottedName: string) {
   return dottedName.replaceAll(' . ', '_').replaceAll(' ', '-')
@@ -32,7 +31,6 @@ type Situation = {
 }
 
 function getIsBicycleUser({ situation }: { situation: Situation }) {
-  console.log(situation)
   return (
     situation[
       formatDottedName('transport . mobilité douce . vélo . présent')
