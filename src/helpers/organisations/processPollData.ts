@@ -1,6 +1,10 @@
-import Engine from 'publicodes'
 import { UserType } from '../../schemas/UserSchema'
 import { SimulationType } from '../../schemas/SimulationSchema'
+import { get } from 'http'
+
+function formatDottedName(dottedName: string) {
+  return dottedName.replaceAll(' . ', '_').replaceAll(' ', '-')
+}
 
 type SimulationRecap = {
   bilan: number
@@ -28,19 +32,32 @@ type Situation = {
 }
 
 function getIsBicycleUser({ situation }: { situation: Situation }) {
+  console.log(situation)
   return (
-    situation['transport . mobilité douce . vélo . présent'] === 'oui' ||
-    situation['transport . mobilité douce . vae . présent'] === 'oui'
+    situation[
+      formatDottedName('transport . mobilité douce . vélo . présent')
+    ] === 'oui' ||
+    situation[
+      formatDottedName('transport . mobilité douce . vae . présent')
+    ] === 'oui'
   )
 }
 
 function getIsVegetarian({ situation }: { situation: Situation }) {
   return (
-    situation['alimentation . plats . viande 1 . nombre'] === 0 &&
-    situation['alimentation . plats . viande 2 . nombre'] === 0 &&
-    situation['alimentation . plats . poisson 1 . nombre'] === 0 &&
-    situation['alimentation . plats . poisson 2 . nombre'] === 0
+    situation[formatDottedName('alimentation . plats . viande 1 . nombre')] ===
+      0 &&
+    situation[formatDottedName('alimentation . plats . viande 2 . nombre')] ===
+      0 &&
+    situation[formatDottedName('alimentation . plats . poisson 1 . nombre')] ===
+      0 &&
+    situation[formatDottedName('alimentation . plats . poisson 2 . nombre')] ===
+      0
   )
+}
+
+function getIsDriver({ situation }: { situation: Situation }) {
+  return (situation[formatDottedName('transport . voiture . km')] as number) > 0
 }
 
 export function processPollData({
@@ -76,11 +93,7 @@ export function processPollData({
     if (getIsVegetarian({ situation: simulation.situation })) {
       numberOfVegetarians += 1
     }
-    if (
-      simulation.situation['transport . voiture . utilisateur régulier'] ===
-        '"oui"' &&
-      simulation.situation['transport . voiture . km'] <= 0
-    ) {
+    if (getIsDriver({ situation: simulation.situation })) {
       numberOfCarOwners += 1
     }
 
@@ -98,9 +111,10 @@ export function processPollData({
 
   return {
     funFacts: {
-      percentageOfBicycleUsers: numberOfBicycleUsers / simulations.length,
-      percentageOfVegetarians: numberOfVegetarians / simulations.length,
-      percentageOfCarOwners: numberOfCarOwners / simulations.length,
+      percentageOfBicycleUsers:
+        (numberOfBicycleUsers / simulations.length) * 100,
+      percentageOfVegetarians: (numberOfVegetarians / simulations.length) * 100,
+      percentageOfCarOwners: (numberOfCarOwners / simulations.length) * 100,
     },
     simulationRecaps,
   }

@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ESNext",
     "module": "commonjs",
     "outDir": "bin",
     "rootDir": "src",
@@ -14,7 +14,7 @@
       "node"
     ],
     "lib": [
-      "es6"
+      "ESNext"
     ],
     "esModuleInterop": true,
     "skipLibCheck": true,
