@@ -8,9 +8,9 @@ const router = express.Router()
 
 router.route('/').post(async (req: Request, res: Response) => {
   try {
-    const administratorEmail = req.body.administratorEmail
+    const email = req.body.email
 
-    if (!administratorEmail) {
+    if (!email) {
       return res.status(403).json('Error. An email address must be provided.')
     }
 
@@ -24,7 +24,7 @@ router.route('/').post(async (req: Request, res: Response) => {
     const organisationCreated = new Organisation({
       administrators: [
         {
-          email: administratorEmail,
+          email,
         },
       ],
       polls: [newlySavedPoll._id],
@@ -35,7 +35,7 @@ router.route('/').post(async (req: Request, res: Response) => {
 
     const verificationCodeObject =
       await handleSendVerificationCodeAndReturnExpirationDate(
-        administratorEmail
+        email
       )
 
     newlySavedOrganisation.administrators[0].verificationCode =

@@ -8,26 +8,25 @@ const router = express.Router()
 
 router.route('/').post(async (req, res) => {
   try {
-    const administratorEmail = req.body.administratorEmail
+    const email = req.body.email
 
-    const organisationUpdated = await Organisation.findOne({
-      'administrators.email': administratorEmail,
+    const organisationFound = await Organisation.findOne({
+      administrators: { $elemMatch: { email }},
     })
-
-    if (!organisationUpdated) {
+    if (!organisationFound) {
       return res.status(403).json('No matching organisation found.')
     }
 
     const expirationDate =
       await handleSendVerificationCodeAndReturnExpirationDate(
-        administratorEmail
+        email
       )
 
     setSuccessfulJSONResponse(res)
 
     res.json({
       expirationDate,
-      organisation: organisationUpdated,
+      organisation: organisationFound,
     })
 
     console.log('Login attempt, sent verification code.')

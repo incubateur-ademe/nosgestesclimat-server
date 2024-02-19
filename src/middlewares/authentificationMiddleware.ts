@@ -2,7 +2,10 @@ import jwt, { JwtPayload, Secret } from 'jsonwebtoken'
 import dotenv from 'dotenv'
 import { NextFunction, Request, Response } from 'express'
 import { config } from '../config'
-dotenv.config()
+
+if (process.env.NODE_ENV === 'development') {
+  dotenv.config()
+}
 
 type Props = {
   req: Request
@@ -28,7 +31,6 @@ export function authentificationMiddleware(
 
   jwt.verify(token, config.security.jwt.secret, (err, result) => {
     const emailDecoded = (result as JwtPayload)?.email
-
     if (err || email !== emailDecoded) {
       throw new Error('Invalid token')
     }
