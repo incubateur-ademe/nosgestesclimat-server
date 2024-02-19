@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import bluebird from 'bluebird'
+const bluebird = require('bluebird')
 
 mongoose.Promise = bluebird
 

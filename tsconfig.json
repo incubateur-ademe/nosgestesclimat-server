@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "commonjs",
-    "outDir": "bin",
+    "outDir": "dist",
     "rootDir": "src",
     "strict": true,
     "noImplicitAny": true,
@@ -10,24 +10,24 @@
     "checkJs": true,
     "allowJs": true,
     "moduleResolution": "node",
+    "esModuleInterop": true,
     "types": [
       "node"
     ],
     "lib": [
       "ESNext"
     ],
-    "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "allowUnreachableCode": true,
     "useUnknownInCatchVariables": false,
 },
   "include": [
-    "src/**/*.ts",
-    "src/**/*.js"
+    "src/**/*.ts"
   ],
   "exclude": [
     "node_modules",
     "<node_internals>/**",
-  ]
+  ],
+
 }

@@ -1,5 +1,6 @@
-const Group = require('../../schemas/GroupSchema')
 import { getUserDocument } from '../../helpers/queries/getUserDocument'
+
+const Group = require('../../schemas/GroupSchema')
 
 const Simulation = require('../../schemas/SimulationSchema').Simulation
 
