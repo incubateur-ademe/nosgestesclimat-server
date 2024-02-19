@@ -1,33 +1,18 @@
 {
+  "extends": "@tsconfig/node18",
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "commonjs",
     "outDir": "dist",
-    "rootDir": "src",
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
     "checkJs": true,
-    "allowJs": true,
+    "module": "commonjs",
     "moduleResolution": "node",
-    "esModuleInterop": true,
-    "types": [
-      "node"
-    ],
-    "lib": [
-      "ESNext"
-    ],
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "allowUnreachableCode": true,
-    "useUnknownInCatchVariables": false,
-},
+    "useUnknownInCatchVariables": false, // TODO: Set to true asap
+  },
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "env.d.ts",
   ],
   "exclude": [
     "node_modules",
-    "<node_internals>/**",
-  ],
-
+    "dist"
+  ]
 }

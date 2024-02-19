@@ -1,6 +1,7 @@
 import jwt, { JwtPayload, Secret } from 'jsonwebtoken'
 import dotenv from 'dotenv'
 import { Request, Response } from 'express'
+import { config } from '../../config'
 
 dotenv.config()
 
@@ -20,7 +21,7 @@ export function authenticateToken({ req, res, email }: Props) {
     throw Error('No token provided.')
   }
 
-  jwt.verify(token, process.env.JWT_SECRET as Secret, (err, result) => {
+  jwt.verify(token, config.security.jwt.secret, (err, result) => {
     const emailDecoded = (result as JwtPayload)?.email
 
     if (err || email !== emailDecoded) {
@@ -28,14 +29,14 @@ export function authenticateToken({ req, res, email }: Props) {
     }
 
     // Generate a new token
-    const newToken = jwt.sign({ email }, process.env.JWT_SECRET as Secret, {
+    const newToken = jwt.sign({ email }, config.security.jwt.secret, {
       expiresIn: '1h',
     })
 
     res.cookie('ngcjwt', newToken, {
       maxAge: 1000 * 60 * 60 * 24,
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: config.env === 'production',
       sameSite: 'none',
     })
   })

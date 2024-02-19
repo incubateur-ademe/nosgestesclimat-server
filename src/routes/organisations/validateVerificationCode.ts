@@ -4,6 +4,7 @@ import express from 'express'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { VerificationCode } from '../../schemas/VerificationCodeSchema'
 import { Organisation } from '../../schemas/OrganisationSchema'
+import { config } from '../../config'
 
 const router = express.Router()
 
@@ -41,7 +42,7 @@ router.post('/', async (req, res) => {
       return res.status(403).json('Code expired.')
     }
 
-    const token = jwt.sign({ email }, process.env.JWT_SECRET as Secret, {
+    const token = jwt.sign({ email }, config.security.jwt.secret, {
       expiresIn: '1d',
     })
 
@@ -50,8 +51,8 @@ router.post('/', async (req, res) => {
     res.cookie('ngcjwt', token, {
       maxAge: 1000 * 60 * 60 * 24,
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      secure: config.env === "production",
+      sameSite: config.env === "production" ? 'none' : 'lax',
     })
 
     const organisation = await Organisation.findOne({

@@ -30,13 +30,13 @@ import createSimulationRoute from './routes/simulations/create'
 import fetchSimulationRoute from './routes/simulations/fetchSimulation'
 
 import cors from 'cors'
-import { config } from 'dotenv'
 import { Error } from 'mongoose'
 import Answer from './schemas/_legacy/AnswerSchema'
 import connect from './scripts/initDatabase'
+import { config } from './config'
 
-if (process.env.NODE_ENV !== 'production') {
-  config()
+if (config.env === 'development') {
+  require('dotenv').config()
 }
 
 const app = express()
@@ -44,7 +44,7 @@ const app = express()
 app.use(express.json())
 
 const origin =
-  process.env.NODE_ENV === 'development'
+  config.env === 'development'
     ? [
         'http://localhost:8080',
         'http://localhost:8888',
@@ -113,9 +113,6 @@ const http = require('http').Server(app)
 // require the socket.io module
 const socketio = require('socket.io')
 
-const port =
-  process.env.PORT || process.env.NODE_ENV === 'development' ? 3001 : 3000
-
 const io = socketio(http, {
   cors: { origin, methods: ['GET', 'POST'] },
 })
@@ -161,10 +158,10 @@ io.on('connection', (socket: any) => {
   )
 })
 
-// wire up the server to listen to our port 500
-http.listen(port, () => {
+http.listen(config.app.port, () => {
   const host = http.address().address
   const port = http.address().port
 
+  console.info({config})
   console.log('App listening at http://%s:%s', host, port)
 })

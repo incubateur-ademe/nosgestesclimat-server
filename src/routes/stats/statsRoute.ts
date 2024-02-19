@@ -1,5 +1,6 @@
 import express, { NextFunction, Request, Response } from 'express'
 import apicache from 'apicache'
+import { config } from '../../config'
 
 const router = express.Router()
 
@@ -55,10 +56,11 @@ router
       }
 
       const url =
-        'https://stats.data.gouv.fr/?' +
+        config.thirdParty.matomo.url +
+        '?' +
         requestParams +
         '&token_auth=' +
-        process.env.MATOMO_TOKEN
+        config.thirdParty.matomo.token
 
       console.log('will make matomo request', requestParams)
       try {

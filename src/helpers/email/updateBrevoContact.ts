@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { config } from '../../config'
 
 type Props = {
   email: string
@@ -13,7 +14,7 @@ export async function updateBrevoContact({
 }: Props) {
   const axiosConf = {
     headers: {
-      'api-key': process.env.BREVO_API_KEY,
+      'api-key': config.thirdParty.brevo.apiKey,
     },
   }
 
