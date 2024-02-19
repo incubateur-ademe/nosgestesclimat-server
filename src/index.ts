@@ -114,8 +114,8 @@ const socketio = require('socket.io')
 console.log('process.env.NODE_ENV', process.env.NODE_ENV)
 console.log('process.env.PORT', process.env.PORT)
 
-const port = 3000
-// process.env.PORT || process.env.NODE_ENV === 'development' ? 3001 : 3000
+const port =
+  process.env.PORT || process.env.NODE_ENV === 'development' ? 3001 : 3000
 
 const io = socketio(http, {
   cors: { origin, methods: ['GET', 'POST'] },
