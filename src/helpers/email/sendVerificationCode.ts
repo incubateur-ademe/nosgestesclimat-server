@@ -47,6 +47,6 @@ export async function sendVerificationCode({ email, verificationCode }: Props) {
       axiosConf
     )
   } catch (error) {
-    console.log(error)
+    console.log('Error sending email: ')
   }
 }

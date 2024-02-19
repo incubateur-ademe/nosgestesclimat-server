@@ -1,5 +1,9 @@
 import { ensureEnvVar } from './utils/os';
 
+if (process.env.NODE_ENV === 'development') {
+    require('dotenv').config();
+}
+
 export const config = {
     env: ensureEnvVar(process.env.NODE_ENV, 'development' as 'development' | 'production' | 'test'),
     get app() {
@@ -25,6 +29,6 @@ export const config = {
         }
     },
     mongo: {
-        url: ensureEnvVar(process.env.MONGO_URL, '')
+        url: ensureEnvVar(process.env.MONGO_URL, 'mongodb://127.0.0.1:27017/nosgestesclimat')
     }
 }
