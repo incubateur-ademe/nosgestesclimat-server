@@ -35,9 +35,7 @@ import { Error } from 'mongoose'
 import Answer from './schemas/_legacy/AnswerSchema'
 import connect from './scripts/initDatabase'
 
-if (process.env.NODE_ENV !== 'production') {
-  config()
-}
+config()
 
 const app = express()
 
