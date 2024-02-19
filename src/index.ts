@@ -35,7 +35,9 @@ import { Error } from 'mongoose'
 import Answer from './schemas/_legacy/AnswerSchema'
 import connect from './scripts/initDatabase'
 
-config()
+if (process.env.NODE_ENV !== 'production') {
+  config()
+}
 
 const app = express()
 
@@ -110,9 +112,6 @@ const http = require('http').Server(app)
 
 // require the socket.io module
 const socketio = require('socket.io')
-
-console.log('process.env.NODE_ENV', process.env.NODE_ENV)
-console.log('process.env.PORT', process.env.PORT)
 
 const port =
   process.env.PORT || process.env.NODE_ENV === 'development' ? 3001 : 3000
