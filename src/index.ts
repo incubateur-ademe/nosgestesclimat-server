@@ -58,7 +58,7 @@ const origin =
         'https://preprod.nosgestesclimat.fr',
         'https://nosgestesclimat.vercel.app',
         'https://nosgestesclimat-git-preprod-nos-gestes-climat.vercel.app',
-        'https://nosgestesclimat-git-parcours-orga-inscription-nos-gestes-climat.vercel.app',
+        'https://nosgestesclimat-git-parcours-orga-dashboard-ademe.vercel.app',
       ]
 
 app.use(
