@@ -5,6 +5,7 @@ import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { VerificationCode } from '../../schemas/VerificationCodeSchema'
 import { Organisation } from '../../schemas/OrganisationSchema'
 import { config } from '../../config'
+import { COOKIES_OPTIONS, COOKIE_MAX_AGE } from "../../constants/cookies"
 
 const router = express.Router()
 
@@ -43,17 +44,12 @@ router.post('/', async (req, res) => {
     }
 
     const token = jwt.sign({ email }, config.security.jwt.secret, {
-      expiresIn: '1d',
+      expiresIn: COOKIE_MAX_AGE,
     })
 
     setSuccessfulJSONResponse(res)
 
-    res.cookie('ngcjwt', token, {
-      maxAge: 1000 * 60 * 60 * 24,
-      httpOnly: true,
-      secure: config.env === "production",
-      sameSite: config.env === "production" ? 'none' : 'lax',
-    })
+    res.cookie('ngcjwt', token, COOKIES_OPTIONS)
 
     const organisation = await Organisation.findOne({
       'administrators.email': email,
