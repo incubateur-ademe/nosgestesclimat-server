@@ -31,6 +31,7 @@ type Situation = {
 }
 
 function getIsBicycleUser({ situation }: { situation: Situation }) {
+  console.log('getIsBicycleUser situation', situation)
   return (
     situation[
       formatDottedName('transport . mobilité douce . vélo . présent')
@@ -42,6 +43,7 @@ function getIsBicycleUser({ situation }: { situation: Situation }) {
 }
 
 function getIsVegetarian({ situation }: { situation: Situation }) {
+  console.log('getIsVegetarian situation', situation)
   return (
     situation[formatDottedName('alimentation . plats . viande 1 . nombre')] ===
       0 &&
@@ -55,6 +57,8 @@ function getIsVegetarian({ situation }: { situation: Situation }) {
 }
 
 function getIsDriver({ situation }: { situation: Situation }) {
+  console.log('getIsDriver situation', situation)
+
   return (situation[formatDottedName('transport . voiture . km')] as number) > 0
 }
 

@@ -54,7 +54,7 @@ router.post('/', async (req: Request, res: Response) => {
 
     setSuccessfulJSONResponse(res)
 
-    res.json(pollData)
+    res.json({ ...pollData, organisationName: organisationFound?.name } )
   } catch (error) {
     console.log(error)
     res.status(500).json('Server error.')
