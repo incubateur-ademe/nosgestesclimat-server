@@ -19,6 +19,11 @@ export async function handleUpdateUser({
     return
   }
 
+  // If there is no poll we do nothing
+  if (!poll) {
+    return
+  }
+
   if (simulationSaved) {
     // Add simulation to user document
     userDocument.simulations?.push(simulationSaved._id as RefType)

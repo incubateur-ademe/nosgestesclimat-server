@@ -6,15 +6,13 @@ import { MemberSchema, OwnerSchema } from './_legacy/GroupSubSchemas'
 const Schema = mongoose.Schema
 
 type Participant = {
-  _id?: string
   name: string
   email?: string
   userId: string
-  // Conditional because a participant can be added without a simulation
-  simulation?: RefType
+  simulation: RefType
 }
 
-type GroupType = {
+export type GroupType = {
   name: string
   emoji: string
   administrator: {
@@ -23,19 +21,6 @@ type GroupType = {
     userId: String
   }
   participants: Participant[]
-  // Legacy from previous version
-  // We should remove it before going to production
-  owner: {
-    name: string
-    email: string
-    userId: string
-  }
-  members: {
-    name: string
-    email: string
-    userId: string
-    simulation: SimulationPreciseType
-  }[]
 }
 
 const ParticipantSchema = new Schema<Participant>({
@@ -76,10 +61,6 @@ export const GroupSchema = new Schema<GroupType>(
       },
     },
     participants: [ParticipantSchema],
-    // Legacy from previous version
-    // We should remove it before going to production
-    owner: OwnerSchema,
-    members: [MemberSchema],
   },
   {
     timestamps: true,

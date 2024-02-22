@@ -1,28 +1,35 @@
-import express, { Request } from 'express'
-import mongoose, { mongo } from 'mongoose'
-
+import express from 'express'
 import { Group } from '../../schemas/GroupSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 
 const router = express.Router()
 
+/**
+ * Fetch a group
+ * It requires a groupId
+ */
 router.route('/').post(async (req, res) => {
   const groupId = req.body.groupId
 
-  if (!groupId || !mongoose.isValidObjectId(groupId)) {
-    return res
-      .status(500)
-      .send('Unauthorized. A valid group id must be provided.')
+  if (!groupId) {
+    return res.status(500).send('Error. A groupId must be provided.')
   }
 
   try {
-    const groupFound = await Group.findById(groupId).populate(
+    const group = await Group.findById(groupId).populate(
       'participants.simulation'
     )
 
+    // If no group is found, we return an error
+    if (!group) {
+      return res.status(404).send('Error. Group not found.')
+    }
+
     setSuccessfulJSONResponse(res)
 
-    res.json(groupFound)
+    res.json(group)
+
+    console.log(`Group fetched: ${groupId}`)
   } catch (error) {
     res.status(500).send('Error. Group not found.')
   }
