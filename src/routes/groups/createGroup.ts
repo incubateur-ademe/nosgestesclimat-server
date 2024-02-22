@@ -16,6 +16,7 @@ router.route('/').post(async (req, res) => {
   const administratorName = req.body.administratorName
   const administratorEmail = req.body.administratorEmail
 
+  // Check if all required fields are provided
   if (!userId) {
     return res.status(500).send('Error. A userId must be provided.')
   }
@@ -34,6 +35,7 @@ router.route('/').post(async (req, res) => {
   }
 
   try {
+    // Create a new group with an empty participants array
     const newGroup = new Group({
       name: groupName,
       emoji: groupEmoji,

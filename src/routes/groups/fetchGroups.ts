@@ -13,11 +13,10 @@ router.post('/', async (req: Request, res: Response) => {
   const groupIds = req.body.groupIds
   const userId = req.body.userId
 
-  // If no userId is provided, we return an error
+  // If no groupId or userId is provided, we return an error
   if (!userId) {
     return res.status(500).json('Error. A userId must be provided.')
   }
-  // If no groupIds is provided, we return an error
   if (!groupIds) {
     return res.status(500).json('Error. A groupIds must be provided.')
   }
