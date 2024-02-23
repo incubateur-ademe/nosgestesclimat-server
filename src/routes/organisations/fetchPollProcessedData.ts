@@ -54,7 +54,14 @@ router.post('/', async (req: Request, res: Response) => {
 
     setSuccessfulJSONResponse(res)
 
-    res.json({ ...pollData, organisationName: organisationFound?.name } )
+    res.json({
+      ...pollData,
+      organisationName: organisationFound?.name,
+      defaultAdditionalQuestions: organisationFound?.polls[0]?.defaultAdditionalQuestions,
+      isAdmin: organisationFound?.administrators.some(
+        (admin) => admin?.userId === userId
+      ),
+    })
   } catch (error) {
     console.log(error)
     res.status(500).json('Server error.')
