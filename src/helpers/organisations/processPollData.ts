@@ -35,6 +35,11 @@ function getIsBicycleUser({ situation }: { situation: Situation }) {
     return false
   }
 
+  // If question is skipped
+  if (situation && !situation[formatDottedName('transport . mobilité douce . vélo . présent')] && !situation[formatDottedName('transport . mobilité douce . vae . présent')]) {
+    return false
+  }
+
   return (
     situation[
       formatDottedName('transport . mobilité douce . vélo . présent')
@@ -47,6 +52,16 @@ function getIsBicycleUser({ situation }: { situation: Situation }) {
 
 function getIsVegetarian({ situation }: { situation: Situation }) {
   if (!situation) {
+    return false
+  }
+
+  // If question is skipped
+  if (situation && (!situation[formatDottedName('alimentation . plats . viande 1 . nombre')]
+    && !situation[formatDottedName('alimentation . plats . viande 2 . nombre')]
+    && !situation[formatDottedName('alimentation . plats . poisson 1 . nombre')]
+    && !situation[formatDottedName('alimentation . plats . poisson 2 . nombre')]
+    && !situation[formatDottedName('alimentation . plats . végétarien . nombre')]
+    && !situation[formatDottedName('alimentation . plats . végétalien . nombre')])) {
     return false
   }
 
@@ -65,6 +80,11 @@ function getIsVegetarian({ situation }: { situation: Situation }) {
 function getIsDriver({ situation }: { situation: Situation }) {
   if (!situation) {
     return false
+  }
+
+  // If question is skipped
+  if (situation && !situation[formatDottedName('transport . voiture . km')]) {
+    return true
   }
 
   return (situation[formatDottedName('transport . voiture . km')] as number) > 0
