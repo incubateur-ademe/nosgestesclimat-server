@@ -27,9 +27,6 @@ router.route('/').post(async (req, res) => {
     return res.status(500).send('Error. A group emoji must be provided.')
   }
 
-  if (!administratorEmail) {
-    return res.status(500).send('Error. An email must be provided.')
-  }
   if (!administratorName) {
     return res.status(500).send('Error. A name must be provided.')
   }
