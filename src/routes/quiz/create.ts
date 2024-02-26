@@ -5,7 +5,7 @@ import { QuizAnswer } from '../../schemas/QuizSchema'
 const router = express.Router()
 
 /**
- * Create a new qui answer
+ * Create a new quiz answer
  * It requires a simulationId, an answer, and isAnswerCorrect (can be 'correct', 'almost' or 'wrong')
  * It returns the created group
  */
