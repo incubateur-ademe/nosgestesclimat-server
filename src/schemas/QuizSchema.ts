@@ -1,5 +1,4 @@
-import mongoose, { RefType } from 'mongoose'
-import { nanoid } from 'nanoid'
+import mongoose from 'mongoose'
 
 const Schema = mongoose.Schema
 
