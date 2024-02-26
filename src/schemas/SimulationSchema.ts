@@ -22,6 +22,7 @@ export type SimulationType = {
   }
   modifiedAt?: Date
   createdAt?: Date
+  _id?: string
 }
 
 export const SimulationSchema = new Schema<SimulationType>(

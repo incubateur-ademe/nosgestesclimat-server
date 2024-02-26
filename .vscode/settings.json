@@ -7,6 +7,6 @@
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
   "files.associations": {
-    ".env*": "dotenv",
+    ".env*": "dotenv"
   }
 }

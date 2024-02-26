@@ -6,15 +6,17 @@ import statsRoute from './routes/stats/statsRoute'
 import simulationRoute from './routes/_legacy/simulationRoute'
 import ratingsRoute from './routes/_legacy/ratingsRoute'
 import fetchSimulationViaEmailRoute from './routes/saveSimulationTestEnd/fetchSimulation'
+
 // Groups routes
-import addParticipantRoute from './routes/groups/addParticipant'
-import createGroupRoute from './routes/groups/createGroup'
-import deleteGroupRoute from './routes/groups/deleteGroup'
 import fetchGroupRoute from './routes/groups/fetchGroup'
+import createGroupRoute from './routes/groups/createGroup'
+import updateGroupRoute from './routes/groups/updateGroup'
+import deleteGroupRoute from './routes/groups/deleteGroup'
+
+// Group participants routes
 import fetchGroupsRoute from './routes/groups/fetchGroups'
-import leaveGroupRoute from './routes/groups/leaveGroup'
-import updateGroupNameRoute from './routes/groups/updateGroupName'
-import updateParticipantRoute from './routes/groups/updateParticipant'
+import removeParticipantRoute from './routes/groups/removeParticipant'
+
 // Organisation routes
 import createOrganisationRoute from './routes/organisations/create'
 import fetchOrganisationRoute from './routes/organisations/fetchOrganisation'
@@ -86,14 +88,14 @@ app.use('/simulations/create', createSimulationRoute)
 app.use('/simulations/fetch-simulation', fetchSimulationRoute)
 
 // Group routes
+app.use('/group/fetch', fetchGroupRoute)
 app.use('/group/create', createGroupRoute)
-app.use('/group/add-participant', addParticipantRoute)
+app.use('/group/update', updateGroupRoute)
 app.use('/group/delete', deleteGroupRoute)
-app.use('/group/fetch-group', fetchGroupRoute)
+
+// Group participants routes
 app.use('/group/fetch-groups', fetchGroupsRoute)
-app.use('/group/leave', leaveGroupRoute)
-app.use('/group/update-name', updateGroupNameRoute)
-app.use('/group/update-participant', updateParticipantRoute)
+app.use('/group/remove-participant', removeParticipantRoute)
 
 // Organisation routes
 app.use('/organisations/create', createOrganisationRoute)
@@ -166,6 +168,6 @@ http.listen(config.app.port, () => {
   const host = http.address().address
   const port = http.address().port
 
-  console.info({config})
+  console.info({ config })
   console.log('App listening at http://%s:%s', host, port)
 })

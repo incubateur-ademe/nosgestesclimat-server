@@ -1,38 +1,41 @@
-import express from 'express'
-import { Group } from '../../schemas/GroupSchema'
+import express, { Request, Response } from 'express'
 
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
+import { Group, GroupType } from '../../schemas/GroupSchema'
 
 const router = express.Router()
 
-router.route('/').post(async (req, res) => {
-  const email = req.body.email
+/**
+ * Fetching groups of a user
+ * It requires a userId and a list of groupIds
+ */
+router.post('/', async (req: Request, res: Response) => {
+  const groupIds = req.body.groupIds
   const userId = req.body.userId
 
-  if (!email && !userId) {
-    return res
-      .status(401)
-      .send('Unauthorized. A value for email or userId must be provided.')
+  // If no groupId or userId is provided, we return an error
+  if (!userId) {
+    return res.status(500).json('Error. A userId must be provided.')
+  }
+  if (!groupIds) {
+    return res.status(500).json('Error. A groupIds must be provided.')
   }
 
-  const groupsFound = await Group.find({
-    $or: [
-      {
-        'participants.userId': userId,
-      },
-      {
-        'participants.email': email,
-      },
-    ],
-  }).populate('participants.simulation')
+  try {
+    const groups: GroupType[] = await Group.find({ _id: { $in: groupIds } })
 
-  if (!groupsFound) {
-    return res.status(404).send('Error. No group found.')
+    const groupsOfUser = groups.filter((group) =>
+      group.participants.find((participant) => participant.userId === userId)
+    )
+
+    setSuccessfulJSONResponse(res)
+
+    res.json(groupsOfUser)
+
+    console.log(`Groups fetched: ${groupIds.join(', ')}`)
+  } catch (error) {
+    return res.status(500).send('Error while fetching groups')
   }
-
-  setSuccessfulJSONResponse(res)
-
-  res.json(groupsFound)
 })
 
 export default router

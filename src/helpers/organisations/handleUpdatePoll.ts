@@ -6,7 +6,7 @@ export async function handleUpdatePoll({
   poll,
   simulationSaved,
 }: {
-  poll: Document<PollType> & PollType
+  poll?: Document<PollType> & PollType
   simulationSaved: Document<SimulationType> & SimulationType
 }) {
   if (!poll || poll.simulations.includes(simulationSaved._id as RefType)) {

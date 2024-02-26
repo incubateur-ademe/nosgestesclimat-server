@@ -16,10 +16,7 @@ export type UserType = {
 export const UserSchema = new Schema<UserType>(
   {
     name: String,
-    email: {
-      type: String,
-      unique: true,
-    },
+    email: String,
     userId: {
       type: String,
       unique: true,
@@ -30,12 +27,6 @@ export const UserSchema = new Schema<UserType>(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Simulation',
-      },
-    ],
-    groups: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Group',
       },
     ],
     organisations: [
