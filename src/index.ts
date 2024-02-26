@@ -164,6 +164,6 @@ http.listen(config.app.port, () => {
   const host = http.address().address
   const port = http.address().port
 
-  console.info({config})
+  console.info({ config })
   console.log('App listening at http://%s:%s', host, port)
 })

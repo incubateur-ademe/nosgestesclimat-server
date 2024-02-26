@@ -8,7 +8,7 @@ const router = express.Router()
  * Create a new group
  * It requires a userId, an administratorName, an administratorEmail, a name and an emoji
  * It returns the created group
-*/
+ */
 router.route('/').post(async (req, res) => {
   const userId = req.body.userId
   const groupName = req.body.name

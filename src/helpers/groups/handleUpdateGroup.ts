@@ -16,12 +16,12 @@ export async function handleUpdateGroup({
   if (!group) {
     return
   }
-  
-  const participantWithSimulation = group.participants.find(
-    participant => participant.userId === userDocument.userId
-  );
 
-    // If the user is already in the group, we update their simulation
+  const participantWithSimulation = group.participants.find(
+    (participant) => participant.userId === userDocument.userId
+  )
+
+  // If the user is already in the group, we update their simulation
   if (participantWithSimulation) {
     participantWithSimulation.simulation = simulationSaved._id as RefType
     await group.save()
@@ -36,8 +36,10 @@ export async function handleUpdateGroup({
     userId: userDocument.userId,
     simulation: simulationSaved._id as RefType,
   })
-  
+
   await group.save()
 
-  console.log(`User and simulation saved in group ${group._id} (${group.name}).`)
+  console.log(
+    `User and simulation saved in group ${group._id} (${group.name}).`
+  )
 }

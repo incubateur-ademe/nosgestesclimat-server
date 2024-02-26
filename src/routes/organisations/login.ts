@@ -11,16 +11,14 @@ router.route('/').post(async (req, res) => {
     const email = req.body.email
 
     const organisationFound = await Organisation.findOne({
-      administrators: { $elemMatch: { email }},
+      administrators: { $elemMatch: { email } },
     })
     if (!organisationFound) {
       return res.status(403).json('No matching organisation found.')
     }
 
     const expirationDate =
-      await handleSendVerificationCodeAndReturnExpirationDate(
-        email
-      )
+      await handleSendVerificationCodeAndReturnExpirationDate(email)
 
     setSuccessfulJSONResponse(res)
 

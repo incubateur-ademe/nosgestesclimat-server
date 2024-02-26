@@ -23,7 +23,9 @@ router.route('/').post(async (req, res) => {
   }
 
   try {
-    const group = await Group.findById(groupId).populate('participants.simulation')
+    const group = await Group.findById(groupId).populate(
+      'participants.simulation'
+    )
 
     // If there is no group associated with the groupId, we return an error
     if (!group) {
@@ -31,8 +33,7 @@ router.route('/').post(async (req, res) => {
     }
 
     const participant = group.participants.find(
-      (participant) =>
-        participant.userId === userId
+      (participant) => participant.userId === userId
     )
 
     // If the user is not a participant of the group, we return an error
@@ -48,7 +49,9 @@ router.route('/').post(async (req, res) => {
     }
 
     // We remove the user from the list of participants
-    group.participants = group.participants.filter(participant => participant.userId !== userId)
+    group.participants = group.participants.filter(
+      (participant) => participant.userId !== userId
+    )
 
     await group.save()
 

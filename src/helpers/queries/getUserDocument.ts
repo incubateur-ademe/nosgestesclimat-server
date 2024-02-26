@@ -11,7 +11,7 @@ export async function getUserDocument({ userId, email, name }: Props) {
 
   // If there is no userId we can't create a user
   if (!userId) {
-    return 
+    return
   }
 
   try {

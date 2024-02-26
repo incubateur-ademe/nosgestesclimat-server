@@ -51,8 +51,8 @@ router.post('/', async (req, res) => {
     res.cookie('ngcjwt', token, {
       maxAge: 1000 * 60 * 60 * 24,
       httpOnly: true,
-      secure: config.env === "production",
-      sameSite: config.env === "production" ? 'none' : 'lax',
+      secure: config.env === 'production',
+      sameSite: config.env === 'production' ? 'none' : 'lax',
     })
 
     const organisation = await Organisation.findOne({

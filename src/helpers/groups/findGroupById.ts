@@ -4,5 +4,5 @@ export function findGroupById(id: string) {
   if (!id) {
     return null
   }
-  return Group.findOne({ _id:id })
+  return Group.findOne({ _id: id })
 }

@@ -34,9 +34,7 @@ router.route('/').post(async (req: Request, res: Response) => {
     const newlySavedOrganisation = await organisationCreated.save()
 
     const verificationCodeObject =
-      await handleSendVerificationCodeAndReturnExpirationDate(
-        email
-      )
+      await handleSendVerificationCodeAndReturnExpirationDate(email)
 
     newlySavedOrganisation.administrators[0].verificationCode =
       verificationCodeObject

@@ -50,7 +50,6 @@ const ParticipantSchema = new Schema<Participant>({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Simulation',
   },
-  
 })
 
 export const GroupSchema = new Schema<GroupType>(

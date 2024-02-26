@@ -22,10 +22,12 @@ router.post('/', async (req: Request, res: Response) => {
   }
 
   try {
-    const groups: GroupType[] = await Group.find({ _id: { '$in': groupIds }})
+    const groups: GroupType[] = await Group.find({ _id: { $in: groupIds } })
 
-    const groupsOfUser = groups.filter((group) => group.participants.find((participant) => participant.userId === userId))
-   
+    const groupsOfUser = groups.filter((group) =>
+      group.participants.find((participant) => participant.userId === userId)
+    )
+
     setSuccessfulJSONResponse(res)
 
     res.json(groupsOfUser)

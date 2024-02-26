@@ -35,7 +35,9 @@ router.route('/').post(async (req, res) => {
 
   // If there is no user found or created, we return an error
   if (!userDocument) {
-    return res.status(500).send('Error while creating or searching for the user.')
+    return res
+      .status(500)
+      .send('Error while creating or searching for the user.')
   }
 
   try {
