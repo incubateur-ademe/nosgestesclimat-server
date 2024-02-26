@@ -74,6 +74,10 @@ export const GroupSchema = new Schema<GroupType>(
       },
     },
     participants: [ParticipantSchema],
+     // Legacy from previous version
+    // We should remove it before going to production
+    owner: OwnerSchema,
+    members: [MemberSchema],
   },
   {
     timestamps: true,
