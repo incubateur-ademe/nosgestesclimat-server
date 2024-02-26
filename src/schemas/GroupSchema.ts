@@ -21,6 +21,19 @@ export type GroupType = {
     userId: String
   }
   participants: Participant[]
+  // Legacy from previous version
+  // We should remove it before going to production
+  owner?: {
+    name: string
+    email: string
+    userId: string
+  }
+  members?: {
+    name: string
+    email: string
+    userId: string
+    simulation: SimulationPreciseType
+  }[]
 }
 
 const ParticipantSchema = new Schema<Participant>({
@@ -37,6 +50,7 @@ const ParticipantSchema = new Schema<Participant>({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Simulation',
   },
+  
 })
 
 export const GroupSchema = new Schema<GroupType>(

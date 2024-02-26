@@ -102,7 +102,6 @@ router.route('/').post(async (req, res) => {
 
     console.log(`Simulation created: ${simulationSaved._id}`)
   } catch (error) {
-    console.log(error)
     return res.status(401).send('Error while creating simulation.')
   }
 })
