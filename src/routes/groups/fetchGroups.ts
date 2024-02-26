@@ -22,19 +22,13 @@ router.post('/', async (req: Request, res: Response) => {
   }
 
   try {
-    const groups: GroupType[] = []
+    const groups: GroupType[] = await Group.find({ _id: { '$in': groupIds }})
 
-    for (const groupId of groupIds) {
-      const group = await Group.findById(groupId)
-      // If a group is found and the user is a part of it, we add it to the list of groups
-      if (group && group.participants.find((participant) => participant.userId === userId)) {
-        groups.push(group)
-      }
-    }
-
+    const groupsOfUser = groups.filter((group) => group.participants.find((participant) => participant.userId === userId))
+   
     setSuccessfulJSONResponse(res)
 
-    res.json(groups)
+    res.json(groupsOfUser)
 
     console.log(`Groups fetched: ${groupIds.join(', ')}`)
   } catch (error) {
