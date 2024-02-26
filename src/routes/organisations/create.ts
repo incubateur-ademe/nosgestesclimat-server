@@ -9,6 +9,7 @@ const router = express.Router()
 router.route('/').post(async (req: Request, res: Response) => {
   try {
     const email = req.body.email
+    const userId = req.body.userId
 
     if (!email) {
       return res.status(403).json('Error. An email address must be provided.')
@@ -25,6 +26,7 @@ router.route('/').post(async (req: Request, res: Response) => {
       administrators: [
         {
           email,
+          userId
         },
       ],
       polls: [newlySavedPoll._id],

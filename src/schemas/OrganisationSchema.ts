@@ -14,6 +14,7 @@ type Administrator = {
   position: string
   verificationCode: VerificationCodeType
   hasOptedInForCommunications: boolean
+  userId: string
 }
 
 export type OrganisationType = {
@@ -31,6 +32,7 @@ const AdministratorSchema = new Schema<Administrator>(
     position: String,
     verificationCode: VerificationCodeSchema,
     hasOptedInForCommunications: Boolean,
+    userId: String,
   },
   {
     timestamps: true,

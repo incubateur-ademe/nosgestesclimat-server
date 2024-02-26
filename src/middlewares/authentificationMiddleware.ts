@@ -1,16 +1,11 @@
-import jwt, { JwtPayload, Secret } from 'jsonwebtoken'
+import jwt, { JwtPayload } from 'jsonwebtoken'
 import dotenv from 'dotenv'
 import { NextFunction, Request, Response } from 'express'
 import { config } from '../config'
+import { COOKIES_OPTIONS, COOKIE_MAX_AGE } from "../constants/cookies"
 
 if (process.env.NODE_ENV === 'development') {
   dotenv.config()
-}
-
-type Props = {
-  req: Request
-  res: Response
-  email: string
 }
 
 export function authentificationMiddleware(
@@ -37,16 +32,10 @@ export function authentificationMiddleware(
 
     // Generate a new token
     const newToken = jwt.sign({ email }, config.security.jwt.secret, {
-      expiresIn: '1h',
+      expiresIn: COOKIE_MAX_AGE,
     })
 
-    res.cookie('ngcjwt', newToken, {
-      maxAge: 1000 * 60 * 60 * 24,
-      httpOnly: true,
-      secure: config.env === 'production',
-      sameSite: 'none',
-      path: '/',
-    })
+    res.cookie('ngcjwt', newToken, COOKIES_OPTIONS)
   })
 
   next()
