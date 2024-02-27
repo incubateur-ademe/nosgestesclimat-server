@@ -32,6 +32,9 @@ import logOutRoute from './routes/organisations/logout'
 import createSimulationRoute from './routes/simulations/create'
 import fetchSimulationRoute from './routes/simulations/fetchSimulation'
 
+// Quiz routes
+import createQuizAnswerRoute from './routes/quiz/create'
+
 import cors from 'cors'
 import { Error } from 'mongoose'
 import Answer from './schemas/_legacy/AnswerSchema'
@@ -112,6 +115,8 @@ app.use('/organisations/fetch-poll-processed-data', fetchPollProcessedData)
 app.use('/organisations/fetch-polls', fetchPollsRoute)
 app.use('/organisations/logout', logOutRoute)
 
+// Quiz routes
+app.use('/quiz/answers/create', createQuizAnswerRoute)
 
 // require the http module
 const http = require('http').Server(app)
