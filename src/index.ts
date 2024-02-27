@@ -35,6 +35,9 @@ import fetchSimulationRoute from './routes/simulations/fetchSimulation'
 // Quiz routes
 import createQuizAnswerRoute from './routes/quiz/create'
 
+// Email route
+import sendEmailRoute from './routes/email/sendEmail'
+
 import cors from 'cors'
 import { Error } from 'mongoose'
 import Answer from './schemas/_legacy/AnswerSchema'
@@ -117,6 +120,9 @@ app.use('/organisations/logout', logOutRoute)
 
 // Quiz routes
 app.use('/quiz/answers/create', createQuizAnswerRoute)
+
+// Email route
+app.use('/send-email', sendEmailRoute)
 
 // require the http module
 const http = require('http').Server(app)

@@ -70,9 +70,11 @@ router.route('/').post(async (req, res) => {
     await handleUpdatePoll({
       poll,
       simulationSaved,
+      email,
     } as unknown as {
       poll: Document<PollType> & PollType
       simulationSaved: Document<SimulationType> & SimulationType
+      email: string
     })
 
     // If a group is associated with the simulation and the simulation is not already in it
