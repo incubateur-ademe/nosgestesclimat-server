@@ -24,7 +24,6 @@ router.route('/').post(async (req, res) => {
 
     res.json({
       expirationDate,
-      organisation: organisationFound,
     })
 
     console.log('Login attempt, sent verification code.')
