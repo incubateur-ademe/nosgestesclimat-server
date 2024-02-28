@@ -1,4 +1,5 @@
 import { getUserDocument } from '../../helpers/queries/getUserDocument'
+import { computeResults } from "./migrateGroups/computeResults"
 
 const Group = require('../../schemas/GroupSchema')
 
@@ -14,42 +15,44 @@ const run = async () => {
 
     const ownerUser = await getUserDocument({
       email: owner.email,
+      userId: owner.userId,
       name: owner.name,
     })
-    const ownerUserId = ownerUser._id
 
     // 2 - For each group, create or get the User document for the owner
     // and create a reference to it in the group in the administrator field
-    group.administrator = ownerUserId
+    group.administrator = ownerUser?.userId
 
     for (const member of members) {
-      const memberUser = await getUserDocument({
+      const memberUserDocument = await getUserDocument({
         email: member.email,
+        userId: member.userId,
         name: owner.name,
       })
 
-      const memberUserId = memberUser._id
 
-      const simulation = new Simulation({
-        userId: memberUserId,
+      const simulationCreated = new Simulation({
+        user: memberUserDocument?._id,
+        id: member.simulation.id,
         actionChoices: member.simulation.actionChoices,
-        config: member.simulation.config,
         date: member.simulation.date,
         foldedSteps: member.simulation.foldedSteps,
-        hiddenNotifications: member.simulation.hiddenNotifications,
         situation: member.simulation.situation,
         unfoldedStep: member.simulation.unfoldedStep,
-        computedResults: member.simulation.computedResults,
+        progression: 1,
+        group: group._id,
+        computedResults: computeResults(member.simulation.situation),
       })
 
-      const simulationId = simulation._id
+      const simulationSaved = await simulationCreated.save()
 
       // 3 - Then, for each member, create or get the User document for the member
       // whether it has an email provided or not and create a reference to it in a new Simulation document
       // which can then be referenced in the group in the participants field along with the name of the member
       group.participants.push({
         name: member.name,
-        simulation: simulationId,
+        userId: memberUserDocument?.userId,
+        simulation: simulationSaved._id,
       })
     }
 

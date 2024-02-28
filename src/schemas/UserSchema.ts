@@ -8,9 +8,6 @@ export type UserType = {
   userId: string
   position?: string
   telephone?: string
-  simulations?: RefType[]
-  groups?: RefType[]
-  organisations?: RefType[]
 }
 
 export const UserSchema = new Schema<UserType>(
@@ -23,18 +20,6 @@ export const UserSchema = new Schema<UserType>(
     },
     position: String,
     telephone: String,
-    simulations: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Simulation',
-      },
-    ],
-    organisations: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Organisation',
-      },
-    ],
   },
   { timestamps: true }
 )

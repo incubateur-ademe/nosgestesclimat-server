@@ -6,6 +6,7 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "useUnknownInCatchVariables": false, // TODO: Set to true asap
+    "resolveJsonModule": true,
   },
   "include": ["src/**/*.ts", "env.d.ts"],
   "exclude": ["node_modules", "dist"],

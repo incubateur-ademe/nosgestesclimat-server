@@ -6,7 +6,6 @@ import { findPollBySlug } from '../../helpers/organisations/findPollBySlug'
 import { findGroupById } from '../../helpers/groups/findGroupById'
 import { createOrUpdateSimulation } from '../../helpers/queries/createOrUpdateSimulation'
 import { SimulationType } from '../../schemas/SimulationSchema'
-import { handleUpdateUser } from '../../helpers/organisations/handleUpdateUser'
 import { PollType } from '../../schemas/PollSchema'
 import { Document } from 'mongoose'
 import { handleUpdatePoll } from '../../helpers/organisations/handleUpdatePoll'
@@ -85,17 +84,6 @@ router.route('/').post(async (req, res) => {
       simulationSaved,
     } as unknown as {
       group: Document<GroupType> & GroupType
-      userDocument: Document<UserType> & UserType
-      simulationSaved: Document<SimulationType> & SimulationType
-    })
-
-    // We update the user document with the simulation and the poll (if applicable)
-    await handleUpdateUser({
-      poll,
-      userDocument,
-      simulationSaved,
-    } as unknown as {
-      poll: Document<PollType> & PollType
       userDocument: Document<UserType> & UserType
       simulationSaved: Document<SimulationType> & SimulationType
     })
