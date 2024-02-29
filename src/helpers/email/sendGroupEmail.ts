@@ -1,6 +1,6 @@
 import axios from 'axios'
-import { config } from '../../config'
 import { GroupType } from '../../schemas/GroupSchema'
+import { axiosConf } from '../../constants/axios'
 
 /**
  * Send an email to a user when they join a group or when a group is created (based on the isCreation parameter)
@@ -12,7 +12,7 @@ const TEMPLATE_ID_GROUP_JOINED = 58
 type Props = {
   group: GroupType
   userId: string
-  name: string
+  name?: string
   email?: string
   isCreation: boolean
   origin: string
@@ -25,8 +25,8 @@ export async function sendGroupEmail({
   isCreation,
   origin,
 }: Props) {
-  // If no email is provided, we don't do anything
-  if (!email) {
+  // If no email or no name is provided, we don't do anything
+  if (!email || !name) {
     return
   }
 
@@ -36,12 +36,6 @@ export async function sendGroupEmail({
     return
   }
 
-  const axiosConf = {
-    headers: {
-      'api-key': config.thirdParty.brevo.apiKey,
-    },
-  }
-
   // Add contact to list
   try {
     await axios.post(
@@ -49,9 +43,6 @@ export async function sendGroupEmail({
       {
         email,
         name,
-        attributes: {
-          OPT_IN: true,
-        },
       },
       axiosConf
     )

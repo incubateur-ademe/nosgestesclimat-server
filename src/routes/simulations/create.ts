@@ -20,6 +20,7 @@ router.route('/').post(async (req, res) => {
   const name = req.body.name
   const email = req.body.email
   const userId = req.body.userId
+  const shouldSendSimulationEmail = req.body.shouldSendSimulationEmail
 
   // We need the origin to send the group email (if applicable) with the correct links
   const origin = req.get('origin') ?? 'https://nosgestesclimat.fr'
@@ -94,18 +95,17 @@ router.route('/').post(async (req, res) => {
       origin: string
     })
 
-    // If there is no group, we send the simulation email
-    if (!group) {
-      await sendSimulationEmail({
-        userDocument,
-        simulationSaved,
-        origin
-      } as unknown as {
-        userDocument: Document<UserType> & UserType
-        simulationSaved: Document<SimulationType> & SimulationType
-        origin: string
-      })
-    }
+    await sendSimulationEmail({
+      userDocument,
+      simulationSaved,
+      shouldSendSimulationEmail,
+      origin
+    } as unknown as {
+      userDocument: Document<UserType> & UserType
+      simulationSaved: Document<SimulationType> & SimulationType
+      shouldSendSimulationEmail: boolean
+      origin: string
+    })  
 
     setSuccessfulJSONResponse(res)
 

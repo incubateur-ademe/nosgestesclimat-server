@@ -1,9 +1,11 @@
 import axios from 'axios'
-import { config } from '../../config'
-import { GroupType } from '../../schemas/GroupSchema'
+import { axiosConf } from '../../constants/axios'
+import { UserType } from '../../schemas/UserSchema'
+import { SimulationType } from '../../schemas/SimulationSchema'
+import { Document } from 'mongoose'
 
 /**
- * Send an email to a user when they join a group or when a group is created (based on the isCreation parameter)
+ * Send an email to a user when they save a simulation at the end
  */
 
 const TEMPLATE_ID_GROUP_CREATED = 57
@@ -12,11 +14,13 @@ const TEMPLATE_ID_GROUP_JOINED = 58
 type Props = {
   userDocument: Document<UserType> & UserType
   simulationSaved: Document<SimulationType> & SimulationType
+  shouldSendSimulationEmail: boolean
   origin: string
 }
 export async function sendSimulationEmail({
   userDocument,
   simulationSaved,
+  shouldSendSimulationEmail,
   origin,
 }: Props) {
   const { email, name } = userDocument
@@ -25,10 +29,9 @@ export async function sendSimulationEmail({
     return
   }
 
-  const axiosConf = {
-    headers: {
-      'api-key': config.thirdParty.brevo.apiKey,
-    },
+  // If we should not send the email, we don't do anything
+  if (!shouldSendSimulationEmail) {
+    return
   }
 
   // Add contact to list
@@ -57,19 +60,16 @@ export async function sendSimulationEmail({
           email,
         },
       ],
-      templateId: isCreation
-        ? TEMPLATE_ID_GROUP_CREATED
-        : TEMPLATE_ID_GROUP_JOINED,
+      templateId: 55,
       params: {
-        GROUP_URL: `${origin}/amis/resultats?groupId=${group?._id}&mtm_campaign=voir-mon-groupe-email`,
-        SHARE_URL: `${origin}/amis/invitation?groupId=${group?._id}&mtm_campaign=invitation-groupe-email`,
-        DELETE_URL: `${origin}/amis/supprimer?groupId=${group?._id}&userId=${userId}&mtm_campaign=invitation-groupe-email`,
-        GROUP_NAME: group.name,
-        NAME: name,
+        SHARE_URL: `${origin}?mtm_campaign=partage-email`,
+        SIMULATION_URL: `${origin}/fin?sid=${encodeURIComponent(
+          simulationSaved._id ?? ''
+        )}&mtm_campaign=retrouver-ma-simulation`,
       },
     },
     axiosConf
   )
 
-  console.log(`Email group ${isCreation ? 'creation' : ''} sent to ${email}`)
+  console.log(`Simulation email sent to ${email}`)
 }
