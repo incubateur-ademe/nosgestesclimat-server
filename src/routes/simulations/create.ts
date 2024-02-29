@@ -11,6 +11,7 @@ import { Document } from 'mongoose'
 import { handleUpdatePoll } from '../../helpers/organisations/handleUpdatePoll'
 import { handleUpdateGroup } from '../../helpers/groups/handleUpdateGroup'
 import { GroupType } from '../../schemas/GroupSchema'
+import { sendSimulationEmail } from '../../helpers/email/sendSimulationEmail'
 
 const router = express.Router()
 
@@ -80,7 +81,7 @@ router.route('/').post(async (req, res) => {
     })
 
     // If a group is associated with the simulation and the simulation is not already in it
-    // we add the simulation to the group
+    // we add the simulation to the group (and send an email to the user)
     await handleUpdateGroup({
       group,
       userDocument,
@@ -92,6 +93,19 @@ router.route('/').post(async (req, res) => {
       simulationSaved: Document<SimulationType> & SimulationType
       origin: string
     })
+
+    // If there is no group, we send the simulation email
+    if (!group) {
+      await sendSimulationEmail({
+        userDocument,
+        simulationSaved,
+        origin
+      } as unknown as {
+        userDocument: Document<UserType> & UserType
+        simulationSaved: Document<SimulationType> & SimulationType
+        origin: string
+      })
+    }
 
     setSuccessfulJSONResponse(res)
 
