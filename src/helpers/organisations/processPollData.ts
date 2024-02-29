@@ -1,9 +1,8 @@
 import { UserType } from '../../schemas/UserSchema'
 import { SimulationType } from '../../schemas/SimulationSchema'
+import { formatDottedName } from "../../utils/formatDottedName"
 
-function formatDottedName(dottedName: string) {
-  return dottedName.replaceAll(' . ', '_').replaceAll(' ', '-')
-}
+
 
 type SimulationRecap = {
   bilan: number
