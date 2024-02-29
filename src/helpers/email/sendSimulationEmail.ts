@@ -3,6 +3,7 @@ import { axiosConf } from '../../constants/axios'
 import { UserType } from '../../schemas/UserSchema'
 import { SimulationType } from '../../schemas/SimulationSchema'
 import { Document } from 'mongoose'
+import { createOrUpdateContact } from './createOrUpdateContact'
 
 /**
  * Send an email to a user when they save a simulation at the end
@@ -31,22 +32,12 @@ export async function sendSimulationEmail({
     return
   }
 
-  // Add contact to list
-  try {
-    await axios.post(
-      'https://api.brevo.com/v3/contacts',
-      {
-        email,
-        name,
-        attributes: {
-          OPT_IN: true,
-        },
-      },
-      axiosConf
-    )
-  } catch (error) {
-    // Do nothing, the contact already exists
-  }
+  // Create or update the contact
+  await createOrUpdateContact({
+    user: userDocument,
+    listIds: [22],
+    optin: true,
+  })
 
   await axios.post(
     'https://api.brevo.com/v3/smtp/email',

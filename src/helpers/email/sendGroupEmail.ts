@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { GroupType } from '../../schemas/GroupSchema'
 import { axiosConf } from '../../constants/axios'
+import { createOrUpdateContact } from './createOrUpdateContact'
 
 /**
  * Send an email to a user when they join a group or when a group is created (based on the isCreation parameter)
@@ -8,6 +9,9 @@ import { axiosConf } from '../../constants/axios'
 
 const TEMPLATE_ID_GROUP_CREATED = 57
 const TEMPLATE_ID_GROUP_JOINED = 58
+
+const LIST_ID_GROUP_CREATED = 29
+const LIST_ID_GROUP_JOINED = 30
 
 type Props = {
   group: GroupType
@@ -36,19 +40,15 @@ export async function sendGroupEmail({
     return
   }
 
-  // Add contact to list
-  try {
-    await axios.post(
-      'https://api.brevo.com/v3/contacts',
-      {
-        email,
-        name,
-      },
-      axiosConf
-    )
-  } catch (error) {
-    // Do nothing, the contact already exists
-  }
+  // Create or update the contact
+  await createOrUpdateContact({
+    user: {
+      userId,
+      email,
+      name,
+    },
+    listIds: [isCreation ? LIST_ID_GROUP_CREATED : LIST_ID_GROUP_JOINED],
+  })
 
   await axios.post(
     'https://api.brevo.com/v3/smtp/email',
