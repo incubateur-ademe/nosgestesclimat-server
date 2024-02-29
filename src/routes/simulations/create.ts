@@ -11,6 +11,7 @@ import { Document } from 'mongoose'
 import { handleUpdatePoll } from '../../helpers/organisations/handleUpdatePoll'
 import { handleUpdateGroup } from '../../helpers/groups/handleUpdateGroup'
 import { GroupType } from '../../schemas/GroupSchema'
+import { sendSimulationEmail } from '../../helpers/email/sendSimulationEmail'
 
 const router = express.Router()
 
@@ -19,6 +20,7 @@ router.route('/').post(async (req, res) => {
   const name = req.body.name
   const email = req.body.email
   const userId = req.body.userId
+  const shouldSendSimulationEmail = req.body.shouldSendSimulationEmail
 
   // We need the origin to send the group email (if applicable) with the correct links
   const origin = req.get('origin') ?? 'https://nosgestesclimat.fr'
@@ -80,7 +82,7 @@ router.route('/').post(async (req, res) => {
     })
 
     // If a group is associated with the simulation and the simulation is not already in it
-    // we add the simulation to the group
+    // we add the simulation to the group (and send an email to the user)
     await handleUpdateGroup({
       group,
       userDocument,
@@ -90,6 +92,18 @@ router.route('/').post(async (req, res) => {
       group: Document<GroupType> & GroupType
       userDocument: Document<UserType> & UserType
       simulationSaved: Document<SimulationType> & SimulationType
+      origin: string
+    })
+
+    await sendSimulationEmail({
+      userDocument,
+      simulationSaved,
+      shouldSendSimulationEmail,
+      origin,
+    } as unknown as {
+      userDocument: Document<UserType> & UserType
+      simulationSaved: Document<SimulationType> & SimulationType
+      shouldSendSimulationEmail: boolean
       origin: string
     })
 

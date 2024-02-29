@@ -3,11 +3,9 @@ import mongoose, { RefType } from 'mongoose'
 const Schema = mongoose.Schema
 
 export type UserType = {
-  name: string
+  name?: string
   email?: string
   userId: string
-  position?: string
-  telephone?: string
 }
 
 export const UserSchema = new Schema<UserType>(
@@ -18,8 +16,6 @@ export const UserSchema = new Schema<UserType>(
       type: String,
       unique: true,
     },
-    position: String,
-    telephone: String,
   },
   { timestamps: true }
 )

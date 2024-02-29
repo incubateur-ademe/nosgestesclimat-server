@@ -20,6 +20,7 @@ export type SimulationType = {
     postalCode?: string
     birthdate?: string
   }
+  savedViaEmail?: boolean
   modifiedAt?: Date
   createdAt?: Date
   _id?: string
@@ -59,6 +60,7 @@ export const SimulationSchema = new Schema<SimulationType>(
       type: Schema.Types.ObjectId,
       ref: 'Group',
     },
+    savedViaEmail: Boolean,
     defaultAdditionalQuestionsAnswers: {
       postalCode: String,
       birthdate: String,

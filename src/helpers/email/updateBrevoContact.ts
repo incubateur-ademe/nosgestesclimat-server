@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { config } from '../../config'
+import { axiosConf } from '../../constants/axios'
 
 type Props = {
   email: string
@@ -12,12 +12,6 @@ export async function updateBrevoContact({
   hasOptedInForCommunications,
   name,
 }: Props) {
-  const axiosConf = {
-    headers: {
-      'api-key': config.thirdParty.brevo.apiKey,
-    },
-  }
-
   // Update contact
   try {
     await axios.put(
