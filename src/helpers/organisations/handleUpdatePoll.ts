@@ -1,8 +1,11 @@
 import { Document, RefType } from 'mongoose'
 import { PollType } from '../../schemas/PollSchema'
 import { SimulationType } from '../../schemas/SimulationSchema'
-import { sendEmail } from "../email/sendEmail"
-import { Organisation, OrganisationType } from "../../schemas/OrganisationSchema"
+import { sendEmail } from '../email/sendEmail'
+import {
+  Organisation,
+  OrganisationType,
+} from '../../schemas/OrganisationSchema'
 
 export async function handleUpdatePoll({
   poll,
@@ -23,9 +26,9 @@ export async function handleUpdatePoll({
 
   // Send confirmation email
   if (email) {
-    const organisationFound = await Organisation.findOne({
+    const organisationFound = (await Organisation.findOne({
       polls: poll._id,
-    }) as Document<OrganisationType> & OrganisationType
+    })) as Document<OrganisationType> & OrganisationType
 
     await sendEmail({
       email,

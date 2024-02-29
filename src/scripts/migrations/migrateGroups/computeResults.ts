@@ -13,6 +13,6 @@ export function computeResults(situation: { [key: string]: string }) {
       logement: engine.evaluate('logement'),
       divers: engine.evaluate('divers'),
       'services sociétaux': engine.evaluate('services sociétaux'),
-    }
+    },
   }
 }

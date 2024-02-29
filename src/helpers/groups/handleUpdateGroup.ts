@@ -14,7 +14,7 @@ export async function handleUpdateGroup({
   group,
   userDocument,
   simulationSaved,
-  origin
+  origin,
 }: Props) {
   // If there is no group, we do nothing
   if (!group) {
@@ -47,13 +47,13 @@ export async function handleUpdateGroup({
     `User and simulation saved in group ${group._id} (${group.name}).`
   )
 
-   // Send creation confirmation email to the participant (if an email is provided)
+  // Send creation confirmation email to the participant (if an email is provided)
   sendGroupEmail({
     group,
     userId: userDocument.userId,
     name: userDocument.name,
     email: userDocument.email,
     isCreation: false,
-    origin
+    origin,
   })
 }

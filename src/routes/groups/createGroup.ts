@@ -20,7 +20,7 @@ router.route('/').post(async (req, res) => {
   // We need the origin to send the email with the correct links
   const origin = req.get('origin') ?? 'https://nosgestesclimat.fr'
 
-   // Check if all required fields are provided
+  // Check if all required fields are provided
   if (!userId) {
     return res.status(500).send('Error. A userId must be provided.')
   }
@@ -57,7 +57,7 @@ router.route('/').post(async (req, res) => {
       name: administratorName,
       email: administratorEmail,
       isCreation: true,
-      origin
+      origin,
     })
 
     // Send response

@@ -1,5 +1,5 @@
 import { getUserDocument } from '../../helpers/queries/getUserDocument'
-import { computeResults } from "./migrateGroups/computeResults"
+import { computeResults } from './migrateGroups/computeResults'
 
 const Group = require('../../schemas/GroupSchema')
 
@@ -29,7 +29,6 @@ const run = async () => {
         userId: member.userId,
         name: owner.name,
       })
-
 
       const simulationCreated = new Simulation({
         user: memberUserDocument?._id,

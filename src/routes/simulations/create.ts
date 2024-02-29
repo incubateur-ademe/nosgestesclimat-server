@@ -85,7 +85,7 @@ router.route('/').post(async (req, res) => {
       group,
       userDocument,
       simulationSaved,
-      origin
+      origin,
     } as unknown as {
       group: Document<GroupType> & GroupType
       userDocument: Document<UserType> & UserType

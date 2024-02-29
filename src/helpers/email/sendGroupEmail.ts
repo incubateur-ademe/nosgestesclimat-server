@@ -23,14 +23,14 @@ export async function sendGroupEmail({
   name,
   email,
   isCreation,
-  origin
+  origin,
 }: Props) {
   // If no email is provided, we don't do anything
   if (!email) {
     return
   }
 
-  // If this is not a creation email and they are the administrator, we don't send the email 
+  // If this is not a creation email and they are the administrator, we don't send the email
   // (they already received it when they created the group)
   if (!isCreation && group.administrator?.userId === userId) {
     return

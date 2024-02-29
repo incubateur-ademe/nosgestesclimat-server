@@ -12,8 +12,9 @@ const router = express.Router()
 router.route('/').post(async (req, res) => {
   const simulationId = req.body.simulationId
   const answer = req.body.answer
-  const isAnswerCorrect: 'correct' | 'almost' | 'wrong' = req.body.isAnswerCorrect
- 
+  const isAnswerCorrect: 'correct' | 'almost' | 'wrong' =
+    req.body.isAnswerCorrect
+
   // If no simulationId, answer or isAnswerCorrect is provided, we return an error
   if (!simulationId) {
     return res.status(500).send('Error. A simulationId must be provided.')
@@ -32,7 +33,7 @@ router.route('/').post(async (req, res) => {
       isAnswerCorrect: isAnswerCorrect,
       simulationId: simulationId,
     })
-    
+
     await quizAnswer.save()
 
     setSuccessfulJSONResponse(res)

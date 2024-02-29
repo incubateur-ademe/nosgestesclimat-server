@@ -6,7 +6,7 @@ import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { updateBrevoContact } from '../../helpers/email/updateBrevoContact'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
 import { Poll } from '../../schemas/PollSchema'
-import { findUniqueSlug } from "../../helpers/organisations/findUniqueSlug"
+import { findUniqueSlug } from '../../helpers/organisations/findUniqueSlug'
 
 const router = express.Router()
 
@@ -44,7 +44,9 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
     }
 
     if (!organisationFound.slug) {
-      const uniqueSlug = await findUniqueSlug(slugify(organisationName.toLowerCase()))
+      const uniqueSlug = await findUniqueSlug(
+        slugify(organisationName.toLowerCase())
+      )
 
       organisationFound.slug = uniqueSlug
     }

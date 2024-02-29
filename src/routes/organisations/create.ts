@@ -26,7 +26,7 @@ router.route('/').post(async (req: Request, res: Response) => {
       administrators: [
         {
           email,
-          userId
+          userId,
         },
       ],
       polls: [newlySavedPoll._id],

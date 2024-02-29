@@ -2,7 +2,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken'
 import dotenv from 'dotenv'
 import { NextFunction, Request, Response } from 'express'
 import { config } from '../config'
-import { COOKIES_OPTIONS, COOKIE_MAX_AGE } from "../constants/cookies"
+import { COOKIES_OPTIONS, COOKIE_MAX_AGE } from '../constants/cookies'
 
 if (process.env.NODE_ENV === 'development') {
   dotenv.config()
