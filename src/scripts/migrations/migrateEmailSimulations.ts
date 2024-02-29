@@ -1,16 +1,14 @@
-import mongoose from "mongoose";
-import { Simulation } from "../../schemas/SimulationSchema";
-import EmailSimulation from "../../schemas/_legacy/EmailSimulationSchema";
-import { computeResults } from "./migrateGroups/computeResults";
-import Engine from "publicodes";
+import mongoose from 'mongoose'
+import { Simulation } from '../../schemas/SimulationSchema'
+import EmailSimulation from '../../schemas/_legacy/EmailSimulationSchema'
+import { computeResults } from './migrateGroups/computeResults'
+import Engine from 'publicodes'
 import rules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
-
 
 async function migrateEmailSimulations() {
   const emailSimulations = await EmailSimulation.find()
 
   const engine = new Engine(rules as any)
-
 
   for (const emailSimulation of emailSimulations) {
     const data = emailSimulation.data

@@ -34,6 +34,7 @@ export type GroupType = {
     userId: string
     simulation: SimulationPreciseType
   }[]
+  _id?: string
 }
 
 const ParticipantSchema = new Schema<Participant>({
@@ -74,7 +75,7 @@ export const GroupSchema = new Schema<GroupType>(
       },
     },
     participants: [ParticipantSchema],
-     // Legacy from previous version
+    // Legacy from previous version
     // We should remove it before going to production
     owner: OwnerSchema,
     members: [MemberSchema],

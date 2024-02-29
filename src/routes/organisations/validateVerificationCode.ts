@@ -5,7 +5,7 @@ import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { VerificationCode } from '../../schemas/VerificationCodeSchema'
 import { Organisation } from '../../schemas/OrganisationSchema'
 import { config } from '../../config'
-import { COOKIES_OPTIONS, COOKIE_MAX_AGE } from "../../constants/cookies"
+import { COOKIES_OPTIONS, COOKIE_MAX_AGE } from '../../constants/cookies'
 
 const router = express.Router()
 
