@@ -19,12 +19,12 @@ router.route('/').post(async (req, res) => {
   try {
     let simulationFound
 
-    simulationFound = Simulation.findOne({
+    simulationFound = await Simulation.findOne({
       id: simulationId,
     })
 
     if (!simulationFound) {
-      simulationFound = EmailSimulation.findOne({
+      simulationFound = await EmailSimulation.findOne({
         _id: simulationId,
       })
     }
@@ -37,7 +37,8 @@ router.route('/').post(async (req, res) => {
 
     res.json(simulationFound)
   } catch (error) {
-    return res.status(401).send('Error while creating simulation.')
+    console.error(error)
+    return res.status(500).send('Error while fetching simulation.')
   }
 })
 

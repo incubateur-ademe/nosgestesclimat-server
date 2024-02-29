@@ -64,7 +64,7 @@ export async function sendSimulationEmail({
       params: {
         SHARE_URL: `${origin}?mtm_campaign=partage-email`,
         SIMULATION_URL: `${origin}/fin?sid=${encodeURIComponent(
-          simulationSaved._id ?? ''
+          simulationSaved.id ?? ''
         )}&mtm_campaign=retrouver-ma-simulation`,
       },
     },

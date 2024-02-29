@@ -35,7 +35,7 @@ export async function handleUpdateGroup({
 
   // Otherwise, we add the user (and its simulation) to the group
   group.participants.push({
-    name: userDocument.name,
+    name: userDocument.name || '🦊',
     email: userDocument.email,
     userId: userDocument.userId,
     simulation: simulationSaved._id as RefType,
