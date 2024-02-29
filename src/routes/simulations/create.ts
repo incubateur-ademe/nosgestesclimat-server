@@ -20,6 +20,9 @@ router.route('/').post(async (req, res) => {
   const email = req.body.email
   const userId = req.body.userId
 
+  // We need the origin to send the group email (if applicable) with the correct links
+  const origin = req.get('origin') ?? 'https://nosgestesclimat.fr'
+
   // If no simulation is provided, we return an error
   if (!simulation) {
     return res.status(500).send('Error. A simulation must be provided.')
@@ -82,10 +85,12 @@ router.route('/').post(async (req, res) => {
       group,
       userDocument,
       simulationSaved,
+      origin
     } as unknown as {
       group: Document<GroupType> & GroupType
       userDocument: Document<UserType> & UserType
       simulationSaved: Document<SimulationType> & SimulationType
+      origin: string
     })
 
     setSuccessfulJSONResponse(res)

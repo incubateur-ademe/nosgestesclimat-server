@@ -34,6 +34,7 @@ export type GroupType = {
     userId: string
     simulation: SimulationPreciseType
   }[]
+  _id?: string
 }
 
 const ParticipantSchema = new Schema<Participant>({

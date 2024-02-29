@@ -2,16 +2,20 @@ import { Document, RefType } from 'mongoose'
 import { SimulationType } from '../../schemas/SimulationSchema'
 import { GroupType } from '../../schemas/GroupSchema'
 import { UserType } from '../../schemas/UserSchema'
+import { sendGroupEmail } from '../email/sendGroupEmail'
 
+type Props = {
+  group?: Document<GroupType> & GroupType
+  userDocument: Document<UserType> & UserType
+  simulationSaved: Document<SimulationType> & SimulationType
+  origin: string
+}
 export async function handleUpdateGroup({
   group,
   userDocument,
   simulationSaved,
-}: {
-  group?: Document<GroupType> & GroupType
-  userDocument: Document<UserType> & UserType
-  simulationSaved: Document<SimulationType> & SimulationType
-}) {
+  origin
+}: Props) {
   // If there is no group, we do nothing
   if (!group) {
     return
@@ -42,4 +46,14 @@ export async function handleUpdateGroup({
   console.log(
     `User and simulation saved in group ${group._id} (${group.name}).`
   )
+
+   // Send creation confirmation email to the participant (if an email is provided)
+  sendGroupEmail({
+    group,
+    userId: userDocument.userId,
+    name: userDocument.name,
+    email: userDocument.email,
+    isCreation: false,
+    origin
+  })
 }

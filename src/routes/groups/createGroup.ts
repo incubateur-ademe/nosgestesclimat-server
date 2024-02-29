@@ -1,6 +1,7 @@
 import express from 'express'
 import { Group } from '../../schemas/GroupSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
+import { sendGroupEmail } from '../../helpers/email/sendGroupEmail'
 
 const router = express.Router()
 
@@ -16,7 +17,10 @@ router.route('/').post(async (req, res) => {
   const administratorName = req.body.administratorName
   const administratorEmail = req.body.administratorEmail
 
-  // Check if all required fields are provided
+  // We need the origin to send the email with the correct links
+  const origin = req.get('origin') ?? 'https://nosgestesclimat.fr'
+
+   // Check if all required fields are provided
   if (!userId) {
     return res.status(500).send('Error. A userId must be provided.')
   }
@@ -44,14 +48,24 @@ router.route('/').post(async (req, res) => {
       participants: [],
     })
 
-    const groupDocument = await newGroup.save()
+    const group = await newGroup.save()
+
+    // Send creation confirmation email to the administrator (if an email is provided)
+    sendGroupEmail({
+      group,
+      userId,
+      name: administratorName,
+      email: administratorEmail,
+      isCreation: true,
+      origin
+    })
 
     // Send response
     setSuccessfulJSONResponse(res)
 
-    res.json(groupDocument)
+    res.json(group)
 
-    console.log(`Group created: ${groupDocument._id} (${groupName})`)
+    console.log(`Group created: ${group._id} (${groupName})`)
   } catch (error) {
     return res.status(500).send('Error while creating group.')
   }
