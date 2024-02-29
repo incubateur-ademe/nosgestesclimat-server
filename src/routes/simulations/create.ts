@@ -99,13 +99,13 @@ router.route('/').post(async (req, res) => {
       userDocument,
       simulationSaved,
       shouldSendSimulationEmail,
-      origin
+      origin,
     } as unknown as {
       userDocument: Document<UserType> & UserType
       simulationSaved: Document<SimulationType> & SimulationType
       shouldSendSimulationEmail: boolean
       origin: string
-    })  
+    })
 
     setSuccessfulJSONResponse(res)
 

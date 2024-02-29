@@ -15,7 +15,7 @@ export const UserSchema = new Schema<UserType>(
     userId: {
       type: String,
       unique: true,
-    }
+    },
   },
   { timestamps: true }
 )

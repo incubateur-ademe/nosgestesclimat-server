@@ -8,9 +8,6 @@ import { Document } from 'mongoose'
  * Send an email to a user when they save a simulation at the end
  */
 
-const TEMPLATE_ID_GROUP_CREATED = 57
-const TEMPLATE_ID_GROUP_JOINED = 58
-
 type Props = {
   userDocument: Document<UserType> & UserType
   simulationSaved: Document<SimulationType> & SimulationType
