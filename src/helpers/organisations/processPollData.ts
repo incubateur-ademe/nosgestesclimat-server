@@ -1,8 +1,6 @@
 import { UserType } from '../../schemas/UserSchema'
 import { SimulationType } from '../../schemas/SimulationSchema'
-import { formatDottedName } from "../../utils/formatDottedName"
-
-
+import { formatDottedName } from '../../utils/formatDottedName'
 
 type SimulationRecap = {
   bilan: number

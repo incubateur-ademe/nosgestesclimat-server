@@ -52,9 +52,10 @@ export const safeGetSituation = ({
   return filteredSituation
 }
 
-
-export function computeResults(situation: Record<string, unknown>, engine: Engine) {
-
+export function computeResults(
+  situation: Record<string, unknown>,
+  engine: Engine
+) {
   const safeSituation = safeGetSituation({
     situation,
     everyRules: Object.keys(rules),
@@ -70,6 +71,6 @@ export function computeResults(situation: Record<string, unknown>, engine: Engin
       logement: engine.evaluate('logement').nodeValue,
       divers: engine.evaluate('divers').nodeValue,
       'services sociétaux': engine.evaluate('services sociétaux').nodeValue,
-    }
+    },
   }
 }
