@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 import { config } from '../../config'
-import { getUserDocument } from '../../helpers/queries/getUserDocument'
+import { createOrUpdateUser } from '../../helpers/queries/createOrUpdateUser'
 import { Group } from '../../schemas/GroupSchema'
 import { computeResults } from './migrateGroups/computeResults'
 import Engine from 'publicodes'
@@ -30,7 +30,7 @@ async function migrate() {
         continue
       }
 
-      const ownerUser = await getUserDocument({
+      const ownerUser = await createOrUpdateUser({
         email: owner?.email,
         userId: owner?.userId ?? '',
         name: owner?.name,
@@ -45,7 +45,7 @@ async function migrate() {
       }
 
       for (const member of members) {
-        const memberUserDocument = await getUserDocument({
+        const memberUserDocument = await createOrUpdateUser({
           email: member.email,
           userId: member.userId,
           name: owner?.name,
