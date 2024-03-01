@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { config } from '../../config'
+import { axiosConf } from '../../constants/axios'
 
 type Props = {
   email: string
@@ -18,12 +18,6 @@ export async function sendEmail({
   attributes,
   templateId,
 }: Props) {
-  const axiosConf = {
-    headers: {
-      'api-key': config.thirdParty.brevo.apiKey,
-    },
-  }
-
   // Add contact to list
   try {
     await axios.post(
