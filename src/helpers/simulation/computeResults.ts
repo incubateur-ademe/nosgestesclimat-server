@@ -1,5 +1,6 @@
 import rules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
 import Engine from 'publicodes'
+import { SimulationType } from "../../schemas/SimulationSchema"
 
 export const safeGetSituation = ({
   situation,
@@ -53,7 +54,8 @@ export const safeGetSituation = ({
 }
 
 
-export function computeResults(situation: Record<string, unknown>, engine: Engine) {
+export function computeResults(situation: SimulationType) {
+  const engine = new Engine(rules as any)
 
   const safeSituation = safeGetSituation({
     situation,
@@ -63,13 +65,13 @@ export function computeResults(situation: Record<string, unknown>, engine: Engin
   engine.setSituation(safeSituation as any)
 
   return {
-    bilan: engine.evaluate('bilan').nodeValue,
+    bilan: Number(engine.evaluate('bilan').nodeValue),
     categories: {
-      transport: engine.evaluate('transport').nodeValue,
-      alimentation: engine.evaluate('alimentation').nodeValue,
-      logement: engine.evaluate('logement').nodeValue,
-      divers: engine.evaluate('divers').nodeValue,
-      'services sociétaux': engine.evaluate('services sociétaux').nodeValue,
+      transport: Number(engine.evaluate('transport').nodeValue),
+      alimentation: Number(engine.evaluate('alimentation').nodeValue),
+      logement: Number(engine.evaluate('logement').nodeValue),
+      divers: Number(engine.evaluate('divers').nodeValue),
+      'services sociétaux': Number(engine.evaluate('services sociétaux').nodeValue),
     }
   }
 }

@@ -2,12 +2,8 @@ import mongoose from "mongoose"
 import { config } from "../../config"
 import { getUserDocument } from '../../helpers/queries/getUserDocument'
 import { Group } from "../../schemas/GroupSchema"
-import { computeResults } from "./migrateGroups/computeResults"
-import Engine from "publicodes"
-import rules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
+import { Simulation } from "../../schemas/SimulationSchema"
 
-
-const Simulation = require('../../schemas/SimulationSchema').Simulation
 
 async function migrate() {
   console.log('In migrate function...')
@@ -19,8 +15,6 @@ async function migrate() {
     const groups = await Group.find({ administrator: { $exists: false }})
 
     console.log('Groups length', groups.length)
-
-    const engine = new Engine(rules as any)
 
     for (const group of groups) {
       const owner = group.owner
@@ -62,7 +56,6 @@ async function migrate() {
           situation: member?.simulation?.situation,
           progression: 1,
           group: group._id,
-          computedResults: member?.simulation?.situation ? computeResults(member.simulation as any, engine) : {},
         })
       
 

@@ -1,6 +1,7 @@
 import express from 'express'
 import { Group } from '../../schemas/GroupSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
+import { updateGroupWithComputedResults } from "../../helpers/groups/updateGroupWithComputedResults"
 
 const router = express.Router()
 
@@ -24,6 +25,8 @@ router.route('/').post(async (req, res) => {
     if (!group) {
       return res.status(404).send('Error. Group not found.')
     }
+
+    updateGroupWithComputedResults(group)
 
     setSuccessfulJSONResponse(res)
 
