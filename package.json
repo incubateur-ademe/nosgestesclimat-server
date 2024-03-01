@@ -23,7 +23,6 @@
     "@types/express": "^4.17.21",
     "apicache": "^1.6.3",
     "axios": "^1.6.5",
-    "bluebird": "^3.7.2",
     "cors": "^2.8.5",
     "dayjs": "^1.11.10",
     "dotenv": "^16.0.3",

@@ -1,27 +1,47 @@
-import mongoose from "mongoose";
-import { Simulation } from "../../schemas/SimulationSchema";
-import EmailSimulation from "../../schemas/_legacy/EmailSimulationSchema";
+import mongoose from 'mongoose'
+import { Simulation } from '../../schemas/SimulationSchema'
+import EmailSimulation from '../../schemas/_legacy/EmailSimulationSchema'
+import { config } from '../../config'
 
 async function migrateEmailSimulations() {
-  const emailSimulations = await EmailSimulation.find()
+  mongoose.connect(config.mongo.url)
+  try {
+    const emailSimulations = await EmailSimulation.find()
+    console.log('Email simulations to migrate', emailSimulations.length)
 
-  for (const emailSimulation of emailSimulations) {
-    const data = emailSimulation.data
+    for (const emailSimulation of emailSimulations) {
+      const data = emailSimulation.data
 
-    const newEmailSimulation = new Simulation({
-      _id: new mongoose.Types.ObjectId(emailSimulation._id),
-      id: data.id,
-      actionChoices: data.actionChoices,
-      date: data.date ?? new Date(),
-      foldedSteps: data.foldedSteps,
-      situation: data.situation,
-      progression: 1,
-    })
+      if (!data) {
+        console.log(
+          `Email simulation not migrated: ${emailSimulation._id}, no data.`
+        )
+        continue
+      }
 
-    newEmailSimulation.save()
+      const newEmailSimulation = new Simulation({
+        _id: new mongoose.Types.ObjectId(emailSimulation._id),
+        id: data.id,
+        actionChoices: data.actionChoices,
+        date: data.date ?? new Date(),
+        foldedSteps: data.foldedSteps,
+        situation: data.situation,
+        progression: 1,
+      })
+
+      await newEmailSimulation.save()
+
+      await emailSimulation.delete()
+
+      console.log(
+        `Email simulation migrated: ${emailSimulation._id}, emailSimulation deleted.`
+      )
+    }
+
+    console.log('Email simulations migrated')
+  } catch (error) {
+    console.error('Error migrating email simulations', error)
   }
-
-  console.log('Email simulations migrated')
 }
 
 migrateEmailSimulations()
