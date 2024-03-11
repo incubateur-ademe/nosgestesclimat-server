@@ -13,6 +13,7 @@ router.route('/').post(async (req, res) => {
     const organisationFound = await Organisation.findOne({
       administrators: { $elemMatch: { email } },
     })
+
     if (!organisationFound) {
       return res.status(403).json('No matching organisation found.')
     }
