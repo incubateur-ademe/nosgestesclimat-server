@@ -18,7 +18,7 @@ export async function handleSendVerificationCodeAndReturnExpirationDate(
     email,
   })
 
-  await verificationCodeCreated.save()
+  const verificationCodeSaved = await verificationCodeCreated.save()
 
   // Send the code by email
   await sendVerificationCode({
@@ -26,5 +26,5 @@ export async function handleSendVerificationCodeAndReturnExpirationDate(
     verificationCode,
   })
 
-  return expirationDate
+  return verificationCodeSaved
 }

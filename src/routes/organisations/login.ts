@@ -18,13 +18,13 @@ router.route('/').post(async (req, res) => {
       return res.status(403).json('No matching organisation found.')
     }
 
-    const expirationDate =
+    const verificationCodeObject =
       await handleSendVerificationCodeAndReturnExpirationDate(email)
 
     setSuccessfulJSONResponse(res)
 
     res.json({
-      expirationDate,
+      expirationDate: verificationCodeObject.expirationDate,
     })
 
     console.log('Login attempt, sent verification code.')
