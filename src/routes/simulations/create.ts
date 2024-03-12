@@ -1,7 +1,7 @@
 import { UserType } from './../../schemas/UserSchema'
 import express from 'express'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import { getUserDocument } from '../../helpers/queries/getUserDocument'
+import { createOrUpdateUser } from '../../helpers/queries/createOrUpdateUser'
 import { findPollBySlug } from '../../helpers/organisations/findPollBySlug'
 import { findGroupById } from '../../helpers/groups/findGroupById'
 import { createOrUpdateSimulation } from '../../helpers/queries/createOrUpdateSimulation'
@@ -31,7 +31,7 @@ router.route('/').post(async (req, res) => {
   }
 
   // We create or search for the user
-  const userDocument = await getUserDocument({
+  const userDocument = await createOrUpdateUser({
     email,
     name,
     userId,

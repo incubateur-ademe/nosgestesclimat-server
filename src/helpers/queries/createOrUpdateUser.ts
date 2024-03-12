@@ -6,7 +6,7 @@ type Props = {
   name?: string
 }
 
-export async function getUserDocument({ userId, email, name }: Props) {
+export async function createOrUpdateUser({ userId, email, name }: Props) {
   let userDocument
 
   // If there is no userId we can't create a user
