@@ -19,7 +19,7 @@ async function migrateEmailSimulations() {
         continue
       }
 
-      const newEmailSimulation = new Simulation({
+      const newSimulation = new Simulation({
         _id: new mongoose.Types.ObjectId(emailSimulation._id),
         id: data.id,
         actionChoices: data.actionChoices,
@@ -29,7 +29,7 @@ async function migrateEmailSimulations() {
         progression: 1,
       })
 
-      await newEmailSimulation.save()
+      await newSimulation.save()
 
       await emailSimulation.delete()
 
