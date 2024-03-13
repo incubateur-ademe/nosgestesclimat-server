@@ -159,17 +159,7 @@ io.on('connection', (socket: any) => {
         const options = { upsert: true, new: true, setDefaultsOnInsert: true }
 
         // Find the document
-        // @ts-ignore
-        await Answer.findOneAndUpdate(
-          query,
-          update,
-          options,
-          function (error: Error) {
-            if (error) {
-              console.log('Error updating database with user answer')
-            }
-          }
-        )
+        await Answer.findOneAndUpdate(query, update, options)
       })
     }
   )

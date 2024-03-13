@@ -1,0 +1,69 @@
+contexte noisy le grand:
+  titre: Noisy-le-Grand
+  icônes: 📝
+  non applicable si:
+    une de ces conditions:
+      - quartier = '"non"'
+      - age = '"non"'
+  formule: 0
+
+contexte noisy le grand . quartier:
+  titre: Quartier
+  question: Quel est votre quartier de résidence ?
+  formule:
+    une possibilité:
+      choix obligatoire: oui
+      possibilités:
+        - La Varenne
+        - Rive Charmante
+        - Les Coteaux
+        - Le Mamois
+        - Champy Les Hauts Bâtons
+        - La Butte Verte
+        - La Grenouillère
+        - Les Yvris
+        - Les Richardets Montfort
+        - Le Pavé Neuf
+        - Mont d'Est
+        - Le centre
+        - Résident d'une autre commune
+
+contexte noisy le grand . quartier . La Varenne:
+contexte noisy le grand . quartier . Rive Charmante:
+contexte noisy le grand . quartier . Les Coteaux:
+contexte noisy le grand . quartier . Le Mamois:
+contexte noisy le grand . quartier . Champy Les Hauts Bâtons:
+  titre: Champy - Les Hauts Bâtons
+contexte noisy le grand . quartier . La Butte Verte:
+contexte noisy le grand . quartier . La Grenouillère:
+contexte noisy le grand . quartier . Les Yvris:
+contexte noisy le grand . quartier . Les Richardets Montfort:
+  titre: Les Richardets - Montfort
+contexte noisy le grand . quartier . Le Pavé Neuf:
+contexte noisy le grand . quartier . Mont d'Est:
+contexte noisy le grand . quartier . Le centre:
+contexte noisy le grand . quartier . Résident d'une autre commune:
+
+contexte noisy le grand . age:
+  titre: Age
+  question: Dans quelle tranche d'âge vous situez-vous ?
+  formule:
+    une possibilité:
+      choix obligatoire: oui
+      possibilités:
+        - moins de 18 ans
+        - entre 18 et 24 ans
+        - entre 25 et 44 ans
+        - entre 45 et 59 ans
+        - plus de 60 ans
+
+contexte noisy le grand . age . moins de 18 ans:
+  titre: Moins de 18 ans
+contexte noisy le grand . age . entre 18 et 24 ans:
+  titre: 18-24 ans
+contexte noisy le grand . age . entre 25 et 44 ans:
+  titre: 25-44 ans
+contexte noisy le grand . age . entre 45 et 59 ans:
+  titre: 45-59 ans
+contexte noisy le grand . age . plus de 60 ans:
+  titre: 60 ans et plus
