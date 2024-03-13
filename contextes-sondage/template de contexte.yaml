@@ -1,0 +1,45 @@
+# Rule name has to be the same as the file name.
+template de contexte:
+  titre: Mon titre
+  icônes: 📝
+  non applicable si:
+    une de ces conditions:
+      - groupe = '"non"'
+      - age = '"non"'
+  formule: 0
+
+template de contexte . groupe:
+  titre: Groupe
+  question: De quel groupe faites-vous partie ?
+  formule:
+    une possibilité:
+      choix obligatoire: oui
+      possibilités:
+        - groupe 1
+        - groupe 2
+        - groupe 3
+
+template de contexte . groupe . groupe 1:
+template de contexte . groupe . groupe 2:
+template de contexte . groupe . groupe 3:
+
+template de contexte . age:
+  titre: Age
+  question: Quel âge avez-vous ?
+  formule:
+    une possibilité:
+      choix obligatoire: oui
+      possibilités:
+        - moins de 20 ans
+        - entre 20 et 30 ans
+        - entre 30 et 40 ans
+        - entre 40 et 50 ans
+        - entre 50 et 60 ans
+        - plus de 60 ans
+
+template de contexte . age . moins de 20 ans:
+template de contexte . age . entre 20 et 30 ans:
+template de contexte . age . entre 30 et 40 ans:
+template de contexte . age . entre 40 et 50 ans:
+template de contexte . age . entre 50 et 60 ans:
+template de contexte . age . plus de 60 ans:

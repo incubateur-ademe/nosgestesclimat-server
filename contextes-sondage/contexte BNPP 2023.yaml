@@ -1,0 +1,374 @@
+# Rule name has to be the same as the file name.
+contexte BNPP 2023:
+  titre: Defi carbone BNP Paribas
+  icônes: 📝
+  non applicable si:
+    une de ces conditions:
+      - pole = '"non"'
+      - pays = '"non"'
+      - age = '"non"'
+      - genre = '"non"'
+  formule: 0
+
+contexte BNPP 2023 . pole:
+  titre: Pôle
+  question: Dans quel pôle opérationnel, entité, métier ou fonction du Groupe BNP Paribas travaillez-vous ?
+  formule:
+    une possibilité:
+      choix obligatoire: oui
+      possibilités:
+        - CPBS Banque Commerciale En France
+        - CPBS BNL
+        - CPBS BNP Paribas Fortis
+        - CPBS BGL BNP Paribas
+        - CPBS Arval
+        - CPBS BNP Paribas Leasing Solutions
+        - CPBS BNP Paribas Personal Finance
+        - CPBS BNP Paribas Personal Investors
+        - CPBS Europe Méditerranée
+        - CPBS HelloBank Pace Nickel Floa Lyf
+        - IPS BNP Paribas Asset Management
+        - IPS BNP Paribas Cardif
+        - IPS BNP Paribas Real Estate
+        - IPS BNP Paribas Wealth Management
+        - CIB Global Markets
+        - CIB Global Banking EMEA
+        - CIB Securities Services
+        - CIB Amériques
+        - CIB Asie Pacifique
+        - CIB Financial Institutions Coverage
+        - CIB Fonctions
+        - Activités Transverses ALM Treasury
+        - Activités Transverses Cash Management Payments Trade Finance Factoring
+        - Activités Transverses One Bank
+        - Activités Transverses Bivwak
+        - Fonctions de contrôle intégrées Conformité
+        - Fonctions de contrôle intégrées LEGAL
+        - Fonctions de contrôle intégrées RISK
+        - Fonctions de contrôle intégrées Inspection Générale
+        - Fonctions Transversales Ressources Humaines Groupe
+        - Fonctions Transversales Engagement d Entreprise Communication Groupe
+        - Fonctions Transversales Engagement d Entreprise RSE
+        - Fonctions Transversales Finance et Strategy
+        - Fonctions Transversales IT Group
+        - Fonctions Transversales Procurement et Performance
+        - Fonctions Transversales IMEX
+        - Fonctions Transversales Steering of transversal projects
+        - Fonctions Transversales BNP Paribas Consulting et Transformation
+        - Fonctions Transversales Group Data Office
+        - Fonctions Transversales People and property security
+
+contexte BNPP 2023 . pole . CPBS Banque Commerciale En France:
+  titre: CPBS - Banque Commerciale En France
+contexte BNPP 2023 . pole . CPBS BNL:
+contexte BNPP 2023 . pole . CPBS BNP Paribas Fortis:
+contexte BNPP 2023 . pole . CPBS BGL BNP Paribas:
+contexte BNPP 2023 . pole . CPBS Arval:
+contexte BNPP 2023 . pole . CPBS BNP Paribas Leasing Solutions:
+contexte BNPP 2023 . pole . CPBS BNP Paribas Personal Finance:
+contexte BNPP 2023 . pole . CPBS BNP Paribas Personal Investors:
+contexte BNPP 2023 . pole . CPBS Europe Méditerranée:
+contexte BNPP 2023 . pole . CPBS HelloBank Pace Nickel Floa Lyf:
+  titre: CPBS HelloBank, Pace, Nickel, Floa, Lyf
+contexte BNPP 2023 . pole . IPS BNP Paribas Asset Management:
+contexte BNPP 2023 . pole . IPS BNP Paribas Cardif:
+contexte BNPP 2023 . pole . IPS BNP Paribas Real Estate:
+contexte BNPP 2023 . pole . IPS BNP Paribas Wealth Management:
+contexte BNPP 2023 . pole . CIB Global Markets:
+contexte BNPP 2023 . pole . CIB Global Banking EMEA:
+contexte BNPP 2023 . pole . CIB Securities Services:
+contexte BNPP 2023 . pole . CIB Amériques:
+contexte BNPP 2023 . pole . CIB Asie Pacifique:
+contexte BNPP 2023 . pole . CIB Financial Institutions Coverage:
+contexte BNPP 2023 . pole . CIB Fonctions:
+contexte BNPP 2023 . pole . Activités Transverses ALM Treasury:
+contexte BNPP 2023 . pole . Activités Transverses Cash Management Payments Trade Finance Factoring:
+  titre: Activités Transverses Cash Management, Payments, Trade Finance & Factoring
+contexte BNPP 2023 . pole . Activités Transverses One Bank:
+contexte BNPP 2023 . pole . Activités Transverses Bivwak:
+contexte BNPP 2023 . pole . Fonctions de contrôle intégrées Conformité:
+contexte BNPP 2023 . pole . Fonctions de contrôle intégrées LEGAL:
+contexte BNPP 2023 . pole . Fonctions de contrôle intégrées RISK:
+contexte BNPP 2023 . pole . Fonctions de contrôle intégrées Inspection Générale:
+contexte BNPP 2023 . pole . Fonctions Transversales Ressources Humaines Groupe:
+contexte BNPP 2023 . pole . Fonctions Transversales Engagement d Entreprise Communication Groupe:
+contexte BNPP 2023 . pole . Fonctions Transversales Engagement d Entreprise RSE:
+contexte BNPP 2023 . pole . Fonctions Transversales Finance et Strategy:
+contexte BNPP 2023 . pole . Fonctions Transversales IT Group:
+contexte BNPP 2023 . pole . Fonctions Transversales Procurement et Performance:
+contexte BNPP 2023 . pole . Fonctions Transversales IMEX:
+contexte BNPP 2023 . pole . Fonctions Transversales Steering of transversal projects:
+contexte BNPP 2023 . pole . Fonctions Transversales BNP Paribas Consulting et Transformation:
+contexte BNPP 2023 . pole . Fonctions Transversales Group Data Office:
+contexte BNPP 2023 . pole . Fonctions Transversales People and property security:
+
+contexte BNPP 2023 . pays:
+  titre: Pays
+  question: Dans quel pays et quelle région travaillez-vous ?
+  formule:
+    une possibilité:
+      choix obligatoire: oui
+      possibilités:
+        - France Auvergne Rhône Alpes
+        - France Bourgogne Franche Comté
+        - France Bretagne
+        - France Centre Val de Loire
+        - France Corse
+        - France Grand Est
+        - France Hauts de France
+        - France Ile de France
+        - France Normandie
+        - France Nouvelle Aquitaine
+        - France Occitanie
+        - France Pays de la Loire
+        - France Provence Côte d Azur
+        - France outre mer
+        - Allemagne Bade Wurtemberg
+        - Allemagne Basse Saxe
+        - Allemagne Bavière
+        - Allemagne Berlin
+        - Allemagne Brandeburg
+        - Allemagne Brême
+        - Allemagne Hambourg
+        - Allemagne Hesse
+        - Allemagne Mecklembourg Poméranie occidentale
+        - Allemagne Rhénanie du Nord Westphalie
+        - Allemagne Rhénanie Palatinat
+        - Allemagne Sarre
+        - Allemagne Saxe
+        - Allemagne Saxe Anhalt
+        - Allemagne Schleswig Holstein
+        - Allemagne Thuringe
+        - Belgique Anvers
+        - Belgique Brabant Flamand
+        - Belgique Brabant Wallon
+        - Belgique Bruxelles
+        - Belgique Flandre Occidentale
+        - Belgique Flandre Orientale
+        - Belgique Hainaut
+        - Belgique Liège
+        - Belgique Limbourg
+        - Belgique Luxembourg
+        - Belgique Namur
+        - Italie Abruzzes
+        - Italie Basilicate
+        - Italie Calabre
+        - Italie Campanie
+        - Italie Emilie Romagne
+        - Italie Frioul Vénétie julienne
+        - Italie Latium
+        - Italie Ligurie
+        - Italie Lombardie
+        - Italie Marches
+        - Italie Molise
+        - Italie Ombrie
+        - Italie Piémont
+        - Italie Pouilles
+        - Italie Sardaigne
+        - Italie Sicile
+        - Italie Trentin Haut Adige
+        - Italie Toscane
+        - Italie Val d Aoste
+        - Italie Vénétie
+        - Luxembourg
+        - Pologne Basse Silésie
+        - Pologne Basses Carpates
+        - Pologne Cujavie Poméranie
+        - Pologne Grande Pologne
+        - Pologne Lublin
+        - Pologne Lubusz
+        - Pologne Lodz
+        - Pologne Mazovie
+        - Pologne Opole
+        - Pologne Petite Pologne
+        - Pologne Podlasie
+        - Pologne Poméranie Occidentale
+        - Pologne Poméranie
+        - Pologne Sainte Croix
+        - Pologne Silésie
+        - Pologne Varmie Mazurie
+        - Portugal Alentejo
+        - Portugal Algarve
+        - Portugal Centre
+        - Portugal Lisbonne
+        - Portugal Nord
+        - Portugal Açores
+        - Portugal Madere
+        - Suisse Espace Mittelland
+        - Suisse Région Lémanique
+        - Suisse Suisse Centrale
+        - Suisse Suisse du Nord Ouest
+        - Suisse Suisse Orientale
+        - Suisse Ticino
+        - Suisse Zurich
+        - Turquie Anatolie Centrale
+        - Turquie Anatolie de l Est
+        - Turquie Anatolie du Sud Est
+        - Turquie La Côte Egéenne
+        - Turquie Région de la Méditerranée
+        - Turquie Région de la Mer Noire
+        - Turquie Région de Marmara
+        - UK Ecosse
+        - UK Est Anglie
+        - UK Irlande du Nord
+        - UK Londres
+        - UK Midlands de l Est
+        - UK Midlands de l Ouest
+        - UK Nord Est
+        - UK Nord Ouest
+        - UK Pays de Galles
+        - UK Sud Est
+        - UK Sud Ouest
+        - UK Yorkshire et Humber
+
+contexte BNPP 2023 . pays . France Auvergne Rhône Alpes:
+contexte BNPP 2023 . pays . France Bourgogne Franche Comté:
+contexte BNPP 2023 . pays . France Bretagne:
+contexte BNPP 2023 . pays . France Centre Val de Loire:
+contexte BNPP 2023 . pays . France Corse:
+contexte BNPP 2023 . pays . France Grand Est:
+contexte BNPP 2023 . pays . France Hauts de France:
+contexte BNPP 2023 . pays . France Ile de France:
+contexte BNPP 2023 . pays . France Normandie:
+contexte BNPP 2023 . pays . France Nouvelle Aquitaine:
+contexte BNPP 2023 . pays . France Occitanie:
+contexte BNPP 2023 . pays . France Pays de la Loire:
+contexte BNPP 2023 . pays . France Provence Côte d Azur:
+contexte BNPP 2023 . pays . France outre mer:
+  titre: France Guadeloupe, Guyane, Martinique, Mayotte, Polynésie française, Réunion
+contexte BNPP 2023 . pays . Allemagne Bade Wurtemberg:
+contexte BNPP 2023 . pays . Allemagne Basse Saxe:
+contexte BNPP 2023 . pays . Allemagne Bavière:
+contexte BNPP 2023 . pays . Allemagne Berlin:
+contexte BNPP 2023 . pays . Allemagne Brandeburg:
+contexte BNPP 2023 . pays . Allemagne Brême:
+contexte BNPP 2023 . pays . Allemagne Hambourg:
+contexte BNPP 2023 . pays . Allemagne Hesse:
+contexte BNPP 2023 . pays . Allemagne Mecklembourg Poméranie occidentale:
+contexte BNPP 2023 . pays . Allemagne Rhénanie du Nord Westphalie:
+contexte BNPP 2023 . pays . Allemagne Rhénanie Palatinat:
+contexte BNPP 2023 . pays . Allemagne Sarre:
+contexte BNPP 2023 . pays . Allemagne Saxe:
+contexte BNPP 2023 . pays . Allemagne Saxe Anhalt:
+contexte BNPP 2023 . pays . Allemagne Schleswig Holstein:
+contexte BNPP 2023 . pays . Allemagne Thuringe:
+contexte BNPP 2023 . pays . Belgique Anvers:
+contexte BNPP 2023 . pays . Belgique Brabant Flamand:
+contexte BNPP 2023 . pays . Belgique Brabant Wallon:
+contexte BNPP 2023 . pays . Belgique Bruxelles:
+contexte BNPP 2023 . pays . Belgique Flandre Occidentale:
+contexte BNPP 2023 . pays . Belgique Flandre Orientale:
+contexte BNPP 2023 . pays . Belgique Hainaut:
+contexte BNPP 2023 . pays . Belgique Liège:
+contexte BNPP 2023 . pays . Belgique Limbourg:
+contexte BNPP 2023 . pays . Belgique Luxembourg:
+contexte BNPP 2023 . pays . Belgique Namur:
+contexte BNPP 2023 . pays . Italie Abruzzes:
+contexte BNPP 2023 . pays . Italie Basilicate:
+contexte BNPP 2023 . pays . Italie Calabre:
+contexte BNPP 2023 . pays . Italie Campanie:
+contexte BNPP 2023 . pays . Italie Emilie Romagne:
+contexte BNPP 2023 . pays . Italie Frioul Vénétie julienne:
+contexte BNPP 2023 . pays . Italie Latium:
+contexte BNPP 2023 . pays . Italie Ligurie:
+contexte BNPP 2023 . pays . Italie Lombardie:
+contexte BNPP 2023 . pays . Italie Marches:
+contexte BNPP 2023 . pays . Italie Molise:
+contexte BNPP 2023 . pays . Italie Ombrie:
+contexte BNPP 2023 . pays . Italie Piémont:
+contexte BNPP 2023 . pays . Italie Pouilles:
+contexte BNPP 2023 . pays . Italie Sardaigne:
+contexte BNPP 2023 . pays . Italie Sicile:
+contexte BNPP 2023 . pays . Italie Trentin Haut Adige:
+contexte BNPP 2023 . pays . Italie Toscane:
+contexte BNPP 2023 . pays . Italie Val d Aoste:
+contexte BNPP 2023 . pays . Italie Vénétie:
+contexte BNPP 2023 . pays . Luxembourg:
+contexte BNPP 2023 . pays . Pologne Basse Silésie:
+contexte BNPP 2023 . pays . Pologne Basses Carpates:
+contexte BNPP 2023 . pays . Pologne Cujavie Poméranie:
+contexte BNPP 2023 . pays . Pologne Grande Pologne:
+contexte BNPP 2023 . pays . Pologne Lublin:
+contexte BNPP 2023 . pays . Pologne Lubusz:
+contexte BNPP 2023 . pays . Pologne Lodz:
+contexte BNPP 2023 . pays . Pologne Mazovie:
+contexte BNPP 2023 . pays . Pologne Opole:
+contexte BNPP 2023 . pays . Pologne Petite Pologne:
+contexte BNPP 2023 . pays . Pologne Podlasie:
+contexte BNPP 2023 . pays . Pologne Poméranie Occidentale:
+contexte BNPP 2023 . pays . Pologne Poméranie:
+contexte BNPP 2023 . pays . Pologne Sainte Croix:
+contexte BNPP 2023 . pays . Pologne Silésie:
+contexte BNPP 2023 . pays . Pologne Varmie Mazurie:
+contexte BNPP 2023 . pays . Portugal Alentejo:
+contexte BNPP 2023 . pays . Portugal Algarve:
+contexte BNPP 2023 . pays . Portugal Centre:
+contexte BNPP 2023 . pays . Portugal Lisbonne:
+contexte BNPP 2023 . pays . Portugal Nord:
+contexte BNPP 2023 . pays . Portugal Açores:
+contexte BNPP 2023 . pays . Portugal Madere:
+contexte BNPP 2023 . pays . Suisse Espace Mittelland:
+contexte BNPP 2023 . pays . Suisse Région Lémanique:
+contexte BNPP 2023 . pays . Suisse Suisse Centrale:
+contexte BNPP 2023 . pays . Suisse Suisse du Nord Ouest:
+contexte BNPP 2023 . pays . Suisse Suisse Orientale:
+contexte BNPP 2023 . pays . Suisse Ticino:
+contexte BNPP 2023 . pays . Suisse Zurich:
+contexte BNPP 2023 . pays . Turquie Anatolie Centrale:
+contexte BNPP 2023 . pays . Turquie Anatolie de l Est:
+contexte BNPP 2023 . pays . Turquie Anatolie du Sud Est:
+contexte BNPP 2023 . pays . Turquie La Côte Egéenne:
+contexte BNPP 2023 . pays . Turquie Région de la Méditerranée:
+contexte BNPP 2023 . pays . Turquie Région de la Mer Noire:
+contexte BNPP 2023 . pays . Turquie Région de Marmara:
+contexte BNPP 2023 . pays . UK Ecosse:
+contexte BNPP 2023 . pays . UK Est Anglie:
+contexte BNPP 2023 . pays . UK Irlande du Nord:
+contexte BNPP 2023 . pays . UK Londres:
+contexte BNPP 2023 . pays . UK Midlands de l Est:
+contexte BNPP 2023 . pays . UK Midlands de l Ouest:
+contexte BNPP 2023 . pays . UK Nord Est:
+contexte BNPP 2023 . pays . UK Nord Ouest:
+contexte BNPP 2023 . pays . UK Pays de Galles:
+contexte BNPP 2023 . pays . UK Sud Est:
+contexte BNPP 2023 . pays . UK Sud Ouest:
+contexte BNPP 2023 . pays . UK Yorkshire et Humber:
+
+contexte BNPP 2023 . age:
+  titre: Âge
+  question: Dans quelle tranche d'âge vous situez-vous ?
+  formule:
+    une possibilité:
+      choix obligatoire: oui
+      possibilités:
+        - moins de 30 ans
+        - entre 30 et 39 ans
+        - entre 40 et 49 ans
+        - plus de 50 ans
+
+contexte BNPP 2023 . age . moins de 30 ans:
+  titre: Moins de 30 ans
+contexte BNPP 2023 . age . entre 30 et 39 ans:
+  titre: Entre 30 et 39 ans
+contexte BNPP 2023 . age . entre 40 et 49 ans:
+  titre: Entre 40 et 49 ans
+contexte BNPP 2023 . age . plus de 50 ans:
+  titre: Plus de 50 ans
+
+contexte BNPP 2023 . genre:
+  titre: Genre
+  question: Êtes-vous ?
+  formule:
+    une possibilité:
+      choix obligatoire: oui
+      possibilités:
+        - femme
+        - homme
+        - autre
+
+contexte BNPP 2023 . genre . femme:
+  titre: Une femme
+contexte BNPP 2023 . genre . homme:
+  titre: Un homme
+contexte BNPP 2023 . genre . autre:
+  titre: Autre / Ne souhaite pas répondre
