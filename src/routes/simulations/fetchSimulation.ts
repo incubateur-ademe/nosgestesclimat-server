@@ -9,7 +9,7 @@ const router = express.Router()
 
 router.route('/').post(async (req, res) => {
   const simulationId = req.body.simulationId
-  console.log('simulationId', simulationId)
+
   if (!simulationId) {
     return res
       .status(404)
@@ -22,7 +22,7 @@ router.route('/').post(async (req, res) => {
     const simulationFound = await Simulation.collection.findOne({
       $or: [{ _id: objectId }, { id: simulationId }],
     })
-    console.log('simulationFound', simulationFound)
+
     if (!simulationFound) {
       return res.status(404).send('No matching simulation found.')
     }
