@@ -16,7 +16,9 @@ router.route('/').post(async (req, res) => {
       .send('Error. A simulation id or an email must be provided.')
   }
 
-  const objectId = new mongoose.Types.ObjectId(simulationId)
+  const objectId = mongoose.isValidObjectId(simulationId)
+    ? new mongoose.Types.ObjectId(simulationId)
+    : simulationId
 
   try {
     const simulationFound = await Simulation.collection.findOne({
