@@ -77,6 +77,7 @@ async function migrate() {
       console.log('Migrated group with name', groupSaved.name)
       console.log(groupSaved.administrator, groupSaved.participants)
     }
+    console.log('Groups migrated')
   } catch (e) {
     console.error('Error', e)
   }

@@ -31,7 +31,7 @@ async function migrateEmailSimulations() {
 
       await newSimulation.save()
 
-      await emailSimulation.delete()
+      //await emailSimulation.delete()
 
       console.log(
         `Email simulation migrated: ${emailSimulation._id}, emailSimulation deleted.`
