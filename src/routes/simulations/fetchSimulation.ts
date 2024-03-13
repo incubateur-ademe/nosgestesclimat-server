@@ -3,32 +3,26 @@ import express from 'express'
 import { Simulation } from '../../schemas/SimulationSchema'
 
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import EmailSimulation from '../../schemas/_legacy/EmailSimulationSchema'
+import mongoose from 'mongoose'
 
 const router = express.Router()
 
 router.route('/').post(async (req, res) => {
   const simulationId = req.body.simulationId
-
+  console.log('simulationId', simulationId)
   if (!simulationId) {
     return res
       .status(404)
       .send('Error. A simulation id or an email must be provided.')
   }
 
+  const objectId = new mongoose.Types.ObjectId(simulationId)
+
   try {
-    let simulationFound
-
-    simulationFound = await Simulation.findOne({
-      id: simulationId,
+    const simulationFound = await Simulation.collection.findOne({
+      $or: [{ _id: objectId }, { id: simulationId }],
     })
-
-    if (!simulationFound) {
-      simulationFound = await EmailSimulation.findOne({
-        _id: simulationId,
-      })
-    }
-
+    console.log('simulationFound', simulationFound)
     if (!simulationFound) {
       return res.status(404).send('No matching simulation found.')
     }
