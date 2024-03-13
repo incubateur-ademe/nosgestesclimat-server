@@ -21,10 +21,10 @@ yarn dev
 ```
 
 Pour se connecter à la base de données, on peut utiliser la commande utilisant
-le CLI `scalingo`. 
+le CLI `scalingo`.
 Pour une interface graphique, on peut utiliser MongoDB Compass en suivant [ce
 guide](https://doc.scalingo.com/databases/mongodb/compass#connection-via-the-db-tunnel-of-our-cli)
-(la connexion est compliquée sans ce guide). 
+(la connexion est compliquée sans ce guide).
 
 ## Contextualisation des sondages
 
@@ -44,15 +44,20 @@ de[/contextes-sondage](https://github.com/incubateur-ademe/nosgestesclimat-serve
 1. Créer un nouveau fichier `/contexte-sondage/<nom-fichier>.yaml` sur la base
    de ce [template](https://github.com/incubateur-ademe/nosgestesclimat-server/blob/master/contextes-sondage/template%20de%20contexte.yaml).
 2. Ouvrir une console mongodb:
+
 ```
 scalingo -a nosgestesclimat mongo-console
 ```
+
 3. Trouver le sondage que l'on souhaite contextualiser:
+
 ```
 db.surveys.find({name: "<nom-sondage"}).pretty()
 ```
+
 4. Une fois que l'on s'est assuré que c'est le bon sondage, il suffit d'ajouter
    le champ `contextFile`:
+
 ```
 db.surveys.updateOne({name: "<nom-sondage>"}, {$set: {contextFile: "<nom-fichier>"}})
 ```
