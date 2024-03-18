@@ -39,7 +39,6 @@ import createQuizAnswerRoute from './routes/quiz/create'
 import sendEmailRoute from './routes/email/sendEmail'
 
 import cors from 'cors'
-import { Error } from 'mongoose'
 import Answer from './schemas/_legacy/AnswerSchema'
 import connect from './scripts/initDatabase'
 import { config } from './config'

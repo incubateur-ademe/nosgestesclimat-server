@@ -32,32 +32,36 @@ export async function sendSimulationEmail({
     return
   }
 
-  // Create or update the contact
-  await createOrUpdateContact({
-    user: userDocument,
-    listIds: [22],
-    optin: true,
-  })
+  try {
+    // Create or update the contact
+    await createOrUpdateContact({
+      user: userDocument,
+      listIds: [22],
+      optin: true,
+    })
 
-  await axios.post(
-    'https://api.brevo.com/v3/smtp/email',
-    {
-      to: [
-        {
-          name: email,
-          email,
+    await axios.post(
+      'https://api.brevo.com/v3/smtp/email',
+      {
+        to: [
+          {
+            name: email,
+            email,
+          },
+        ],
+        templateId: 55,
+        params: {
+          SHARE_URL: `${origin}?mtm_campaign=partage-email`,
+          SIMULATION_URL: `${origin}/fin?sid=${encodeURIComponent(
+            simulationSaved.id ?? ''
+          )}&mtm_campaign=retrouver-ma-simulation`,
         },
-      ],
-      templateId: 55,
-      params: {
-        SHARE_URL: `${origin}?mtm_campaign=partage-email`,
-        SIMULATION_URL: `${origin}/fin?sid=${encodeURIComponent(
-          simulationSaved.id ?? ''
-        )}&mtm_campaign=retrouver-ma-simulation`,
       },
-    },
-    axiosConf
-  )
+      axiosConf
+    )
+  } catch (error) {
+    throw new Error(error)
+  }
 
   console.log(`Simulation email sent to ${email}`)
 }
