@@ -40,38 +40,42 @@ export async function sendGroupEmail({
     return
   }
 
-  // Create or update the contact
-  await createOrUpdateContact({
-    user: {
-      userId,
-      email,
-      name,
-    },
-    listIds: [isCreation ? LIST_ID_GROUP_CREATED : LIST_ID_GROUP_JOINED],
-  })
-
-  await axios.post(
-    'https://api.brevo.com/v3/smtp/email',
-    {
-      to: [
-        {
-          name: email,
-          email,
-        },
-      ],
-      templateId: isCreation
-        ? TEMPLATE_ID_GROUP_CREATED
-        : TEMPLATE_ID_GROUP_JOINED,
-      params: {
-        GROUP_URL: `${origin}/amis/resultats?groupId=${group?._id}&mtm_campaign=voir-mon-groupe-email`,
-        SHARE_URL: `${origin}/amis/invitation?groupId=${group?._id}&mtm_campaign=invitation-groupe-email`,
-        DELETE_URL: `${origin}/amis/supprimer?groupId=${group?._id}&userId=${userId}&mtm_campaign=invitation-groupe-email`,
-        GROUP_NAME: group.name,
-        NAME: name,
+  try {
+    // Create or update the contact
+    await createOrUpdateContact({
+      user: {
+        userId,
+        email,
+        name,
       },
-    },
-    axiosConf
-  )
+      listIds: [isCreation ? LIST_ID_GROUP_CREATED : LIST_ID_GROUP_JOINED],
+    })
+
+    await axios.post(
+      'https://api.brevo.com/v3/smtp/email',
+      {
+        to: [
+          {
+            name: email,
+            email,
+          },
+        ],
+        templateId: isCreation
+          ? TEMPLATE_ID_GROUP_CREATED
+          : TEMPLATE_ID_GROUP_JOINED,
+        params: {
+          GROUP_URL: `${origin}/amis/resultats?groupId=${group?._id}&mtm_campaign=voir-mon-groupe-email`,
+          SHARE_URL: `${origin}/amis/invitation?groupId=${group?._id}&mtm_campaign=invitation-groupe-email`,
+          DELETE_URL: `${origin}/amis/supprimer?groupId=${group?._id}&userId=${userId}&mtm_campaign=invitation-groupe-email`,
+          GROUP_NAME: group.name,
+          NAME: name,
+        },
+      },
+      axiosConf
+    )
+  } catch (error) {
+    throw new Error(error)
+  }
 
   console.log(`Email group ${isCreation ? 'creation' : ''} sent to ${email}`)
 }
