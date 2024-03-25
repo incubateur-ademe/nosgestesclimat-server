@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { findPopulatedPollBySlug } from '../../helpers/organisations/findPopulatedPollBySlug'
 import { SimulationType } from '../../schemas/SimulationSchema'
+import { Organisation } from '../../schemas/OrganisationSchema'
 
 const router = express.Router()
 
@@ -33,9 +34,21 @@ router
         poll.simulations as unknown as SimulationType[]
       ).some((simulation) => (simulation?.user as any).userId)
 
+      let organisation = undefined
+      if (hasUserAlreadyParticipated) {
+        organisation = await Organisation.findOne({
+          polls: {
+            $in: poll._id,
+          },
+        })
+      }
+
       setSuccessfulJSONResponse(res)
 
-      res.json(hasUserAlreadyParticipated)
+      res.json({
+        hasUserAlreadyParticipated,
+        organisationSlug: organisation?.slug,
+      })
     } catch (error) {
       return res.status(500).send('Error while fetching poll')
     }
