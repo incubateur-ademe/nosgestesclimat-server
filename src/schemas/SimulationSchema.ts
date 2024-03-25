@@ -14,8 +14,8 @@ export type SimulationType = {
     bilan: number
     categories: Record<string, number>
   }
-  poll?: RefType
-  group?: RefType
+  polls?: RefType[]
+  groups?: RefType[]
   defaultAdditionalQuestionsAnswers?: {
     postalCode?: string
     birthdate?: string
@@ -52,14 +52,18 @@ export const SimulationSchema = new Schema<SimulationType>(
         'services sociétaux': Number,
       },
     },
-    poll: {
-      type: Schema.Types.ObjectId,
-      ref: 'Poll',
-    },
-    group: {
-      type: Schema.Types.ObjectId,
-      ref: 'Group',
-    },
+    polls: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Poll',
+      },
+    ],
+    groups: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Group',
+      },
+    ],
     savedViaEmail: Boolean,
     defaultAdditionalQuestionsAnswers: {
       postalCode: String,
