@@ -2,10 +2,20 @@ import axios from 'axios'
 import { axiosConf } from '../../constants/axios'
 import { UserType } from '../../schemas/UserSchema'
 import {
+  ATTRIBUTE_ACTIONS_SELECTED_NUMBER,
+  ATTRIBUTE_LAST_SIMULATION_ALIMENTATION_FOOTPRINT,
+  ATTRIBUTE_LAST_SIMULATION_BILAN_FOOTPRINT,
+  ATTRIBUTE_LAST_SIMULATION_DATE,
+  ATTRIBUTE_LAST_SIMULATION_DIVERS_FOOTPRINT,
+  ATTRIBUTE_LAST_SIMULATION_LOGEMENT_FOOTPRINT,
+  ATTRIBUTE_LAST_SIMULATION_SERVICES_FOOTPRINT,
+  ATTRIBUTE_LAST_SIMULATION_TRANSPORTS_FOOTPRINT,
   ATTRIBUTE_OPT_IN,
   ATTRIBUTE_PRENOM,
   ATTRIBUTE_USER_ID,
 } from '../../constants/brevo'
+import { SimulationType } from '../../schemas/SimulationSchema'
+import { handleAddAttributes } from '../brevo/handleAddAttributes'
 
 type Props = {
   email: string
@@ -14,6 +24,7 @@ type Props = {
   listIds?: number[]
   optin?: boolean
   otherAttributes?: Record<string, string | boolean | number>
+  simulation?: SimulationType
 }
 
 type Attributes = {
@@ -29,29 +40,26 @@ export function createOrUpdateContact({
   listIds,
   optin,
   otherAttributes = {},
+  simulation,
 }: Props) {
   const attributes: Attributes = {
     ...otherAttributes,
   }
 
-  if (name) {
-    attributes[ATTRIBUTE_PRENOM] = name
-  }
-
-  if (optin !== undefined) {
-    attributes[ATTRIBUTE_OPT_IN] = optin
-  }
-
-  if (userId) {
-    attributes[ATTRIBUTE_USER_ID] = userId
-  }
+  const attributesUpdated = handleAddAttributes({
+    attributes,
+    name,
+    userId,
+    optin,
+    simulation,
+  })
 
   return axios.post(
     'https://api.brevo.com/v3/contacts',
     {
       email,
       listIds,
-      attributes,
+      attributes: attributesUpdated,
       updateEnabled: true,
     },
     axiosConf
