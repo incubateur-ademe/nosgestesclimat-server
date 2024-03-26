@@ -13,7 +13,16 @@ import { handleUpdateGroup } from '../../helpers/groups/handleUpdateGroup'
 import { GroupType } from '../../schemas/GroupSchema'
 import { sendSimulationEmail } from '../../helpers/email/sendSimulationEmail'
 import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
-import { ATTRIBUTE_LAST_SIMULATION_DATE } from '../../constants/brevo'
+import {
+  ATTRIBUTE_ACTIONS_SELECTED_NUMBER,
+  ATTRIBUTE_LAST_SIMULATION_ALIMENTATION_FOOTPRINT,
+  ATTRIBUTE_LAST_SIMULATION_BILAN_FOOTPRINT,
+  ATTRIBUTE_LAST_SIMULATION_DATE,
+  ATTRIBUTE_LAST_SIMULATION_DIVERS_FOOTPRINT,
+  ATTRIBUTE_LAST_SIMULATION_LOGEMENT_FOOTPRINT,
+  ATTRIBUTE_LAST_SIMULATION_SERVICES_FOOTPRINT,
+  ATTRIBUTE_LAST_SIMULATION_TRANSPORTS_FOOTPRINT,
+} from '../../constants/brevo'
 
 const router = express.Router()
 
@@ -52,6 +61,20 @@ router.route('/').post(async (req, res) => {
       userId,
       otherAttributes: {
         [ATTRIBUTE_LAST_SIMULATION_DATE]: new Date().toISOString(),
+        [ATTRIBUTE_ACTIONS_SELECTED_NUMBER]:
+          simulation?.actionChoices?.length ?? 0,
+        [ATTRIBUTE_LAST_SIMULATION_BILAN_FOOTPRINT]:
+          simulation?.computedResults?.bilan ?? 0,
+        [ATTRIBUTE_LAST_SIMULATION_TRANSPORTS_FOOTPRINT]:
+          simulation?.computedResults?.categories?.transport ?? 0,
+        [ATTRIBUTE_LAST_SIMULATION_ALIMENTATION_FOOTPRINT]:
+          simulation?.computedResults?.categories?.alimentation ?? 0,
+        [ATTRIBUTE_LAST_SIMULATION_LOGEMENT_FOOTPRINT]:
+          simulation?.computedResults?.categories?.logement ?? 0,
+        [ATTRIBUTE_LAST_SIMULATION_DIVERS_FOOTPRINT]:
+          simulation?.computedResults?.categories?.divers ?? 0,
+        [ATTRIBUTE_LAST_SIMULATION_SERVICES_FOOTPRINT]:
+          simulation?.computedResults?.categories?.['services sociétaux'] ?? 0,
       },
     })
 
