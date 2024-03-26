@@ -1,19 +1,5 @@
 import axios from 'axios'
 import { axiosConf } from '../../constants/axios'
-import { UserType } from '../../schemas/UserSchema'
-import {
-  ATTRIBUTE_ACTIONS_SELECTED_NUMBER,
-  ATTRIBUTE_LAST_SIMULATION_ALIMENTATION_FOOTPRINT,
-  ATTRIBUTE_LAST_SIMULATION_BILAN_FOOTPRINT,
-  ATTRIBUTE_LAST_SIMULATION_DATE,
-  ATTRIBUTE_LAST_SIMULATION_DIVERS_FOOTPRINT,
-  ATTRIBUTE_LAST_SIMULATION_LOGEMENT_FOOTPRINT,
-  ATTRIBUTE_LAST_SIMULATION_SERVICES_FOOTPRINT,
-  ATTRIBUTE_LAST_SIMULATION_TRANSPORTS_FOOTPRINT,
-  ATTRIBUTE_OPT_IN,
-  ATTRIBUTE_PRENOM,
-  ATTRIBUTE_USER_ID,
-} from '../../constants/brevo'
 import { SimulationType } from '../../schemas/SimulationSchema'
 import { handleAddAttributes } from '../brevo/handleAddAttributes'
 
