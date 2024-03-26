@@ -12,25 +12,27 @@ import {
   ATTRIBUTE_USER_ID,
 } from '../../constants/brevo'
 import { SimulationType } from '../../schemas/SimulationSchema'
+import { Attributes } from '../../types/types'
 
 type Props = {
-  attributes: Record<string, string | boolean | number>
   name?: string
   userId?: string
   optin?: boolean
   simulation?: SimulationType
+  otherAttributes?: Attributes
 }
 
 export function handleAddAttributes({
-  attributes,
   name,
   userId,
   optin,
   simulation,
+  otherAttributes,
 }: Props) {
   const attributesUpdated = {
-    ...attributes,
+    ...otherAttributes,
   }
+
   if (name) {
     attributesUpdated[ATTRIBUTE_PRENOM] = name
   }

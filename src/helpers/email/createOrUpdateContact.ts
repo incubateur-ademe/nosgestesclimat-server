@@ -27,12 +27,6 @@ type Props = {
   simulation?: SimulationType
 }
 
-type Attributes = {
-  [ATTRIBUTE_USER_ID]?: string
-  [ATTRIBUTE_PRENOM]?: string
-  [ATTRIBUTE_OPT_IN]?: boolean
-} & Record<string, string | boolean | number>
-
 export function createOrUpdateContact({
   email,
   name,
@@ -42,16 +36,12 @@ export function createOrUpdateContact({
   otherAttributes = {},
   simulation,
 }: Props) {
-  const attributes: Attributes = {
-    ...otherAttributes,
-  }
-
   const attributesUpdated = handleAddAttributes({
-    attributes,
     name,
     userId,
     optin,
     simulation,
+    otherAttributes,
   })
 
   return axios.post(
