@@ -1,6 +1,8 @@
 import {
   ATTRIBUTE_ORGANISATION_NAME,
   ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER,
+  ATTRIBUTE_IS_ORGANISATION_ADMIN,
+  ATTRIBUTE_ORGANISATION_SLUG,
 } from './../../constants/brevo'
 import express from 'express'
 import slugify from 'slugify'
@@ -107,9 +109,10 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
         name: administratorName,
         optin: hasOptedInForCommunications,
         otherAttributes: {
-          ATTRIBUTE_IS_ORGANISATION_ADMIN: true,
-          ATTRIBUTE_ORGANISATION_NAME: organisationName,
-          ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER:
+          [ATTRIBUTE_IS_ORGANISATION_ADMIN]: true,
+          [ATTRIBUTE_ORGANISATION_NAME]: organisationName,
+          [ATTRIBUTE_ORGANISATION_SLUG]: organisationFound.slug,
+          [ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER]:
             pollUpdated?.simulations?.length ?? 0,
         },
       })

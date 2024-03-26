@@ -13,6 +13,7 @@ import { handleUpdateGroup } from '../../helpers/groups/handleUpdateGroup'
 import { GroupType } from '../../schemas/GroupSchema'
 import { sendSimulationEmail } from '../../helpers/email/sendSimulationEmail'
 import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
+import { ATTRIBUTE_LAST_SIMULATION_DATE } from '../../constants/brevo'
 
 const router = express.Router()
 
@@ -50,7 +51,7 @@ router.route('/').post(async (req, res) => {
       email,
       userId,
       otherAttributes: {
-        ATTRIBUTE_LAST_SIMULATION_DATE: new Date().toISOString(),
+        [ATTRIBUTE_LAST_SIMULATION_DATE]: new Date().toISOString(),
       },
     })
 
