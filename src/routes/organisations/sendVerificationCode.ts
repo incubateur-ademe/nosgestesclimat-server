@@ -22,7 +22,7 @@ router.post('/', async (req, res) => {
     }
 
     const verificationCodeObject =
-      await handleSendVerificationCodeAndReturnExpirationDate(email)
+      await handleSendVerificationCodeAndReturnExpirationDate({ email })
 
     organisationFound.administrators[0].verificationCode =
       verificationCodeObject

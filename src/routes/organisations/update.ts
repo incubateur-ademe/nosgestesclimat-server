@@ -1,12 +1,16 @@
+import {
+  ATTRIBUTE_ORGANISATION_NAME,
+  ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER,
+} from './../../constants/brevo'
 import express from 'express'
 import slugify from 'slugify'
 
 import { Organisation } from '../../schemas/OrganisationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import { updateBrevoContact } from '../../helpers/email/updateBrevoContact'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
 import { Poll } from '../../schemas/PollSchema'
 import { findUniqueSlug } from '../../helpers/organisations/findUniqueSlug'
+import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
 
 const router = express.Router()
 
@@ -98,10 +102,16 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
     await organisationFound.save()
 
     if (administratorName || hasOptedInForCommunications !== undefined) {
-      updateBrevoContact({
+      await createOrUpdateContact({
         email,
         name: administratorName,
-        hasOptedInForCommunications,
+        optin: hasOptedInForCommunications,
+        otherAttributes: {
+          ATTRIBUTE_IS_ORGANISATION_ADMIN: true,
+          ATTRIBUTE_ORGANISATION_NAME: organisationName,
+          ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER:
+            pollUpdated?.simulations?.length ?? 0,
+        },
       })
     }
 

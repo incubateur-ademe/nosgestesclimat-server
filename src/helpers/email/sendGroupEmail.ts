@@ -43,11 +43,9 @@ export async function sendGroupEmail({
   try {
     // Create or update the contact
     await createOrUpdateContact({
-      user: {
-        userId,
-        email,
-        name,
-      },
+      userId,
+      email,
+      name,
       listIds: [isCreation ? LIST_ID_GROUP_CREATED : LIST_ID_GROUP_JOINED],
     })
 
