@@ -17,9 +17,9 @@ type Props = {
 }
 
 type Attributes = {
-  userId?: string
-  PRENOM?: string
-  OPT_IN?: boolean
+  [ATTRIBUTE_USER_ID]?: string
+  [ATTRIBUTE_PRENOM]?: string
+  [ATTRIBUTE_OPT_IN]?: boolean
 } & Record<string, string | boolean | number>
 
 export function createOrUpdateContact({
