@@ -51,9 +51,7 @@ export function createOrUpdateContact({
     {
       email,
       listIds,
-      attributes: {
-        ...attributes,
-      },
+      attributes,
       updateEnabled: true,
     },
     axiosConf

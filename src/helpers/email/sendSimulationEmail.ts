@@ -4,8 +4,7 @@ import { UserType } from '../../schemas/UserSchema'
 import { SimulationType } from '../../schemas/SimulationSchema'
 import { Document } from 'mongoose'
 import { createOrUpdateContact } from './createOrUpdateContact'
-
-const LIST_SUBSCRIBED_END_SIMULATION = 22
+import { LIST_SUBSCRIBED_END_SIMULATION } from '../../constants/brevo'
 
 /**
  * Send an email to a user when they save a simulation at the end

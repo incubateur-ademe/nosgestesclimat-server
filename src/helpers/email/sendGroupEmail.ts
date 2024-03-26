@@ -2,17 +2,16 @@ import axios from 'axios'
 import { GroupType } from '../../schemas/GroupSchema'
 import { axiosConf } from '../../constants/axios'
 import { createOrUpdateContact } from './createOrUpdateContact'
+import {
+  LIST_ID_GROUP_CREATED,
+  LIST_ID_GROUP_JOINED,
+  TEMPLATE_ID_GROUP_CREATED,
+  TEMPLATE_ID_GROUP_JOINED,
+} from '../../constants/brevo'
 
 /**
  * Send an email to a user when they join a group or when a group is created (based on the isCreation parameter)
  */
-
-const TEMPLATE_ID_GROUP_CREATED = 57
-const TEMPLATE_ID_GROUP_JOINED = 58
-
-const LIST_ID_GROUP_CREATED = 29
-const LIST_ID_GROUP_JOINED = 30
-
 type Props = {
   group: GroupType
   userId: string
