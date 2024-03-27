@@ -3,6 +3,8 @@ import { GroupType } from '../../schemas/GroupSchema'
 import { axiosConf } from '../../constants/axios'
 import { createOrUpdateContact } from './createOrUpdateContact'
 import {
+  ATTRIBUTE_LAST_GROUP_CREATION_DATE,
+  ATTRIBUTE_NUMBER_CREATED_GROUPS,
   LIST_ID_GROUP_CREATED,
   LIST_ID_GROUP_JOINED,
   TEMPLATE_ID_GROUP_CREATED,
@@ -19,6 +21,7 @@ type Props = {
   email?: string
   isCreation: boolean
   origin: string
+  numberCreatedGroups?: number
 }
 export async function sendGroupEmail({
   group,
@@ -27,6 +30,7 @@ export async function sendGroupEmail({
   email,
   isCreation,
   origin,
+  numberCreatedGroups,
 }: Props) {
   // If no email or no name is provided, we don't do anything
   if (!email || !name) {
@@ -46,6 +50,12 @@ export async function sendGroupEmail({
       email,
       name,
       listIds: [isCreation ? LIST_ID_GROUP_CREATED : LIST_ID_GROUP_JOINED],
+      otherAttributes: isCreation
+        ? {
+            [ATTRIBUTE_NUMBER_CREATED_GROUPS]: numberCreatedGroups ?? 0,
+            [ATTRIBUTE_LAST_GROUP_CREATION_DATE]: new Date().toISOString(),
+          }
+        : {},
     })
 
     await axios.post(

@@ -50,6 +50,11 @@ router.route('/').post(async (req, res) => {
 
     const group = await newGroup.save()
 
+    // Get the numbers of created groups by the administrator
+    const createdGroups = await Group.find({
+      'administrator.userId': userId,
+    })
+
     // Send creation confirmation email to the administrator (if an email is provided)
     sendGroupEmail({
       group,
@@ -58,6 +63,7 @@ router.route('/').post(async (req, res) => {
       email: administratorEmail,
       isCreation: true,
       origin,
+      numberCreatedGroups: createdGroups?.length,
     })
 
     // Send response

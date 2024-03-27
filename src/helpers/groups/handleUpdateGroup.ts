@@ -3,6 +3,7 @@ import { SimulationType } from '../../schemas/SimulationSchema'
 import { GroupType } from '../../schemas/GroupSchema'
 import { UserType } from '../../schemas/UserSchema'
 import { sendGroupEmail } from '../email/sendGroupEmail'
+import { handleUpdateGroupNumberOneParticipant } from './handleUpdateNumberGroupOneParticipant'
 
 type Props = {
   group?: Document<GroupType> & GroupType
@@ -41,7 +42,12 @@ export async function handleUpdateGroup({
     simulation: simulationSaved._id as RefType,
   })
 
-  await group.save()
+  const groupSaved = await group.save()
+
+  // Update the number of group with one participant of the administrator
+  await handleUpdateGroupNumberOneParticipant({
+    group: groupSaved,
+  })
 
   console.log(
     `User and simulation saved in group ${group._id} (${group.name}).`
