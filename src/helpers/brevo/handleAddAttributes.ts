@@ -1,3 +1,4 @@
+import { formatValue } from 'publicodes'
 import {
   ATTRIBUTE_ACTIONS_SELECTED_NUMBER,
   ATTRIBUTE_LAST_SIMULATION_ALIMENTATION_FOOTPRINT,
@@ -45,22 +46,39 @@ export function handleAddAttributes({
     attributesUpdated[ATTRIBUTE_USER_ID] = userId
   }
 
+  // transform simulation?.computedResults?.bilan from kg to tons to a float with 1 decimal
+  const bilan = simulation?.computedResults?.bilan
+
   if (simulation) {
     attributesUpdated[ATTRIBUTE_LAST_SIMULATION_DATE] = new Date().toISOString()
     attributesUpdated[ATTRIBUTE_ACTIONS_SELECTED_NUMBER] =
       (simulation?.actionChoices?.length as number) ?? 0
     attributesUpdated[ATTRIBUTE_LAST_SIMULATION_BILAN_FOOTPRINT] =
-      simulation?.computedResults?.bilan ?? 0
+      formatValue(simulation?.computedResults?.bilan / 1000, {
+        precision: 1,
+      }) ?? 0
     attributesUpdated[ATTRIBUTE_LAST_SIMULATION_TRANSPORTS_FOOTPRINT] =
-      simulation?.computedResults?.categories?.transport ?? 0
+      formatValue(simulation?.computedResults?.categories?.transport / 1000, {
+        precision: 1,
+      }) ?? 0
     attributesUpdated[ATTRIBUTE_LAST_SIMULATION_ALIMENTATION_FOOTPRINT] =
-      simulation?.computedResults?.categories?.alimentation ?? 0
+      formatValue(
+        simulation?.computedResults?.categories?.alimentation / 1000,
+        { precision: 1 }
+      ) ?? 0
     attributesUpdated[ATTRIBUTE_LAST_SIMULATION_LOGEMENT_FOOTPRINT] =
-      simulation?.computedResults?.categories?.logement ?? 0
+      formatValue(simulation?.computedResults?.categories?.logement / 1000, {
+        precision: 1,
+      }) ?? 0
     attributesUpdated[ATTRIBUTE_LAST_SIMULATION_DIVERS_FOOTPRINT] =
-      simulation?.computedResults?.categories?.divers ?? 0
+      formatValue(simulation?.computedResults?.categories?.divers / 1000, {
+        precision: 1,
+      }) ?? 0
     attributesUpdated[ATTRIBUTE_LAST_SIMULATION_SERVICES_FOOTPRINT] =
-      simulation?.computedResults?.categories?.['services sociétaux'] ?? 0
+      formatValue(
+        simulation?.computedResults?.categories?.['services sociétaux'] / 1000,
+        { precision: 1 }
+      ) ?? 0
   }
 
   return attributesUpdated

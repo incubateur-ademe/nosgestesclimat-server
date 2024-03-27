@@ -22,6 +22,10 @@ export function createOrUpdateContact({
   otherAttributes = {},
   simulation,
 }: Props) {
+  if (!email) {
+    return
+  }
+
   const attributesUpdated = handleAddAttributes({
     name,
     userId,

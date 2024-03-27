@@ -13,16 +13,6 @@ import { handleUpdateGroup } from '../../helpers/groups/handleUpdateGroup'
 import { GroupType } from '../../schemas/GroupSchema'
 import { sendSimulationEmail } from '../../helpers/email/sendSimulationEmail'
 import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
-import {
-  ATTRIBUTE_ACTIONS_SELECTED_NUMBER,
-  ATTRIBUTE_LAST_SIMULATION_ALIMENTATION_FOOTPRINT,
-  ATTRIBUTE_LAST_SIMULATION_BILAN_FOOTPRINT,
-  ATTRIBUTE_LAST_SIMULATION_DATE,
-  ATTRIBUTE_LAST_SIMULATION_DIVERS_FOOTPRINT,
-  ATTRIBUTE_LAST_SIMULATION_LOGEMENT_FOOTPRINT,
-  ATTRIBUTE_LAST_SIMULATION_SERVICES_FOOTPRINT,
-  ATTRIBUTE_LAST_SIMULATION_TRANSPORTS_FOOTPRINT,
-} from '../../constants/brevo'
 
 const router = express.Router()
 
@@ -130,6 +120,7 @@ router.route('/').post(async (req, res) => {
 
     console.log(`Simulation created: ${simulationSaved._id}`)
   } catch (error) {
+    console.error(error)
     return res.status(401).send('Error while creating simulation.')
   }
 })

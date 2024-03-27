@@ -1,10 +1,11 @@
 import axios from 'axios'
-import { GroupType } from '../../schemas/GroupSchema'
+import { Group, GroupType } from '../../schemas/GroupSchema'
 import { axiosConf } from '../../constants/axios'
 import { createOrUpdateContact } from './createOrUpdateContact'
 import {
   ATTRIBUTE_LAST_GROUP_CREATION_DATE,
   ATTRIBUTE_NUMBER_CREATED_GROUPS,
+  ATTRIBUTE_NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT,
   LIST_ID_GROUP_CREATED,
   LIST_ID_GROUP_JOINED,
   TEMPLATE_ID_GROUP_CREATED,
@@ -44,6 +45,11 @@ export async function sendGroupEmail({
   }
 
   try {
+    const groupsCreatedWithOneParticipant = await Group.find({
+      'administrator.userId': userId,
+      participants: { $size: 1 },
+    })
+
     // Create or update the contact
     await createOrUpdateContact({
       userId,
@@ -54,6 +60,8 @@ export async function sendGroupEmail({
         ? {
             [ATTRIBUTE_NUMBER_CREATED_GROUPS]: numberCreatedGroups ?? 0,
             [ATTRIBUTE_LAST_GROUP_CREATION_DATE]: new Date().toISOString(),
+            [ATTRIBUTE_NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT]:
+              groupsCreatedWithOneParticipant?.length,
           }
         : {},
     })
