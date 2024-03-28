@@ -7,13 +7,17 @@ import {
   ATTRIBUTE_ORGANISATION_NAME,
   ATTRIBUTE_ORGANISATION_SLUG,
 } from '../../constants/brevo'
+import { Poll } from '../../schemas/PollSchema'
 import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
 
-async function updateOrgaAdminContactAttributes() {
-  mongoose.connect(config.mongo.url)
-
+export async function updateOrgaAdminContactAttributes() {
   try {
-    const organisations = await Organisation.find().populate('polls')
+    mongoose.connect(config.mongo.url)
+    const poll = new Poll({
+      simulations: [],
+    })
+
+    const organisations = await Organisation.find({}).populate('polls')
 
     for (const organisation of organisations) {
       for (const administrator of organisation.administrators) {
@@ -33,6 +37,7 @@ async function updateOrgaAdminContactAttributes() {
               lastPollCreated?.simulations?.length ?? 0,
           },
         })
+
         await createOrUpdateContact({
           email: administrator.email,
           name: administrator.name,
@@ -50,6 +55,9 @@ async function updateOrgaAdminContactAttributes() {
     }
   } catch (error) {
     console.error('Error updating orga admin contact attributes', error)
+  } finally {
+    mongoose.disconnect()
+    process.exit(0)
   }
 }
 

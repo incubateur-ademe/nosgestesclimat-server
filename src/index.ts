@@ -44,6 +44,7 @@ import cors from 'cors'
 import Answer from './schemas/_legacy/AnswerSchema'
 import connect from './scripts/initDatabase'
 import { config } from './config'
+import { updateOrgaAdminContactAttributes } from './scripts/brevo/update-orga-admin-contact-attributes'
 
 if (config.env === 'development') {
   require('dotenv').config()
@@ -138,6 +139,8 @@ const socketio = require('socket.io')
 const io = socketio(http, {
   cors: { origin, methods: ['GET', 'POST'] },
 })
+
+updateOrgaAdminContactAttributes()
 
 // create an event listener
 //

@@ -29,6 +29,7 @@ const fetchPoll_1 = __importDefault(require("./routes/organisations/fetchPoll"))
 const fetchPolls_1 = __importDefault(require("./routes/organisations/fetchPolls"));
 const fetchPollProcessedData_1 = __importDefault(require("./routes/organisations/fetchPollProcessedData"));
 const logout_1 = __importDefault(require("./routes/organisations/logout"));
+const verifyUserParticipation_1 = __importDefault(require("./routes/organisations/verifyUserParticipation"));
 // Simulation routes
 const create_2 = __importDefault(require("./routes/simulations/create"));
 const fetchSimulation_2 = __importDefault(require("./routes/simulations/fetchSimulation"));
@@ -40,6 +41,7 @@ const cors_1 = __importDefault(require("cors"));
 const AnswerSchema_1 = __importDefault(require("./schemas/_legacy/AnswerSchema"));
 const initDatabase_1 = __importDefault(require("./scripts/initDatabase"));
 const config_1 = require("./config");
+const update_orga_admin_contact_attributes_1 = require("./scripts/brevo/update-orga-admin-contact-attributes");
 if (config_1.config.env === 'development') {
     require('dotenv').config();
 }
@@ -97,6 +99,7 @@ app.use('/organisations/fetch-poll:pollSlug?', fetchPoll_1.default);
 app.use('/organisations/fetch-poll-processed-data', fetchPollProcessedData_1.default);
 app.use('/organisations/fetch-polls', fetchPolls_1.default);
 app.use('/organisations/logout', logout_1.default);
+app.use('/organisations/verify-user-participation', verifyUserParticipation_1.default);
 // Quiz routes
 app.use('/quiz/answers/create', create_3.default);
 // Email route
@@ -108,6 +111,7 @@ const socketio = require('socket.io');
 const io = socketio(http, {
     cors: { origin, methods: ['GET', 'POST'] },
 });
+(0, update_orga_admin_contact_attributes_1.updateOrgaAdminContactAttributes)();
 // create an event listener
 //
 // To listen to messages

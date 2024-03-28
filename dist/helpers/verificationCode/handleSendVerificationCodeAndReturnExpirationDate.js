@@ -5,10 +5,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleSendVerificationCodeAndReturnExpirationDate = void 0;
 const dayjs_1 = __importDefault(require("dayjs"));
-const sendVerificationCode_1 = require("../email/sendVerificationCode");
+const sendVerificationCodeEmail_1 = require("../email/sendVerificationCodeEmail");
 const generateRandomNumberWithLength_1 = require("../../utils/generateRandomNumberWithLength");
 const VerificationCodeSchema_1 = require("../../schemas/VerificationCodeSchema");
-async function handleSendVerificationCodeAndReturnExpirationDate(email) {
+async function handleSendVerificationCodeAndReturnExpirationDate({ email, userId, }) {
     // Generate a random code
     const verificationCode = (0, generateRandomNumberWithLength_1.generateRandomNumberWithLength)(6);
     const expirationDate = (0, dayjs_1.default)().add(1, 'hour').toDate();
@@ -20,7 +20,7 @@ async function handleSendVerificationCodeAndReturnExpirationDate(email) {
     });
     const verificationCodeSaved = await verificationCodeCreated.save();
     // Send the code by email
-    await (0, sendVerificationCode_1.sendVerificationCode)({
+    await (0, sendVerificationCodeEmail_1.sendVerificationCodeEmail)({
         email,
         verificationCode,
     });

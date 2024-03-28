@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleUpdateGroup = void 0;
 const sendGroupEmail_1 = require("../email/sendGroupEmail");
+const handleUpdateNumberGroupOneParticipant_1 = require("./handleUpdateNumberGroupOneParticipant");
 async function handleUpdateGroup({ group, userDocument, simulationSaved, origin, }) {
     // If there is no group, we do nothing
     if (!group) {
@@ -22,7 +23,11 @@ async function handleUpdateGroup({ group, userDocument, simulationSaved, origin,
         userId: userDocument.userId,
         simulation: simulationSaved._id,
     });
-    await group.save();
+    const groupSaved = await group.save();
+    // Update the number of group with one participant of the administrator
+    await (0, handleUpdateNumberGroupOneParticipant_1.handleUpdateGroupNumberOneParticipant)({
+        group: groupSaved,
+    });
     console.log(`User and simulation saved in group ${group._id} (${group.name}).`);
     // Send creation confirmation email to the participant (if an email is provided)
     (0, sendGroupEmail_1.sendGroupEmail)({

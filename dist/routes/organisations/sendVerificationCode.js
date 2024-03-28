@@ -20,7 +20,7 @@ router.post('/', async (req, res) => {
         if (!organisationFound) {
             return res.status(403).json('No matching organisation found.');
         }
-        const verificationCodeObject = await (0, handleSendVerificationCodeAndReturnExpirationDate_1.handleSendVerificationCodeAndReturnExpirationDate)(email);
+        const verificationCodeObject = await (0, handleSendVerificationCodeAndReturnExpirationDate_1.handleSendVerificationCodeAndReturnExpirationDate)({ email });
         organisationFound.administrators[0].verificationCode =
             verificationCodeObject;
         await organisationFound.save();
