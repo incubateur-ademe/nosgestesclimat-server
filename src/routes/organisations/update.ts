@@ -46,7 +46,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
     }
 
     if (organisationName) {
-      organisationFound.name = organisationName
+      organisationFound.name = String(organisationName)
     }
 
     if (!organisationFound.slug) {
@@ -110,7 +110,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
         optin: hasOptedInForCommunications,
         otherAttributes: {
           [ATTRIBUTE_IS_ORGANISATION_ADMIN]: true,
-          [ATTRIBUTE_ORGANISATION_NAME]: organisationName,
+          [ATTRIBUTE_ORGANISATION_NAME]: organisationFound.name,
           [ATTRIBUTE_ORGANISATION_SLUG]: organisationFound.slug,
           [ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER]:
             pollUpdated?.simulations?.length ?? 0,

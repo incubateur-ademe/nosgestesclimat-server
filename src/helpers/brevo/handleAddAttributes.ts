@@ -49,7 +49,9 @@ export function handleAddAttributes({
     attributesUpdated[ATTRIBUTE_LAST_SIMULATION_DATE] = new Date().toISOString()
     attributesUpdated[ATTRIBUTE_ACTIONS_SELECTED_NUMBER] =
       simulation?.actionChoices
-        ? (Object.keys(simulation?.actionChoices)?.length as number)
+        ? (Object.keys(simulation?.actionChoices)?.filter(
+            (key) => simulation?.actionChoices[key] === true
+          )?.length as number)
         : 0
     attributesUpdated[ATTRIBUTE_LAST_SIMULATION_BILAN_FOOTPRINT] =
       (simulation?.computedResults?.bilan / 1000)?.toLocaleString(undefined, {
