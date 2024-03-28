@@ -17,15 +17,20 @@ async function sendEmail({ email, params, attributes, templateId, }) {
     catch (error) {
         // Do nothing, the contact already exists
     }
-    await axios_1.default.post('https://api.brevo.com/v3/smtp/email', {
-        to: [
-            {
-                name: email,
-                email,
-            },
-        ],
-        templateId,
-        params,
-    }, axios_2.axiosConf);
+    try {
+        await axios_1.default.post('https://api.brevo.com/v3/smtp/email', {
+            to: [
+                {
+                    name: email,
+                    email,
+                },
+            ],
+            templateId,
+            params,
+        }, axios_2.axiosConf);
+    }
+    catch (error) {
+        throw new Error(error);
+    }
 }
 exports.sendEmail = sendEmail;

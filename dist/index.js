@@ -29,6 +29,7 @@ const fetchPoll_1 = __importDefault(require("./routes/organisations/fetchPoll"))
 const fetchPolls_1 = __importDefault(require("./routes/organisations/fetchPolls"));
 const fetchPollProcessedData_1 = __importDefault(require("./routes/organisations/fetchPollProcessedData"));
 const logout_1 = __importDefault(require("./routes/organisations/logout"));
+const verifyUserParticipation_1 = __importDefault(require("./routes/organisations/verifyUserParticipation"));
 // Simulation routes
 const create_2 = __importDefault(require("./routes/simulations/create"));
 const fetchSimulation_2 = __importDefault(require("./routes/simulations/fetchSimulation"));
@@ -97,6 +98,7 @@ app.use('/organisations/fetch-poll:pollSlug?', fetchPoll_1.default);
 app.use('/organisations/fetch-poll-processed-data', fetchPollProcessedData_1.default);
 app.use('/organisations/fetch-polls', fetchPolls_1.default);
 app.use('/organisations/logout', logout_1.default);
+app.use('/organisations/verify-user-participation', verifyUserParticipation_1.default);
 // Quiz routes
 app.use('/quiz/answers/create', create_3.default);
 // Email route
