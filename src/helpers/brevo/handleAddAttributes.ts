@@ -46,13 +46,12 @@ export function handleAddAttributes({
     attributesUpdated[ATTRIBUTE_USER_ID] = userId
   }
 
-  // transform simulation?.computedResults?.bilan from kg to tons to a float with 1 decimal
-  const bilan = simulation?.computedResults?.bilan
-
   if (simulation) {
     attributesUpdated[ATTRIBUTE_LAST_SIMULATION_DATE] = new Date().toISOString()
     attributesUpdated[ATTRIBUTE_ACTIONS_SELECTED_NUMBER] =
-      (simulation?.actionChoices?.length as number) ?? 0
+      simulation?.actionChoices
+        ? (Object.keys(simulation?.actionChoices)?.length as number)
+        : 0
     attributesUpdated[ATTRIBUTE_LAST_SIMULATION_BILAN_FOOTPRINT] =
       formatValue(simulation?.computedResults?.bilan / 1000, {
         precision: 1,
