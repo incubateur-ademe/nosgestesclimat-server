@@ -41,7 +41,6 @@ const cors_1 = __importDefault(require("cors"));
 const AnswerSchema_1 = __importDefault(require("./schemas/_legacy/AnswerSchema"));
 const initDatabase_1 = __importDefault(require("./scripts/initDatabase"));
 const config_1 = require("./config");
-const update_orga_admin_contact_attributes_1 = require("./scripts/brevo/update-orga-admin-contact-attributes");
 if (config_1.config.env === 'development') {
     require('dotenv').config();
 }
@@ -111,7 +110,6 @@ const socketio = require('socket.io');
 const io = socketio(http, {
     cors: { origin, methods: ['GET', 'POST'] },
 });
-(0, update_orga_admin_contact_attributes_1.updateOrgaAdminContactAttributes)();
 // create an event listener
 //
 // To listen to messages
