@@ -1,4 +1,3 @@
-import { formatValue } from 'publicodes'
 import {
   ATTRIBUTE_ACTIONS_SELECTED_NUMBER,
   ATTRIBUTE_LAST_SIMULATION_ALIMENTATION_FOOTPRINT,
@@ -53,31 +52,40 @@ export function handleAddAttributes({
         ? (Object.keys(simulation?.actionChoices)?.length as number)
         : 0
     attributesUpdated[ATTRIBUTE_LAST_SIMULATION_BILAN_FOOTPRINT] =
-      formatValue(simulation?.computedResults?.bilan / 1000, {
-        precision: 1,
+      (simulation?.computedResults?.bilan / 1000)?.toLocaleString(undefined, {
+        maximumFractionDigits: 1,
       }) ?? 0
     attributesUpdated[ATTRIBUTE_LAST_SIMULATION_TRANSPORTS_FOOTPRINT] =
-      formatValue(simulation?.computedResults?.categories?.transport / 1000, {
-        precision: 1,
+      (
+        simulation?.computedResults?.categories?.transport / 1000
+      )?.toLocaleString(undefined, {
+        maximumFractionDigits: 1,
       }) ?? 0
     attributesUpdated[ATTRIBUTE_LAST_SIMULATION_ALIMENTATION_FOOTPRINT] =
-      formatValue(
-        simulation?.computedResults?.categories?.alimentation / 1000,
-        { precision: 1 }
-      ) ?? 0
+      (
+        simulation?.computedResults?.categories?.alimentation / 1000
+      )?.toLocaleString(undefined, {
+        maximumFractionDigits: 1,
+      }) ?? 0
     attributesUpdated[ATTRIBUTE_LAST_SIMULATION_LOGEMENT_FOOTPRINT] =
-      formatValue(simulation?.computedResults?.categories?.logement / 1000, {
-        precision: 1,
+      (
+        simulation?.computedResults?.categories?.logement / 1000
+      )?.toLocaleString(undefined, {
+        maximumFractionDigits: 1,
       }) ?? 0
     attributesUpdated[ATTRIBUTE_LAST_SIMULATION_DIVERS_FOOTPRINT] =
-      formatValue(simulation?.computedResults?.categories?.divers / 1000, {
-        precision: 1,
-      }) ?? 0
-    attributesUpdated[ATTRIBUTE_LAST_SIMULATION_SERVICES_FOOTPRINT] =
-      formatValue(
-        simulation?.computedResults?.categories?.['services sociétaux'] / 1000,
-        { precision: 1 }
+      (simulation?.computedResults?.categories?.divers / 1000)?.toLocaleString(
+        undefined,
+        {
+          maximumFractionDigits: 1,
+        }
       ) ?? 0
+    attributesUpdated[ATTRIBUTE_LAST_SIMULATION_SERVICES_FOOTPRINT] =
+      (
+        simulation?.computedResults?.categories?.['services sociétaux'] / 1000
+      )?.toLocaleString(undefined, {
+        maximumFractionDigits: 1,
+      }) ?? 0
   }
 
   return attributesUpdated
