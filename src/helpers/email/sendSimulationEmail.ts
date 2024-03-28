@@ -4,6 +4,7 @@ import { UserType } from '../../schemas/UserSchema'
 import { SimulationType } from '../../schemas/SimulationSchema'
 import { Document } from 'mongoose'
 import { createOrUpdateContact } from './createOrUpdateContact'
+import { LIST_SUBSCRIBED_END_SIMULATION } from '../../constants/brevo'
 
 /**
  * Send an email to a user when they save a simulation at the end
@@ -21,7 +22,8 @@ export async function sendSimulationEmail({
   shouldSendSimulationEmail,
   origin,
 }: Props) {
-  const { email, name } = userDocument
+  const { email, userId } = userDocument
+
   // If no email is provided, we don't do anything
   if (!email) {
     return
@@ -35,8 +37,9 @@ export async function sendSimulationEmail({
   try {
     // Create or update the contact
     await createOrUpdateContact({
-      user: userDocument,
-      listIds: [22],
+      email,
+      userId,
+      listIds: [LIST_SUBSCRIBED_END_SIMULATION],
       optin: true,
     })
 
