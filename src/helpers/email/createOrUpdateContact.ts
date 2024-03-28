@@ -26,7 +26,7 @@ export function createOrUpdateContact({
     return
   }
 
-  const attributesUpdated = handleAddAttributes({
+  const attributes = handleAddAttributes({
     name,
     userId,
     optin,
@@ -39,7 +39,7 @@ export function createOrUpdateContact({
     {
       email,
       listIds,
-      attributes: attributesUpdated,
+      attributes,
       updateEnabled: true,
     },
     axiosConf
