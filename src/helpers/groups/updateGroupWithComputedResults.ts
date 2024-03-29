@@ -19,7 +19,6 @@ export async function updateGroupWithComputedResults(group: GroupType) {
   for (const participant of participantsWithIncompleteResults) {
     // Should be populated
     if (participant.simulation) {
-      console.log('COMPUTING RESULTS')
       // We can add computed results here
       const simulationFound = await Simulation.findById(
         (participant.simulation as unknown as SimulationType)._id
