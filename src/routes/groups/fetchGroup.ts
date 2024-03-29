@@ -31,11 +31,11 @@ router.route('/').post(async (req, res) => {
 
     // Nécessaire suite à la refonte serveur de février 2024
     // TODO : à supprimer d'ici quelques mois
-    updateGroupWithComputedResults(group)
+    const groupUpdated = await updateGroupWithComputedResults(group)
 
     setSuccessfulJSONResponse(res)
 
-    res.json(group)
+    res.json(groupUpdated)
 
     console.log(`Group fetched: ${groupId}`)
   } catch (error) {
