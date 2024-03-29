@@ -53,7 +53,7 @@ export const safeGetSituation = ({
   return filteredSituation
 }
 
-export function computeResults(situation: SimulationType) {
+export function computeResults(situation: Record<string, any>) {
   const engine = new Engine(rules as any)
 
   const safeSituation = safeGetSituation({
