@@ -1,7 +1,7 @@
 config:
   plugins:
     apdex: {}
-  target: 'https://nosgestesclimat-preprod.osc-fr1.scalingo.io'
+  target: 'https://server.preprod.nosgestesclimat.fr'
   phases:
     - duration: 3600
       arrivalRate: 4 # environ 15 000 utilisateurs en fin de phase
