@@ -3,8 +3,17 @@ config:
     apdex: {}
   target: 'https://url de de la preprod scalingo'
   phases:
-    - duration: 30
-      arrivalRate: 10
+    - duration: 60
+      arrivalRate: 20
+      name: 'Warming up'
+    - duration: 240
+      arrivalRate: 20
+      rampTo: 100
+      name: 'Ramping up'
+    - duration: 500
+      arrivalRate: 100
+      name: 'Sustained load'
+  processor: './generate-mock-data.ts'
 scenarios:
   - name: 'Organisation participants spike test'
     flow:
