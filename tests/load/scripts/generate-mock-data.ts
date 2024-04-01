@@ -1,8 +1,13 @@
-import { faker } from '@faker-js/faker'
+const faker = require('faker')
 
-export function generateSignupData(requestParams, ctx, ee, next) {
-  ctx.vars.id = faker.string.uuid()
-  ctx.vars.password = faker.internet.password(10)
+function generateSignupData(requestParams, ctx, ee, next) {
+  ctx.vars.simulationId = faker.string.uuid()
+  ctx.vars.date = faker.date.recent()
+  ctx.vars.userId = faker.string.uuid()
 
   return next()
+}
+
+module.exports = {
+  generateSignupData,
 }

@@ -1,0 +1,26 @@
+config:
+  plugins:
+    apdex: {}
+  target: 'https://nosgestesclimat-preprod.osc-fr1.scalingo.io'
+  phases:
+    - duration: 3600
+      arrivalRate: 4 # environ 15 000 utilisateurs en fin de phase
+      name: 'Soaking'
+  processor: './generate-mock-data.ts'
+scenarios:
+  - name: 'Organisation participants soak test'
+    flow:
+      - post:
+          url: '/simulations/create'
+          json:
+            {
+              id: '{{simulationId}}',
+              situation: {},
+              foldedSteps: [],
+              date: '{{date}}',
+              computedResults: {},
+            }
+      - think: 1
+      - post:
+          url: '/organisations/fetch-poll-processed-data'
+          json: { orgaSlug: '', userId: '{{userId}}' }
