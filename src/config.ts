@@ -36,6 +36,9 @@ export const config = {
     },
   },
   mongo: {
-    url: ensureEnvVar(process.env.MONGO_URL, 'mongodb://127.0.0.1:27017/ngc'),
+    url: ensureEnvVar(
+      process.env.MONGO_URL,
+      'mongodb://127.0.0.1:27017/migration'
+    ),
   },
 }

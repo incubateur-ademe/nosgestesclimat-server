@@ -3,14 +3,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const brevo_1 = require("./../../constants/brevo");
 const express_1 = __importDefault(require("express"));
 const slugify_1 = __importDefault(require("slugify"));
 const OrganisationSchema_1 = require("../../schemas/OrganisationSchema");
 const setSuccessfulResponse_1 = require("../../utils/setSuccessfulResponse");
-const updateBrevoContact_1 = require("../../helpers/email/updateBrevoContact");
 const authentificationMiddleware_1 = require("../../middlewares/authentificationMiddleware");
 const PollSchema_1 = require("../../schemas/PollSchema");
 const findUniqueSlug_1 = require("../../helpers/organisations/findUniqueSlug");
+const createOrUpdateContact_1 = require("../../helpers/email/createOrUpdateContact");
 const router = express_1.default.Router();
 /**
  * Fetching / updating by the owner
@@ -72,10 +73,16 @@ router.use(authentificationMiddleware_1.authentificationMiddleware).post('/', as
         // Save the modifications
         await organisationFound.save();
         if (administratorName || hasOptedInForCommunications !== undefined) {
-            (0, updateBrevoContact_1.updateBrevoContact)({
+            await (0, createOrUpdateContact_1.createOrUpdateContact)({
                 email,
                 name: administratorName,
-                hasOptedInForCommunications,
+                optin: hasOptedInForCommunications,
+                otherAttributes: {
+                    [brevo_1.ATTRIBUTE_IS_ORGANISATION_ADMIN]: true,
+                    [brevo_1.ATTRIBUTE_ORGANISATION_NAME]: organisationName,
+                    [brevo_1.ATTRIBUTE_ORGANISATION_SLUG]: organisationFound.slug,
+                    [brevo_1.ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER]: pollUpdated?.simulations?.length ?? 0,
+                },
             });
         }
         (0, setSuccessfulResponse_1.setSuccessfulJSONResponse)(res);

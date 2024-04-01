@@ -12,6 +12,7 @@ import { handleUpdatePoll } from '../../helpers/organisations/handleUpdatePoll'
 import { handleUpdateGroup } from '../../helpers/groups/handleUpdateGroup'
 import { GroupType } from '../../schemas/GroupSchema'
 import { sendSimulationEmail } from '../../helpers/email/sendSimulationEmail'
+import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
 
 const router = express.Router()
 
@@ -45,6 +46,12 @@ router.route('/').post(async (req, res) => {
   }
 
   try {
+    await createOrUpdateContact({
+      email,
+      userId,
+      simulation,
+    })
+
     // We check if a poll is associated with the simulation
     const polls = await findPollsBySlug(simulation.polls)
 
@@ -117,6 +124,7 @@ router.route('/').post(async (req, res) => {
 
     console.log(`Simulation created: ${simulationSaved._id}`)
   } catch (error) {
+    console.error(error)
     return res.status(401).send('Error while creating simulation.')
   }
 })

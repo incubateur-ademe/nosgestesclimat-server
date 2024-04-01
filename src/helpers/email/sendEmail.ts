@@ -32,18 +32,22 @@ export async function sendEmail({
     // Do nothing, the contact already exists
   }
 
-  await axios.post(
-    'https://api.brevo.com/v3/smtp/email',
-    {
-      to: [
-        {
-          name: email,
-          email,
-        },
-      ],
-      templateId,
-      params,
-    },
-    axiosConf
-  )
+  try {
+    await axios.post(
+      'https://api.brevo.com/v3/smtp/email',
+      {
+        to: [
+          {
+            name: email,
+            email,
+          },
+        ],
+        templateId,
+        params,
+      },
+      axiosConf
+    )
+  } catch (error) {
+    throw new Error(error)
+  }
 }

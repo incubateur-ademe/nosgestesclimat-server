@@ -28,6 +28,8 @@ import fetchPollRoute from './routes/organisations/fetchPoll'
 import fetchPollsRoute from './routes/organisations/fetchPolls'
 import fetchPollProcessedData from './routes/organisations/fetchPollProcessedData'
 import logOutRoute from './routes/organisations/logout'
+import verifyUserParticipationRoute from './routes/organisations/verifyUserParticipation'
+
 // Simulation routes
 import createSimulationRoute from './routes/simulations/create'
 import fetchSimulationRoute from './routes/simulations/fetchSimulation'
@@ -39,7 +41,6 @@ import createQuizAnswerRoute from './routes/quiz/create'
 import sendEmailRoute from './routes/email/sendEmail'
 
 import cors from 'cors'
-import { Error } from 'mongoose'
 import Answer from './schemas/_legacy/AnswerSchema'
 import connect from './scripts/initDatabase'
 import { config } from './config'
@@ -117,6 +118,10 @@ app.use('/organisations/fetch-poll:pollSlug?', fetchPollRoute)
 app.use('/organisations/fetch-poll-processed-data', fetchPollProcessedData)
 app.use('/organisations/fetch-polls', fetchPollsRoute)
 app.use('/organisations/logout', logOutRoute)
+app.use(
+  '/organisations/verify-user-participation',
+  verifyUserParticipationRoute
+)
 
 // Quiz routes
 app.use('/quiz/answers/create', createQuizAnswerRoute)
