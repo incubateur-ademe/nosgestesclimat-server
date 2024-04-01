@@ -1,0 +1,17 @@
+config:
+  plugins:
+    apdex: {}
+  target: 'https://url de de la preprod scalingo'
+  phases:
+    - duration: 30
+      arrivalRate: 10
+scenarios:
+  - name: 'Organisation participants spike test'
+    flow:
+      - post:
+          url: '/simulations/create'
+          json: { id: '' }
+      - think: 1
+      - post:
+          url: '/organisations/fetch-organisation'
+          json: { id: '{{id}}', date: '{{date}}' }
