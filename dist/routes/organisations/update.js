@@ -37,7 +37,7 @@ router.use(authentificationMiddleware_1.authentificationMiddleware).post('/', as
             return res.status(403).json('No matching organisation found.');
         }
         if (organisationName) {
-            organisationFound.name = organisationName;
+            organisationFound.name = String(organisationName);
         }
         if (!organisationFound.slug) {
             const uniqueSlug = await (0, findUniqueSlug_1.findUniqueSlug)((0, slugify_1.default)(organisationName.toLowerCase()));
@@ -79,7 +79,7 @@ router.use(authentificationMiddleware_1.authentificationMiddleware).post('/', as
                 optin: hasOptedInForCommunications,
                 otherAttributes: {
                     [brevo_1.ATTRIBUTE_IS_ORGANISATION_ADMIN]: true,
-                    [brevo_1.ATTRIBUTE_ORGANISATION_NAME]: organisationName,
+                    [brevo_1.ATTRIBUTE_ORGANISATION_NAME]: organisationFound.name,
                     [brevo_1.ATTRIBUTE_ORGANISATION_SLUG]: organisationFound.slug,
                     [brevo_1.ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER]: pollUpdated?.simulations?.length ?? 0,
                 },
