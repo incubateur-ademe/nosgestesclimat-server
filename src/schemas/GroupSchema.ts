@@ -17,8 +17,8 @@ export type GroupType = {
   emoji: string
   administrator: {
     name: string
-    email?: String
-    userId: String
+    email?: string
+    userId: string
   }
   participants: Participant[]
   // Legacy from previous version

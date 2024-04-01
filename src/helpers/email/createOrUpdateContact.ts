@@ -1,23 +1,45 @@
 import axios from 'axios'
 import { axiosConf } from '../../constants/axios'
-import { UserType } from '../../schemas/UserSchema'
+import { SimulationType } from '../../schemas/SimulationSchema'
+import { handleAddAttributes } from '../brevo/handleAddAttributes'
 
 type Props = {
-  user: UserType
+  email: string
+  name?: string
+  userId?: string
   listIds?: number[]
   optin?: boolean
+  otherAttributes?: Record<string, string | boolean | number>
+  simulation?: SimulationType
 }
-export function createOrUpdateContact({ user, listIds, optin }: Props) {
+
+export function createOrUpdateContact({
+  email,
+  name,
+  userId,
+  listIds,
+  optin,
+  otherAttributes = {},
+  simulation,
+}: Props) {
+  if (!email) {
+    return
+  }
+
+  const attributes = handleAddAttributes({
+    name,
+    userId,
+    optin,
+    simulation,
+    otherAttributes,
+  })
+
   return axios.post(
     'https://api.brevo.com/v3/contacts',
     {
-      email: user.email,
+      email,
       listIds,
-      attributes: {
-        userId: user.userId,
-        PRENOM: user.name,
-        OPT_IN: optin,
-      },
+      attributes,
       updateEnabled: true,
     },
     axiosConf

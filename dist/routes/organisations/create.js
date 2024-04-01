@@ -32,7 +32,7 @@ router.route('/').post(async (req, res) => {
         });
         // Save the organisation
         const newlySavedOrganisation = await organisationCreated.save();
-        const verificationCodeObject = await (0, handleSendVerificationCodeAndReturnExpirationDate_1.handleSendVerificationCodeAndReturnExpirationDate)(email);
+        const verificationCodeObject = await (0, handleSendVerificationCodeAndReturnExpirationDate_1.handleSendVerificationCodeAndReturnExpirationDate)({ email, userId });
         newlySavedOrganisation.administrators[0].verificationCode =
             verificationCodeObject;
         await newlySavedOrganisation.save();

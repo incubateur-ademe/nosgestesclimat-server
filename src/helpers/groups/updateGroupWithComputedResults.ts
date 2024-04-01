@@ -1,27 +1,48 @@
-import { Document } from "mongoose";
-import { GroupType } from "../../schemas/GroupSchema";
-import { Simulation, SimulationType } from "../../schemas/SimulationSchema";
-import { computeResults } from "../simulation/computeResults";
+import { Document } from 'mongoose'
+import { Group, GroupType } from '../../schemas/GroupSchema'
+import { Simulation, SimulationType } from '../../schemas/SimulationSchema'
+import { computeResults } from '../simulation/computeResults'
 
 export async function updateGroupWithComputedResults(group: GroupType) {
-  if (group.participants.every((participant) => (participant.simulation as unknown as SimulationType)?.computedResults)) {
-    return
+  // Do not update the simulations if they already have computed results
+
+  const participantsWithIncompleteResults = group?.participants?.filter(
+    (participant) =>
+      (participant.simulation as unknown as SimulationType)?.computedResults
+        ?.bilan === undefined
+  )
+
+  if (participantsWithIncompleteResults.length === 0) {
+    return group
   }
 
-  if (group.participants) {
-    for (const participant of group.participants) {
-      if (participant.simulation) {
-        // We can add computed results here
-        const simulationFound = await Simulation.findById(participant.simulation)
+  for (const participant of participantsWithIncompleteResults) {
+    // Should be populated
+    if (participant.simulation) {
+      // We can add computed results here
+      const simulationFound = await Simulation.findById(
+        (participant.simulation as unknown as SimulationType)._id
+      )
 
-        if (!simulationFound || simulationFound.computedResults) {
-          continue
-        }
-
-        simulationFound.computedResults = computeResults(simulationFound)
-        await simulationFound.save()
-
+      if (!simulationFound) {
+        continue
       }
+
+      simulationFound.computedResults = computeResults(
+        (simulationFound as unknown as SimulationType)?.situation
+      )
+
+      await simulationFound.save()
     }
   }
+
+  const groupUpdated = await Group.findById(group._id).populate({
+    path: 'participants',
+    populate: {
+      path: 'simulation',
+    },
+  })
+
+  console.log('Group with missing computed results updated.')
+  return groupUpdated
 }

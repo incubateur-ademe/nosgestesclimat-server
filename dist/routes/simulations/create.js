@@ -12,6 +12,7 @@ const createOrUpdateSimulation_1 = require("../../helpers/queries/createOrUpdate
 const handleUpdatePoll_1 = require("../../helpers/organisations/handleUpdatePoll");
 const handleUpdateGroup_1 = require("../../helpers/groups/handleUpdateGroup");
 const sendSimulationEmail_1 = require("../../helpers/email/sendSimulationEmail");
+const createOrUpdateContact_1 = require("../../helpers/email/createOrUpdateContact");
 const router = express_1.default.Router();
 router.route('/').post(async (req, res) => {
     const simulation = req.body.simulation;
@@ -38,6 +39,11 @@ router.route('/').post(async (req, res) => {
             .send('Error while creating or searching for the user.');
     }
     try {
+        await (0, createOrUpdateContact_1.createOrUpdateContact)({
+            email,
+            userId,
+            simulation,
+        });
         // We check if a poll is associated with the simulation
         const poll = await (0, findPollBySlug_1.findPollBySlug)(simulation.poll);
         // We check if a group is associated with the simulation
@@ -83,6 +89,7 @@ router.route('/').post(async (req, res) => {
         console.log(`Simulation created: ${simulationSaved._id}`);
     }
     catch (error) {
+        console.error(error);
         return res.status(401).send('Error while creating simulation.');
     }
 });

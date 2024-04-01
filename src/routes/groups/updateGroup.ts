@@ -33,6 +33,7 @@ router.route('/').post(async (req, res) => {
 
     // Check if the user is the group administrator. If not, we return an error
     const isAdministrator = group.administrator.userId === userId
+
     if (!isAdministrator) {
       return res.status(401).send('Error. You are not the group administrator.')
     }

@@ -6,6 +6,8 @@ import {
   Organisation,
   OrganisationType,
 } from '../../schemas/OrganisationSchema'
+import { createOrUpdateContact } from '../email/createOrUpdateContact'
+import { ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER } from '../../constants/brevo'
 
 export async function handleUpdatePoll({
   poll,
@@ -23,6 +25,24 @@ export async function handleUpdatePoll({
   poll.simulations.push(simulationSaved._id as RefType)
 
   await poll.save()
+
+  // Update number of participants on the administrators' Brevo contacts
+  const organisationFound = (await Organisation.findOne({
+    polls: poll._id,
+  })) as Document<OrganisationType> & OrganisationType
+
+  if (organisationFound) {
+    const administrators = organisationFound.administrators
+    for (const administrator of administrators) {
+      await createOrUpdateContact({
+        email: administrator.email,
+        userId: administrator.userId,
+        otherAttributes: {
+          [ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER]: poll.simulations.length,
+        },
+      })
+    }
+  }
 
   // Send confirmation email
   if (email) {
