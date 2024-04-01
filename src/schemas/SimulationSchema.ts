@@ -14,6 +14,9 @@ export type SimulationType = {
     bilan: number
     categories: Record<string, number>
   }
+  // poll and group are legacy. They can safely be deleted once the migration is done
+  poll?: RefType
+  group?: RefType
   polls?: RefType[]
   groups?: RefType[]
   defaultAdditionalQuestionsAnswers?: {
@@ -51,6 +54,14 @@ export const SimulationSchema = new Schema<SimulationType>(
         divers: Number,
         'services sociétaux': Number,
       },
+    },
+    poll: {
+      type: Schema.Types.ObjectId,
+      ref: 'Poll',
+    },
+    group: {
+      type: Schema.Types.ObjectId,
+      ref: 'Group',
     },
     polls: [
       {
