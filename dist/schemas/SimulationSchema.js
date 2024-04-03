@@ -39,6 +39,18 @@ exports.SimulationSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Group',
     },
+    polls: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Poll',
+        },
+    ],
+    groups: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Group',
+        },
+    ],
     savedViaEmail: Boolean,
     defaultAdditionalQuestionsAnswers: {
         postalCode: String,

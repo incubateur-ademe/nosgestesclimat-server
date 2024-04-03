@@ -18,14 +18,21 @@ router.route('/').post(async (req, res) => {
         return res.status(500).send('Error. A groupId must be provided.');
     }
     try {
-        const group = await GroupSchema_1.Group.findById(groupId).populate('participants.simulation');
+        const group = await GroupSchema_1.Group.findById(groupId).populate({
+            path: 'participants',
+            populate: {
+                path: 'simulation',
+            },
+        });
         // If no group is found, we return an error
         if (!group) {
             return res.status(404).send('Error. Group not found.');
         }
-        (0, updateGroupWithComputedResults_1.updateGroupWithComputedResults)(group);
+        // Nécessaire suite à la refonte serveur de février 2024
+        // TODO : à supprimer d'ici quelques mois
+        const groupUpdated = await (0, updateGroupWithComputedResults_1.updateGroupWithComputedResults)(group);
         (0, setSuccessfulResponse_1.setSuccessfulJSONResponse)(res);
-        res.json(group);
+        res.json(groupUpdated);
         console.log(`Group fetched: ${groupId}`);
     }
     catch (error) {

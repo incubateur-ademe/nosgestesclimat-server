@@ -19,7 +19,7 @@ function handleAddAttributes({ name, userId, optin, simulation, otherAttributes,
         attributesUpdated[brevo_1.ATTRIBUTE_LAST_SIMULATION_DATE] = new Date().toISOString();
         attributesUpdated[brevo_1.ATTRIBUTE_ACTIONS_SELECTED_NUMBER] =
             simulation?.actionChoices
-                ? Object.keys(simulation?.actionChoices)?.length
+                ? Object.keys(simulation?.actionChoices)?.filter((key) => simulation?.actionChoices[key] === true)?.length
                 : 0;
         attributesUpdated[brevo_1.ATTRIBUTE_LAST_SIMULATION_BILAN_FOOTPRINT] =
             (simulation?.computedResults?.bilan / 1000)?.toLocaleString(undefined, {

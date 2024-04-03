@@ -2,9 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getPollPublicInfos = void 0;
 const OrganisationSchema_1 = require("../../schemas/OrganisationSchema");
-const findPollBySlug_1 = require("./findPollBySlug");
+const findPollsBySlug_1 = require("./findPollsBySlug");
 async function getPollPublicInfos({ pollSlug, }) {
-    const poll = await (0, findPollBySlug_1.findPollBySlug)(pollSlug);
+    const polls = await (0, findPollsBySlug_1.findPollsBySlug)([pollSlug]);
+    const poll = polls[0];
     if (!poll) {
         return null;
     }
