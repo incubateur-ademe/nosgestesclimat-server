@@ -41,7 +41,9 @@ router.route('/').post(async (req, res) => {
     for (const participant of group.participants) {
       const simulation = await Simulation.findById(participant.simulation)
       if (simulation) {
-        delete simulation.group
+        simulation.groups = simulation.groups?.filter(
+          (group) => group !== groupId
+        )
         await simulation.save()
       }
     }

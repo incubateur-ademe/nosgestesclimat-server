@@ -6,8 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const setSuccessfulResponse_1 = require("../../utils/setSuccessfulResponse");
 const createOrUpdateUser_1 = require("../../helpers/queries/createOrUpdateUser");
-const findPollBySlug_1 = require("../../helpers/organisations/findPollBySlug");
-const findGroupById_1 = require("../../helpers/groups/findGroupById");
+const findPollsBySlug_1 = require("../../helpers/organisations/findPollsBySlug");
+const findGroupsById_1 = require("../../helpers/groups/findGroupsById");
 const createOrUpdateSimulation_1 = require("../../helpers/queries/createOrUpdateSimulation");
 const handleUpdatePoll_1 = require("../../helpers/organisations/handleUpdatePoll");
 const handleUpdateGroup_1 = require("../../helpers/groups/handleUpdateGroup");
@@ -45,9 +45,9 @@ router.route('/').post(async (req, res) => {
             simulation,
         });
         // We check if a poll is associated with the simulation
-        const poll = await (0, findPollBySlug_1.findPollBySlug)(simulation.poll);
+        const polls = await (0, findPollsBySlug_1.findPollsBySlug)(simulation.polls);
         // We check if a group is associated with the simulation
-        const group = await (0, findGroupById_1.findGroupById)(simulation.group);
+        const groups = await (0, findGroupsById_1.findGroupsById)(simulation.groups);
         const simulationObject = {
             id: simulation.id,
             user: userDocument._id,
@@ -57,27 +57,31 @@ router.route('/').post(async (req, res) => {
             situation: simulation.situation,
             computedResults: simulation.computedResults,
             progression: simulation.progression,
-            poll: poll?._id,
-            group: simulation.group,
+            polls: polls?.map((poll) => poll._id),
+            groups: simulation.groups,
             defaultAdditionalQuestionsAnswers: simulation.defaultAdditionalQuestionsAnswers,
         };
         // We create or update the simulation
         const simulationSaved = await (0, createOrUpdateSimulation_1.createOrUpdateSimulation)(simulationObject);
-        // If a poll is associated with the simulation and the simulation is not already in it
+        // If on or multiple polls are associated with the simulation and the simulation is not already in it
         // we add or update the simulation to the poll
-        await (0, handleUpdatePoll_1.handleUpdatePoll)({
-            poll,
-            simulationSaved,
-            email,
-        });
-        // If a group is associated with the simulation and the simulation is not already in it
+        for (const poll of polls) {
+            await (0, handleUpdatePoll_1.handleUpdatePoll)({
+                poll,
+                simulationSaved,
+                email,
+            });
+        }
+        // If on or multiple groups are associated with the simulation and the simulation is not already in it
         // we add the simulation to the group (and send an email to the user)
-        await (0, handleUpdateGroup_1.handleUpdateGroup)({
-            group,
-            userDocument,
-            simulationSaved,
-            origin,
-        });
+        for (const group of groups) {
+            await (0, handleUpdateGroup_1.handleUpdateGroup)({
+                group,
+                userDocument,
+                simulationSaved,
+                origin,
+            });
+        }
         await (0, sendSimulationEmail_1.sendSimulationEmail)({
             userDocument,
             simulationSaved,

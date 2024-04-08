@@ -36,7 +36,7 @@ router.route('/').post(async (req, res) => {
         // We delete the group from the simulation of the participant
         const simulation = await SimulationSchema_1.Simulation.findById(participant.simulation);
         if (simulation) {
-            delete simulation.group;
+            simulation.groups = simulation.groups?.filter((group) => group !== groupId);
             await simulation.save();
         }
         // We remove the user from the list of participants

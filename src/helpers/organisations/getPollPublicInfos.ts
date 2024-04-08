@@ -1,6 +1,6 @@
 import { Organisation } from '../../schemas/OrganisationSchema'
 import { PollPublicInfo } from '../../types/types'
-import { findPollBySlug } from './findPollBySlug'
+import { findPollsBySlug } from './findPollsBySlug'
 
 type Props = {
   pollSlug: string
@@ -8,7 +8,9 @@ type Props = {
 export async function getPollPublicInfos({
   pollSlug,
 }: Props): Promise<PollPublicInfo | null> {
-  const poll = await findPollBySlug(pollSlug)
+  const polls = await findPollsBySlug([pollSlug])
+
+  const poll = polls[0]
 
   if (!poll) {
     return null
