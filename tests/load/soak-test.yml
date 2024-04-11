@@ -12,14 +12,9 @@ scenarios:
     flow:
       - post:
           url: '/simulations/create'
-          json:
-            {
-              id: '{{simulationId}}',
-              situation: {},
-              foldedSteps: [],
-              date: '{{date}}',
-              computedResults: {},
-            }
+          # Récupérer situation local storage
+          # Générer des computedResults différents pour chaque user
+          json: { id: '{{simulationId}}' }
       - think: 1
       - post:
           url: '/organisations/fetch-poll-processed-data'

@@ -10,16 +10,11 @@ config:
 scenarios:
   - name: 'Organisation participants spike test'
     flow:
+      # Récupérer situation local storage
+      # Générer des computedResults différents pour chaque user
       - post:
           url: '/simulations/create'
-          json:
-            {
-              id: '{{simulationId}}',
-              situation: {},
-              foldedSteps: [],
-              date: '{{date}}',
-              computedResults: {},
-            }
+          json: { id: '{{simulationId}}' }
       - think: 1
       - post:
           url: '/organisations/fetch-poll-processed-data'
