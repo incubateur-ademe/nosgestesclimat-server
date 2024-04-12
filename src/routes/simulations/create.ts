@@ -2,8 +2,8 @@ import { UserType } from './../../schemas/UserSchema'
 import express from 'express'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { createOrUpdateUser } from '../../helpers/queries/createOrUpdateUser'
-import { findPollBySlug } from '../../helpers/organisations/findPollBySlug'
-import { findGroupById } from '../../helpers/groups/findGroupById'
+import { findPollsBySlug } from '../../helpers/organisations/findPollsBySlug'
+import { findGroupsById } from '../../helpers/groups/findGroupsById'
 import { createOrUpdateSimulation } from '../../helpers/queries/createOrUpdateSimulation'
 import { SimulationType } from '../../schemas/SimulationSchema'
 import { PollType } from '../../schemas/PollSchema'
@@ -31,6 +31,7 @@ router.route('/').post(async (req, res) => {
     return res.status(500).send('Error. A simulation must be provided.')
   }
 
+  console.log('before createOrUpdateUser')
   // We create or search for the user
   const userDocument = await createOrUpdateUser({
     email,
@@ -46,17 +47,20 @@ router.route('/').post(async (req, res) => {
   }
 
   try {
+    console.log('before createOrUpdateContact')
     await createOrUpdateContact({
       email,
       userId,
       simulation,
     })
 
+    console.log('before findPollsBySlug')
     // We check if a poll is associated with the simulation
-    const poll = await findPollBySlug(simulation.poll)
+    const polls = await findPollsBySlug(simulation.polls)
 
+    console.log('before findGroupsById')
     // We check if a group is associated with the simulation
-    const group = await findGroupById(simulation.group)
+    const groups = await findGroupsById(simulation.groups)
 
     const simulationObject: SimulationType = {
       id: simulation.id,
@@ -67,41 +71,49 @@ router.route('/').post(async (req, res) => {
       situation: simulation.situation,
       computedResults: simulation.computedResults,
       progression: simulation.progression,
-      poll: poll?._id,
-      group: simulation.group,
+      polls: polls?.map((poll) => poll._id),
+      groups: simulation.groups,
       defaultAdditionalQuestionsAnswers:
         simulation.defaultAdditionalQuestionsAnswers,
     }
 
+    console.log('before createOrUpdateSimulation')
     // We create or update the simulation
     const simulationSaved = await createOrUpdateSimulation(simulationObject)
 
-    // If a poll is associated with the simulation and the simulation is not already in it
+    console.log('before handleUpdatePoll')
+    // If on or multiple polls are associated with the simulation and the simulation is not already in it
     // we add or update the simulation to the poll
-    await handleUpdatePoll({
-      poll,
-      simulationSaved,
-      email,
-    } as unknown as {
-      poll: Document<PollType> & PollType
-      simulationSaved: Document<SimulationType> & SimulationType
-      email: string
-    })
+    for (const poll of polls) {
+      await handleUpdatePoll({
+        poll,
+        simulationSaved,
+        email,
+      } as unknown as {
+        poll: Document<PollType> & PollType
+        simulationSaved: Document<SimulationType> & SimulationType
+        email: string
+      })
+    }
 
-    // If a group is associated with the simulation and the simulation is not already in it
+    console.log('before handleUpdateGroup')
+    // If on or multiple groups are associated with the simulation and the simulation is not already in it
     // we add the simulation to the group (and send an email to the user)
-    await handleUpdateGroup({
-      group,
-      userDocument,
-      simulationSaved,
-      origin,
-    } as unknown as {
-      group: Document<GroupType> & GroupType
-      userDocument: Document<UserType> & UserType
-      simulationSaved: Document<SimulationType> & SimulationType
-      origin: string
-    })
+    for (const group of groups) {
+      await handleUpdateGroup({
+        group,
+        userDocument,
+        simulationSaved,
+        origin,
+      } as unknown as {
+        group: Document<GroupType> & GroupType
+        userDocument: Document<UserType> & UserType
+        simulationSaved: Document<SimulationType> & SimulationType
+        origin: string
+      })
+    }
 
+    console.log('before sendSimulationEmail')
     await sendSimulationEmail({
       userDocument,
       simulationSaved,
