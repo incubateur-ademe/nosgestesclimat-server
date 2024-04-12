@@ -14,7 +14,16 @@ scenarios:
           url: '/simulations/create'
           # Récupérer situation local storage
           # Générer des computedResults différents pour chaque user
-          json: { id: '{{simulationId}}' }
+          json:
+            {
+              id: '{{simulationId}}',
+              date: '2024-04-12T12:50:17.533Z',
+              userId: '{{userId}}',
+              situation: '{{situation}}',
+              computedResults: '{{computedResults}}',
+              foldedSteps: '{{foldedSteps}}',
+              actionChoices: '{{actionChoices}}',
+            }
       - think: 1
       - post:
           url: '/organisations/fetch-poll-processed-data'

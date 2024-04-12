@@ -1,21 +1,32 @@
 config:
   plugins:
-    apdex: {}
-  target: 'https://preprod.server.nosgestesclimat.fr'
+    expect: {}
+  target: 'http://localhost:3001'
   phases:
     - duration: 60
       arrivalRate: 250 # 15 000 utilisateurs en fin de phase
       name: 'Spiking'
-  processor: './generate-mock-data.ts'
+  processor: './scripts/generate-mock-data.js'
 scenarios:
   - name: 'Organisation participants spike test'
     flow:
-      # Récupérer situation local storage
-      # Générer des computedResults différents pour chaque user
       - post:
           url: '/simulations/create'
-          json: { id: '{{simulationId}}' }
+          json:
+            simulation:
+              id: '{{simulationId}}'
+              date: '2024-04-12T12:50:17.533Z'
+              situation: '{{situation}}'
+              computedResults: '{{computedResults}}'
+              foldedSteps: '{{foldedSteps}}'
+              actionChoices: '{{actionChoices}}'
+              polls: '{{polls}}'
+            userId: '{{userId}}'
+          expect:
+            - statusCode: 200
       - think: 1
       - post:
           url: '/organisations/fetch-poll-processed-data'
           json: { orgaSlug: '', userId: '{{userId}}' }
+          expect:
+            - statusCode: 200
