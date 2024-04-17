@@ -37,8 +37,17 @@ export async function updateGroupUserInfo() {
     const groups = await Group.find({})
 
     const groupsByAdministrator = processGroupsByAdministrator(groups)
-
+    console.log(
+      'Number of groups by administrator',
+      Object.keys(groupsByAdministrator).length
+    )
     for (const administratorEmail in groupsByAdministrator) {
+      console.log(
+        'Number of groups for',
+        administratorEmail,
+        groupsByAdministrator[administratorEmail].length
+      )
+
       // Get the last poll updated
       const lastGroupCreated = groupsByAdministrator[administratorEmail]?.sort(
         (a, b) => {
@@ -50,10 +59,17 @@ export async function updateGroupUserInfo() {
         administratorEmail
       ]?.filter((group) => group.participants.length === 1).length
 
+      console.log(
+        'Updating contact',
+        administratorEmail,
+        numberGroupWithOneParticipant
+      )
+
       await createOrUpdateContact({
         email: administratorEmail,
         otherAttributes: {
-          [ATTRIBUTE_NUMBER_CREATED_GROUPS]: true,
+          [ATTRIBUTE_NUMBER_CREATED_GROUPS]:
+            groupsByAdministrator[administratorEmail]?.length,
           [ATTRIBUTE_LAST_GROUP_CREATION_DATE]: (
             lastGroupCreated as any
           ).createdAt.toISOString(),
@@ -61,6 +77,7 @@ export async function updateGroupUserInfo() {
             numberGroupWithOneParticipant,
         },
       })
+      console.log('Updated.')
     }
   } catch (error) {
     console.error('Error updating group admin contact attributes', error)
