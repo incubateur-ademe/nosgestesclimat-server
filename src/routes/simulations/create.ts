@@ -31,7 +31,6 @@ router.route('/').post(async (req, res) => {
     return res.status(500).send('Error. A simulation must be provided.')
   }
 
-  console.log('before createOrUpdateUser')
   // We create or search for the user
   const userDocument = await createOrUpdateUser({
     email,
@@ -47,18 +46,15 @@ router.route('/').post(async (req, res) => {
   }
 
   try {
-    console.log('before createOrUpdateContact')
     await createOrUpdateContact({
       email,
       userId,
       simulation,
     })
 
-    console.log('before findPollsBySlug')
     // We check if a poll is associated with the simulation
     const polls = await findPollsBySlug(simulation.polls)
 
-    console.log('before findGroupsById')
     // We check if a group is associated with the simulation
     const groups = await findGroupsById(simulation.groups)
 
@@ -77,11 +73,9 @@ router.route('/').post(async (req, res) => {
         simulation.defaultAdditionalQuestionsAnswers,
     }
 
-    console.log('before createOrUpdateSimulation')
     // We create or update the simulation
     const simulationSaved = await createOrUpdateSimulation(simulationObject)
 
-    console.log('before handleUpdatePoll')
     // If on or multiple polls are associated with the simulation and the simulation is not already in it
     // we add or update the simulation to the poll
     for (const poll of polls) {
@@ -96,7 +90,6 @@ router.route('/').post(async (req, res) => {
       })
     }
 
-    console.log('before handleUpdateGroup')
     // If on or multiple groups are associated with the simulation and the simulation is not already in it
     // we add the simulation to the group (and send an email to the user)
     for (const group of groups) {
@@ -113,7 +106,6 @@ router.route('/').post(async (req, res) => {
       })
     }
 
-    console.log('before sendSimulationEmail')
     await sendSimulationEmail({
       userDocument,
       simulationSaved,
