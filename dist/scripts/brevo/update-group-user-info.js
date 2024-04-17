@@ -39,14 +39,19 @@ async function updateGroupUserInfo() {
             })[0];
             const numberGroupWithOneParticipant = groupsByAdministrator[administratorEmail]?.filter((group) => group.participants.length === 1).length;
             console.log('Updating contact', administratorEmail, numberGroupWithOneParticipant);
-            await (0, createOrUpdateContact_1.createOrUpdateContact)({
-                email: administratorEmail,
-                otherAttributes: {
-                    [brevo_1.ATTRIBUTE_NUMBER_CREATED_GROUPS]: groupsByAdministrator[administratorEmail]?.length,
-                    [brevo_1.ATTRIBUTE_LAST_GROUP_CREATION_DATE]: lastGroupCreated.createdAt.toISOString(),
-                    [brevo_1.ATTRIBUTE_NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT]: numberGroupWithOneParticipant,
-                },
-            });
+            try {
+                await (0, createOrUpdateContact_1.createOrUpdateContact)({
+                    email: administratorEmail,
+                    otherAttributes: {
+                        [brevo_1.ATTRIBUTE_NUMBER_CREATED_GROUPS]: groupsByAdministrator[administratorEmail]?.length,
+                        [brevo_1.ATTRIBUTE_LAST_GROUP_CREATION_DATE]: lastGroupCreated.createdAt.toISOString(),
+                        [brevo_1.ATTRIBUTE_NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT]: numberGroupWithOneParticipant,
+                    },
+                });
+            }
+            catch (error) {
+                console.error('Error updating contact', administratorEmail, error);
+            }
             console.log('Updated.');
         }
     }

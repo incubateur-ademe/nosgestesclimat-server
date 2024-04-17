@@ -64,19 +64,23 @@ export async function updateGroupUserInfo() {
         administratorEmail,
         numberGroupWithOneParticipant
       )
+      try {
+        await createOrUpdateContact({
+          email: administratorEmail,
+          otherAttributes: {
+            [ATTRIBUTE_NUMBER_CREATED_GROUPS]:
+              groupsByAdministrator[administratorEmail]?.length,
+            [ATTRIBUTE_LAST_GROUP_CREATION_DATE]: (
+              lastGroupCreated as any
+            ).createdAt.toISOString(),
+            [ATTRIBUTE_NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT]:
+              numberGroupWithOneParticipant,
+          },
+        })
+      } catch (error) {
+        console.error('Error updating contact', administratorEmail, error)
+      }
 
-      await createOrUpdateContact({
-        email: administratorEmail,
-        otherAttributes: {
-          [ATTRIBUTE_NUMBER_CREATED_GROUPS]:
-            groupsByAdministrator[administratorEmail]?.length,
-          [ATTRIBUTE_LAST_GROUP_CREATION_DATE]: (
-            lastGroupCreated as any
-          ).createdAt.toISOString(),
-          [ATTRIBUTE_NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT]:
-            numberGroupWithOneParticipant,
-        },
-      })
       console.log('Updated.')
     }
   } catch (error) {
