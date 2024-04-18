@@ -229,7 +229,7 @@ function generateComputedResults() {
   }
 
   for (const category of categories) {
-    computedResults.categories[category] = faker.random.number({
+    computedResults.categories[category] = faker.number.int({
       min: 800,
       max: 4000,
     })
@@ -239,10 +239,11 @@ function generateComputedResults() {
   return computedResults
 }
 
-function generateSignupData(requestParams, ctx, ee, next) {
+function generateSignupData(requestParams, ctx, events, next) {
   ctx.vars.simulationId = faker.string.uuid()
   ctx.vars.date = faker.date.recent()
   ctx.vars.userId = faker.string.uuid()
+  console.log('USERID', ctx.vars.userId)
   ctx.vars.situation = DEFAULT_SIMULATION_OBJECT.situation
   ctx.vars.foldedSteps = DEFAULT_SIMULATION_OBJECT.foldedSteps
   ctx.vars.actionChoices = {}

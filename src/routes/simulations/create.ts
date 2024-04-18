@@ -17,6 +17,7 @@ import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact
 const router = express.Router()
 
 router.route('/').post(async (req, res) => {
+  console.log('TOTO')
   const simulation = req.body.simulation
   const name = req.body.name
   const email = req.body.email
@@ -40,6 +41,7 @@ router.route('/').post(async (req, res) => {
 
   // If there is no user found or created, we return an error
   if (!userDocument) {
+    console.log('NO USER FOUND')
     return res
       .status(500)
       .send('Error while creating or searching for the user.')
