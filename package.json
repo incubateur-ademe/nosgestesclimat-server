@@ -15,8 +15,8 @@
     "generateEnvDeclaration": "yarn run-script scripts/generateEnvDeclaration.ts",
     "migrate:groups": "ts-node ./src/scripts/migrations/migrateGroups.ts",
     "migrate:email-simulations": "ts-node ./src/scripts/migrations/migrateEmailSimulations.ts",
-    "test:load:spike": "artillery run ./tests/load/spike-test.yml --max-old-space-size=8192",
-    "test:load:soak": "artillery run ./tests/load/soak-test.yml --max-old-space-size=8192"
+    "test:load:spike": "artillery run ./tests/load/spike-test.yml",
+    "test:load:soak": "artillery run ./tests/load/soak-test.yml"
   },
   "author": "",
   "license": "MIT",
@@ -38,10 +38,10 @@
     "publicodes": "1.0.0-beta.77",
     "slugify": "^1.6.6",
     "socket.io": "^4.4.1",
-    "yaml": "^2.0.1"
+    "yaml": "^2.0.1",
+    "@faker-js/faker": "^8.4.1"
   },
   "devDependencies": {
-    "@faker-js/faker": "^8.4.1",
     "@tsconfig/node18": "^18.2.2",
     "@types/apicache": "^1.6.6",
     "@types/bluebird": "^3.5.42",
