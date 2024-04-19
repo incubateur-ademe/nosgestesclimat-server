@@ -239,18 +239,24 @@ function generateComputedResults() {
   return computedResults
 }
 
-function generateSignupData(requestParams, ctx, events, next) {
+async function generateSignupData(requestParams, ctx, next) {
   ctx.vars.simulationId = faker.string.uuid()
   ctx.vars.date = faker.date.recent()
   ctx.vars.userId = faker.string.uuid()
-  console.log('USERID', ctx.vars.userId)
+  ctx.vars.orgaAdminUserId =
+    process.env.NODE_END === 'production'
+      ? '8778ad78-1d82-4e11-8d63-2cc781c1fbc8'
+      : 'a57e829c-94ec-444f-8745-282ccb0262e8'
   ctx.vars.situation = DEFAULT_SIMULATION_OBJECT.situation
   ctx.vars.foldedSteps = DEFAULT_SIMULATION_OBJECT.foldedSteps
   ctx.vars.actionChoices = {}
   ctx.vars.computedResults = generateComputedResults()
-  ctx.vars.polls = ['Hplkdz'] // Preprod : ['GnFtH-']
-
-  return next()
+  ctx.vars.polls =
+    process.env.NODE_ENV === 'production' ? ['Hp5651'] : ['Hplkdz'] // Preprod : ['GnFtH-']
+  ctx.vars.orgaSlug =
+    process.env.NODE_ENV === 'production'
+      ? 'entreprise-test'
+      : 'la-vie-claire-paris-13-glaciere'
 }
 
 module.exports = {

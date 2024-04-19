@@ -1,30 +1,32 @@
 config:
   plugins:
-    apdex: {}
-  target: 'https://preprod.server.nosgestesclimat.fr'
+  target: 'https://server.preprod.nosgestesclimat.fr'
   phases:
     - duration: 3600
       arrivalRate: 4 # environ 15 000 utilisateurs en fin de phase
       name: 'Soaking'
-  processor: './generate-mock-data.ts'
+  processor: './scripts/generate-mock-data.js'
 scenarios:
-  - name: 'Organisation participants soak test'
+  - beforeRequest: 'generateSignupData'
+    name: 'Soak test'
     flow:
       - post:
           url: '/simulations/create'
-          # Récupérer situation local storage
-          # Générer des computedResults différents pour chaque user
           json:
-            {
-              id: '{{simulationId}}',
-              date: '2024-04-12T12:50:17.533Z',
-              userId: '{{userId}}',
-              situation: '{{situation}}',
-              computedResults: '{{computedResults}}',
-              foldedSteps: '{{foldedSteps}}',
-              actionChoices: '{{actionChoices}}',
-            }
+            simulation:
+              id: '{{simulationId}}'
+              date: '2024-04-12T12:50:17.533Z'
+              situation: '{{situation}}'
+              computedResults: '{{computedResults}}'
+              foldedSteps: '{{foldedSteps}}'
+              actionChoices: '{{actionChoices}}'
+              polls: '{{polls}}'
+            userId: '{{userId}}'
+          expect:
+            - statusCode: 200
       - think: 1
       - post:
           url: '/organisations/fetch-poll-processed-data'
-          json: { orgaSlug: '', userId: '{{userId}}' }
+          json: { orgaSlug: '{{orgaSlug}}', userId: '{{orgaAdminUserId}}' }
+          expect:
+            - statusCode: 200

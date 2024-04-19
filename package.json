@@ -15,8 +15,8 @@
     "generateEnvDeclaration": "yarn run-script scripts/generateEnvDeclaration.ts",
     "migrate:groups": "ts-node ./src/scripts/migrations/migrateGroups.ts",
     "migrate:email-simulations": "ts-node ./src/scripts/migrations/migrateEmailSimulations.ts",
-    "test:load:spike": "artillery run ./tests/load/spike-test.yml",
-    "test:load:soak": "artillery run ./tests/load/soak-test.yml"
+    "test:load:spike": "artillery run ./tests/load/spike-test.yml --max-old-space-size=8192",
+    "test:load:soak": "artillery run ./tests/load/soak-test.yml --max-old-space-size=8192"
   },
   "author": "",
   "license": "MIT",

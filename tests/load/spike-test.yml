@@ -1,10 +1,8 @@
 config:
-  plugins:
-    expect: {}
-  target: 'http://localhost:3001'
+  target: 'https://server.preprod.nosgestesclimat.fr'
   phases:
-    - duration: 1 #60
-      arrivalRate: 1 # 250 # 15 000 utilisateurs en fin de phase
+    - duration: 30
+      arrivalRate: 500 # 15 000 utilisateurs en fin de phase
       name: 'Spiking'
   processor: './scripts/generate-mock-data.js'
 scenarios:
@@ -25,13 +23,9 @@ scenarios:
             userId: '{{userId}}'
           expect:
             - statusCode: 200
-      - think: 1
+      - think: 2
       - post:
           url: '/organisations/fetch-poll-processed-data'
-          json:
-            {
-              orgaSlug: 'la-vie-claire-paris-13-glaciere',
-              userId: 'a57e829c-94ec-444f-8745-282ccb0262e8',
-            }
+          json: { orgaSlug: '{{orgaSlug}}', userId: '{{orgaAdminUserId}}' }
           expect:
             - statusCode: 200
