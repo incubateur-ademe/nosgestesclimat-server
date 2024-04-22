@@ -4,6 +4,7 @@ import axios from 'axios'
 import { axiosConf } from '../../constants/axios'
 import { getContactLists } from '../../helpers/brevo/getContactLists'
 import { createOrUpdateUser } from '../../helpers/queries/createOrUpdateUser'
+import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
 
 const router = express.Router()
 
@@ -69,17 +70,7 @@ router.route('/').post(async (req, res) => {
     }
 
     if (name) {
-      await axios.post(
-        'https://api.brevo.com/v3/contacts',
-        {
-          email,
-          attributes: {
-            prenom: name,
-          },
-          updateEnabled: true,
-        },
-        axiosConf
-      )
+      await createOrUpdateContact({ email, name })
 
       await createOrUpdateUser({ userId, email, name })
     }
