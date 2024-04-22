@@ -40,6 +40,10 @@ import createQuizAnswerRoute from './routes/quiz/create'
 // Email route
 import sendEmailRoute from './routes/email/sendEmail'
 
+// Settings route
+import updateSettingsRoute from './routes/settings/updateSettings'
+import getNewsletterSubscriptions from './routes/settings/getNewsletterSubscriptions'
+
 import cors from 'cors'
 import Answer from './schemas/_legacy/AnswerSchema'
 import connect from './scripts/initDatabase'
@@ -128,6 +132,10 @@ app.use('/quiz/answers/create', createQuizAnswerRoute)
 
 // Email route
 app.use('/send-email', sendEmailRoute)
+
+// Settings route
+app.use('/update-settings', updateSettingsRoute)
+app.use('/get-newsletter-subscriptions', getNewsletterSubscriptions)
 
 // require the http module
 const http = require('http').Server(app)
