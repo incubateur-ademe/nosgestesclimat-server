@@ -3,6 +3,7 @@ import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import axios from 'axios'
 import { axiosConf } from '../../constants/axios'
 import { getContactLists } from '../../helpers/brevo/getContactLists'
+import { createOrUpdateUser } from '../../helpers/queries/createOrUpdateUser'
 
 const router = express.Router()
 
@@ -14,6 +15,7 @@ router.route('/').post(async (req, res) => {
   const userId = req.body.userId
 
   const newsletterIds: Record<string, boolean> = req.body.newsletterIds
+  const name: string = req.body.name
 
   // Check if all required fields are provided
   if (!email && !userId) {
@@ -64,6 +66,22 @@ router.route('/').post(async (req, res) => {
           )
         }
       }
+    }
+
+    if (name) {
+      await axios.post(
+        'https://api.brevo.com/v3/contacts',
+        {
+          email,
+          attributes: {
+            prenom: name,
+          },
+          updateEnabled: true,
+        },
+        axiosConf
+      )
+
+      await createOrUpdateUser({ userId, email, name })
     }
 
     setSuccessfulJSONResponse(res)
