@@ -1,5 +1,9 @@
+import { DottedName } from "@incubateur-ademe/nosgestesclimat"
 import { Situation } from '../../../types/types'
 import { formatDottedName } from '../../../utils/formatDottedName'
+
+const VELO_DOTTEDNAME: DottedName = 'transport . mobilité douce . vélo . présent'
+const VAE_DOTTEDNAME: DottedName = 'transport . mobilité douce . vae . présent'
 
 export function getIsBicycleUser({ situation }: { situation: Situation }) {
   if (!situation) {
@@ -10,19 +14,19 @@ export function getIsBicycleUser({ situation }: { situation: Situation }) {
   if (
     situation &&
     !situation[
-      formatDottedName('transport . mobilité douce . vélo . présent')
+      formatDottedName(VELO_DOTTEDNAME)
     ] &&
-    !situation[formatDottedName('transport . mobilité douce . vae . présent')]
+    !situation[formatDottedName(VAE_DOTTEDNAME)]
   ) {
     return false
   }
 
   return (
     situation[
-      formatDottedName('transport . mobilité douce . vélo . présent')
+      formatDottedName(VELO_DOTTEDNAME)
     ] === 'oui' ||
     situation[
-      formatDottedName('transport . mobilité douce . vae . présent')
+      formatDottedName(VAE_DOTTEDNAME)
     ] === 'oui'
   )
 }

@@ -1,18 +1,24 @@
 import { Situation } from '../../../types/types'
 import { formatDottedName } from '../../../utils/formatDottedName'
+import { DottedName } from '@incubateur-ademe/nosgestesclimat'
 
-const POISSON_GRAS_DOTTEDNAME = formatDottedName(
+const POISSON_GRAS_DOTTEDNAME: DottedName =
   'alimentation . plats . poisson gras . nombre'
-)
-const POISSON_BLANC_DOTTEDNAME = formatDottedName(
+
+const POISSON_BLANC_DOTTEDNAME: DottedName =
   'alimentation . plats . poisson blanc . nombre'
-)
-const VIANDE_ROUGE_DOTTEDNAME = formatDottedName(
+
+const VIANDE_ROUGE_DOTTEDNAME: DottedName =
   'alimentation . plats . viande rouge . nombre'
-)
-const VIANDE_BLANCHE_DOTTEDNAME = formatDottedName(
+
+const VIANDE_BLANCHE_DOTTEDNAME: DottedName =
   'alimentation . plats . viande blanche . nombre'
-)
+
+const VEGETARIEN_DOTTEDNAME: DottedName =
+  'alimentation . plats . végétarien . nombre'
+
+const VEGETALIEN_DOTTEDNAME: DottedName =
+  'alimentation . plats . végétalien . nombre'
 
 function eatsViandeRouge({ situation }: { situation: Situation }) {
   return (
@@ -52,22 +58,12 @@ export function getIsVegetarian({ situation }: { situation: Situation }) {
   // If question is skipped
   if (
     situation &&
-    !situation[
-      formatDottedName('alimentation . plats . viande rouge . nombre')
-    ] &&
-    !situation[
-      formatDottedName('alimentation . plats . viande blanche . nombre')
-    ] &&
-    !situation[
-      formatDottedName('alimentation . plats . poisson gras . nombre')
-    ] &&
-    !situation[
-      formatDottedName('alimentation . plats . poisson blanc . nombre')
-    ] &&
-    !situation[
-      formatDottedName('alimentation . plats . végétarien . nombre')
-    ] &&
-    !situation[formatDottedName('alimentation . plats . végétalien . nombre')]
+    !situation[formatDottedName(VIANDE_ROUGE_DOTTEDNAME)] &&
+    !situation[formatDottedName(VIANDE_BLANCHE_DOTTEDNAME)] &&
+    !situation[formatDottedName(POISSON_GRAS_DOTTEDNAME)] &&
+    !situation[formatDottedName(POISSON_BLANC_DOTTEDNAME)] &&
+    !situation[formatDottedName(VEGETARIEN_DOTTEDNAME)] &&
+    !situation[formatDottedName(VEGETALIEN_DOTTEDNAME)]
   ) {
     return false
   }

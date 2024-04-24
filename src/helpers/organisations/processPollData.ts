@@ -1,9 +1,8 @@
 import { UserType } from '../../schemas/UserSchema'
 import { SimulationType } from '../../schemas/SimulationSchema'
-import { formatDottedName } from '../../utils/formatDottedName'
-import { Situation } from '../../types/types'
 import { getIsBicycleUser } from './processPollData/getIsBicycleUser'
 import { getIsVegetarian } from './processPollData/getIsVegetarien'
+import { getIsDriver } from "./processPollData/getIsDriver"
 
 type SimulationRecap = {
   bilan: number
@@ -26,18 +25,7 @@ type Result = {
   simulationRecaps: SimulationRecap[]
 }
 
-function getIsDriver({ situation }: { situation: Situation }) {
-  if (!situation) {
-    return false
-  }
 
-  // If question is skipped
-  if (situation && !situation[formatDottedName('transport . voiture . km')]) {
-    return true
-  }
-
-  return (situation[formatDottedName('transport . voiture . km')] as number) > 0
-}
 
 export function processPollData({
   simulations,
