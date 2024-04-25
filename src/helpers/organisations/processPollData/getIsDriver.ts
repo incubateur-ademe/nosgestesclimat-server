@@ -1,18 +1,11 @@
-import { DottedName } from '@incubateur-ademe/nosgestesclimat'
 import { Situation } from '../../../types/types'
-import { formatDottedName } from '../../../utils/formatDottedName'
-
-const VOITURE_KM_DOTTEDNAME: DottedName = 'transport . voiture . km'
+// should be using `import rules from '@incubateur-ademe/nosgestesclimat'` but got this error : SyntaxError: Cannot use import statement outside a module
+import rules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
+import { processCondition } from './helpers/processCondition'
 
 export function getIsDriver({ situation }: { situation: Situation }) {
-  if (!situation) {
-    return false
-  }
-
-  // If question is skipped
-  if (situation && !situation[formatDottedName(VOITURE_KM_DOTTEDNAME)]) {
-    return true
-  }
-
-  return (situation[formatDottedName(VOITURE_KM_DOTTEDNAME)] as number) > 0
+  return processCondition({
+    situation,
+    rule: rules['ui . organisations . roule en voiture'],
+  })
 }
