@@ -23,6 +23,7 @@ export type SimulationType = {
     postalCode?: string
     birthdate?: string
   }
+  customAdditionalQuestionsAnswers?: Record<string, string>
   savedViaEmail?: boolean
   modifiedAt?: Date
   createdAt?: Date
