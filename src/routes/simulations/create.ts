@@ -17,7 +17,6 @@ import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact
 const router = express.Router()
 
 router.route('/').post(async (req, res) => {
-  console.log('TOTO')
   const simulation = req.body.simulation
   const name = req.body.name
   const email = req.body.email

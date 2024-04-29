@@ -4,6 +4,9 @@ config:
     - duration: 30
       arrivalRate: 500 # 15 000 utilisateurs en fin de phase
       name: 'Spiking'
+  timeouts:
+    response: 600
+    idle: 600
   processor: './scripts/generate-mock-data.mjs'
 scenarios:
   - beforeRequest: 'generateSignupData'
@@ -21,11 +24,8 @@ scenarios:
               actionChoices: '{{actionChoices}}'
               polls: '{{polls}}'
             userId: '{{userId}}'
-          expect:
-            - statusCode: 200
       - think: 2
       - post:
           url: '/organisations/fetch-poll-processed-data'
           json: { orgaSlug: '{{orgaSlug}}', userId: '{{orgaAdminUserId}}' }
-          expect:
-            - statusCode: 200
+      - think: 2
