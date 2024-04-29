@@ -85,7 +85,6 @@ router.route('/').post(async (req, res) => {
 
     return res.send('Settings successfully updated.')
   } catch (error) {
-    console.log(error)
     return res.status(500).send('Error updating settings: ' + error)
   }
 })
