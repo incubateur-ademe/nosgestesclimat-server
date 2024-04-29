@@ -37,6 +37,9 @@ import fetchSimulationRoute from './routes/simulations/fetchSimulation'
 // Quiz routes
 import createQuizAnswerRoute from './routes/quiz/create'
 
+// Northstar routes
+import createNorthstarRatingRoute from './routes/northstar/create'
+
 // Email route
 import sendEmailRoute from './routes/email/sendEmail'
 
@@ -125,6 +128,9 @@ app.use(
 
 // Quiz routes
 app.use('/quiz/answers/create', createQuizAnswerRoute)
+
+// Northstar routes
+app.use('/northstar/ratings/create', createNorthstarRatingRoute)
 
 // Email route
 app.use('/send-email', sendEmailRoute)

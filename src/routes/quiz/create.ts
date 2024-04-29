@@ -7,7 +7,7 @@ const router = express.Router()
 /**
  * Create a new quiz answer
  * It requires a simulationId, an answer, and isAnswerCorrect (can be 'correct', 'almost' or 'wrong')
- * It returns the created group
+ * It returns the id of the answer
  */
 router.route('/').post(async (req, res) => {
   const simulationId = req.body.simulationId
@@ -29,9 +29,9 @@ router.route('/').post(async (req, res) => {
   try {
     // We create and save a new quiz answer
     const quizAnswer = new QuizAnswer({
-      answer: answer,
-      isAnswerCorrect: isAnswerCorrect,
-      simulationId: simulationId,
+      answer,
+      isAnswerCorrect,
+      simulationId,
     })
 
     await quizAnswer.save()
