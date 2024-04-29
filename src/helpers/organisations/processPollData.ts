@@ -66,11 +66,10 @@ export function processPollData({
 
     return {
       bilan: simulation.computedResults.bilan,
-      categories: { ...simulation.computedResults.categories },
-      defaultAdditionalQuestionsAnswers:
-        simulation.defaultAdditionalQuestionsAnswers
-          ? { ...simulation.defaultAdditionalQuestionsAnswers }
-          : {},
+      categories: { ...(simulation.computedResults.categories ?? {}) },
+      defaultAdditionalQuestionsAnswers: {
+        ...(simulation.defaultAdditionalQuestionsAnswers ?? {}),
+      },
       progression: simulation.progression,
       isCurrentUser:
         (simulation.user as unknown as UserType)?.userId === userId,

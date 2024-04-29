@@ -56,7 +56,7 @@ if (config.env === 'development') {
   require('dotenv').config()
 }
 
-export const app = express()
+const app = express()
 
 app.use(express.json())
 
