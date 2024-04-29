@@ -15,11 +15,13 @@ const sendSimulationEmail_1 = require("../../helpers/email/sendSimulationEmail")
 const createOrUpdateContact_1 = require("../../helpers/email/createOrUpdateContact");
 const router = express_1.default.Router();
 router.route('/').post(async (req, res) => {
+    console.log('TOTO');
     const simulation = req.body.simulation;
     const name = req.body.name;
     const email = req.body.email;
     const userId = req.body.userId;
     const shouldSendSimulationEmail = req.body.shouldSendSimulationEmail;
+    const listIds = req.body.listIds;
     // We need the origin to send the group email (if applicable) with the correct links
     const origin = req.get('origin') ?? 'https://nosgestesclimat.fr';
     // If no simulation is provided, we return an error
@@ -34,6 +36,7 @@ router.route('/').post(async (req, res) => {
     });
     // If there is no user found or created, we return an error
     if (!userDocument) {
+        console.log('NO USER FOUND');
         return res
             .status(500)
             .send('Error while creating or searching for the user.');
@@ -43,6 +46,7 @@ router.route('/').post(async (req, res) => {
             email,
             userId,
             simulation,
+            listIds: listIds ?? undefined,
         });
         // We check if a poll is associated with the simulation
         const polls = await (0, findPollsBySlug_1.findPollsBySlug)(simulation.polls);
