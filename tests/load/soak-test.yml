@@ -5,7 +5,7 @@ config:
     - duration: 3600
       arrivalRate: 4 # environ 15 000 utilisateurs en fin de phase
       name: 'Soaking'
-  processor: './scripts/generate-mock-data.js'
+  processor: './scripts/generate-mock-data.mjs'
 scenarios:
   - beforeRequest: 'generateSignupData'
     name: 'Soak test'

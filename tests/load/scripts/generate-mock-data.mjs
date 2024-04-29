@@ -1,4 +1,4 @@
-const { faker } = require('@faker-js/faker')
+import { faker } from '@faker-js/faker'
 
 const DEFAULT_SIMULATION_OBJECT = {
   situation: {
@@ -239,7 +239,7 @@ function generateComputedResults() {
   return computedResults
 }
 
-async function generateSignupData(requestParams, ctx, next) {
+export async function generateSignupData(requestParams, ctx, next) {
   ctx.vars.simulationId = faker.string.uuid()
   ctx.vars.date = faker.date.recent()
   ctx.vars.userId = faker.string.uuid()
@@ -257,8 +257,4 @@ async function generateSignupData(requestParams, ctx, next) {
     process.env.NODE_ENV === 'production'
       ? 'entreprise-test'
       : 'la-vie-claire-paris-13-glaciere'
-}
-
-module.exports = {
-  generateSignupData,
 }

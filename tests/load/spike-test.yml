@@ -4,7 +4,7 @@ config:
     - duration: 30
       arrivalRate: 500 # 15 000 utilisateurs en fin de phase
       name: 'Spiking'
-  processor: './scripts/generate-mock-data.js'
+  processor: './scripts/generate-mock-data.mjs'
 scenarios:
   - beforeRequest: 'generateSignupData'
     name: 'Spike test'
