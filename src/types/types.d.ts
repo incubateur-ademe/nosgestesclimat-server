@@ -19,3 +19,7 @@ export type Attributes = {
   [ATTRIBUTE_PRENOM]?: string
   [ATTRIBUTE_OPT_IN]?: boolean
 } & Record<string, string | boolean | number>
+
+export type Situation = {
+  [key: string]: string | number
+}
