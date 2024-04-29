@@ -11,6 +11,6 @@ export async function getContactLists(email: string) {
 
     return contactData.listIds
   } catch (error) {
-    return error
+    return []
   }
 }

@@ -20,6 +20,7 @@ router.route('/').post(async (req, res) => {
     const email = req.body.email;
     const userId = req.body.userId;
     const shouldSendSimulationEmail = req.body.shouldSendSimulationEmail;
+    const listIds = req.body.listIds;
     // We need the origin to send the group email (if applicable) with the correct links
     const origin = req.get('origin') ?? 'https://nosgestesclimat.fr';
     // If no simulation is provided, we return an error
@@ -43,6 +44,7 @@ router.route('/').post(async (req, res) => {
             email,
             userId,
             simulation,
+            listIds: listIds ?? undefined,
         });
         // We check if a poll is associated with the simulation
         const polls = await (0, findPollsBySlug_1.findPollsBySlug)(simulation.polls);
