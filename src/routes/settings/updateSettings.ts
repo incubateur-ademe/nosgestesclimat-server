@@ -25,7 +25,14 @@ router.route('/').post(async (req, res) => {
 
   try {
     if (newsletterIds) {
-      const currentListIds = await getContactLists(email)
+      let currentListIds
+
+      try {
+        currentListIds = await getContactLists(email)
+      } catch (e) {
+        // The contact does not exist in Brevo
+        currentListIds = []
+      }
 
       const listsAdded: number[] = []
       const listsRemoved: number[] = []
