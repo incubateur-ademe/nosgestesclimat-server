@@ -44,18 +44,23 @@ router.route('/').post(async (req, res) => {
         }
       })
 
-      if (listsAdded.length > 0) {
-        for (let listId of listsAdded) {
-          await axios.post(
-            `https://api.brevo.com/v3/contacts/lists/${listId}/contacts/add`,
-            {
-              emails: [email],
-            },
-            axiosConf
-          )
-        }
+      const updates: Record<string, string | number[]> = {}
+
+      if (name) updates.name = name
+
+      if (listsAdded.length > 0) updates.listIds = listsAdded
+
+      // Update Brevo contact
+      if (name || listsAdded.length > 0) {
+        await createOrUpdateContact({ email, ...updates })
       }
 
+      // Update DB User document
+      if (name) {
+        await createOrUpdateUser({ userId, email, name })
+      }
+
+      // We need to use a specific endpoint to remove contacts from lists
       if (listsRemoved.length > 0) {
         for (let listId of listsRemoved) {
           await axios.post(
@@ -67,12 +72,6 @@ router.route('/').post(async (req, res) => {
           )
         }
       }
-    }
-
-    if (name) {
-      await createOrUpdateContact({ email, name })
-
-      await createOrUpdateUser({ userId, email, name })
     }
 
     setSuccessfulJSONResponse(res)
