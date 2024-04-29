@@ -15,7 +15,6 @@ const sendSimulationEmail_1 = require("../../helpers/email/sendSimulationEmail")
 const createOrUpdateContact_1 = require("../../helpers/email/createOrUpdateContact");
 const router = express_1.default.Router();
 router.route('/').post(async (req, res) => {
-    console.log('TOTO');
     const simulation = req.body.simulation;
     const name = req.body.name;
     const email = req.body.email;
@@ -36,7 +35,6 @@ router.route('/').post(async (req, res) => {
     });
     // If there is no user found or created, we return an error
     if (!userDocument) {
-        console.log('NO USER FOUND');
         return res
             .status(500)
             .send('Error while creating or searching for the user.');
@@ -55,15 +53,17 @@ router.route('/').post(async (req, res) => {
         const simulationObject = {
             id: simulation.id,
             user: userDocument._id,
-            actionChoices: simulation.actionChoices,
-            date: simulation.date,
-            foldedSteps: simulation.foldedSteps,
-            situation: simulation.situation,
-            computedResults: simulation.computedResults,
+            actionChoices: { ...(simulation?.actionChoices ?? {}) },
+            date: new Date(simulation.date),
+            foldedSteps: { ...(simulation.foldedSteps ?? {}) },
+            situation: { ...(simulation.situation ?? {}) },
+            computedResults: { ...(simulation.computedResults ?? {}) },
             progression: simulation.progression,
             polls: polls?.map((poll) => poll._id),
-            groups: simulation.groups,
-            defaultAdditionalQuestionsAnswers: simulation.defaultAdditionalQuestionsAnswers,
+            groups: [...(simulation.groups ?? [])],
+            defaultAdditionalQuestionsAnswers: {
+                ...(simulation.defaultAdditionalQuestionsAnswers ?? {}),
+            },
         };
         // We create or update the simulation
         const simulationSaved = await (0, createOrUpdateSimulation_1.createOrUpdateSimulation)(simulationObject);

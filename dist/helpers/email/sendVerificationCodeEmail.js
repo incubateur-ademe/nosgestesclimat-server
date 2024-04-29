@@ -32,7 +32,6 @@ async function sendVerificationCodeEmail({ email, verificationCode, }) {
         }, axios_2.axiosConf);
     }
     catch (error) {
-        console.log(error);
         console.log('Error sending email: ');
     }
 }
