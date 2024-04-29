@@ -16,13 +16,18 @@ router
     .use(authentificationMiddleware_1.authentificationMiddleware)
     .post('/', async (req, res) => {
     const email = req.body.email;
+    const slug = req.body.slug;
     if (!email) {
         return res.status(403).json('No owner email provided.');
     }
     try {
         const organisationFound = await OrganisationSchema_1.Organisation.findOne({
             'administrators.email': email,
+            slug,
         }).populate('polls');
+        if (!organisationFound) {
+            return res.status(403).json('No organisation found.');
+        }
         (0, setSuccessfulResponse_1.setSuccessfulJSONResponse)(res);
         res.json(organisationFound);
     }
