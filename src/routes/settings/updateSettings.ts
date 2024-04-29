@@ -25,7 +25,7 @@ router.route('/').post(async (req, res) => {
 
   try {
     if (newsletterIds) {
-      let currentListIds
+      let currentListIds: number[]
 
       try {
         currentListIds = await getContactLists(email)
@@ -41,12 +41,12 @@ router.route('/').post(async (req, res) => {
         const keyAsNumber = parseInt(key)
 
         // List id should be added
-        if (shouldBeInList && !currentListIds.includes(keyAsNumber)) {
+        if (shouldBeInList && !currentListIds?.includes(keyAsNumber)) {
           listsAdded.push(keyAsNumber)
         }
 
         // List id should be removed
-        if (!shouldBeInList && currentListIds.includes(keyAsNumber)) {
+        if (!shouldBeInList && currentListIds?.includes(keyAsNumber)) {
           listsRemoved.push(keyAsNumber)
         }
       })
@@ -85,6 +85,7 @@ router.route('/').post(async (req, res) => {
 
     return res.send('Settings successfully updated.')
   } catch (error) {
+    console.log(error)
     return res.status(500).send('Error updating settings: ' + error)
   }
 })
