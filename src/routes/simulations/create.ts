@@ -65,7 +65,7 @@ router.route('/').post(async (req, res) => {
       user: userDocument._id,
       actionChoices: { ...(simulation?.actionChoices ?? {}) },
       date: new Date(simulation.date),
-      foldedSteps: { ...(simulation.foldedSteps ?? {}) },
+      foldedSteps: [...(simulation.foldedSteps ?? {})],
       situation: { ...(simulation.situation ?? {}) },
       computedResults: { ...(simulation.computedResults ?? {}) },
       progression: simulation.progression,
