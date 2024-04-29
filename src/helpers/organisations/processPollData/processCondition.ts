@@ -1,5 +1,5 @@
-import { Situation } from '../../../../types/types'
-import { formatDottedName } from '../../../../utils/formatDottedName'
+import { Situation } from '../../../types/types'
+import { formatDottedName } from '../../../utils/formatDottedName'
 
 export function processCondition({
   situation,
@@ -40,23 +40,20 @@ function checkCondition(condition: string, situation: Situation): Boolean {
 
   let operator = split_condition[1].replace(/\s/g, '')
 
+  let leftConditionValue = parseFloat(
+    situation[formatDottedName(split_condition[0])] as string
+  )
+
+  let rightConditionValue = parseFloat(split_condition[2])
+
   if (operator === '=') {
-    return (
-      parseFloat(situation[formatDottedName(split_condition[0])] as string) ===
-      parseFloat(split_condition[2])
-    )
+    return leftConditionValue === rightConditionValue
   }
   if (operator === '>') {
-    return (
-      parseFloat(situation[formatDottedName(split_condition[0])] as string) >
-      parseFloat(split_condition[2])
-    )
+    return leftConditionValue > rightConditionValue
   }
   if (operator === '<') {
-    return (
-      parseFloat(situation[formatDottedName(split_condition[0])] as string) <
-      parseFloat(split_condition[2])
-    )
+    return leftConditionValue < rightConditionValue
   }
   return false
 }

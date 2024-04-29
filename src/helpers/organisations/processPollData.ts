@@ -1,8 +1,8 @@
 import { UserType } from '../../schemas/UserSchema'
 import { SimulationType } from '../../schemas/SimulationSchema'
-import { getIsBicycleUser } from './processPollData/getIsBicycleUser'
-import { getIsVegetarian } from './processPollData/getIsVegetarien'
-import { getIsDriver } from "./processPollData/getIsDriver"
+import rules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
+import { DottedName } from '@incubateur-ademe/nosgestesclimat'
+import { processCondition } from './processPollData/processCondition'
 
 type SimulationRecap = {
   bilan: number
@@ -17,15 +17,23 @@ type SimulationRecap = {
 }
 
 type Result = {
-  funFacts: {
-    percentageOfBicycleUsers: number
-    percentageOfVegetarians: number
-    percentageOfCarOwners: number
-  }
+  funFacts: FunFacts
   simulationRecaps: SimulationRecap[]
 }
 
+type FunFacts = {
+  percentageOfBicycleUsers: number
+  percentageOfVegetarians: number
+  percentageOfCarOwners: number
+  percentageOfPlaneUsers: number
+}
 
+const funFactsRules: { [k in keyof FunFacts]: DottedName } = {
+  percentageOfBicycleUsers: 'ui . organisations . roule en vélo',
+  percentageOfVegetarians: 'ui . organisations . est végétarien',
+  percentageOfCarOwners: 'ui . organisations . roule en voiture',
+  percentageOfPlaneUsers: "ui . organisations . prend l'avion",
+}
 
 export function processPollData({
   simulations,
@@ -34,37 +42,34 @@ export function processPollData({
   simulations: SimulationType[]
   userId: string
 }): Result {
+  let computedFunFacts: FunFacts = {
+    percentageOfBicycleUsers: 0,
+    percentageOfVegetarians: 0,
+    percentageOfCarOwners: 0,
+    percentageOfPlaneUsers: 0,
+  }
+
   if (!simulations.length) {
     return {
-      funFacts: {
-        percentageOfBicycleUsers: 0,
-        percentageOfVegetarians: 0,
-        percentageOfCarOwners: 0,
-      },
+      funFacts: computedFunFacts,
       simulationRecaps: [],
     }
   }
-  // Condition: "oui" to transport.mobilité_douce.vélo ou transport.mobilité_douce.vae
-  let numberOfBicycleUsers = 0
-  // Condition: has only vegeterian and vegan meals
-  let numberOfVegetarians = 0
-  // Condition: "oui" to transport.voiture.propriétaire
-  let numberOfCarOwners = 0
 
   // Pour chaque simulation du sondage
   const simulationRecaps = simulations.map((simulation) => {
-    // We get the value for each fun fact
-    if (getIsBicycleUser({ situation: simulation.situation })) {
-      numberOfBicycleUsers += 1
-    }
+    Object.entries(funFactsRules).forEach(([key, dottedName]) => {
+      if (!Object.keys(rules).includes(dottedName)) {
+        throw new Error(`${dottedName} not found in rules`)
+      }
 
-    if (getIsVegetarian({ situation: simulation.situation })) {
-      numberOfVegetarians += 1
-    }
+      let conditionResult = processCondition({
+        situation: simulation.situation,
+        rule: rules[dottedName],
+      })
 
-    if (getIsDriver({ situation: simulation.situation })) {
-      numberOfCarOwners += 1
-    }
+      computedFunFacts[key as keyof FunFacts] += conditionResult
+    })
 
     return {
       bilan: simulation.computedResults.bilan,
@@ -79,12 +84,18 @@ export function processPollData({
   })
 
   return {
-    funFacts: {
-      percentageOfBicycleUsers:
-        (numberOfBicycleUsers / simulations.length) * 100,
-      percentageOfVegetarians: (numberOfVegetarians / simulations.length) * 100,
-      percentageOfCarOwners: (numberOfCarOwners / simulations.length) * 100,
-    },
+    funFacts: getFunFactsPercentages(simulations.length, computedFunFacts),
     simulationRecaps,
   }
+}
+
+function getFunFactsPercentages(
+  simulationsLength: number,
+  computedFunFacts: FunFacts
+): FunFacts {
+  return Object.fromEntries(
+    Object.entries(computedFunFacts).map(([key, value]) => {
+      return [key, (value / simulationsLength) * 100]
+    })
+  ) as FunFacts
 }
