@@ -25,17 +25,24 @@ router.route('/').post(async (req, res) => {
     }
     try {
         if (newsletterIds) {
-            const currentListIds = await (0, getContactLists_1.getContactLists)(email);
+            let currentListIds;
+            try {
+                currentListIds = await (0, getContactLists_1.getContactLists)(email);
+            }
+            catch (e) {
+                // The contact does not exist in Brevo
+                currentListIds = [];
+            }
             const listsAdded = [];
             const listsRemoved = [];
             Object.entries(newsletterIds).forEach(([key, shouldBeInList]) => {
                 const keyAsNumber = parseInt(key);
                 // List id should be added
-                if (shouldBeInList && !currentListIds.includes(keyAsNumber)) {
+                if (shouldBeInList && !currentListIds?.includes(keyAsNumber)) {
                     listsAdded.push(keyAsNumber);
                 }
                 // List id should be removed
-                if (!shouldBeInList && currentListIds.includes(keyAsNumber)) {
+                if (!shouldBeInList && currentListIds?.includes(keyAsNumber)) {
                     listsRemoved.push(keyAsNumber);
                 }
             });

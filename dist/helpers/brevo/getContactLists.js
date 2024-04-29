@@ -13,7 +13,7 @@ async function getContactLists(email) {
         return contactData.listIds;
     }
     catch (error) {
-        return error;
+        return [];
     }
 }
 exports.getContactLists = getContactLists;
