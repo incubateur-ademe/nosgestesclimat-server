@@ -17,6 +17,15 @@ export function processCondition({
     return situation[formatDottedName(rule.formule.moyenne[0])] ?? 0
   }
 
+  if (rule?.formule?.somme) {
+    return rule.formule.somme.reduce((acc: number, dottedName: DottedName) => {
+      let itemValue = parseFloat(
+        situation[formatDottedName(dottedName)] as string
+      )
+      return acc + (!isNaN(itemValue) ? itemValue : 0)
+    }, 0)
+  }
+
   if (rule?.formule?.['une de ces conditions']) {
     return rule.formule['une de ces conditions'].some((condition: string) =>
       checkCondition(condition, situation)
