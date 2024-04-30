@@ -1,12 +1,13 @@
 import { Situation } from '../../../types/types'
 import { formatDottedName } from '../../../utils/formatDottedName'
+import { DottedName, NGCRule } from '@incubateur-ademe/nosgestesclimat'
 
 export function processCondition({
   situation,
   rule,
 }: {
   situation: Situation
-  rule: any
+  rule: NGCRule
 }): Boolean | number | string {
   if (!situation) {
     return false

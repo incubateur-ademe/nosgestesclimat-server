@@ -1,4 +1,4 @@
-import { DottedName } from '@incubateur-ademe/nosgestesclimat'
+import { DottedName, NGCRules } from '@incubateur-ademe/nosgestesclimat'
 import { SimulationType } from '../../../schemas/SimulationSchema'
 import { FunFacts } from '../processPollData'
 import { formatDottedName } from '../../../utils/formatDottedName'
@@ -12,7 +12,7 @@ export function processFunFactsValues({
   simulations: SimulationType[]
   computedFunFacts: FunFacts
   funFactsRules: { [k in keyof FunFacts]: DottedName }
-  rules: any
+  rules: NGCRules
 }): FunFacts {
   return Object.fromEntries(
     Object.entries(computedFunFacts).map(([key, value]) => {

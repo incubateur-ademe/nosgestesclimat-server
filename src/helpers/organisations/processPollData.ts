@@ -1,9 +1,12 @@
 import { UserType } from '../../schemas/UserSchema'
 import { SimulationType } from '../../schemas/SimulationSchema'
-import rules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
-import { DottedName } from '@incubateur-ademe/nosgestesclimat'
+import importedRules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
+import { DottedName, NGCRules } from '@incubateur-ademe/nosgestesclimat'
 import { processCondition } from './processPollData/processCondition'
 import { processFunFactsValues } from './processPollData/processFunFactsValues'
+
+// This is shit but a hack from our lead dev
+const rules = importedRules as unknown as NGCRules
 
 type SimulationRecap = {
   bilan: number
