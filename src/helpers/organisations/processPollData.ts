@@ -133,13 +133,14 @@ export function processPollData({
 
     return {
       bilan: simulation.computedResults.bilan,
-      categories: simulation.computedResults.categories,
-      defaultAdditionalQuestionsAnswers:
-        simulation.defaultAdditionalQuestionsAnswers ?? {},
+      categories: { ...(simulation.computedResults.categories ?? {}) },
+      defaultAdditionalQuestionsAnswers: {
+        ...(simulation.defaultAdditionalQuestionsAnswers ?? {}),
+      },
       progression: simulation.progression,
       isCurrentUser:
         (simulation.user as unknown as UserType)?.userId === userId,
-      date: simulation.modifiedAt,
+      date: simulation.modifiedAt ? new Date(simulation.modifiedAt) : undefined,
     }
   })
 
