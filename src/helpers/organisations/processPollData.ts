@@ -3,6 +3,7 @@ import { SimulationType } from '../../schemas/SimulationSchema'
 import rules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
 import { DottedName } from '@incubateur-ademe/nosgestesclimat'
 import { processCondition } from './processPollData/processCondition'
+import { processFunFactsValues } from './processPollData/processFunFactsValues'
 
 type SimulationRecap = {
   bilan: number
@@ -21,11 +22,26 @@ type Result = {
   simulationRecaps: SimulationRecap[]
 }
 
-type FunFacts = {
+export type FunFacts = {
   percentageOfBicycleUsers: number
   percentageOfVegetarians: number
   percentageOfCarOwners: number
   percentageOfPlaneUsers: number
+  percentageOfLongPlaneUsers: number
+  averageOfCarKilometers: number
+  averageOfTravelers: number
+  percentageOfElectricHeating: number
+  percentageOfGasHeating: number
+  percentageOfFuelHeating: number
+  percentageOfWoodHeating: number
+  averageOfElectricityConsumption: number
+  percentageOfCoolingSystem: number
+  percentageOfVegan: number
+  percentageOfRedMeat: number
+  percentageOfLocalAndSeasonal: number
+  percentageOfBottledWater: number
+  percentageOfZeroWaste: number
+  percentageOfStreaming: number
 }
 
 const funFactsRules: { [k in keyof FunFacts]: DottedName } = {
@@ -33,6 +49,23 @@ const funFactsRules: { [k in keyof FunFacts]: DottedName } = {
   percentageOfVegetarians: 'ui . organisations . est végétarien',
   percentageOfCarOwners: 'ui . organisations . roule en voiture',
   percentageOfPlaneUsers: "ui . organisations . prend l'avion",
+  percentageOfLongPlaneUsers:
+    "ui . organisations . prend l'avion long courrier",
+  averageOfCarKilometers: 'ui . organisations . km',
+  averageOfTravelers: 'ui . organisations . voyageurs',
+  percentageOfElectricHeating: 'ui . organisations . chauffage électricité',
+  percentageOfGasHeating: 'ui . organisations . chauffage gaz',
+  percentageOfFuelHeating: 'ui . organisations . chauffage fioul',
+  percentageOfWoodHeating: 'ui . organisations . chauffage bois',
+  averageOfElectricityConsumption:
+    'ui . organisations . consommation électricité',
+  percentageOfCoolingSystem: 'ui . organisations . possède climatisation',
+  percentageOfVegan: 'ui . organisations . est végétalien',
+  percentageOfRedMeat: 'ui . organisations . fréquence viande rouge',
+  percentageOfLocalAndSeasonal: 'ui . organisations . local et de saison',
+  percentageOfBottledWater: 'ui . organisations . eau en bouteille',
+  percentageOfZeroWaste: 'ui . organisations . zéro déchet',
+  percentageOfStreaming: 'ui . organisations . internet',
 }
 
 export function processPollData({
@@ -47,6 +80,21 @@ export function processPollData({
     percentageOfVegetarians: 0,
     percentageOfCarOwners: 0,
     percentageOfPlaneUsers: 0,
+    percentageOfLongPlaneUsers: 0,
+    averageOfCarKilometers: 0,
+    averageOfTravelers: 0,
+    percentageOfElectricHeating: 0,
+    percentageOfGasHeating: 0,
+    percentageOfFuelHeating: 0,
+    percentageOfWoodHeating: 0,
+    averageOfElectricityConsumption: 0,
+    percentageOfCoolingSystem: 0,
+    percentageOfVegan: 0,
+    percentageOfRedMeat: 0,
+    percentageOfLocalAndSeasonal: 0,
+    percentageOfBottledWater: 0,
+    percentageOfZeroWaste: 0,
+    percentageOfStreaming: 0,
   }
 
   if (!simulations.length) {
@@ -68,7 +116,13 @@ export function processPollData({
         rule: rules[dottedName],
       })
 
-      computedFunFacts[key as keyof FunFacts] += conditionResult
+      if (typeof conditionResult === 'boolean' && conditionResult === true) {
+        computedFunFacts[key as keyof FunFacts] += 1
+      }
+
+      if (typeof conditionResult === 'number') {
+        computedFunFacts[key as keyof FunFacts] += conditionResult
+      }
     })
 
     return {
@@ -84,18 +138,12 @@ export function processPollData({
   })
 
   return {
-    funFacts: getFunFactsPercentages(simulations.length, computedFunFacts),
+    funFacts: processFunFactsValues({
+      simulations,
+      computedFunFacts,
+      funFactsRules,
+      rules,
+    }),
     simulationRecaps,
   }
-}
-
-function getFunFactsPercentages(
-  simulationsLength: number,
-  computedFunFacts: FunFacts
-): FunFacts {
-  return Object.fromEntries(
-    Object.entries(computedFunFacts).map(([key, value]) => {
-      return [key, (value / simulationsLength) * 100]
-    })
-  ) as FunFacts
 }

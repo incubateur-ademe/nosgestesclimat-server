@@ -7,9 +7,13 @@ export function processCondition({
 }: {
   situation: Situation
   rule: any
-}) {
+}): Boolean | number | string {
   if (!situation) {
     return false
+  }
+
+  if (rule?.formule?.moyenne) {
+    return situation[formatDottedName(rule.formule.moyenne[0])] ?? 0
   }
 
   if (rule?.formule?.['une de ces conditions']) {
@@ -34,18 +38,32 @@ function checkCondition(condition: string, situation: Situation): Boolean {
     return false
   }
 
+  if (!Object.keys(situation).includes(formatDottedName(split_condition[0]))) {
+    return false
+  }
+
   if (split_condition.length === 1) {
     return situation[formatDottedName(split_condition[0])] === 'oui'
   }
 
   let operator = split_condition[1].replace(/\s/g, '')
 
-  let leftConditionValue = parseFloat(
-    situation[formatDottedName(split_condition[0])] as string
-  )
+  const answerType = isNaN(parseFloat(split_condition[2])) ? 'string' : 'number'
 
-  let rightConditionValue = parseFloat(split_condition[2])
+  let leftConditionValue: string | number = ''
+  let rightConditionValue: string | number = ''
 
+  if (answerType === 'string') {
+    leftConditionValue = situation[formatDottedName(split_condition[0])]
+    rightConditionValue = split_condition[2]
+  }
+
+  if (answerType === 'number') {
+    leftConditionValue = parseFloat(
+      situation[formatDottedName(split_condition[0])] as string
+    )
+    rightConditionValue = parseFloat(split_condition[2])
+  }
   if (operator === '=') {
     return leftConditionValue === rightConditionValue
   }
