@@ -35,8 +35,13 @@ const create_2 = __importDefault(require("./routes/simulations/create"));
 const fetchSimulation_2 = __importDefault(require("./routes/simulations/fetchSimulation"));
 // Quiz routes
 const create_3 = __importDefault(require("./routes/quiz/create"));
+// Northstar routes
+const create_4 = __importDefault(require("./routes/northstar/create"));
 // Email route
 const sendEmail_1 = __importDefault(require("./routes/email/sendEmail"));
+// Settings route
+const updateSettings_1 = __importDefault(require("./routes/settings/updateSettings"));
+const getNewsletterSubscriptions_1 = __importDefault(require("./routes/settings/getNewsletterSubscriptions"));
 const cors_1 = __importDefault(require("cors"));
 const AnswerSchema_1 = __importDefault(require("./schemas/_legacy/AnswerSchema"));
 const initDatabase_1 = __importDefault(require("./scripts/initDatabase"));
@@ -101,8 +106,13 @@ app.use('/organisations/logout', logout_1.default);
 app.use('/organisations/verify-user-participation', verifyUserParticipation_1.default);
 // Quiz routes
 app.use('/quiz/answers/create', create_3.default);
+// Northstar routes
+app.use('/northstar/ratings/create', create_4.default);
 // Email route
 app.use('/send-email', sendEmail_1.default);
+// Settings route
+app.use('/update-settings', updateSettings_1.default);
+app.use('/get-newsletter-subscriptions', getNewsletterSubscriptions_1.default);
 // require the http module
 const http = require('http').Server(app);
 // require the socket.io module

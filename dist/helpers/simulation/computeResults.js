@@ -43,13 +43,13 @@ function computeResults(situation) {
     });
     engine.setSituation(safeSituation);
     return {
-        bilan: Number(engine.evaluate('bilan').nodeValue),
+        bilan: Number(engine.evaluate('bilan').nodeValue ?? 0),
         categories: {
-            transport: Number(engine.evaluate('transport').nodeValue),
-            alimentation: Number(engine.evaluate('alimentation').nodeValue),
-            logement: Number(engine.evaluate('logement').nodeValue),
-            divers: Number(engine.evaluate('divers').nodeValue),
-            'services sociétaux': Number(engine.evaluate('services sociétaux').nodeValue),
+            transport: Number(engine.evaluate('transport').nodeValue ?? 0),
+            alimentation: Number(engine.evaluate('alimentation').nodeValue ?? 0),
+            logement: Number(engine.evaluate('logement').nodeValue ?? 0),
+            divers: Number(engine.evaluate('divers').nodeValue ?? 0),
+            'services sociétaux': Number(engine.evaluate('services sociétaux').nodeValue ?? 0),
         },
     };
 }

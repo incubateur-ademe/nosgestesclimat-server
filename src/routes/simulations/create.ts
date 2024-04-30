@@ -22,6 +22,7 @@ router.route('/').post(async (req, res) => {
   const email = req.body.email
   const userId = req.body.userId
   const shouldSendSimulationEmail = req.body.shouldSendSimulationEmail
+  const listIds = req.body.listIds
 
   // We need the origin to send the group email (if applicable) with the correct links
   const origin = req.get('origin') ?? 'https://nosgestesclimat.fr'
@@ -50,6 +51,7 @@ router.route('/').post(async (req, res) => {
       email,
       userId,
       simulation,
+      listIds: listIds ?? undefined,
     })
 
     // We check if a poll is associated with the simulation
@@ -61,16 +63,17 @@ router.route('/').post(async (req, res) => {
     const simulationObject: SimulationType = {
       id: simulation.id,
       user: userDocument._id,
-      actionChoices: simulation.actionChoices,
-      date: simulation.date,
-      foldedSteps: simulation.foldedSteps,
-      situation: simulation.situation,
-      computedResults: simulation.computedResults,
+      actionChoices: { ...(simulation?.actionChoices ?? {}) },
+      date: new Date(simulation.date),
+      foldedSteps: [...(simulation.foldedSteps ?? {})],
+      situation: { ...(simulation.situation ?? {}) },
+      computedResults: { ...(simulation.computedResults ?? {}) },
       progression: simulation.progression,
       polls: polls?.map((poll) => poll._id),
-      groups: simulation.groups,
-      defaultAdditionalQuestionsAnswers:
-        simulation.defaultAdditionalQuestionsAnswers,
+      groups: [...(simulation.groups ?? [])],
+      defaultAdditionalQuestionsAnswers: {
+        ...(simulation.defaultAdditionalQuestionsAnswers ?? {}),
+      },
     }
 
     // We create or update the simulation
