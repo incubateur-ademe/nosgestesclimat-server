@@ -10,6 +10,7 @@ export type PollType = {
   name: string
   slug: string
   defaultAdditionalQuestions: string[]
+  customAdditionalQuestions?: Record<string, boolean>
   expectedNumberOfParticipants: number
   _id: string
 }
@@ -33,6 +34,7 @@ export const PollSchema = new Schema<PollType>(
     endDate: Date,
     defaultAdditionalQuestions: [String],
     expectedNumberOfParticipants: Number,
+    customAdditionalQuestions: Object,
   },
   {
     timestamps: true,
