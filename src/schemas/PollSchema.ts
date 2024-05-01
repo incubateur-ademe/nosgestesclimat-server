@@ -10,10 +10,15 @@ export type PollType = {
   name: string
   slug: string
   defaultAdditionalQuestions: string[]
-  customAdditionalQuestions?: Record<string, boolean>
+  customAdditionalQuestions?: Record<string, boolean>[]
   expectedNumberOfParticipants: number
   _id: string
 }
+
+const CustomAdditionalQuestionsSchema = new Schema({
+  question: String,
+  isEnabled: Boolean,
+})
 
 // Should this include a reference to the parent organisation?
 export const PollSchema = new Schema<PollType>(
@@ -34,7 +39,7 @@ export const PollSchema = new Schema<PollType>(
     endDate: Date,
     defaultAdditionalQuestions: [String],
     expectedNumberOfParticipants: Number,
-    customAdditionalQuestions: Object,
+    customAdditionalQuestions: [CustomAdditionalQuestionsSchema],
   },
   {
     timestamps: true,
