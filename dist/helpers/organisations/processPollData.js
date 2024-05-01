@@ -35,11 +35,13 @@ function processPollData({ simulations, userId, }) {
         }
         return {
             bilan: simulation.computedResults.bilan,
-            categories: simulation.computedResults.categories,
-            defaultAdditionalQuestionsAnswers: simulation.defaultAdditionalQuestionsAnswers ?? {},
+            categories: { ...(simulation.computedResults.categories ?? {}) },
+            defaultAdditionalQuestionsAnswers: {
+                ...(simulation.defaultAdditionalQuestionsAnswers ?? {}),
+            },
             progression: simulation.progression,
             isCurrentUser: simulation.user?.userId === userId,
-            date: simulation.modifiedAt,
+            date: simulation.modifiedAt ? new Date(simulation.modifiedAt) : undefined,
         };
     });
     return {

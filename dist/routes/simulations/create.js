@@ -53,15 +53,17 @@ router.route('/').post(async (req, res) => {
         const simulationObject = {
             id: simulation.id,
             user: userDocument._id,
-            actionChoices: simulation.actionChoices,
-            date: simulation.date,
-            foldedSteps: simulation.foldedSteps,
-            situation: simulation.situation,
-            computedResults: simulation.computedResults,
+            actionChoices: { ...(simulation?.actionChoices ?? {}) },
+            date: new Date(simulation.date),
+            foldedSteps: { ...(simulation.foldedSteps ?? {}) },
+            situation: { ...(simulation.situation ?? {}) },
+            computedResults: { ...(simulation.computedResults ?? {}) },
             progression: simulation.progression,
             polls: polls?.map((poll) => poll._id),
-            groups: simulation.groups,
-            defaultAdditionalQuestionsAnswers: simulation.defaultAdditionalQuestionsAnswers,
+            groups: [...(simulation.groups ?? [])],
+            defaultAdditionalQuestionsAnswers: {
+                ...(simulation.defaultAdditionalQuestionsAnswers ?? {}),
+            },
         };
         // We create or update the simulation
         const simulationSaved = await (0, createOrUpdateSimulation_1.createOrUpdateSimulation)(simulationObject);
