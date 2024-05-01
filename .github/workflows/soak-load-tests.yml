@@ -1,6 +1,7 @@
 name: Artillery Load Test
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
 
 jobs:
   artillery:
