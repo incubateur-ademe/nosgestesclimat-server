@@ -6,6 +6,8 @@ import { Poll } from '../../schemas/PollSchema'
 
 const router = express.Router()
 
+const MAX_NUMBER_QUESTIONS = 4
+
 router.route('/').post(async (req: Request, res: Response) => {
   try {
     const pollSlug = req.body.pollSlug
@@ -32,6 +34,10 @@ router.route('/').post(async (req: Request, res: Response) => {
       return res
         .status(403)
         .json('Error. Organisation not allowed to use custom questions.')
+    }
+
+    if (Object.keys(customAdditionalQuestions).length > MAX_NUMBER_QUESTIONS) {
+      return res.status(403).json('Error. Too many custom questions.')
     }
 
     await Poll.findOneAndUpdate(
