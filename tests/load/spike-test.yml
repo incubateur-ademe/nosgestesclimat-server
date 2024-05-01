@@ -2,11 +2,10 @@ config:
   target: 'https://server.preprod.nosgestesclimat.fr'
   phases:
     - duration: 30
-      arrivalRate: 500 # 15 000 utilisateurs en fin de phase
+      arrivalRate: 200
       name: 'Spiking'
-  timeouts:
-    response: 600
-    idle: 600
+  http:
+    timeout: 60
   processor: './scripts/generate-mock-data.mjs'
 scenarios:
   - beforeRequest: 'generateSignupData'
