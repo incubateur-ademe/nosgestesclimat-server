@@ -59,6 +59,7 @@ router.route('/').post(async (req, res) => {
 
     // We check if a group is associated with the simulation
     const groups = await findGroupsById(simulation.groups)
+    console.log(simulation.customAdditionalQuestionsAnswers)
 
     const simulationObject: SimulationType = {
       id: simulation.id,
@@ -73,6 +74,9 @@ router.route('/').post(async (req, res) => {
       groups: [...(simulation.groups ?? [])],
       defaultAdditionalQuestionsAnswers: {
         ...(simulation.defaultAdditionalQuestionsAnswers ?? {}),
+      },
+      customAdditionalQuestionsAnswers: {
+        ...(simulation.customAdditionalQuestionsAnswers ?? {}),
       },
     }
 

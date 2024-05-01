@@ -3,6 +3,11 @@ import { nanoid } from 'nanoid'
 
 const Schema = mongoose.Schema
 
+export type CustomAdditionalQuestionType = {
+  question: string
+  isEnabled: boolean
+}
+
 export type PollType = {
   simulations: RefType[]
   startDate: Date
@@ -10,12 +15,12 @@ export type PollType = {
   name: string
   slug: string
   defaultAdditionalQuestions: string[]
-  customAdditionalQuestions?: Record<string, boolean>[]
+  customAdditionalQuestions?: CustomAdditionalQuestionType[]
   expectedNumberOfParticipants: number
   _id: string
 }
 
-const CustomAdditionalQuestionsSchema = new Schema({
+const CustomAdditionalQuestionSchema = new Schema({
   question: String,
   isEnabled: Boolean,
 })
@@ -39,7 +44,7 @@ export const PollSchema = new Schema<PollType>(
     endDate: Date,
     defaultAdditionalQuestions: [String],
     expectedNumberOfParticipants: Number,
-    customAdditionalQuestions: [CustomAdditionalQuestionsSchema],
+    customAdditionalQuestions: [CustomAdditionalQuestionSchema],
   },
   {
     timestamps: true,
