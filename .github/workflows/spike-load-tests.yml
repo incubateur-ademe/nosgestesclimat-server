@@ -11,6 +11,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x # Spécifiez la version de Node.js souhaitée
+
+      - name: Install dependencies with Yarn
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install # Exécute `yarn install`
+
       - name: Execute spike load tests
         uses: artilleryio/action-cli@v1
         with:
