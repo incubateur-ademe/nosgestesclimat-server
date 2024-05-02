@@ -1,0 +1,30 @@
+config:
+  target: 'https://server.preprod.nosgestesclimat.fr'
+  phases:
+    - duration: 30
+      arrivalRate: 200
+      name: 'Spiking'
+  http:
+    timeout: 60
+  processor: './scripts/generate-mock-data.mjs'
+scenarios:
+  - beforeRequest: 'generateSignupData'
+    name: 'Spike test'
+    flow:
+      - post:
+          url: '/simulations/create'
+          json:
+            simulation:
+              id: '{{simulationId}}'
+              date: '2024-04-12T12:50:17.533Z'
+              situation: '{{situation}}'
+              computedResults: '{{computedResults}}'
+              foldedSteps: '{{foldedSteps}}'
+              actionChoices: '{{actionChoices}}'
+              polls: '{{polls}}'
+            userId: '{{userId}}'
+      - think: 2
+      - post:
+          url: '/organisations/fetch-poll-processed-data'
+          json: { orgaSlug: '{{orgaSlug}}', userId: '{{orgaAdminUserId}}' }
+      - think: 2

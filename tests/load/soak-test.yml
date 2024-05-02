@@ -1,0 +1,32 @@
+config:
+  plugins:
+  target: 'https://server.preprod.nosgestesclimat.fr'
+  phases:
+    - duration: 3600
+      arrivalRate: 4 # environ 15 000 utilisateurs en fin de phase
+      name: 'Soaking'
+  processor: './scripts/generate-mock-data.mjs'
+scenarios:
+  - beforeRequest: 'generateSignupData'
+    name: 'Soak test'
+    flow:
+      - post:
+          url: '/simulations/create'
+          json:
+            simulation:
+              id: '{{simulationId}}'
+              date: '2024-04-12T12:50:17.533Z'
+              situation: '{{situation}}'
+              computedResults: '{{computedResults}}'
+              foldedSteps: '{{foldedSteps}}'
+              actionChoices: '{{actionChoices}}'
+              polls: '{{polls}}'
+            userId: '{{userId}}'
+          expect:
+            - statusCode: 200
+      - think: 1
+      - post:
+          url: '/organisations/fetch-poll-processed-data'
+          json: { orgaSlug: '{{orgaSlug}}', userId: '{{orgaAdminUserId}}' }
+          expect:
+            - statusCode: 200
