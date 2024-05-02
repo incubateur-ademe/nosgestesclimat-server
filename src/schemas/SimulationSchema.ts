@@ -84,6 +84,7 @@ export const SimulationSchema = new Schema<SimulationType>(
       postalCode: String,
       birthdate: String,
     },
+    customAdditionalQuestionsAnswers: Object,
   },
   {
     timestamps: true,
