@@ -649,10 +649,10 @@
   resolved "https://registry.yarnpkg.com/@humanwhocodes/object-schema/-/object-schema-2.0.3.tgz#4a2868d75d6d6963e423bcf90b7fd1be343409d3"
   integrity sha512-93zYdMES/c1D69yZiKDBj0V24vqNzB/koF26KPaagAfd3P/4gUlh3Dys5ogAK+Exi9QyzlD8x/08Zt7wIKcDcA==
 
-"@incubateur-ademe/nosgestesclimat@2.4.0-rc.1":
-  version "2.4.0-rc.1"
-  resolved "https://registry.yarnpkg.com/@incubateur-ademe/nosgestesclimat/-/nosgestesclimat-2.4.0-rc.1.tgz#c829adcf05bf028a228325a3c005dfb4bd0d08aa"
-  integrity sha512-pQj370pxlI+CWo0kFTsJ3YywO57tEx2rJUlxM49zQrDNB6++pqAuHuDTuzf1SgKo9TGqNtszf0A8tTyEXMscAg==
+"@incubateur-ademe/nosgestesclimat@2.4.0-rc.2":
+  version "2.4.0-rc.2"
+  resolved "https://registry.yarnpkg.com/@incubateur-ademe/nosgestesclimat/-/nosgestesclimat-2.4.0-rc.2.tgz#874f453df8708a26293667e13770bf861fafca00"
+  integrity sha512-moIx0uQvc6Jk6+F0zuaLG/vccuvtQeP2V58JSHLaAcVAkHCk6y4D3blMxl2TddC8cdKc7vdFJ8Ut1CJhAkdmrg==
 
 "@jridgewell/resolve-uri@^3.0.3":
   version "3.1.2"

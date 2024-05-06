@@ -1,12 +1,19 @@
 import { UserType } from '../../schemas/UserSchema'
 import { SimulationType } from '../../schemas/SimulationSchema'
 import importedRules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
-import { DottedName, NGCRules } from '@incubateur-ademe/nosgestesclimat'
+import importedFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRules.json'
+import {
+  DottedName,
+  NGCRules,
+  FunFacts,
+} from '@incubateur-ademe/nosgestesclimat'
 import { processCondition } from './processPollData/processCondition'
 import { processFunFactsValues } from './processPollData/processFunFactsValues'
 
 // This is shit but a hack from our lead dev
 const rules = importedRules as unknown as NGCRules
+
+const funFactsRules = importedFunFacts as { [k in keyof FunFacts]: DottedName }
 
 type SimulationRecap = {
   bilan: number
@@ -25,59 +32,6 @@ type Result = {
   simulationRecaps: SimulationRecap[]
 }
 
-export type FunFacts = {
-  percentageOfBicycleUsers: number
-  percentageOfVegetarians: number
-  percentageOfCarOwners: number
-  percentageOfPlaneUsers: number
-  percentageOfLongPlaneUsers: number
-  averageOfCarKilometers: number
-  averageOfTravelers: number
-  percentageOfElectricHeating: number
-  percentageOfGasHeating: number
-  percentageOfFuelHeating: number
-  percentageOfWoodHeating: number
-  averageOfElectricityConsumption: number
-  percentageOfCoolingSystem: number
-  percentageOfVegan: number
-  percentageOfRedMeat: number
-  percentageOfLocalAndSeasonal: number
-  percentageOfBottledWater: number
-  percentageOfZeroWaste: number
-  amountOfClothing: number
-  percentageOfStreaming: number
-}
-
-const funFactsRules: { [k in keyof FunFacts]: DottedName } = {
-  percentageOfBicycleUsers: 'ui . organisations . transport . roule en vélo',
-  percentageOfVegetarians: 'ui . organisations . alimentation . est végétarien',
-  percentageOfCarOwners: 'ui . organisations . transport . roule en voiture',
-  percentageOfPlaneUsers: "ui . organisations . transport . prend l'avion",
-  percentageOfLongPlaneUsers:
-    "ui . organisations . transport . prend l'avion long courrier",
-  averageOfCarKilometers: 'ui . organisations . transport . km en voiture',
-  averageOfTravelers: 'ui . organisations . transport . voyageurs en voiture',
-  percentageOfElectricHeating:
-    'ui . organisations . logement . chauffage électricité',
-  percentageOfGasHeating: 'ui . organisations . logement . chauffage gaz',
-  percentageOfFuelHeating: 'ui . organisations . logement . chauffage fioul',
-  percentageOfWoodHeating: 'ui . organisations . logement . chauffage bois',
-  averageOfElectricityConsumption:
-    'ui . organisations . logement . consommation électricité',
-  percentageOfCoolingSystem:
-    'ui . organisations . logement . possède climatisation',
-  percentageOfVegan: 'ui . organisations . alimentation . est végétalien',
-  percentageOfRedMeat:
-    'ui . organisations . alimentation . fréquence viande rouge',
-  percentageOfLocalAndSeasonal:
-    'ui . organisations . alimentation . local et de saison',
-  percentageOfBottledWater:
-    'ui . organisations . alimentation . eau en bouteille',
-  percentageOfZeroWaste: 'ui . organisations . alimentation . zéro déchet',
-  amountOfClothing: 'ui . organisations . divers . textile',
-  percentageOfStreaming: 'ui . organisations . divers . internet',
-}
-
 export function processPollData({
   simulations,
   userId,
@@ -85,6 +39,7 @@ export function processPollData({
   simulations: SimulationType[]
   userId: string
 }): Result {
+  // Is there a way to generate it dynamically ?
   let computedFunFacts: FunFacts = {
     percentageOfBicycleUsers: 0,
     percentageOfVegetarians: 0,

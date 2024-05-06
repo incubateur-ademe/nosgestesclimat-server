@@ -1,6 +1,9 @@
-import { DottedName, NGCRules } from '@incubateur-ademe/nosgestesclimat'
+import {
+  DottedName,
+  NGCRules,
+  FunFacts,
+} from '@incubateur-ademe/nosgestesclimat'
 import { SimulationType } from '../../../schemas/SimulationSchema'
-import { FunFacts } from '../processPollData'
 import { formatDottedName } from '../../../utils/formatDottedName'
 
 export function processFunFactsValues({
