@@ -54,8 +54,8 @@ export const safeGetSituation = ({
   return filteredSituation
 }
 
-export function computeResults(situation: Situation) {
-  const engine = new Engine(rules as unknown as NGCRules)
+export function computeResults(situation: Situation, initiatedEngine?: Engine) {
+  const engine = initiatedEngine || new Engine(rules as unknown as NGCRules)
 
   const safeSituation = safeGetSituation({
     situation,

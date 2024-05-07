@@ -4,6 +4,7 @@ exports.updateGroupWithComputedResults = void 0;
 const GroupSchema_1 = require("../../schemas/GroupSchema");
 const SimulationSchema_1 = require("../../schemas/SimulationSchema");
 const computeResults_1 = require("../simulation/computeResults");
+const unformatSituation_1 = require("../../utils/unformatSituation");
 async function updateGroupWithComputedResults(group) {
     // Do not update the simulations if they already have computed results
     const participantsWithIncompleteResults = group?.participants?.filter((participant) => participant.simulation?.computedResults
@@ -19,7 +20,8 @@ async function updateGroupWithComputedResults(group) {
             if (!simulationFound) {
                 continue;
             }
-            simulationFound.computedResults = (0, computeResults_1.computeResults)(simulationFound?.situation);
+            const formatedSituation = (0, unformatSituation_1.unformatSituation)(simulationFound?.situation);
+            simulationFound.computedResults = (0, computeResults_1.computeResults)(formatedSituation);
             await simulationFound.save();
         }
     }

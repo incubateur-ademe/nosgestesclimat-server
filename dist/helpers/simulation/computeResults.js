@@ -35,8 +35,8 @@ const safeGetSituation = ({ situation, everyRules, }) => {
     return filteredSituation;
 };
 exports.safeGetSituation = safeGetSituation;
-function computeResults(situation) {
-    const engine = new publicodes_1.default(co2_model_FR_lang_fr_json_1.default);
+function computeResults(situation, initiatedEngine) {
+    const engine = initiatedEngine || new publicodes_1.default(co2_model_FR_lang_fr_json_1.default);
     const safeSituation = (0, exports.safeGetSituation)({
         situation,
         everyRules: Object.keys(co2_model_FR_lang_fr_json_1.default),
