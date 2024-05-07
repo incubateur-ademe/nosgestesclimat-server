@@ -77,7 +77,7 @@ export function processPollData({
         throw new Error(`${dottedName} not found in rules`)
       }
 
-      let conditionResult = processCondition({
+      const conditionResult = processCondition({
         situation: simulation.situation,
         rule: rules[dottedName],
       })
