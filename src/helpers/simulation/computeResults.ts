@@ -1,6 +1,5 @@
 import rules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
 import Engine from 'publicodes'
-import { SimulationType } from '../../schemas/SimulationSchema'
 import { NGCRules } from '@incubateur-ademe/nosgestesclimat'
 import { Situation } from '../../types/types'
 
@@ -29,7 +28,7 @@ export const safeGetSituation = ({
         situation[ruleName] !== 'oui' &&
         situation[ruleName] !== 'non' &&
         !everyRules.includes(
-          `${ruleName} . ${(situation[ruleName] as string)?.replace(
+          `${ruleName} . ${(situation[ruleName] as string)?.replaceAll(
             /^'|'$/g,
             ''
           )}`
