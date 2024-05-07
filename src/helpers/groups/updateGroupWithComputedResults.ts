@@ -2,7 +2,7 @@ import { Document } from 'mongoose'
 import { Group, GroupType } from '../../schemas/GroupSchema'
 import { Simulation, SimulationType } from '../../schemas/SimulationSchema'
 import { computeResults } from '../simulation/computeResults'
-
+import { unformatSituation } from '../../utils/unformatSituation'
 export async function updateGroupWithComputedResults(group: GroupType) {
   // Do not update the simulations if they already have computed results
 
@@ -28,9 +28,11 @@ export async function updateGroupWithComputedResults(group: GroupType) {
         continue
       }
 
-      simulationFound.computedResults = computeResults(
-        (simulationFound as unknown as SimulationType)?.situation
+      const formatedSituation = unformatSituation(
+        (simulationFound as SimulationType)?.situation
       )
+
+      simulationFound.computedResults = computeResults(formatedSituation)
 
       await simulationFound.save()
     }
