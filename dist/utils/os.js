@@ -9,9 +9,7 @@ const ensureEnvVar_ = (envVar, transformerOrDefaultValue, defaultValue) => {
         : defaultValue;
     if (typeof envVar === 'undefined' &&
         typeof defaultValueToTest === 'undefined') {
-        throw new Error(`Some env var are not found.`, {
-            cause: { envVar, transformerOrDefaultValue, defaultValue },
-        });
+        throw new Error(`Some env var are not found.`);
     }
     if (typeof envVar === 'undefined' && typeof defaultValue !== 'undefined')
         return defaultValue;
