@@ -35,7 +35,6 @@ router.route('/').post(async (req, res) => {
     });
     // If there is no user found or created, we return an error
     if (!userDocument) {
-        console.log('NO USER FOUND');
         return res
             .status(500)
             .send('Error while creating or searching for the user.');
@@ -98,7 +97,6 @@ router.route('/').post(async (req, res) => {
         console.log(`Simulation created: ${simulationSaved._id}`);
     }
     catch (error) {
-        console.error(error);
         return res.status(401).send('Error while creating simulation.');
     }
 });

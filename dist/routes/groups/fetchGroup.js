@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const GroupSchema_1 = require("../../schemas/GroupSchema");
 const setSuccessfulResponse_1 = require("../../utils/setSuccessfulResponse");
-const updateGroupWithComputedResults_1 = require("../../helpers/groups/updateGroupWithComputedResults");
 const router = express_1.default.Router();
 /**
  * Fetch a group
@@ -28,11 +27,8 @@ router.route('/').post(async (req, res) => {
         if (!group) {
             return res.status(404).send('Error. Group not found.');
         }
-        // Nécessaire suite à la refonte serveur de février 2024
-        // TODO : à supprimer d'ici quelques mois
-        const groupUpdated = await (0, updateGroupWithComputedResults_1.updateGroupWithComputedResults)(group);
         (0, setSuccessfulResponse_1.setSuccessfulJSONResponse)(res);
-        res.json(groupUpdated);
+        res.json(group);
         console.log(`Group fetched: ${groupId}`);
     }
     catch (error) {
