@@ -65,9 +65,11 @@ function checkCondition(condition: string, situation: Situation): Boolean {
 
   // If the condition is a dottedName, an operator and a value, we want to check condition between the value in the situation and the value in the condition.
   if (split_condition.length === 3) {
-    checkConditionWithOperator(
-      split_condition as [string, string, string],
-      situation
+    return (
+      checkConditionWithOperator(
+        split_condition as [string, string, string],
+        situation
+      ) ?? false
     )
   }
   return false
