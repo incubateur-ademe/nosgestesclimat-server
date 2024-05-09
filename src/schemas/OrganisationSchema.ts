@@ -22,6 +22,7 @@ export type OrganisationType = {
   polls: PollType[]
   name: string
   slug: string
+  organisationType: string
 }
 
 const AdministratorSchema = new Schema<Administrator>(
@@ -50,6 +51,7 @@ export const OrganisationSchema = new Schema<OrganisationType>(
     ],
     name: String,
     slug: String,
+    organisationType: String,
   },
   {
     timestamps: true,

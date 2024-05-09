@@ -59,6 +59,8 @@ router.post('/', async (req: Request, res: Response) => {
       organisationName: organisationFound?.name,
       defaultAdditionalQuestions:
         organisationFound?.polls[0]?.defaultAdditionalQuestions,
+      customAdditionalQuestions:
+        organisationFound?.polls[0]?.customAdditionalQuestions,
       isAdmin: organisationFound?.administrators.some(
         (admin) => admin?.userId === userId
       ),

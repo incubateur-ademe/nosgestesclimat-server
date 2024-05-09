@@ -101,6 +101,8 @@ export function processPollData({
       isCurrentUser:
         (simulation.user as unknown as UserType)?.userId === userId,
       date: simulation.modifiedAt ? new Date(simulation.modifiedAt) : undefined,
+      customAdditionalQuestionsAnswers:
+        simulation.customAdditionalQuestionsAnswers ?? [],
     }
   })
 

@@ -74,6 +74,9 @@ router.route('/').post(async (req, res) => {
       defaultAdditionalQuestionsAnswers: {
         ...(simulation.defaultAdditionalQuestionsAnswers ?? {}),
       },
+      customAdditionalQuestionsAnswers: {
+        ...(simulation.customAdditionalQuestionsAnswers ?? {}),
+      },
     }
 
     // We create or update the simulation
