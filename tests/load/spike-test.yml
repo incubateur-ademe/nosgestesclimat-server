@@ -1,5 +1,5 @@
 config:
-  target: 'http://localhost:3001'
+  target: 'https://server.preprod.nosgestesclimat.fr'
   phases:
     - duration: 5
       arrivalRate: 1
@@ -30,3 +30,8 @@ scenarios:
               actionChoices: '{{actionChoices}}'
               polls: '{{polls}}'
             userId: '{{userId}}'
+      - think: 2
+      - post:
+          url: '/organisations/fetch-poll-processed-data'
+          json: { orgaSlug: '{{orgaSlug}}', userId: '{{orgaAdminUserId}}' }
+      - think: 2
