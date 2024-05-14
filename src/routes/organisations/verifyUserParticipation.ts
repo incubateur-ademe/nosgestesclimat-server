@@ -3,6 +3,7 @@ import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { findPopulatedPollBySlug } from '../../helpers/organisations/findPopulatedPollBySlug'
 import { SimulationType } from '../../schemas/SimulationSchema'
 import { Organisation } from '../../schemas/OrganisationSchema'
+import { unformatSimulation } from '../../helpers/simulation/unformatSimulation'
 
 const router = express.Router()
 
@@ -28,6 +29,15 @@ router.route('/').post(async (req: Request, res: Response) => {
     if (!poll) {
       return res.status(404).send('This poll does not exist')
     }
+
+    // Unformat simulations
+    const pollUnformatted = poll.toObject()
+
+    pollUnformatted.simulations = pollUnformatted.simulations.map(
+      (simulation) => {
+        return unformatSimulation(simulation as any)
+      }
+    ) as any
 
     const hasUserAlreadyParticipated = (
       poll.simulations as unknown as SimulationType[]

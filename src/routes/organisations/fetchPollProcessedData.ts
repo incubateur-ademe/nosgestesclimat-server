@@ -4,6 +4,7 @@ import { Organisation } from '../../schemas/OrganisationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { processPollData } from '../../helpers/organisations/processPollData'
 import { SimulationType } from '../../schemas/SimulationSchema'
+import { unformatSimulation } from '../../helpers/simulation/unformatSimulation'
 
 const router = express.Router()
 
@@ -47,8 +48,9 @@ router.post('/', async (req: Request, res: Response) => {
       */
 
     const pollData = processPollData({
-      simulations: organisationFound?.polls[0]
-        ?.simulations as unknown as SimulationType[],
+      simulations: (
+        organisationFound?.polls[0]?.simulations as unknown as SimulationType[]
+      ).map((simulation) => unformatSimulation(simulation)),
       userId: userId ?? '',
     })
 

@@ -1,6 +1,7 @@
 import express from 'express'
 import { Group } from '../../schemas/GroupSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
+import { unformatSimulation } from '../../helpers/simulation/unformatSimulation'
 
 const router = express.Router()
 
@@ -27,6 +28,19 @@ router.route('/').post(async (req, res) => {
     if (!group) {
       return res.status(404).send('Error. Group not found.')
     }
+
+    const groupObject = group.toObject()
+
+    const participantsWithUnformatedSimulation = [
+      ...groupObject.participants,
+    ].map((participant) => {
+      return {
+        ...participant,
+        simulation: unformatSimulation(participant.simulation as any),
+      }
+    })
+
+    groupObject.participants = participantsWithUnformatedSimulation as any
 
     setSuccessfulJSONResponse(res)
 
