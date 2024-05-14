@@ -91,4 +91,6 @@ export const SimulationSchema = new Schema<SimulationType>(
   }
 )
 
+SimulationSchema.index({ id: 1 })
+
 export const Simulation = mongoose.model('Simulation', SimulationSchema)

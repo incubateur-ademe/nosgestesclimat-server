@@ -11,7 +11,5 @@ export async function createOrUpdateSimulation(
     { upsert: true, new: true }
   )
 
-  console.log(`Simulation ${simulation.id} created or updated.`)
-
   return simulation
 }
