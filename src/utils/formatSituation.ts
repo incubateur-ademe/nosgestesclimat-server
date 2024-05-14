@@ -1,7 +1,9 @@
-export function unformatSituation(situation?: { [key: string]: any }) {
+import { Situation } from '../types/types'
+
+export function formatSituation(situation: Situation) {
   return Object.entries({ ...situation } as { [key: string]: any }).reduce(
     (acc: { [key: string]: any }, [key, value]: [string, any]) => {
-      const keyUnformatted = key.replaceAll('_', ' . ').replaceAll('-', ' ')
+      const keyUnformatted = key.replaceAll(' . ', '_').replaceAll(' ', '%')
 
       const wordsToHardcode = {
         't shirt': 't-shirt',

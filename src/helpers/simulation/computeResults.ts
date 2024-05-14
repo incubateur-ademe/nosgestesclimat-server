@@ -2,6 +2,7 @@ import rules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr
 import Engine from 'publicodes'
 import { NGCRules } from '@incubateur-ademe/nosgestesclimat'
 import { Situation } from '../../types/types'
+import { unformatSituation } from '../../utils/unformatSituation'
 
 export const safeGetSituation = ({
   situation,

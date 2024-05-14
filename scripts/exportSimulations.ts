@@ -1,5 +1,5 @@
-import { Simulation } from './../schemas/SimulationSchema'
-import connectdb from './initDatabase'
+import { Simulation } from '../src/schemas/SimulationSchema'
+import connectdb from '../src/scripts/initDatabase'
 import fs from 'fs'
 
 const dateFileExtension = (date: Date) =>

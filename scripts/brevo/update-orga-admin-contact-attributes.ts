@@ -1,14 +1,14 @@
 import mongoose from 'mongoose'
-import { config } from '../../config'
-import { Organisation } from '../../schemas/OrganisationSchema'
+import { config } from '../../src/config'
+import { Organisation } from '../../src/schemas/OrganisationSchema'
 import {
   ATTRIBUTE_IS_ORGANISATION_ADMIN,
   ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER,
   ATTRIBUTE_ORGANISATION_NAME,
   ATTRIBUTE_ORGANISATION_SLUG,
-} from '../../constants/brevo'
-import { Poll } from '../../schemas/PollSchema'
-import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
+} from '../../src/constants/brevo'
+import { Poll } from '../../src/schemas/PollSchema'
+import { createOrUpdateContact } from '../../src/helpers/email/createOrUpdateContact'
 
 export async function updateOrgaAdminContactAttributes() {
   try {
