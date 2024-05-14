@@ -6,6 +6,7 @@ import { Document } from 'mongoose'
 import { createOrUpdateContact } from './createOrUpdateContact'
 import {
   LIST_SUBSCRIBED_END_SIMULATION,
+  LIST_SUBSCRIBED_UNFINISHED_SIMULATION,
   TEMPLATE_SIMULATION_COMPLETED,
   TEMPLATE_SIMULATION_IN_PROGRESS,
 } from '../../constants/brevo'
@@ -38,17 +39,23 @@ export async function sendSimulationEmail({
     return
   }
 
+  const isSimulationCompleted = simulationSaved.progression === 1
+
   try {
     // Create or update the contact
     await createOrUpdateContact({
       email,
       userId,
-      listIds: [LIST_SUBSCRIBED_END_SIMULATION],
+      listIds: [
+        isSimulationCompleted
+          ? LIST_SUBSCRIBED_END_SIMULATION
+          : LIST_SUBSCRIBED_UNFINISHED_SIMULATION,
+      ],
       optin: true,
     })
 
     const SIMULATION_URL = `${origin}/${
-      simulationSaved.progression === 1 ? 'fin' : 'simulateur/bilan'
+      isSimulationCompleted ? 'fin' : 'simulateur/bilan'
     }?sid=${encodeURIComponent(
       simulationSaved.id ?? ''
     )}&mtm_campaign=retrouver-ma-simulation`
