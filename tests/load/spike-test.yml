@@ -1,11 +1,18 @@
 config:
-  target: 'https://server.preprod.nosgestesclimat.fr'
+  target: 'http://localhost:3001'
   phases:
-    - duration: 30
-      arrivalRate: 200
-      name: 'Spiking'
-  http:
-    timeout: 60
+    - duration: 5
+      arrivalRate: 1
+      rampTo: 5
+      name: Warm up phase
+    - duration: 5
+      arrivalRate: 5
+      rampTo: 100
+      name: Ramp up load
+    - duration: 10
+      arrivalRate: 100
+      rampTo: 400
+      name: Spike phase
   processor: './scripts/generate-mock-data.mjs'
 scenarios:
   - beforeRequest: 'generateSignupData'
@@ -23,8 +30,3 @@ scenarios:
               actionChoices: '{{actionChoices}}'
               polls: '{{polls}}'
             userId: '{{userId}}'
-      - think: 2
-      - post:
-          url: '/organisations/fetch-poll-processed-data'
-          json: { orgaSlug: '{{orgaSlug}}', userId: '{{orgaAdminUserId}}' }
-      - think: 2
