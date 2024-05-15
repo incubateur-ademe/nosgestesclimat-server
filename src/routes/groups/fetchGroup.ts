@@ -1,7 +1,6 @@
 import express from 'express'
 import { Group } from '../../schemas/GroupSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import { updateGroupWithComputedResults } from '../../helpers/groups/updateGroupWithComputedResults'
 
 const router = express.Router()
 
@@ -21,6 +20,7 @@ router.route('/').post(async (req, res) => {
       path: 'participants',
       populate: {
         path: 'simulation',
+        match: { progression: 1 },
       },
     })
 
@@ -29,13 +29,9 @@ router.route('/').post(async (req, res) => {
       return res.status(404).send('Error. Group not found.')
     }
 
-    // Nécessaire suite à la refonte serveur de février 2024
-    // TODO : à supprimer d'ici quelques mois
-    const groupUpdated = await updateGroupWithComputedResults(group)
-
     setSuccessfulJSONResponse(res)
 
-    res.json(groupUpdated)
+    res.json(group)
 
     console.log(`Group fetched: ${groupId}`)
   } catch (error) {

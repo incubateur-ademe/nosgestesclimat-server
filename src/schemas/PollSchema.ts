@@ -3,6 +3,11 @@ import { nanoid } from 'nanoid'
 
 const Schema = mongoose.Schema
 
+export type CustomAdditionalQuestionType = {
+  question: string
+  isEnabled: boolean
+}
+
 export type PollType = {
   simulations: RefType[]
   startDate: Date
@@ -10,9 +15,15 @@ export type PollType = {
   name: string
   slug: string
   defaultAdditionalQuestions: string[]
+  customAdditionalQuestions?: CustomAdditionalQuestionType[]
   expectedNumberOfParticipants: number
   _id: string
 }
+
+const CustomAdditionalQuestionSchema = new Schema({
+  question: String,
+  isEnabled: Boolean,
+})
 
 // Should this include a reference to the parent organisation?
 export const PollSchema = new Schema<PollType>(
@@ -33,6 +44,7 @@ export const PollSchema = new Schema<PollType>(
     endDate: Date,
     defaultAdditionalQuestions: [String],
     expectedNumberOfParticipants: Number,
+    customAdditionalQuestions: [CustomAdditionalQuestionSchema],
   },
   {
     timestamps: true,

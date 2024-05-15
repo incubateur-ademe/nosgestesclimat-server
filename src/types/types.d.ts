@@ -1,7 +1,10 @@
+import { CustomAdditionalQuestionType } from '../schemas/PollSchema'
+
 export type PollPublicInfo = {
   name: string
   slug: string
   defaultAdditionalQuestions?: string[]
+  customAdditionalQuestions?: CustomAdditionalQuestionType[]
   expectedNumberOfParticipants?: number
   numberOfParticipants: number
   organisationInfo?: OrganisationInfo

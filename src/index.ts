@@ -29,6 +29,8 @@ import fetchPollsRoute from './routes/organisations/fetchPolls'
 import fetchPollProcessedData from './routes/organisations/fetchPollProcessedData'
 import logOutRoute from './routes/organisations/logout'
 import verifyUserParticipationRoute from './routes/organisations/verifyUserParticipation'
+import updateCustomQuestionsRoute from './routes/organisations/updateCustomQuestions'
+import checkCustomQuestionsEnabledRoute from './routes/organisations/checkCustomQuestionsEnabled'
 
 // Simulation routes
 import createSimulationRoute from './routes/simulations/create'
@@ -75,8 +77,6 @@ const origin =
         'https://preprod.nosgestesclimat.fr',
         'https://nosgestesclimat.vercel.app',
         'https://nosgestesclimat-git-preprod-nos-gestes-climat.vercel.app',
-        'https://nosgestesclimat-git-parcours-orga-dashboard-ademe.vercel.app',
-        'https://parcours-orga.review.nosgestesclimat.fr',
       ]
 
 app.use(
@@ -128,6 +128,11 @@ app.use('/organisations/logout', logOutRoute)
 app.use(
   '/organisations/verify-user-participation',
   verifyUserParticipationRoute
+)
+app.use('/organisations/update-custom-questions', updateCustomQuestionsRoute)
+app.use(
+  '/organisations/check-custom-questions-enabled',
+  checkCustomQuestionsEnabledRoute
 )
 
 // Quiz routes

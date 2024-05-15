@@ -1,6 +1,7 @@
 import rules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
 import Engine from 'publicodes'
-import { SimulationType } from '../../schemas/SimulationSchema'
+import { NGCRules } from '@incubateur-ademe/nosgestesclimat'
+import { Situation } from '../../types/types'
 
 export const safeGetSituation = ({
   situation,
@@ -53,15 +54,15 @@ export const safeGetSituation = ({
   return filteredSituation
 }
 
-export function computeResults(situation: Record<string, any>) {
-  const engine = new Engine(rules as any)
+export function computeResults(situation: Situation, initiatedEngine?: Engine) {
+  const engine = initiatedEngine || new Engine(rules as unknown as NGCRules)
 
   const safeSituation = safeGetSituation({
     situation,
     everyRules: Object.keys(rules),
   })
 
-  engine.setSituation(safeSituation as any)
+  engine.setSituation(safeSituation)
 
   return {
     bilan: Number(engine.evaluate('bilan').nodeValue ?? 0),

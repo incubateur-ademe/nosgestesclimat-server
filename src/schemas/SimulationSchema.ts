@@ -1,6 +1,9 @@
+import { CustomAdditionalQuestionType } from './PollSchema'
 import mongoose, { ObjectId, RefType } from 'mongoose'
 
 const Schema = mongoose.Schema
+
+type CustomAdditionalQuestionAnswerType = Record<string, string>
 
 export type SimulationType = {
   id: string
@@ -23,6 +26,7 @@ export type SimulationType = {
     postalCode?: string
     birthdate?: string
   }
+  customAdditionalQuestionsAnswers?: CustomAdditionalQuestionAnswerType
   savedViaEmail?: boolean
   modifiedAt?: Date
   createdAt?: Date
@@ -80,10 +84,13 @@ export const SimulationSchema = new Schema<SimulationType>(
       postalCode: String,
       birthdate: String,
     },
+    customAdditionalQuestionsAnswers: Object,
   },
   {
     timestamps: true,
   }
 )
+
+SimulationSchema.index({ id: 1 })
 
 export const Simulation = mongoose.model('Simulation', SimulationSchema)

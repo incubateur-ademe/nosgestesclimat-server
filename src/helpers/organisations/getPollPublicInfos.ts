@@ -28,6 +28,9 @@ export async function getPollPublicInfos({
     name: poll.slug,
     slug: poll.slug,
     defaultAdditionalQuestions: poll.defaultAdditionalQuestions,
+    customAdditionalQuestions: poll.customAdditionalQuestions?.filter(
+      (question) => question.isEnabled
+    ),
     expectedNumberOfParticipants: poll.expectedNumberOfParticipants,
     numberOfParticipants: poll.simulations.length,
     organisationInfo: {
