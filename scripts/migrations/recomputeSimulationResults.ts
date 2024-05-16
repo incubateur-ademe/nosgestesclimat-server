@@ -21,12 +21,13 @@ async function recomputeResults() {
     )
 
     const numberOfSimulations = await Simulation.countDocuments()
-
+    console.log('Simulations to recompute', numberOfSimulations)
+    console.log('Starting to update simulations.')
     for (let cursor = 0; cursor < numberOfSimulations; cursor += 1000) {
-      const simulations: HydratedDocument<SimulationType>[] =
-        await Simulation.find().skip(cursor).limit(100).exec()
+      console.log('Next simulation batch update started.')
 
-      console.log('Simulations to recompute', simulations.length)
+      const simulations: HydratedDocument<SimulationType>[] =
+        await Simulation.find().skip(cursor).limit(1000).exec()
 
       let engine = new Engine(rules as unknown as NGCRules, {
         logger: {
@@ -43,14 +44,24 @@ async function recomputeResults() {
           situation: simulationUnformatted.situation,
           migrationInstructions,
         })
-        console.log(computeResults(situationMigrated, engine))
+        // console.log(computeResults(situationMigrated, engine))
 
         simulation.computedResults = computeResults(situationMigrated, engine)
 
         await simulation.save()
       }
 
-      console.log(`Simulations from ${cursor} to ${cursor + 100} updated`)
+      console.log('-----------------------------------')
+      console.log('-----------------------------------')
+      console.log('-----------------------------------')
+      console.log('-----------------------------------')
+      console.log('-----------------------------------')
+      console.log(`Simulations from ${cursor} to ${cursor + 100} updated.`)
+      console.log('-----------------------------------')
+      console.log('-----------------------------------')
+      console.log('-----------------------------------')
+      console.log('-----------------------------------')
+      console.log('-----------------------------------')
     }
   } catch (error) {
     console.error('Error updating simulations', error)

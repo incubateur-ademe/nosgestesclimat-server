@@ -1133,10 +1133,10 @@
   resolved "https://registry.yarnpkg.com/@protobufjs/utf8/-/utf8-1.1.0.tgz#a777360b5b39a1a2e5106f8e858f2fd2d060c570"
   integrity sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw==
 
-"@publicodes/tools@^1.1.1":
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/@publicodes/tools/-/tools-1.1.1.tgz#17e5cec0f6e2e22383b22e91893a2793cc2b8ae6"
-  integrity sha512-7N54VDt5XIBGVQTZ3FBbkITYOCUnxCOa9ITl/qCFdmbYNhOaoCtGZmtmMI1gjVcp/HeIayH69Cc+9m0ckob1UA==
+"@publicodes/tools@^1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@publicodes/tools/-/tools-1.1.2.tgz#ca3bc707b4be37b63cd1cd1460428d27eeda8368"
+  integrity sha512-MVbleFn2WFzuojygXU2Sjx2W48RK46DVGKRfCSuiKhbMNTYFp1IUoPD+TuC07/nA6R+igKq0HoTrooRm0ORkSQ==
   dependencies:
     "@types/node" "^18.11.18"
     publicodes "^1.1.1"
