@@ -8,7 +8,7 @@
     "useUnknownInCatchVariables": false, // TODO: Set to true asap
     "resolveJsonModule": true,
     "lib": ["es2021"],
-    "baseUrl": "./src"
+    "baseUrl": "./"
   },
   "include": ["src/**/*.ts", "env.d.ts"],
   "exclude": ["node_modules", "dist/**/*.js"]
