@@ -1,8 +1,19 @@
 import { UserType } from '../../schemas/UserSchema'
 import { SimulationType } from '../../schemas/SimulationSchema'
-import { getIsBicycleUser } from './processPollData/getIsBicycleUser'
-import { getIsVegetarian } from './processPollData/getIsVegetarien'
-import { getIsDriver } from './processPollData/getIsDriver'
+import importedRules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
+import importedFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRules.json'
+import {
+  DottedName,
+  NGCRules,
+  FunFacts,
+} from '@incubateur-ademe/nosgestesclimat'
+import { processCondition } from './processPollData/processCondition'
+import { processFunFactsValues } from './processPollData/processFunFactsValues'
+
+// This is shit but a hack from our lead dev
+const rules = importedRules as unknown as NGCRules
+
+const funFactsRules = importedFunFacts as { [k in keyof FunFacts]: DottedName }
 
 type SimulationRecap = {
   bilan: number
@@ -17,11 +28,7 @@ type SimulationRecap = {
 }
 
 type Result = {
-  funFacts: {
-    percentageOfBicycleUsers: number
-    percentageOfVegetarians: number
-    percentageOfCarOwners: number
-  }
+  funFacts: FunFacts
   simulationRecaps: SimulationRecap[]
 }
 
@@ -32,37 +39,57 @@ export function processPollData({
   simulations: SimulationType[]
   userId: string
 }): Result {
+  // Is there a way to generate it dynamically ?
+  let computedFunFacts: FunFacts = {
+    percentageOfBicycleUsers: 0,
+    percentageOfVegetarians: 0,
+    percentageOfCarOwners: 0,
+    percentageOfPlaneUsers: 0,
+    percentageOfLongPlaneUsers: 0,
+    averageOfCarKilometers: 0,
+    averageOfTravelers: 0,
+    percentageOfElectricHeating: 0,
+    percentageOfGasHeating: 0,
+    percentageOfFuelHeating: 0,
+    percentageOfWoodHeating: 0,
+    averageOfElectricityConsumption: 0,
+    percentageOfCoolingSystem: 0,
+    percentageOfVegan: 0,
+    percentageOfRedMeat: 0,
+    percentageOfLocalAndSeasonal: 0,
+    percentageOfBottledWater: 0,
+    percentageOfZeroWaste: 0,
+    amountOfClothing: 0,
+    percentageOfStreaming: 0,
+  }
+
   if (!simulations.length) {
     return {
-      funFacts: {
-        percentageOfBicycleUsers: 0,
-        percentageOfVegetarians: 0,
-        percentageOfCarOwners: 0,
-      },
+      funFacts: computedFunFacts,
       simulationRecaps: [],
     }
   }
-  // Condition: "oui" to transport.mobilité_douce.vélo ou transport.mobilité_douce.vae
-  let numberOfBicycleUsers = 0
-  // Condition: has only vegeterian and vegan meals
-  let numberOfVegetarians = 0
-  // Condition: "oui" to transport.voiture.propriétaire
-  let numberOfCarOwners = 0
 
   // Pour chaque simulation du sondage
   const simulationRecaps = simulations.map((simulation) => {
-    // We get the value for each fun fact
-    if (getIsBicycleUser({ situation: simulation.situation })) {
-      numberOfBicycleUsers += 1
-    }
+    Object.entries(funFactsRules).forEach(([key, dottedName]) => {
+      if (!Object.keys(rules).includes(dottedName)) {
+        throw new Error(`${dottedName} not found in rules`)
+      }
 
-    if (getIsVegetarian({ situation: simulation.situation })) {
-      numberOfVegetarians += 1
-    }
+      const conditionResult = processCondition({
+        situation: simulation.situation,
+        rule: rules[dottedName],
+      })
 
-    if (getIsDriver({ situation: simulation.situation })) {
-      numberOfCarOwners += 1
-    }
+      if (typeof conditionResult === 'boolean' && conditionResult === true) {
+        computedFunFacts[key as keyof FunFacts] += 1
+      }
+
+      if (typeof conditionResult === 'number') {
+        computedFunFacts[key as keyof FunFacts] += conditionResult
+      }
+    })
 
     return {
       bilan: simulation.computedResults.bilan,
@@ -74,16 +101,18 @@ export function processPollData({
       isCurrentUser:
         (simulation.user as unknown as UserType)?.userId === userId,
       date: simulation.modifiedAt ? new Date(simulation.modifiedAt) : undefined,
+      customAdditionalQuestionsAnswers:
+        simulation.customAdditionalQuestionsAnswers ?? [],
     }
   })
 
   return {
-    funFacts: {
-      percentageOfBicycleUsers:
-        (numberOfBicycleUsers / simulations.length) * 100,
-      percentageOfVegetarians: (numberOfVegetarians / simulations.length) * 100,
-      percentageOfCarOwners: (numberOfCarOwners / simulations.length) * 100,
-    },
+    funFacts: processFunFactsValues({
+      simulations,
+      computedFunFacts,
+      funFactsRules,
+      rules,
+    }),
     simulationRecaps,
   }
 }

@@ -29,6 +29,7 @@ router.route('/').post(async (req, res) => {
 
   // If no simulation is provided, we return an error
   if (!simulation) {
+    console.log('No simulation provided.')
     return res.status(500).send('Error. A simulation must be provided.')
   }
 
@@ -41,13 +42,14 @@ router.route('/').post(async (req, res) => {
 
   // If there is no user found or created, we return an error
   if (!userDocument) {
+    console.log('Error while creating or searching for the user.')
     return res
       .status(500)
       .send('Error while creating or searching for the user.')
   }
 
   try {
-    await createOrUpdateContact({
+    createOrUpdateContact({
       email,
       userId,
       simulation,
@@ -73,10 +75,14 @@ router.route('/').post(async (req, res) => {
       },
       computedResults: { ...(simulation.computedResults ?? {}) },
       progression: simulation.progression,
+      savedViaEmail: simulation.savedViaEmail,
       polls: polls?.map((poll) => poll._id),
       groups: [...(simulation.groups ?? [])],
       defaultAdditionalQuestionsAnswers: {
         ...(simulation.defaultAdditionalQuestionsAnswers ?? {}),
+      },
+      customAdditionalQuestionsAnswers: {
+        ...(simulation.customAdditionalQuestionsAnswers ?? {}),
       },
     }
 
@@ -113,7 +119,7 @@ router.route('/').post(async (req, res) => {
       })
     }
 
-    await sendSimulationEmail({
+    sendSimulationEmail({
       userDocument,
       simulationSaved,
       shouldSendSimulationEmail,
@@ -131,7 +137,7 @@ router.route('/').post(async (req, res) => {
 
     console.log(`Simulation created: ${simulationSaved._id}`)
   } catch (error) {
-    return res.status(401).send('Error while creating simulation.')
+    return res.status(500).send('Error while creating simulation.')
   }
 })
 

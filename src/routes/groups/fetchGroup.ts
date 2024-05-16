@@ -21,6 +21,7 @@ router.route('/').post(async (req, res) => {
       path: 'participants',
       populate: {
         path: 'simulation',
+        match: { progression: 1 },
       },
     })
 

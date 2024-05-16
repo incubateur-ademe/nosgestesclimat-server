@@ -4,7 +4,12 @@ import { UserType } from '../../schemas/UserSchema'
 import { SimulationType } from '../../schemas/SimulationSchema'
 import { Document } from 'mongoose'
 import { createOrUpdateContact } from './createOrUpdateContact'
-import { LIST_SUBSCRIBED_END_SIMULATION } from '../../constants/brevo'
+import {
+  LIST_SUBSCRIBED_END_SIMULATION,
+  LIST_SUBSCRIBED_UNFINISHED_SIMULATION,
+  TEMPLATE_SIMULATION_COMPLETED,
+  TEMPLATE_SIMULATION_IN_PROGRESS,
+} from '../../constants/brevo'
 
 /**
  * Send an email to a user when they save a simulation at the end
@@ -34,14 +39,26 @@ export async function sendSimulationEmail({
     return
   }
 
+  const isSimulationCompleted = simulationSaved.progression === 1
+
   try {
     // Create or update the contact
     await createOrUpdateContact({
       email,
       userId,
-      listIds: [LIST_SUBSCRIBED_END_SIMULATION],
+      listIds: [
+        isSimulationCompleted
+          ? LIST_SUBSCRIBED_END_SIMULATION
+          : LIST_SUBSCRIBED_UNFINISHED_SIMULATION,
+      ],
       optin: true,
     })
+
+    const SIMULATION_URL = `${origin}/${
+      isSimulationCompleted ? 'fin' : 'simulateur/bilan'
+    }?sid=${encodeURIComponent(
+      simulationSaved.id ?? ''
+    )}&mtm_campaign=retrouver-ma-simulation`
 
     await axios.post(
       'https://api.brevo.com/v3/smtp/email',
@@ -52,12 +69,13 @@ export async function sendSimulationEmail({
             email,
           },
         ],
-        templateId: 55,
+        templateId:
+          simulationSaved.progression === 1
+            ? TEMPLATE_SIMULATION_COMPLETED
+            : TEMPLATE_SIMULATION_IN_PROGRESS,
         params: {
           SHARE_URL: `${origin}?mtm_campaign=partage-email`,
-          SIMULATION_URL: `${origin}/fin?sid=${encodeURIComponent(
-            simulationSaved.id ?? ''
-          )}&mtm_campaign=retrouver-ma-simulation`,
+          SIMULATION_URL,
         },
       },
       axiosConf
