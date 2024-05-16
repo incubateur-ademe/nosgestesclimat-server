@@ -25,5 +25,5 @@ export type Attributes = {
 } & Record<string, string | boolean | number>
 
 export type Situation = {
-  [key: string]: NodeValue | string | number
+  [key: string]: NodeValue
 }
