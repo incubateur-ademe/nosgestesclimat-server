@@ -1,7 +1,6 @@
 import express from 'express'
 import { Group } from '../../schemas/GroupSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import { unformatSimulation } from '../../helpers/simulation/unformatSimulation'
 
 const router = express.Router()
 
@@ -37,7 +36,7 @@ router.route('/').post(async (req, res) => {
     ].map((participant) => {
       return {
         ...participant,
-        simulation: unformatSimulation(participant.simulation as any),
+        simulation: participant.simulation as any,
       }
     })
 

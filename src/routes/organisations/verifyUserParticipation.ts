@@ -3,7 +3,6 @@ import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { findPopulatedPollBySlug } from '../../helpers/organisations/findPopulatedPollBySlug'
 import { SimulationType } from '../../schemas/SimulationSchema'
 import { Organisation } from '../../schemas/OrganisationSchema'
-import { unformatSimulation } from '../../helpers/simulation/unformatSimulation'
 
 const router = express.Router()
 
@@ -35,7 +34,7 @@ router.route('/').post(async (req: Request, res: Response) => {
 
     pollUnformatted.simulations = pollUnformatted.simulations.map(
       (simulation) => {
-        return unformatSimulation(simulation as any)
+        return simulation as any
       }
     ) as any
 

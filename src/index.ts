@@ -50,7 +50,7 @@ import getNewsletterSubscriptions from './routes/settings/getNewsletterSubscript
 
 import cors from 'cors'
 import Answer from './schemas/_legacy/AnswerSchema'
-import connect from './scripts/initDatabase'
+import connect from './helpers/db/initDatabase'
 import { config } from './config'
 
 if (config.env === 'development') {

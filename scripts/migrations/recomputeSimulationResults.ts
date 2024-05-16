@@ -46,6 +46,8 @@ async function recomputeResults() {
         })
         // console.log(computeResults(situationMigrated, engine))
 
+        simulation.situation = situationMigrated
+
         simulation.computedResults = computeResults(situationMigrated, engine)
 
         await simulation.save()

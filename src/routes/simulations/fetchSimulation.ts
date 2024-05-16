@@ -4,7 +4,6 @@ import { Simulation } from '../../schemas/SimulationSchema'
 
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import mongoose from 'mongoose'
-import { unformatSimulation } from '../../helpers/simulation/unformatSimulation'
 
 const router = express.Router()
 
@@ -30,11 +29,9 @@ router.route('/').post(async (req, res) => {
       return res.status(404).send('No matching simulation found.')
     }
 
-    const simulationUnformatted = unformatSimulation(simulationFound.toObject())
-
     setSuccessfulJSONResponse(res)
 
-    res.json(simulationUnformatted)
+    res.json(simulationFound)
   } catch (error) {
     console.error(error)
     return res.status(500).send('Error while fetching simulation.')

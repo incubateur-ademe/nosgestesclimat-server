@@ -1,5 +1,5 @@
 import express from 'express'
-import connectdb from '../../scripts/initDatabase'
+import connectdb from '../../helpers/db/initDatabase'
 import { Simulation } from '../../schemas/SimulationSchema'
 
 const router = express.Router()
