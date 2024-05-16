@@ -1,9 +1,11 @@
 import express from 'express'
 
-import { Simulation } from '../../schemas/SimulationSchema'
+import { Simulation, SimulationType } from '../../schemas/SimulationSchema'
 
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import mongoose from 'mongoose'
+import mongoose, { HydratedDocument } from 'mongoose'
+import { unformatSimulation } from '../../helpers/simulation/unformatSimulation'
+import { handleComputeResultsIfNone } from '../../helpers/simulation/handleComputeResultsIfNone'
 
 const router = express.Router()
 
@@ -31,7 +33,7 @@ router.route('/').post(async (req, res) => {
 
     setSuccessfulJSONResponse(res)
 
-    res.json(simulationFound)
+    res.json(handleComputeResultsIfNone(simulationFound.toObject()))
   } catch (error) {
     console.error(error)
     return res.status(500).send('Error while fetching simulation.')

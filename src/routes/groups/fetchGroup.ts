@@ -1,6 +1,10 @@
+import { HydratedDocument } from 'mongoose'
 import express from 'express'
 import { Group } from '../../schemas/GroupSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
+import { unformatSimulation } from '../../helpers/simulation/unformatSimulation'
+import { SimulationType } from '../../schemas/SimulationSchema'
+import { handleComputeResultsIfNone } from '../../helpers/simulation/handleComputeResultsIfNone'
 
 const router = express.Router()
 
@@ -29,9 +33,21 @@ router.route('/').post(async (req, res) => {
       return res.status(404).send('Error. Group not found.')
     }
 
+    const groupObject = group.toObject()
+
+    // Unformat simulations
+    groupObject.participants = groupObject.participants.map((participant) => {
+      return {
+        ...participant,
+        simulation: handleComputeResultsIfNone(
+          participant.simulation as unknown as HydratedDocument<SimulationType>
+        ),
+      }
+    }) as any
+
     setSuccessfulJSONResponse(res)
 
-    res.json(group)
+    res.json(groupObject)
 
     console.log(`Group fetched: ${groupId}`)
   } catch (error) {
