@@ -3,11 +3,12 @@
   "compilerOptions": {
     "outDir": "dist",
     "checkJs": true,
-    "module": "commonjs",
+    "module": "CommonJS",
     "moduleResolution": "node",
     "useUnknownInCatchVariables": false, // TODO: Set to true asap
     "resolveJsonModule": true,
-    "lib": ["es2021"]
+    "lib": ["es2021"],
+    "baseUrl": "./src"
   },
   "include": ["src/**/*.ts", "env.d.ts"],
   "exclude": ["node_modules", "dist/**/*.js"]

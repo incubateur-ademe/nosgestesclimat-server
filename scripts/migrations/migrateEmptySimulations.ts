@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
-import { Simulation } from '../../schemas/SimulationSchema'
-import { config } from '../../config'
+import { Simulation } from '../../src/schemas/SimulationSchema'
+import { config } from '../../src/config'
 
 async function migrateEmptySimulations() {
   console.log('Start deletion of empty simulations')

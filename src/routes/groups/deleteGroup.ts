@@ -22,9 +22,7 @@ router.route('/').post(async (req, res) => {
   }
 
   try {
-    const group = await Group.findById(groupId).populate(
-      'participants.simulation'
-    )
+    const group = await Group.findById(groupId)
 
     // If no group is found, we return an error
     if (!group) {

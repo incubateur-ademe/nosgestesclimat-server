@@ -5,7 +5,6 @@ import surveysRoute from './routes/_legacy/surveysRoute'
 import statsRoute from './routes/stats/statsRoute'
 import simulationRoute from './routes/_legacy/simulationRoute'
 import ratingsRoute from './routes/_legacy/ratingsRoute'
-import fetchSimulationViaEmailRoute from './routes/saveSimulationTestEnd/fetchSimulation'
 
 // Groups routes
 import fetchGroupRoute from './routes/groups/fetchGroup'
@@ -51,7 +50,7 @@ import getNewsletterSubscriptions from './routes/settings/getNewsletterSubscript
 
 import cors from 'cors'
 import Answer from './schemas/_legacy/AnswerSchema'
-import connect from './scripts/initDatabase'
+import connect from './helpers/db/initDatabase'
 import { config } from './config'
 
 if (config.env === 'development') {
@@ -95,7 +94,6 @@ app.use('/surveys', surveysRoute)
 app.use('/get-stats', statsRoute)
 app.use('/simulation', simulationRoute)
 app.use('/ratings', ratingsRoute)
-app.use('/email-simulation/:id?', fetchSimulationViaEmailRoute)
 
 // Simulations route
 app.use('/simulations/create', createSimulationRoute)

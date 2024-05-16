@@ -1,3 +1,4 @@
+import { NodeValue } from '@incubateur-ademe/nosgestesclimat'
 import { CustomAdditionalQuestionType } from '../schemas/PollSchema'
 
 export type PollPublicInfo = {
@@ -24,5 +25,5 @@ export type Attributes = {
 } & Record<string, string | boolean | number>
 
 export type Situation = {
-  [key: string]: string | number
+  [key: string]: NodeValue
 }

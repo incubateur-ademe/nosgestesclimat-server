@@ -5,7 +5,7 @@ const Schema = mongoose.Schema
 
 type CustomAdditionalQuestionAnswerType = Record<string, string>
 
-export type SimulationType = {
+export interface SimulationType {
   id: string
   user?: RefType
   actionChoices: Record<string, unknown>

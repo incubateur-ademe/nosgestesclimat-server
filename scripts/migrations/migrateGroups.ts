@@ -1,8 +1,8 @@
 import mongoose from 'mongoose'
-import { config } from '../../config'
-import { createOrUpdateUser } from '../../helpers/queries/createOrUpdateUser'
-import { Group } from '../../schemas/GroupSchema'
-import { Simulation } from '../../schemas/SimulationSchema'
+import { config } from '../../src/config'
+import { createOrUpdateUser } from '../../src/helpers/queries/createOrUpdateUser'
+import { Group } from '../../src/schemas/GroupSchema'
+import { Simulation } from '../../src/schemas/SimulationSchema'
 
 async function migrate() {
   console.log('In migrate function...')

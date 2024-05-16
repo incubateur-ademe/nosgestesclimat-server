@@ -1,6 +1,9 @@
 import { Situation } from '../../../types/types'
-import { formatDottedName } from '../../../utils/formatDottedName'
-import { DottedName, NGCRule } from '@incubateur-ademe/nosgestesclimat'
+import {
+  DottedName,
+  NGCRule,
+  NodeValue,
+} from '@incubateur-ademe/nosgestesclimat'
 
 export function processCondition({
   situation,
@@ -15,15 +18,13 @@ export function processCondition({
 
   // if `moyenne` attibute is used in ui rule, we want to return the value of the dottedName. Average is computed elsewhere
   if (rule?.formule?.moyenne) {
-    return situation[formatDottedName(rule.formule.moyenne[0])] ?? 0
+    return (situation[rule.formule.moyenne[0]] ?? 0) as string | number
   }
 
   // if `somme` attibute is used in ui rule, we want to return the sum of values of dottedNames
   if (rule?.formule?.somme) {
     return rule.formule.somme.reduce((acc: number, dottedName: DottedName) => {
-      let itemValue = parseFloat(
-        situation[formatDottedName(dottedName)] as string
-      )
+      let itemValue = parseFloat(situation[dottedName] as string)
       return acc + (!isNaN(itemValue) ? itemValue : 0)
     }, 0)
   }
@@ -54,13 +55,13 @@ function checkCondition(condition: string, situation: Situation): Boolean {
     return false
   }
 
-  if (!Object.keys(situation).includes(formatDottedName(split_condition[0]))) {
+  if (!Object.keys(situation).includes(split_condition[0])) {
     return false
   }
 
   // If the condition is only a dottedName, the check of the boolean value is implicit. We want to return true if the value of the dottedName is "oui" in the situation.
   if (split_condition.length === 1) {
-    return situation[formatDottedName(split_condition[0])] === 'oui'
+    return situation[split_condition[0]] === 'oui'
   }
 
   // If the condition is a dottedName, an operator and a value, we want to check condition between the value in the situation and the value in the condition.
@@ -87,14 +88,12 @@ function checkConditionWithOperator(
   let rightConditionValue: string | number = ''
 
   if (answerType === 'string') {
-    leftConditionValue = situation[formatDottedName(split_condition[0])]
+    leftConditionValue = situation[split_condition[0]] as string
     rightConditionValue = split_condition[2]
   }
 
   if (answerType === 'number') {
-    leftConditionValue = parseFloat(
-      situation[formatDottedName(split_condition[0])] as string
-    )
+    leftConditionValue = parseFloat(situation[split_condition[0]] as string)
     rightConditionValue = parseFloat(split_condition[2])
   }
   if (operator === '=') {
