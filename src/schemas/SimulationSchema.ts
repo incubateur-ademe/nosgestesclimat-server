@@ -2,7 +2,7 @@ import mongoose, { ObjectId, RefType } from 'mongoose'
 
 const Schema = mongoose.Schema
 
-export type SimulationType = {
+export interface SimulationType {
   id: string
   user?: RefType
   actionChoices: Record<string, unknown>

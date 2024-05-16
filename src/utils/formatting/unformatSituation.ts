@@ -1,3 +1,5 @@
+import { unformatKey } from './unformatKey'
+
 export function unformatSituation(situation?: { [key: string]: any }) {
   return Object.entries({ ...situation } as { [key: string]: any }).reduce(
     (acc: { [key: string]: any }, [key, value]: [string, any]) => {
@@ -7,7 +9,7 @@ export function unformatSituation(situation?: { [key: string]: any }) {
         return acc
       }
 
-      const keyUnformatted = key.replaceAll('_', ' . ').replaceAll('-', ' ')
+      let keyUnformatted = unformatKey(key)
 
       const wordsToHardcode = {
         't shirt': 't-shirt',
@@ -18,20 +20,18 @@ export function unformatSituation(situation?: { [key: string]: any }) {
         'éco construit': 'éco-construit',
       }
 
-      let keyUnformattedHandlingHardcodedWords = keyUnformatted
-
       for (const [keyToHardcode, valueToHardcode] of Object.entries(
         wordsToHardcode
       )) {
         if (keyUnformatted.includes(keyToHardcode)) {
-          keyUnformattedHandlingHardcodedWords = keyUnformatted.replace(
+          keyUnformatted = keyUnformatted.replace(
             keyToHardcode,
             valueToHardcode
           )
         }
       }
 
-      acc[keyUnformattedHandlingHardcodedWords] = value
+      acc[keyUnformatted] = value
 
       return acc
     },

@@ -2,7 +2,6 @@ import rules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr
 import Engine from 'publicodes'
 import { NGCRules } from '@incubateur-ademe/nosgestesclimat'
 import { Situation } from '../../types/types'
-import { unformatSituation } from '../../utils/unformatSituation'
 
 export const safeGetSituation = ({
   situation,
@@ -58,6 +57,7 @@ export const safeGetSituation = ({
 export function computeResults(situation: Situation, initiatedEngine?: Engine) {
   const engine = initiatedEngine || new Engine(rules as unknown as NGCRules)
 
+  // We use the safeGetSituation function to remove unsupported dottedNames from the situation
   const safeSituation = safeGetSituation({
     situation,
     everyRules: Object.keys(rules),

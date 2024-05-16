@@ -13,10 +13,6 @@ import { handleUpdateGroup } from '../../helpers/groups/handleUpdateGroup'
 import { GroupType } from '../../schemas/GroupSchema'
 import { sendSimulationEmail } from '../../helpers/email/sendSimulationEmail'
 import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
-import {
-  formatObjectKeysForMongoDB,
-  formatStringArrayForMongoDB,
-} from '../../utils/format'
 
 const router = express.Router()
 
@@ -67,16 +63,14 @@ router.route('/').post(async (req, res) => {
     const simulationObject: SimulationType = {
       id: simulation.id,
       user: userDocument._id,
-      actionChoices: formatObjectKeysForMongoDB({
+      actionChoices: {
         ...(simulation?.actionChoices ?? {}),
-      }),
+      },
       date: new Date(simulation.date),
-      foldedSteps: formatStringArrayForMongoDB([
-        ...(simulation.foldedSteps ?? {}),
-      ]),
-      situation: formatObjectKeysForMongoDB({
+      foldedSteps: [...(simulation.foldedSteps ?? {})],
+      situation: {
         ...(simulation.situation ?? {}),
-      }),
+      },
       computedResults: { ...(simulation.computedResults ?? {}) },
       progression: simulation.progression,
       polls: polls?.map((poll) => poll._id),
