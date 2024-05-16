@@ -3,7 +3,7 @@
   "compilerOptions": {
     "outDir": "dist",
     "checkJs": true,
-    "module": "ES2022",
+    "module": "CommonJS",
     "moduleResolution": "node",
     "useUnknownInCatchVariables": false, // TODO: Set to true asap
     "resolveJsonModule": true,
