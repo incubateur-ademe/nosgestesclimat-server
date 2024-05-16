@@ -29,15 +29,6 @@ router.route('/').post(async (req: Request, res: Response) => {
       return res.status(404).send('This poll does not exist')
     }
 
-    // Unformat simulations
-    const pollUnformatted = poll.toObject()
-
-    pollUnformatted.simulations = pollUnformatted.simulations.map(
-      (simulation) => {
-        return simulation as any
-      }
-    ) as any
-
     const hasUserAlreadyParticipated = (
       poll.simulations as unknown as SimulationType[]
     ).some((simulation) => {
