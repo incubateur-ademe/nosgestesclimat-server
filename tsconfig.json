@@ -9,6 +9,6 @@
     "resolveJsonModule": true,
     "lib": ["es2021"]
   },
-  "include": ["src/**/*.ts", "env.d.ts"],
+  "include": ["src/**/*.ts", "env.d.ts", "scripts/**/*.ts"],
   "exclude": ["node_modules", "dist/**/*.js"]
 }

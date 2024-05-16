@@ -8,13 +8,11 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "NODE_OPTIONS=--max-old-space-size=8192 node ./dist/index.js",
+    "start": "NODE_OPTIONS=--max-old-space-size=8192 node ./dist/src/index.js",
     "build": "npx tsc",
     "dev": "NODE_ENV=development nodemon --watch ./src ./src/index.ts",
     "run-script": "ts-node --project scripts/tsconfig.json",
     "generateEnvDeclaration": "yarn run-script scripts/generateEnvDeclaration.ts",
-    "migrate:groups": "ts-node ./src/scripts/migrations/migrateGroups.ts",
-    "migrate:email-simulations": "ts-node ./src/scripts/migrations/migrateEmailSimulations.ts",
     "test:load:spike": "npx artillery run ./tests/load/spike-test.yml",
     "test:load:soak": "npx artillery run ./tests/load/soak-test.yml"
   },
