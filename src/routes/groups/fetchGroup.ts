@@ -29,19 +29,6 @@ router.route('/').post(async (req, res) => {
       return res.status(404).send('Error. Group not found.')
     }
 
-    const groupObject = group.toObject()
-
-    const participantsWithUnformatedSimulation = [
-      ...groupObject.participants,
-    ].map((participant) => {
-      return {
-        ...participant,
-        simulation: participant.simulation as any,
-      }
-    })
-
-    groupObject.participants = participantsWithUnformatedSimulation as any
-
     setSuccessfulJSONResponse(res)
 
     res.json(group)
