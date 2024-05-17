@@ -23,7 +23,7 @@ router.route('/').post(async (req, res) => {
     : simulationId
 
   try {
-    const simulationFound = await Simulation.collection.findOne({
+    const simulationFound = await Simulation.findOne({
       $or: [{ _id: objectId }, { id: simulationId }],
     })
 
@@ -31,9 +31,11 @@ router.route('/').post(async (req, res) => {
       return res.status(404).send('No matching simulation found.')
     }
 
+    const migratedSimulation = handleComputeResultsIfNone(simulationFound)
+
     setSuccessfulJSONResponse(res)
 
-    res.json(handleComputeResultsIfNone(simulationFound.toObject()))
+    res.json(migratedSimulation)
   } catch (error) {
     console.error(error)
     return res.status(500).send('Error while fetching simulation.')
