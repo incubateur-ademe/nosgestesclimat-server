@@ -18,14 +18,14 @@ router.route('/').post(async (req, res) => {
       .send('Error. A simulation id or an email must be provided.')
   }
 
-  const objectId = mongoose.isValidObjectId(simulationId)
-    ? new mongoose.Types.ObjectId(simulationId)
-    : simulationId
+  const isValidObjectId = mongoose.isValidObjectId(simulationId)
+
+  const searchQuery = isValidObjectId
+    ? { _id: new mongoose.Types.ObjectId(simulationId) }
+    : { id: simulationId }
 
   try {
-    const simulationFound = await Simulation.findOne({
-      $or: [{ _id: objectId }, { id: simulationId }],
-    })
+    const simulationFound = await Simulation.findOne(searchQuery)
 
     if (!simulationFound) {
       return res.status(404).send('No matching simulation found.')
