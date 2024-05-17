@@ -8,7 +8,8 @@ import { unformatSimulation } from './unformatSimulation'
 import { computeResults } from './computeResults'
 
 export function handleComputeResultsIfNone(
-  simulation: HydratedDocument<SimulationType>
+  simulation: HydratedDocument<SimulationType>,
+  engine?: Engine
 ): HydratedDocument<SimulationType> {
   try {
     // Unformat simulation, just in case
@@ -26,13 +27,9 @@ export function handleComputeResultsIfNone(
       return simulation
     }
 
-    const engine = new Engine(rules as unknown as NGCRules, {
-      logger: {
-        log: console.log,
-        warn: () => null,
-        error: console.error,
-      },
-    })
+    if (!engine) {
+      return simulation
+    }
 
     simulation.computedResults = computeResults(simulation.situation, engine)
 

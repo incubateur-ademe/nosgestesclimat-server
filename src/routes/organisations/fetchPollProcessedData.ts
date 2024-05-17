@@ -5,8 +5,10 @@ import { Organisation } from '../../schemas/OrganisationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { processPollData } from '../../helpers/organisations/processPollData'
 import { SimulationType } from '../../schemas/SimulationSchema'
-import { unformatSimulation } from '../../helpers/simulation/unformatSimulation'
+import rules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
 import { handleComputeResultsIfNone } from '../../helpers/simulation/handleComputeResultsIfNone'
+import Engine from 'publicodes'
+import { NGCRules } from '@incubateur-ademe/nosgestesclimat'
 
 const router = express.Router()
 
@@ -50,13 +52,26 @@ router.post('/', async (req: Request, res: Response) => {
       }
       */
 
+    let engine = undefined
+
+    if (organisationFound?.polls[0]?.simulations.length < 100) {
+      engine = new Engine(rules as unknown as NGCRules, {
+        logger: {
+          log: console.log,
+          warn: () => null,
+          error: console.error,
+        },
+      })
+    }
+
     const pollData = processPollData({
       // TODO : remove unformatting when possible
       simulations: (
         organisationFound?.polls[0]?.simulations as unknown as SimulationType[]
       ).map((simulation) =>
         handleComputeResultsIfNone(
-          simulation as HydratedDocument<SimulationType>
+          simulation as HydratedDocument<SimulationType>,
+          engine
         )
       ),
       userId: userId ?? '',
