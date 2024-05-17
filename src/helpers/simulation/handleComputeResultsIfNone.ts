@@ -18,7 +18,7 @@ export function handleComputeResultsIfNone(
     simulation.situation = simulationUnformatted.situation
 
     // If the simulation has already been computed, we return it
-    // TEMPORARY: we check if the bilan is not 8.9. If it is it might be a fale computed result and we need to re
+    // TEMPORARY: we check if the bilan is not 8.9. If it is it might be a false computed result and we need to recalculate it
     if (
       simulation.computedResults &&
       Math.floor(simulation.computedResults.bilan / 100) !== 88
