@@ -10,19 +10,7 @@ import { computeResults } from './computeResults'
 export function handleComputeResultsIfNone(
   simulation: HydratedDocument<SimulationType>
 ): HydratedDocument<SimulationType> {
-  console.log('Connecting to mongo')
-
-  mongoose.connect(config.mongo.url)
-
   try {
-    const engine = new Engine(rules as unknown as NGCRules, {
-      logger: {
-        log: console.log,
-        warn: () => null,
-        error: console.error,
-      },
-    })
-
     // Unformat simulation, just in case
     // TODO: remove unformatting when possible
     const simulationUnformatted = unformatSimulation(simulation)
@@ -30,13 +18,21 @@ export function handleComputeResultsIfNone(
     simulation.situation = simulationUnformatted.situation
 
     // If the simulation has already been computed, we return it
-    // TEMPORARY: we check if the bilan is not 8.9. If it is it might be a fale computed result and we need to recompute it
+    // TEMPORARY: we check if the bilan is not 8.9. If it is it might be a fale computed result and we need to re
     if (
       simulation.computedResults &&
       Math.floor(simulation.computedResults.bilan / 100) !== 88
     ) {
       return simulation
     }
+
+    const engine = new Engine(rules as unknown as NGCRules, {
+      logger: {
+        log: console.log,
+        warn: () => null,
+        error: console.error,
+      },
+    })
 
     simulation.computedResults = computeResults(simulation.situation, engine)
 
