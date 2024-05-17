@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
-import { Simulation } from '../../schemas/SimulationSchema'
-import EmailSimulation from '../../schemas/_legacy/EmailSimulationSchema'
-import { config } from '../../config'
+import { Simulation } from '../../src/schemas/SimulationSchema'
+import EmailSimulation from '../../src/schemas/_legacy/EmailSimulationSchema'
+import { config } from '../../src/config'
 
 async function migrateEmailSimulations() {
   mongoose.connect(config.mongo.url)

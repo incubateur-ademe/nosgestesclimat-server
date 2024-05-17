@@ -4,7 +4,6 @@ import {
   FunFacts,
 } from '@incubateur-ademe/nosgestesclimat'
 import { SimulationType } from '../../../schemas/SimulationSchema'
-import { formatDottedName } from '../../../utils/formatDottedName'
 
 export function processFunFactsValues({
   simulations,
@@ -28,9 +27,7 @@ export function processFunFactsValues({
         const totalAnswers = simulations.reduce((acc, simulation) => {
           return (
             acc +
-            (simulation.situation[
-              formatDottedName(rules[funFactsRules[key]].formule.moyenne[0])
-            ]
+            (simulation.situation[rules[funFactsRules[key]].formule.moyenne[0]]
               ? 1
               : 0)
           )

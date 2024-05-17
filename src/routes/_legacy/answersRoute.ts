@@ -1,5 +1,5 @@
 import express from 'express'
-import connectdb from '../../scripts/initDatabase'
+import connectdb from '../../helpers/db/initDatabase'
 import Answers from '../../schemas/_legacy/AnswerSchema'
 import Surveys from '../../schemas/_legacy/SurveySchema'
 
@@ -76,14 +76,14 @@ router.route('/:room').get((req, res, next) => {
                   ? // @ts-ignore
                     [field, answer.data[field]]
                   : // @ts-ignore
-                    answer.data.byCategory.get(field)
-                    ? // @ts-ignore
-                      [field, answer.data.byCategory.get(field)]
-                    : // @ts-ignore
-                      answer.data.context && answer.data.context.get(field) // we take into account old answers with no context and answers with empty context in case of undefined get resultfor the two firts conditions
-                      ? // @ts-ignore
-                        [field, answer.data.context.get(field)]
-                      : [field, undefined]
+                  answer.data.byCategory.get(field)
+                  ? // @ts-ignore
+                    [field, answer.data.byCategory.get(field)]
+                  : // @ts-ignore
+                  answer.data.context && answer.data.context.get(field) // we take into account old answers with no context and answers with empty context in case of undefined get resultfor the two firts conditions
+                  ? // @ts-ignore
+                    [field, answer.data.context.get(field)]
+                  : [field, undefined]
               })
             )
           )

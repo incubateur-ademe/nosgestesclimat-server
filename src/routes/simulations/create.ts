@@ -65,10 +65,14 @@ router.route('/').post(async (req, res) => {
     const simulationObject: SimulationType = {
       id: simulation.id,
       user: userDocument._id,
-      actionChoices: { ...(simulation?.actionChoices ?? {}) },
+      actionChoices: {
+        ...(simulation?.actionChoices ?? {}),
+      },
       date: new Date(simulation.date),
       foldedSteps: [...(simulation.foldedSteps ?? {})],
-      situation: { ...(simulation.situation ?? {}) },
+      situation: {
+        ...(simulation.situation ?? {}),
+      },
       computedResults: { ...(simulation.computedResults ?? {}) },
       progression: simulation.progression,
       savedViaEmail: simulation.savedViaEmail,

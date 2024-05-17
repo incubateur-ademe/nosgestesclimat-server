@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
-import { Simulation } from '../../schemas/SimulationSchema'
-import { NorthstarRating } from '../../schemas/NorthstarSchema'
-import { config } from '../../config'
+import { Simulation } from '../../src/schemas/SimulationSchema'
+import { NorthstarRating } from '../../src/schemas/NorthstarSchema'
+import { config } from '../../src/config'
 
 async function migrateNorthstarRatings() {
   console.log('Start migration of northstar ratings')

@@ -1,12 +1,12 @@
 import mongoose from 'mongoose'
-import { config } from '../../config'
+import { config } from '../../src/config'
 import {
   ATTRIBUTE_LAST_GROUP_CREATION_DATE,
   ATTRIBUTE_NUMBER_CREATED_GROUPS,
   ATTRIBUTE_NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT,
-} from '../../constants/brevo'
-import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
-import { Group, GroupType } from '../../schemas/GroupSchema'
+} from '../../src/constants/brevo'
+import { createOrUpdateContact } from '../../src/helpers/email/createOrUpdateContact'
+import { Group, GroupType } from '../../src/schemas/GroupSchema'
 
 function processGroupsByAdministrator(
   groups: GroupType[]
