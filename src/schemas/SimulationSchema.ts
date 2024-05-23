@@ -43,10 +43,7 @@ export const SimulationSchema = new Schema<SimulationType>(
     },
     actionChoices: Object,
     progression: Number,
-    date: {
-      type: Date,
-      required: true,
-    },
+    date: Date,
     foldedSteps: [String],
     situation: Object,
     computedResults: {
