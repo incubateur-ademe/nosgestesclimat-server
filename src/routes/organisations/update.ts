@@ -10,9 +10,10 @@ import slugify from 'slugify'
 import { Organisation } from '../../schemas/OrganisationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
-import { Poll } from '../../schemas/PollSchema'
+import { Poll, PollType } from '../../schemas/PollSchema'
 import { findUniqueSlug } from '../../helpers/organisations/findUniqueSlug'
 import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
+import { HydratedDocument } from 'mongoose'
 
 const router = express.Router()
 
@@ -88,7 +89,9 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
       organisationFound.organisationType = organisationType
     }
 
-    const pollUpdated = await Poll.findById(organisationFound.polls[0]._id)
+    const pollUpdated = await Poll.findById(
+      (organisationFound.polls[0] as unknown as HydratedDocument<PollType>)._id
+    )
 
     if (pollUpdated && defaultAdditionalQuestions) {
       pollUpdated.defaultAdditionalQuestions = defaultAdditionalQuestions
