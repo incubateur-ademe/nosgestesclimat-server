@@ -11,7 +11,7 @@ import { Organisation } from '../../schemas/OrganisationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
 import { Poll, PollType } from '../../schemas/PollSchema'
-import { findUniqueSlug } from '../../helpers/organisations/findUniqueSlug'
+import { findUniqueOrgaSlug } from '../../helpers/organisations/findUniqueOrgaSlug'
 import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
 import { HydratedDocument } from 'mongoose'
 
@@ -52,7 +52,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
     }
 
     if (!organisationFound.slug) {
-      const uniqueSlug = await findUniqueSlug(
+      const uniqueSlug = await findUniqueOrgaSlug(
         slugify(organisationName.toLowerCase())
       )
 

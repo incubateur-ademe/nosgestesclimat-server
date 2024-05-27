@@ -2,6 +2,8 @@ import express, { Request, Response } from 'express'
 import { Organisation } from '../../schemas/OrganisationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { Poll } from '../../schemas/PollSchema'
+import { findUniquePollSlug } from '../../helpers/organisations/findUniquePollSlug'
+import slugify from 'slugify'
 
 const router = express.Router()
 
@@ -21,7 +23,11 @@ router.route('/').post(async (req: Request, res: Response) => {
       return res.status(403).json('Error. Organisation not found.')
     }
 
+    const uniqueSlug = await findUniquePollSlug(slugify(name.toLowerCase()))
+
     const pollCreated = new Poll({
+      name,
+      slug: uniqueSlug,
       simulations: [],
       defaultAdditionalQuestions,
       customAdditionalQuestions,
@@ -35,7 +41,7 @@ router.route('/').post(async (req: Request, res: Response) => {
 
     setSuccessfulJSONResponse(res)
 
-    res.json({ pollId: newlySavedPoll._id })
+    res.json(newlySavedPoll)
 
     console.log('New poll created')
   } catch (error) {

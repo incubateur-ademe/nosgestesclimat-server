@@ -25,7 +25,7 @@ export async function getPollPublicInfos({
   }
 
   const pollPublicInfos: PollPublicInfo = {
-    name: poll.slug,
+    name: poll.name,
     slug: poll.slug,
     defaultAdditionalQuestions: poll.defaultAdditionalQuestions,
     customAdditionalQuestions: poll.customAdditionalQuestions?.filter(

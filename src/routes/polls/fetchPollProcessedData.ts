@@ -79,6 +79,8 @@ router.post('/', async (req: Request, res: Response) => {
     res.json({
       ...pollData,
       organisationName: organisationFound?.name,
+      name: poll?.name,
+      slug: poll?.slug,
       defaultAdditionalQuestions: poll?.defaultAdditionalQuestions,
       customAdditionalQuestions: poll?.customAdditionalQuestions,
       isAdmin: organisationFound?.administrators.some(
