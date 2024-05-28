@@ -17,6 +17,7 @@ router.post('/', async (req: Request, res: Response) => {
   const orgaSlug = req.body.orgaSlug
   const pollSlug = req.body.pollSlug
   const userId = req.body.userId
+  const forceUseFirstPoll = req.body.forceUseFirstPoll
 
   if (!orgaSlug) {
     return res.status(403).json('No orgaSlug provided.')
@@ -42,9 +43,13 @@ router.post('/', async (req: Request, res: Response) => {
       return res.status(403).json('No organisation found.')
     }
 
-    const poll = (
-      organisationFound.polls as unknown as HydratedDocument<PollType>[]
-    ).find((poll) => poll.slug === pollSlug)
+    const poll = forceUseFirstPoll
+      ? (
+          organisationFound.polls as unknown as HydratedDocument<PollType>[]
+        )?.[0]
+      : (
+          organisationFound.polls as unknown as HydratedDocument<PollType>[]
+        ).find((poll) => poll.slug === pollSlug)
 
     let engine = undefined
 
@@ -81,6 +86,7 @@ router.post('/', async (req: Request, res: Response) => {
       organisationName: organisationFound?.name,
       name: poll?.name,
       slug: poll?.slug,
+      createdAt: poll?.createdAt,
       defaultAdditionalQuestions: poll?.defaultAdditionalQuestions,
       customAdditionalQuestions: poll?.customAdditionalQuestions,
       isAdmin: organisationFound?.administrators.some(
