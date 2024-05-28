@@ -21,7 +21,7 @@ router.route('/').post(async (req: Request, res: Response) => {
     const organisationFound = await Organisation.findOne({
       slug: orgaSlug,
       // User should be an admin
-      administrators: { $in: [email] },
+      administrators: { $elemMatch: { email } },
     })
 
     if (!organisationFound) {
