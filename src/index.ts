@@ -33,6 +33,8 @@ import verifyUserParticipationRoute from './routes/polls/verifyUserParticipation
 import updateCustomQuestionsRoute from './routes/polls/updateCustomQuestions'
 import checkCustomQuestionsEnabledRoute from './routes/polls/checkCustomQuestionsEnabled'
 import createPollRoute from './routes/polls/create'
+import updatePollRoute from './routes/polls/updatePoll'
+import deletePollRoute from './routes/polls/deletePoll'
 
 // Simulation routes
 import createSimulationRoute from './routes/simulations/create'
@@ -138,6 +140,8 @@ app.use(
 
 // Polls routes
 app.use('/polls/create', createPollRoute)
+app.use('/polls/update', updatePollRoute)
+app.use('/polls/delete', deletePollRoute)
 
 // Quiz routes
 app.use('/quiz/answers/create', createQuizAnswerRoute)

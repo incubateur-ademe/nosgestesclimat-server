@@ -11,8 +11,6 @@ router.route('/').post(async (req: Request, res: Response) => {
     const pollSlug = req.body.pollSlug
     const orgaSlug = req.body.orgaSlug
     const email = req.body.email
-    const name = req.body.name
-    const defaultAdditionalQuestions = req.body.defaultAdditionalQuestions
 
     if (!pollSlug || !orgaSlug) {
       return res.status(403).json('Error. Missing required info.')
@@ -36,15 +34,7 @@ router.route('/').post(async (req: Request, res: Response) => {
       return res.status(403).json('Error. Poll not found.')
     }
 
-    if (defaultAdditionalQuestions) {
-      poll.defaultAdditionalQuestions = defaultAdditionalQuestions
-    }
-
-    if (name) {
-      poll.name = name
-    }
-
-    await poll.save()
+    await poll.delete()
 
     setSuccessfulJSONResponse(res)
     res.json(true)
