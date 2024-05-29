@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import { getPollPublicInfos } from '../../helpers/organisations/getPollPublicInfos'
+import { Poll } from '../../schemas/PollSchema'
+import { Organisation } from '../../schemas/OrganisationSchema'
 
 const router = express.Router()
 
@@ -12,21 +13,34 @@ router
   .get(
     async (req: Request & { params: { pollSlug: string } }, res: Response) => {
       const pollSlug = req.params.pollSlug
+      const email = decodeURIComponent(req.query.email as string)
+      const orgaSlug = decodeURIComponent(req.query.orgaSlug as string)
 
-      if (!pollSlug) {
-        return res.status(500).send('You must provide a poll slug')
+      if (!pollSlug || !email || !orgaSlug) {
+        return res.status(500).send('Missing required info.')
       }
 
       try {
-        const pollPublicInfos = await getPollPublicInfos({ pollSlug })
+        const organisation = await Organisation.findOne({
+          slug: orgaSlug,
+          administrators: { $elemMatch: { email } },
+        })
 
-        if (!pollPublicInfos) {
+        if (!organisation) {
+          return res
+            .status(403)
+            .send('Organisation not found or user is not an admin.')
+        }
+
+        const poll = await Poll.findOne({ slug: pollSlug })
+
+        if (!poll) {
           return res.status(404).send('This poll does not exist')
         }
 
         setSuccessfulJSONResponse(res)
 
-        res.json(pollPublicInfos)
+        res.json(poll)
       } catch (error) {
         return res.status(500).send('Error while fetching poll')
       }

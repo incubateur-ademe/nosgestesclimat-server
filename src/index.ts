@@ -26,7 +26,7 @@ import validateVerificationCodeRoute from './routes/organisations/validateVerifi
 import logOutRoute from './routes/organisations/logout'
 
 // Polls routes
-import fetchPollRoute from './routes/polls/fetchPoll'
+import fetchPollPublicInfoRoute from './routes/polls/fetchPollPublicInfo'
 import fetchPollsRoute from './routes/polls/fetchPolls'
 import fetchPollProcessedData from './routes/polls/fetchPollProcessedData'
 import verifyUserParticipationRoute from './routes/polls/verifyUserParticipation'
@@ -35,6 +35,7 @@ import checkCustomQuestionsEnabledRoute from './routes/polls/checkCustomQuestion
 import createPollRoute from './routes/polls/create'
 import updatePollRoute from './routes/polls/updatePoll'
 import deletePollRoute from './routes/polls/deletePoll'
+import fetchPoll from './routes/polls/fetchPoll'
 
 // Simulation routes
 import createSimulationRoute from './routes/simulations/create'
@@ -124,7 +125,7 @@ app.use(
   validateVerificationCodeRoute
 )
 app.use('/organisations/send-verification-code', sendVerificationCodeRoute)
-app.use('/organisations/fetch-poll:pollSlug?', fetchPollRoute)
+app.use('/organisations/fetch-public-poll:pollSlug?', fetchPollPublicInfoRoute)
 app.use('/organisations/fetch-poll-processed-data', fetchPollProcessedData)
 app.use('/organisations/fetch-polls', fetchPollsRoute)
 app.use('/organisations/logout', logOutRoute)
@@ -142,6 +143,7 @@ app.use(
 app.use('/polls/create', createPollRoute)
 app.use('/polls/update', updatePollRoute)
 app.use('/polls/delete', deletePollRoute)
+app.use('/polls/fetch-poll', fetchPoll)
 
 // Quiz routes
 app.use('/quiz/answers/create', createQuizAnswerRoute)
