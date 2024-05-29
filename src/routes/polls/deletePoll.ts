@@ -9,8 +9,8 @@ const router = express.Router()
 router.route('/:pollSlug?').delete(async (req: Request, res: Response) => {
   try {
     const pollSlug = req.params.pollSlug
-    const orgaSlug = req.query.orgaSlug
-    const email = req.query.email
+    const orgaSlug = decodeURIComponent(req.query.orgaSlug as string)
+    const email = decodeURIComponent(req.query.email as string)
 
     if (!pollSlug || !orgaSlug || !email) {
       return res.status(403).json('Error. Missing required info.')
