@@ -15,13 +15,6 @@ router.route('/').post(async (req: Request, res: Response) => {
       return res.status(403).json('Error. An email address must be provided.')
     }
 
-    const pollCreated = new Poll({
-      //TODO: it should be unique and not random
-      simulations: [],
-    })
-
-    const newlySavedPoll = await pollCreated.save()
-
     const organisationCreated = new Organisation({
       administrators: [
         {
@@ -29,7 +22,7 @@ router.route('/').post(async (req: Request, res: Response) => {
           userId,
         },
       ],
-      polls: [newlySavedPoll._id],
+      polls: [],
     })
 
     // Save the organisation
