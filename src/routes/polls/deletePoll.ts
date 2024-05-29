@@ -12,7 +12,6 @@ router.route('/:pollSlug?').delete(async (req: Request, res: Response) => {
     const orgaSlug = req.query.orgaSlug
     const email = req.query.email
 
-    console.log(pollSlug, orgaSlug, email)
     if (!pollSlug || !orgaSlug || !email) {
       return res.status(403).json('Error. Missing required info.')
     }
@@ -34,7 +33,6 @@ router.route('/:pollSlug?').delete(async (req: Request, res: Response) => {
     setSuccessfulJSONResponse(res)
     res.json(true)
   } catch (error) {
-    console.log(error)
     return res.status(403).json(error)
   }
 })

@@ -13,11 +13,11 @@ import { PollType } from '../../schemas/PollSchema'
 
 const router = express.Router()
 
-router.post('/', async (req: Request, res: Response) => {
-  const orgaSlug = req.body.orgaSlug
-  const pollSlug = req.body.pollSlug
-  const userId = req.body.userId
-  const forceUseFirstPoll = req.body.forceUseFirstPoll
+router.get('/', async (req: Request, res: Response) => {
+  const orgaSlug = decodeURIComponent(req.query.orgaSlug as string)
+  const pollSlug = decodeURIComponent(req.query.pollSlug as string)
+  const userId = decodeURIComponent(req.query.userId as string)
+  const forceUseFirstPoll = Boolean(req.query.forceUseFirstPoll)
 
   if (!orgaSlug) {
     return res.status(403).json('No orgaSlug provided.')
@@ -43,6 +43,8 @@ router.post('/', async (req: Request, res: Response) => {
       return res.status(403).json('No organisation found.')
     }
 
+    // Legacy from first version of the organisation path
+    // which had only one poll
     const poll = forceUseFirstPoll
       ? (
           organisationFound.polls as unknown as HydratedDocument<PollType>[]
