@@ -23,6 +23,7 @@ export type OrganisationType = {
   name: string
   slug: string
   organisationType: string
+  numberOfCollaborators?: number
 }
 
 const AdministratorSchema = new Schema<Administrator>(
@@ -52,6 +53,7 @@ export const OrganisationSchema = new Schema<OrganisationType>(
     name: String,
     slug: String,
     organisationType: String,
+    numberOfCollaborators: Number,
   },
   {
     timestamps: true,

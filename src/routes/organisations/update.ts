@@ -37,6 +37,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
   const administratorPosition = req.body.administratorPosition ?? ''
   const administratorTelephone = req.body.administratorTelephone ?? ''
   const organisationType = req.body.organisationType ?? ''
+  const numberOfCollaborators = req.body.numberOfCollaborators ?? undefined
 
   try {
     const organisationFound = await Organisation.findOne({
@@ -75,7 +76,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
     }
 
     if (administratorTelephone && administratorModifiedIndex !== -1) {
-      organisationFound.administrators[administratorModifiedIndex].position =
+      organisationFound.administrators[administratorModifiedIndex].telephone =
         administratorTelephone
     }
 
@@ -87,6 +88,10 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
 
     if (organisationType) {
       organisationFound.organisationType = organisationType
+    }
+
+    if (numberOfCollaborators) {
+      organisationFound.numberOfCollaborators = numberOfCollaborators
     }
 
     const pollUpdated = await Poll.findById(
