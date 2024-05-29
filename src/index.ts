@@ -126,17 +126,10 @@ app.use(
 )
 app.use('/organisations/send-verification-code', sendVerificationCodeRoute)
 app.use('/organisations/fetch-public-poll:pollSlug?', fetchPollPublicInfoRoute)
-app.use('/organisations/fetch-poll-processed-data', fetchPollProcessedData)
-app.use('/organisations/fetch-polls', fetchPollsRoute)
 app.use('/organisations/logout', logOutRoute)
 app.use(
   '/organisations/verify-user-participation',
   verifyUserParticipationRoute
-)
-app.use('/organisations/update-custom-questions', updateCustomQuestionsRoute)
-app.use(
-  '/organisations/check-custom-questions-enabled',
-  checkCustomQuestionsEnabledRoute
 )
 
 // Polls routes
@@ -144,6 +137,13 @@ app.use('/polls/create', createPollRoute)
 app.use('/polls/update', updatePollRoute)
 app.use('/polls/delete', deletePollRoute)
 app.use('/polls/fetch-poll', fetchPoll)
+app.use('/polls/fetch-polls', fetchPollsRoute)
+app.use('/polls/fetch-poll-processed-data', fetchPollProcessedData)
+app.use(
+  '/polls/check-custom-questions-enabled',
+  checkCustomQuestionsEnabledRoute
+)
+app.use('/polls/update-custom-questions', updateCustomQuestionsRoute)
 
 // Quiz routes
 app.use('/quiz/answers/create', createQuizAnswerRoute)
