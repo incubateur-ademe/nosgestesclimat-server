@@ -6,20 +6,21 @@ import { Poll } from '../../schemas/PollSchema'
 
 const router = express.Router()
 
-router.route('/').post(async (req: Request, res: Response) => {
+router.route('/:pollSlug?').delete(async (req: Request, res: Response) => {
   try {
-    const pollSlug = req.body.pollSlug
-    const orgaSlug = req.body.orgaSlug
-    const email = req.body.email
+    const pollSlug = req.params.pollSlug
+    const orgaSlug = req.query.orgaSlug
+    const email = req.query.email
 
-    if (!pollSlug || !orgaSlug) {
+    console.log(pollSlug, orgaSlug, email)
+    if (!pollSlug || !orgaSlug || !email) {
       return res.status(403).json('Error. Missing required info.')
     }
 
     const organisationFound = await Organisation.findOne({
       slug: orgaSlug,
       // User should be an admin
-      administrators: { $in: [email] },
+      administrators: { $elemMatch: { email } },
     })
 
     if (!organisationFound) {
@@ -28,13 +29,7 @@ router.route('/').post(async (req: Request, res: Response) => {
         .json('Error. Organisation not found or user is not an admin.')
     }
 
-    const poll = await Poll.findOne({ slug: pollSlug })
-
-    if (!poll) {
-      return res.status(403).json('Error. Poll not found.')
-    }
-
-    await poll.delete()
+    await Poll.deleteOne({ slug: pollSlug })
 
     setSuccessfulJSONResponse(res)
     res.json(true)
