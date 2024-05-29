@@ -125,7 +125,6 @@ app.use(
   validateVerificationCodeRoute
 )
 app.use('/organisations/send-verification-code', sendVerificationCodeRoute)
-app.use('/organisations/fetch-public-poll:pollSlug?', fetchPollPublicInfoRoute)
 app.use('/organisations/logout', logOutRoute)
 app.use(
   '/organisations/verify-user-participation',
@@ -137,6 +136,8 @@ app.use('/polls/create', createPollRoute)
 app.use('/polls/update', updatePollRoute)
 app.use('/polls/delete', deletePollRoute)
 app.use('/polls/fetch-poll', fetchPoll)
+app.use('/polls/fetch-public-poll', fetchPollPublicInfoRoute)
+
 app.use('/polls/fetch-polls', fetchPollsRoute)
 app.use('/polls/fetch-poll-processed-data', fetchPollProcessedData)
 app.use(
