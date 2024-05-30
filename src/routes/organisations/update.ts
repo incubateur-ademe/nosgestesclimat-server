@@ -99,7 +99,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
         ? await Poll.findById(
             (
               organisationFound.polls[
-                -1
+                organisationFound.polls.length - 1
               ] as unknown as HydratedDocument<PollType>
             )?._id
           )
