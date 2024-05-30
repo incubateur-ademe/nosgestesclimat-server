@@ -18,7 +18,7 @@ router.get('/', async (req: Request, res: Response) => {
   const pollSlug = decodeURIComponent(req.query.pollSlug as string)
   const email = decodeURIComponent(req.query.email as string)
   const userId = decodeURIComponent(req.query.userId as string)
-  const forceUseFirstPoll = Boolean(req.query.forceUseFirstPoll)
+  const forceUseFirstPoll = req.query.forceUseFirstPoll
 
   if (!orgaSlug) {
     return res.status(403).json('No orgaSlug provided.')
@@ -46,17 +46,19 @@ router.get('/', async (req: Request, res: Response) => {
 
     // Legacy from first version of the organisation path
     // which had only one poll
-    const poll = forceUseFirstPoll
-      ? (
-          organisationFound.polls as unknown as HydratedDocument<PollType>[]
-        )?.[0]
-      : (
-          organisationFound.polls as unknown as HydratedDocument<PollType>[]
-        ).find((poll) => poll.slug === pollSlug)
+
+    const poll =
+      forceUseFirstPoll === 'true'
+        ? (
+            organisationFound.polls as unknown as HydratedDocument<PollType>[]
+          )?.[0]
+        : (
+            organisationFound.polls as unknown as HydratedDocument<PollType>[]
+          ).find((poll) => poll.slug === pollSlug)
 
     let engine = undefined
 
-    const shouldRecompute = poll && poll?.simulations?.length < 100
+    const shouldRecompute = !!poll && poll?.simulations?.length < 100
 
     if (shouldRecompute) {
       engine = new Engine(rules as unknown as NGCRules, {
@@ -100,7 +102,6 @@ router.get('/', async (req: Request, res: Response) => {
       isAdmin: !!admin,
     })
   } catch (error) {
-    console.log(error)
     res.status(500).json('Server error.')
   }
 })
