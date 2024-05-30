@@ -18,7 +18,6 @@ router.get('/', async (req: Request, res: Response) => {
   const pollSlug = decodeURIComponent(req.query.pollSlug as string)
   const email = decodeURIComponent(req.query.email as string)
   const userId = decodeURIComponent(req.query.userId as string)
-  const forceUseFirstPoll = req.query.forceUseFirstPoll
 
   if (!orgaSlug) {
     return res.status(403).json('No orgaSlug provided.')
@@ -44,17 +43,9 @@ router.get('/', async (req: Request, res: Response) => {
       return res.status(403).json('No organisation found.')
     }
 
-    // Legacy from first version of the organisation path
-    // which had only one poll
-
-    const poll =
-      forceUseFirstPoll === 'true'
-        ? (
-            organisationFound.polls as unknown as HydratedDocument<PollType>[]
-          )?.[0]
-        : (
-            organisationFound.polls as unknown as HydratedDocument<PollType>[]
-          ).find((poll) => poll.slug === pollSlug)
+    const poll = (
+      organisationFound.polls as unknown as HydratedDocument<PollType>[]
+    ).find((poll) => poll.slug === pollSlug)
 
     let engine = undefined
 
