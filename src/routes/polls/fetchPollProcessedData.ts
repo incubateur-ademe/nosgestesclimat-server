@@ -16,6 +16,7 @@ const router = express.Router()
 router.get('/', async (req: Request, res: Response) => {
   const orgaSlug = decodeURIComponent(req.query.orgaSlug as string)
   const pollSlug = decodeURIComponent(req.query.pollSlug as string)
+  const email = decodeURIComponent(req.query.email as string)
   const userId = decodeURIComponent(req.query.userId as string)
   const forceUseFirstPoll = Boolean(req.query.forceUseFirstPoll)
 
@@ -67,6 +68,10 @@ router.get('/', async (req: Request, res: Response) => {
       })
     }
 
+    const admin = organisationFound.administrators.find(
+      (admin) => admin.email === email
+    )
+
     const pollData = processPollData({
       // TODO : remove unformatting when possible
       simulations: (poll?.simulations as unknown as SimulationType[]).map(
@@ -78,7 +83,8 @@ router.get('/', async (req: Request, res: Response) => {
               )
             : simulation
       ),
-      userId: userId ?? '',
+      // Fix : the local userId is not synced with the one in the database
+      userId: admin?.userId ?? userId ?? '',
     })
 
     setSuccessfulJSONResponse(res)
@@ -91,9 +97,7 @@ router.get('/', async (req: Request, res: Response) => {
       createdAt: poll?.createdAt,
       defaultAdditionalQuestions: poll?.defaultAdditionalQuestions,
       customAdditionalQuestions: poll?.customAdditionalQuestions,
-      isAdmin: organisationFound?.administrators.some(
-        (admin) => admin?.userId === userId
-      ),
+      isAdmin: !!admin,
     })
   } catch (error) {
     console.log(error)
