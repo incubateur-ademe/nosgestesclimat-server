@@ -24,6 +24,7 @@ import sendVerificationCodeRoute from './routes/organisations/sendVerificationCo
 import updateRoute from './routes/organisations/update'
 import validateVerificationCodeRoute from './routes/organisations/validateVerificationCode'
 import logOutRoute from './routes/organisations/logout'
+import getOrgaPollSlugsRoute from './routes/organisations/getOrgaPollSlugs'
 
 // Polls routes
 import fetchPollPublicInfoRoute from './routes/polls/fetchPollPublicInfo'
@@ -130,6 +131,7 @@ app.use(
   '/organisations/verify-user-participation',
   verifyUserParticipationRoute
 )
+app.use('/organisations/get-orga-poll-slugs', getOrgaPollSlugsRoute)
 
 // Polls routes
 app.use('/polls/create', createPollRoute)
