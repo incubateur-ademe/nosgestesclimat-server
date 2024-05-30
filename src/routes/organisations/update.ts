@@ -94,24 +94,16 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
       organisationFound.numberOfCollaborators = numberOfCollaborators
     }
 
-    const pollUpdated = await Poll.findById(
-      (organisationFound.polls[0] as unknown as HydratedDocument<PollType>)._id
-    )
-
-    if (pollUpdated && defaultAdditionalQuestions) {
-      pollUpdated.defaultAdditionalQuestions = defaultAdditionalQuestions
-    }
-
-    if (pollUpdated && expectedNumberOfParticipants) {
-      pollUpdated.expectedNumberOfParticipants = expectedNumberOfParticipants
-    }
-
-    if (
-      pollUpdated &&
-      (defaultAdditionalQuestions || expectedNumberOfParticipants)
-    ) {
-      await pollUpdated.save()
-    }
+    const lastPoll =
+      organisationFound.polls.length > 0
+        ? await Poll.findById(
+            (
+              organisationFound.polls[
+                organisationFound.polls.length - 1
+              ] as unknown as HydratedDocument<PollType>
+            )?._id
+          )
+        : undefined
 
     // Save the modifications
     await organisationFound.save()
@@ -126,7 +118,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
           [ATTRIBUTE_ORGANISATION_NAME]: organisationFound.name,
           [ATTRIBUTE_ORGANISATION_SLUG]: organisationFound.slug,
           [ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER]:
-            pollUpdated?.simulations?.length ?? 0,
+            lastPoll?.simulations?.length ?? 0,
         },
       })
     }
@@ -139,6 +131,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
 
     res.json(organisationResult)
   } catch (error) {
+    console.log('Error updating organisation', error)
     return res.status(403).json(error)
   }
 })
