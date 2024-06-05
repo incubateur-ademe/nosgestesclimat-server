@@ -14,8 +14,8 @@ router
   .post(async (req: Request, res: Response) => {
     try {
       const organisationId = req.body.organisationId
-      const defaultAdditionalQuestions = req.body.defaultAdditionnalQuestions
-      const customAdditionalQuestions = req.body.customAdditionnalQuestions
+      const defaultAdditionalQuestions = req.body.defaultAdditionalQuestions
+      const customAdditionalQuestions = req.body.customAdditionalQuestions
       const name = req.body.name
 
       if (!organisationId || !name) {
