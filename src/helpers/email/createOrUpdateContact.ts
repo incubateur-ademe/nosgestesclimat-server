@@ -36,7 +36,8 @@ export function createOrUpdateContact({
   })
 
   if (!validateEmail(email)) {
-    throw new Error('Invalid email')
+    console.log('Invalid email', email)
+    return
   }
 
   return axios.post(
