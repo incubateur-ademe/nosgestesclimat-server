@@ -23,13 +23,20 @@ import loginOrganisationRoute from './routes/organisations/login'
 import sendVerificationCodeRoute from './routes/organisations/sendVerificationCode'
 import updateRoute from './routes/organisations/update'
 import validateVerificationCodeRoute from './routes/organisations/validateVerificationCode'
-import fetchPollRoute from './routes/organisations/fetchPoll'
-import fetchPollsRoute from './routes/organisations/fetchPolls'
-import fetchPollProcessedData from './routes/organisations/fetchPollProcessedData'
 import logOutRoute from './routes/organisations/logout'
-import verifyUserParticipationRoute from './routes/organisations/verifyUserParticipation'
-import updateCustomQuestionsRoute from './routes/organisations/updateCustomQuestions'
-import checkCustomQuestionsEnabledRoute from './routes/organisations/checkCustomQuestionsEnabled'
+import getOrgaPollSlugsRoute from './routes/organisations/getOrgaPollSlugs'
+
+// Polls routes
+import fetchPollPublicInfoRoute from './routes/polls/fetchPollPublicInfo'
+import fetchPollsRoute from './routes/polls/fetchPolls'
+import fetchPollProcessedData from './routes/polls/fetchPollProcessedData'
+import verifyUserParticipationRoute from './routes/polls/verifyUserParticipation'
+import updateCustomQuestionsRoute from './routes/polls/updateCustomQuestions'
+import checkCustomQuestionsEnabledRoute from './routes/polls/checkCustomQuestionsEnabled'
+import createPollRoute from './routes/polls/create'
+import updatePollRoute from './routes/polls/updatePoll'
+import deletePollRoute from './routes/polls/deletePoll'
+import fetchPoll from './routes/polls/fetchPoll'
 
 // Simulation routes
 import createSimulationRoute from './routes/simulations/create'
@@ -119,19 +126,27 @@ app.use(
   validateVerificationCodeRoute
 )
 app.use('/organisations/send-verification-code', sendVerificationCodeRoute)
-app.use('/organisations/fetch-poll:pollSlug?', fetchPollRoute)
-app.use('/organisations/fetch-poll-processed-data', fetchPollProcessedData)
-app.use('/organisations/fetch-polls', fetchPollsRoute)
 app.use('/organisations/logout', logOutRoute)
 app.use(
   '/organisations/verify-user-participation',
   verifyUserParticipationRoute
 )
-app.use('/organisations/update-custom-questions', updateCustomQuestionsRoute)
+app.use('/organisations/get-orga-poll-slugs', getOrgaPollSlugsRoute)
+
+// Polls routes
+app.use('/polls/create', createPollRoute)
+app.use('/polls/update', updatePollRoute)
+app.use('/polls/delete', deletePollRoute)
+app.use('/polls/fetch-poll', fetchPoll)
+app.use('/polls/fetch-public-poll', fetchPollPublicInfoRoute)
+
+app.use('/polls/fetch-polls', fetchPollsRoute)
+app.use('/polls/fetch-poll-processed-data', fetchPollProcessedData)
 app.use(
-  '/organisations/check-custom-questions-enabled',
+  '/polls/check-custom-questions-enabled',
   checkCustomQuestionsEnabledRoute
 )
+app.use('/polls/update-custom-questions', updateCustomQuestionsRoute)
 
 // Quiz routes
 app.use('/quiz/answers/create', createQuizAnswerRoute)

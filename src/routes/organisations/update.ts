@@ -10,9 +10,10 @@ import slugify from 'slugify'
 import { Organisation } from '../../schemas/OrganisationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
-import { Poll } from '../../schemas/PollSchema'
-import { findUniqueSlug } from '../../helpers/organisations/findUniqueSlug'
+import { Poll, PollType } from '../../schemas/PollSchema'
+import { findUniqueOrgaSlug } from '../../helpers/organisations/findUniqueOrgaSlug'
 import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
+import { HydratedDocument } from 'mongoose'
 
 const router = express.Router()
 
@@ -36,6 +37,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
   const administratorPosition = req.body.administratorPosition ?? ''
   const administratorTelephone = req.body.administratorTelephone ?? ''
   const organisationType = req.body.organisationType ?? ''
+  const numberOfCollaborators = req.body.numberOfCollaborators ?? undefined
 
   try {
     const organisationFound = await Organisation.findOne({
@@ -51,7 +53,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
     }
 
     if (!organisationFound.slug) {
-      const uniqueSlug = await findUniqueSlug(
+      const uniqueSlug = await findUniqueOrgaSlug(
         slugify(organisationName.toLowerCase())
       )
 
@@ -74,7 +76,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
     }
 
     if (administratorTelephone && administratorModifiedIndex !== -1) {
-      organisationFound.administrators[administratorModifiedIndex].position =
+      organisationFound.administrators[administratorModifiedIndex].telephone =
         administratorTelephone
     }
 
@@ -88,22 +90,20 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
       organisationFound.organisationType = organisationType
     }
 
-    const pollUpdated = await Poll.findById(organisationFound.polls[0]._id)
-
-    if (pollUpdated && defaultAdditionalQuestions) {
-      pollUpdated.defaultAdditionalQuestions = defaultAdditionalQuestions
+    if (numberOfCollaborators) {
+      organisationFound.numberOfCollaborators = numberOfCollaborators
     }
 
-    if (pollUpdated && expectedNumberOfParticipants) {
-      pollUpdated.expectedNumberOfParticipants = expectedNumberOfParticipants
-    }
-
-    if (
-      pollUpdated &&
-      (defaultAdditionalQuestions || expectedNumberOfParticipants)
-    ) {
-      await pollUpdated.save()
-    }
+    const lastPoll =
+      organisationFound.polls.length > 0
+        ? await Poll.findById(
+            (
+              organisationFound.polls[
+                organisationFound.polls.length - 1
+              ] as unknown as HydratedDocument<PollType>
+            )?._id
+          )
+        : undefined
 
     // Save the modifications
     await organisationFound.save()
@@ -118,7 +118,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
           [ATTRIBUTE_ORGANISATION_NAME]: organisationFound.name,
           [ATTRIBUTE_ORGANISATION_SLUG]: organisationFound.slug,
           [ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER]:
-            pollUpdated?.simulations?.length ?? 0,
+            lastPoll?.simulations?.length ?? 0,
         },
       })
     }
@@ -131,6 +131,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
 
     res.json(organisationResult)
   } catch (error) {
+    console.log('Error updating organisation', error)
     return res.status(403).json(error)
   }
 })

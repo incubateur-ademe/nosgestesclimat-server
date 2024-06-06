@@ -9,12 +9,15 @@ import rules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr
 import { handleComputeResultsIfNone } from '../../helpers/simulation/handleComputeResultsIfNone'
 import Engine from 'publicodes'
 import { NGCRules } from '@incubateur-ademe/nosgestesclimat'
+import { PollType } from '../../schemas/PollSchema'
 
 const router = express.Router()
 
-router.post('/', async (req: Request, res: Response) => {
-  const orgaSlug = req.body.orgaSlug
-  const userId = req.body.userId
+router.get('/', async (req: Request, res: Response) => {
+  const orgaSlug = decodeURIComponent(req.query.orgaSlug as string)
+  const pollSlug = decodeURIComponent(req.query.pollSlug as string)
+  const email = decodeURIComponent(req.query.email as string)
+  const userId = decodeURIComponent(req.query.userId as string)
 
   if (!orgaSlug) {
     return res.status(403).json('No orgaSlug provided.')
@@ -40,21 +43,15 @@ router.post('/', async (req: Request, res: Response) => {
       return res.status(403).json('No organisation found.')
     }
 
-    // TODO : fix this
-    /*
-      if (
-        !organisationFound.polls[0].simulations.some(
-          // @ts-ignore
-          (simulation) => simulation?.user?._id.toString() === userId
-        )
-      ) {
-        return res.status(403).json("User id doesn't match any simulation.")
-      }
-      */
+    const poll = (
+      organisationFound.polls as unknown as HydratedDocument<PollType>[]
+    ).find((poll) => poll.slug === pollSlug)
 
     let engine = undefined
 
-    if (organisationFound?.polls[0]?.simulations.length < 100) {
+    const shouldRecompute = !!poll && poll?.simulations?.length < 100
+
+    if (shouldRecompute) {
       engine = new Engine(rules as unknown as NGCRules, {
         logger: {
           log: console.log,
@@ -64,17 +61,23 @@ router.post('/', async (req: Request, res: Response) => {
       })
     }
 
+    const admin = organisationFound.administrators.find(
+      (admin) => admin.email === email
+    )
+
     const pollData = processPollData({
       // TODO : remove unformatting when possible
-      simulations: (
-        organisationFound?.polls[0]?.simulations as unknown as SimulationType[]
-      ).map((simulation) =>
-        handleComputeResultsIfNone(
-          simulation as HydratedDocument<SimulationType>,
-          engine
-        )
+      simulations: (poll?.simulations as unknown as SimulationType[]).map(
+        (simulation) =>
+          shouldRecompute
+            ? handleComputeResultsIfNone(
+                simulation as HydratedDocument<SimulationType>,
+                engine
+              )
+            : simulation
       ),
-      userId: userId ?? '',
+      // Fix : the local userId is not synced with the one in the database
+      userId: admin?.userId ?? userId ?? '',
     })
 
     setSuccessfulJSONResponse(res)
@@ -82,16 +85,14 @@ router.post('/', async (req: Request, res: Response) => {
     res.json({
       ...pollData,
       organisationName: organisationFound?.name,
-      defaultAdditionalQuestions:
-        organisationFound?.polls[0]?.defaultAdditionalQuestions,
-      customAdditionalQuestions:
-        organisationFound?.polls[0]?.customAdditionalQuestions,
-      isAdmin: organisationFound?.administrators.some(
-        (admin) => admin?.userId === userId
-      ),
+      name: poll?.name,
+      slug: poll?.slug,
+      createdAt: poll?.createdAt,
+      defaultAdditionalQuestions: poll?.defaultAdditionalQuestions,
+      customAdditionalQuestions: poll?.customAdditionalQuestions,
+      isAdmin: !!admin,
     })
   } catch (error) {
-    console.log(error)
     res.status(500).json('Server error.')
   }
 })

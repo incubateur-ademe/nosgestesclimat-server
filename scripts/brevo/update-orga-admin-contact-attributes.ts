@@ -7,7 +7,7 @@ import {
   ATTRIBUTE_ORGANISATION_NAME,
   ATTRIBUTE_ORGANISATION_SLUG,
 } from '../../src/constants/brevo'
-import { Poll } from '../../src/schemas/PollSchema'
+import { Poll, PollType } from '../../src/schemas/PollSchema'
 import { createOrUpdateContact } from '../../src/helpers/email/createOrUpdateContact'
 
 export async function updateOrgaAdminContactAttributes() {
@@ -24,7 +24,7 @@ export async function updateOrgaAdminContactAttributes() {
         // Get the last poll updated
         const lastPollCreated = organisation.polls?.sort((a, b) => {
           return (b as any).createdAt.getTime() - (a as any).createdAt.getTime()
-        })[0]
+        })[0] as unknown as PollType
 
         console.log('updating orga admin contact attributes', {
           email: administrator.email,

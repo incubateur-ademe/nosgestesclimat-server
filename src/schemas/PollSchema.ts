@@ -12,6 +12,7 @@ export type PollType = {
   simulations: RefType[]
   startDate: Date
   endDate: Date
+  createdAt: Date
   name: string
   slug: string
   defaultAdditionalQuestions: string[]
