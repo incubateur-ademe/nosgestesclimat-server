@@ -10,6 +10,7 @@ import {
   TEMPLATE_SIMULATION_COMPLETED,
   TEMPLATE_SIMULATION_IN_PROGRESS,
 } from '../../constants/brevo'
+import { validateEmail } from '../../utils/validation/validateEmail'
 
 /**
  * Send an email to a user when they save a simulation at the end
@@ -36,6 +37,11 @@ export async function sendSimulationEmail({
 
   // If we should not send the email, we don't do anything
   if (!shouldSendSimulationEmail) {
+    return
+  }
+
+  if (!validateEmail(email)) {
+    console.log('Invalid email', email)
     return
   }
 

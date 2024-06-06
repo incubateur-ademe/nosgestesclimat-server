@@ -59,7 +59,11 @@ router.route('/').post(async (req, res) => {
 
       // Update Brevo contact
       if (name || listsAdded.length > 0) {
-        await createOrUpdateContact({ email, ...updates })
+        try {
+          await createOrUpdateContact({ email, ...updates })
+        } catch (error) {
+          console.error('Error updating contact', email, error)
+        }
       }
 
       // Update DB User document

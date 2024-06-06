@@ -15,12 +15,16 @@ export async function handleUpdateGroupNumberOneParticipant({ group }: Props) {
     participants: { $size: 1 },
   })
 
-  await createOrUpdateContact({
-    email: group.administrator.email ?? '',
-    userId,
-    otherAttributes: {
-      [ATTRIBUTE_NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT]:
-        groupsCreatedWithOneParticipant.length,
-    },
-  })
+  try {
+    await createOrUpdateContact({
+      email: group.administrator.email ?? '',
+      userId,
+      otherAttributes: {
+        [ATTRIBUTE_NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT]:
+          groupsCreatedWithOneParticipant.length,
+      },
+    })
+  } catch (error) {
+    console.error('Error updating contact', group.administrator.email, error)
+  }
 }

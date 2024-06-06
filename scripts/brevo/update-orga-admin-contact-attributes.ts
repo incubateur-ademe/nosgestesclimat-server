@@ -38,17 +38,21 @@ export async function updateOrgaAdminContactAttributes() {
           },
         })
 
-        await createOrUpdateContact({
-          email: administrator.email,
-          name: administrator.name,
-          otherAttributes: {
-            [ATTRIBUTE_IS_ORGANISATION_ADMIN]: true,
-            [ATTRIBUTE_ORGANISATION_NAME]: organisation.name ?? undefined,
-            [ATTRIBUTE_ORGANISATION_SLUG]: organisation.slug ?? undefined,
-            [ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER]:
-              lastPollCreated?.simulations?.length ?? 0,
-          },
-        })
+        try {
+          await createOrUpdateContact({
+            email: administrator.email,
+            name: administrator.name,
+            otherAttributes: {
+              [ATTRIBUTE_IS_ORGANISATION_ADMIN]: true,
+              [ATTRIBUTE_ORGANISATION_NAME]: organisation.name ?? undefined,
+              [ATTRIBUTE_ORGANISATION_SLUG]: organisation.slug ?? undefined,
+              [ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER]:
+                lastPollCreated?.simulations?.length ?? 0,
+            },
+          })
+        } catch (error) {
+          console.error('Error updating contact', administrator?.email, error)
+        }
 
         await organisation.save()
       }

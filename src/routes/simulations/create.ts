@@ -49,12 +49,16 @@ router.route('/').post(async (req, res) => {
   }
 
   try {
-    createOrUpdateContact({
-      email,
-      userId,
-      simulation,
-      listIds: listIds ?? undefined,
-    })
+    try {
+      createOrUpdateContact({
+        email,
+        userId,
+        simulation,
+        listIds: listIds ?? undefined,
+      })
+    } catch (error) {
+      console.error('Error updating contact', email, error)
+    }
 
     // We check if a poll is associated with the simulation
     const polls = await findPollsBySlug(simulation.polls)

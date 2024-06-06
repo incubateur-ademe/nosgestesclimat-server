@@ -2,6 +2,7 @@ import axios from 'axios'
 import { axiosConf } from '../../constants/axios'
 import { SimulationType } from '../../schemas/SimulationSchema'
 import { handleAddAttributes } from '../brevo/handleAddAttributes'
+import { validateEmail } from '../../utils/validation/validateEmail'
 
 type Props = {
   email: string
@@ -33,6 +34,10 @@ export function createOrUpdateContact({
     simulation,
     otherAttributes,
   })
+
+  if (!validateEmail(email)) {
+    throw new Error('Invalid email')
+  }
 
   return axios.post(
     'https://api.brevo.com/v3/contacts',

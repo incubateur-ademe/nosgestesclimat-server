@@ -3,6 +3,7 @@ import axios from 'axios'
 import { axiosConf } from '../../constants/axios'
 import { createOrUpdateContact } from './createOrUpdateContact'
 import { LIST_ID_ORGANISATIONS } from '../../constants/brevo'
+import { validateEmail } from '../../utils/validation/validateEmail'
 
 type Props = {
   email: string
@@ -15,6 +16,11 @@ export async function sendVerificationCodeEmail({
   verificationCode,
 }: Props) {
   try {
+    if (!validateEmail(email)) {
+      console.log('Invalid email', email)
+      return
+    }
+
     // Add contact to the list or update it
     await createOrUpdateContact({
       email,

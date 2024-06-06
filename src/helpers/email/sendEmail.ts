@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { axiosConf } from '../../constants/axios'
+import { validateEmail } from '../../utils/validation/validateEmail'
 
 type Props = {
   email: string
@@ -18,6 +19,11 @@ export async function sendEmail({
   attributes,
   templateId,
 }: Props) {
+  if (!validateEmail(email)) {
+    console.log('Invalid email', email)
+    return
+  }
+
   // Add contact to list
   try {
     await axios.post(

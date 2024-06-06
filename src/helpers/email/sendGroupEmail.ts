@@ -11,6 +11,7 @@ import {
   TEMPLATE_ID_GROUP_CREATED,
   TEMPLATE_ID_GROUP_JOINED,
 } from '../../constants/brevo'
+import { validateEmail } from '../../utils/validation/validateEmail'
 
 /**
  * Send an email to a user when they join a group or when a group is created (based on the isCreation parameter)
@@ -41,6 +42,11 @@ export async function sendGroupEmail({
   // If this is not a creation email and they are the administrator, we don't send the email
   // (they already received it when they created the group)
   if (!isCreation && group.administrator?.userId === userId) {
+    return
+  }
+
+  if (!validateEmail(email)) {
+    console.error('Invalid email', email)
     return
   }
 
@@ -88,9 +94,9 @@ export async function sendGroupEmail({
       },
       axiosConf
     )
+
+    console.log(`Email group ${isCreation ? 'creation' : ''} sent to ${email}`)
   } catch (error) {
     throw new Error(error)
   }
-
-  console.log(`Email group ${isCreation ? 'creation' : ''} sent to ${email}`)
 }
