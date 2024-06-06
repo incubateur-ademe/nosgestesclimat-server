@@ -34,17 +34,13 @@ export async function handleUpdatePoll({
   if (organisationFound) {
     const administrators = organisationFound.administrators
     for (const administrator of administrators) {
-      try {
-        await createOrUpdateContact({
-          email: administrator.email,
-          userId: administrator.userId,
-          otherAttributes: {
-            [ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER]: poll.simulations.length,
-          },
-        })
-      } catch (error) {
-        console.error('Error updating contact', administrator.email, error)
-      }
+      await createOrUpdateContact({
+        email: administrator.email,
+        userId: administrator.userId,
+        otherAttributes: {
+          [ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER]: poll.simulations.length,
+        },
+      })
     }
   }
 

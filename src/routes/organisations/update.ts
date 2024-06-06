@@ -109,22 +109,18 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
     await organisationFound.save()
 
     if (administratorName || hasOptedInForCommunications !== undefined) {
-      try {
-        await createOrUpdateContact({
-          email,
-          name: administratorName,
-          optin: hasOptedInForCommunications,
-          otherAttributes: {
-            [ATTRIBUTE_IS_ORGANISATION_ADMIN]: true,
-            [ATTRIBUTE_ORGANISATION_NAME]: organisationFound.name,
-            [ATTRIBUTE_ORGANISATION_SLUG]: organisationFound.slug,
-            [ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER]:
-              lastPoll?.simulations?.length ?? 0,
-          },
-        })
-      } catch (error) {
-        console.error('Error updating contact', email, error)
-      }
+      await createOrUpdateContact({
+        email,
+        name: administratorName,
+        optin: hasOptedInForCommunications,
+        otherAttributes: {
+          [ATTRIBUTE_IS_ORGANISATION_ADMIN]: true,
+          [ATTRIBUTE_ORGANISATION_NAME]: organisationFound.name,
+          [ATTRIBUTE_ORGANISATION_SLUG]: organisationFound.slug,
+          [ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER]:
+            lastPoll?.simulations?.length ?? 0,
+        },
+      })
     }
 
     setSuccessfulJSONResponse(res)
