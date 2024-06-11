@@ -93,6 +93,7 @@ export function processPollData({
 
     return {
       bilan: simulation.computedResults.bilan,
+      situation: simulation.situation,
       categories: { ...(simulation.computedResults.categories ?? {}) },
       defaultAdditionalQuestionsAnswers: {
         ...(simulation.defaultAdditionalQuestionsAnswers ?? {}),
