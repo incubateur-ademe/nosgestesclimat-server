@@ -10,10 +10,25 @@ import {
 import { processCondition } from './processPollData/processCondition'
 import { processFunFactsValues } from './processPollData/processFunFactsValues'
 
+const MAX_VALUE = 100000
+
 // This is shit but a hack from our lead dev
 const rules = importedRules as unknown as NGCRules
 
 const funFactsRules = importedFunFacts as { [k in keyof FunFacts]: DottedName }
+
+function isExcluded(simulation: SimulationType) {
+  if (
+    [
+      simulation.computedResults.bilan,
+      Object.values(simulation.computedResults.categories),
+    ].some((value) => (value as number) > MAX_VALUE)
+  ) {
+    return true
+  }
+
+  return false
+}
 
 type SimulationRecap = {
   bilan: number
@@ -82,11 +97,15 @@ export function processPollData({
         rule: rules[dottedName],
       })
 
-      if (typeof conditionResult === 'boolean' && conditionResult === true) {
+      if (
+        typeof conditionResult === 'boolean' &&
+        conditionResult === true &&
+        !isExcluded(simulation)
+      ) {
         computedFunFacts[key as keyof FunFacts] += 1
       }
 
-      if (typeof conditionResult === 'number') {
+      if (typeof conditionResult === 'number' && !isExcluded(simulation)) {
         computedFunFacts[key as keyof FunFacts] += conditionResult
       }
     })
@@ -109,7 +128,7 @@ export function processPollData({
 
   return {
     funFacts: processFunFactsValues({
-      simulations,
+      simulations: simulations.filter((simulation) => !isExcluded(simulation)),
       computedFunFacts,
       funFactsRules,
       rules,
