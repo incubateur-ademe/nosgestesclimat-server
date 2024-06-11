@@ -28,7 +28,7 @@ export interface SimulationType {
   }
   customAdditionalQuestionsAnswers?: CustomAdditionalQuestionAnswerType
   savedViaEmail?: boolean
-  modifiedAt?: Date
+  updatedAt?: Date
   createdAt?: Date
   _id?: string
 }

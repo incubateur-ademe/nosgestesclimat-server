@@ -111,7 +111,6 @@ export function processPollData({
         computedFunFacts[key as keyof FunFacts] += conditionResult
       }
     })
-
     return {
       bilan: simulation.computedResults.bilan,
       situation: simulation.situation,
@@ -122,7 +121,7 @@ export function processPollData({
       progression: simulation.progression,
       isCurrentUser:
         (simulation.user as unknown as UserType)?.userId === userId,
-      date: simulation.modifiedAt ? new Date(simulation.modifiedAt) : undefined,
+      date: simulation.updatedAt ? new Date(simulation.updatedAt) : undefined,
       customAdditionalQuestionsAnswers:
         simulation.customAdditionalQuestionsAnswers ?? [],
     }
