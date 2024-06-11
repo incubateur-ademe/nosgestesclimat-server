@@ -100,11 +100,13 @@ export function processPollData({
       if (
         typeof conditionResult === 'boolean' &&
         conditionResult === true &&
+        // Remove the simulation with extreme values to avoid corrupting the fun facts
         !isExcluded(simulation)
       ) {
         computedFunFacts[key as keyof FunFacts] += 1
       }
 
+      // Remove the simulation with extreme values to avoid corrupting the fun facts
       if (typeof conditionResult === 'number' && !isExcluded(simulation)) {
         computedFunFacts[key as keyof FunFacts] += conditionResult
       }
