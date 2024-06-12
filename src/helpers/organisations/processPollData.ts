@@ -10,10 +10,25 @@ import {
 import { processCondition } from './processPollData/processCondition'
 import { processFunFactsValues } from './processPollData/processFunFactsValues'
 
+const MAX_VALUE = 100000
+
 // This is shit but a hack from our lead dev
 const rules = importedRules as unknown as NGCRules
 
 const funFactsRules = importedFunFacts as { [k in keyof FunFacts]: DottedName }
+
+function isExcluded(simulation: SimulationType) {
+  if (
+    [
+      simulation.computedResults.bilan,
+      Object.values(simulation.computedResults.categories),
+    ].some((value) => (value as number) > MAX_VALUE)
+  ) {
+    return true
+  }
+
+  return false
+}
 
 type SimulationRecap = {
   bilan: number
@@ -82,15 +97,20 @@ export function processPollData({
         rule: rules[dottedName],
       })
 
-      if (typeof conditionResult === 'boolean' && conditionResult === true) {
+      if (
+        typeof conditionResult === 'boolean' &&
+        conditionResult === true &&
+        // Remove the simulation with extreme values to avoid corrupting the fun facts
+        !isExcluded(simulation)
+      ) {
         computedFunFacts[key as keyof FunFacts] += 1
       }
 
-      if (typeof conditionResult === 'number') {
+      // Remove the simulation with extreme values to avoid corrupting the fun facts
+      if (typeof conditionResult === 'number' && !isExcluded(simulation)) {
         computedFunFacts[key as keyof FunFacts] += conditionResult
       }
     })
-
     return {
       bilan: simulation.computedResults.bilan,
       situation: simulation.situation,
@@ -101,7 +121,7 @@ export function processPollData({
       progression: simulation.progression,
       isCurrentUser:
         (simulation.user as unknown as UserType)?.userId === userId,
-      date: simulation.modifiedAt ? new Date(simulation.modifiedAt) : undefined,
+      date: simulation.updatedAt ? new Date(simulation.updatedAt) : undefined,
       customAdditionalQuestionsAnswers:
         simulation.customAdditionalQuestionsAnswers ?? [],
     }
@@ -109,7 +129,7 @@ export function processPollData({
 
   return {
     funFacts: processFunFactsValues({
-      simulations,
+      simulations: simulations.filter((simulation) => !isExcluded(simulation)),
       computedFunFacts,
       funFactsRules,
       rules,
