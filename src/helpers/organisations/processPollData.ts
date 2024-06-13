@@ -113,7 +113,12 @@ export function processPollData({
     })
     return {
       bilan: simulation.computedResults.bilan,
-      situation: simulation.situation,
+      // TODO : handle this better, returning the situation allows us to
+      // recalculate the computedResults on the client-side in case of bilan === 0
+      situation:
+        simulation.computedResults.bilan === 0
+          ? simulation.situation
+          : undefined,
       categories: { ...(simulation.computedResults.categories ?? {}) },
       defaultAdditionalQuestionsAnswers: {
         ...(simulation.defaultAdditionalQuestionsAnswers ?? {}),
