@@ -11,14 +11,14 @@ router
     try {
       const slug = req.params.slug
 
+      console.log(req.params)
+
       if (!slug) {
         return res.status(403).json('Error. A slug must be provided.')
       }
 
-      const decodedSlug = decodeURIComponent(slug)
-
       const organisationFound = await Organisation.findOne({
-        slug: decodedSlug,
+        slug,
       })
 
       if (!organisationFound) {
