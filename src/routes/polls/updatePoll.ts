@@ -22,8 +22,10 @@ router
         return res.status(403).json('Error. Missing required info.')
       }
 
+      const decodedOrgaSlug = decodeURIComponent(orgaSlug)
+
       const organisationFound = await Organisation.findOne({
-        slug: orgaSlug,
+        slug: decodedOrgaSlug,
         // User should be an admin
         administrators: { $elemMatch: { email } },
       })
@@ -34,7 +36,9 @@ router
           .json('Error. Organisation not found or user is not an admin.')
       }
 
-      const poll = await Poll.findOne({ slug: pollSlug })
+      const decodedPollSlug = decodeURIComponent(pollSlug)
+
+      const poll = await Poll.findOne({ slug: decodedPollSlug })
 
       if (!poll) {
         return res.status(403).json('Error. Poll not found.')
