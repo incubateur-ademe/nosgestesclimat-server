@@ -3,6 +3,7 @@ import { Simulation } from '../../src/schemas/SimulationSchema'
 import { NorthstarRating } from '../../src/schemas/NorthstarSchema'
 import { config } from '../../src/config'
 
+// This was never used because no one cares about northstar ratings
 async function migrateNorthstarRatings() {
   console.log('Start migration of northstar ratings')
   mongoose.connect(config.mongo.url)
