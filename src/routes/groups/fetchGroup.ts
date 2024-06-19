@@ -2,8 +2,6 @@ import { HydratedDocument } from 'mongoose'
 import express from 'express'
 import { Group } from '../../schemas/GroupSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import { SimulationType } from '../../schemas/SimulationSchema'
-import { handleComputeResultsIfNone } from '../../helpers/simulation/handleComputeResultsIfNone'
 import { NGCRules } from '@incubateur-ademe/nosgestesclimat'
 import Engine from 'publicodes'
 import rules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
@@ -44,17 +42,6 @@ router.route('/').post(async (req, res) => {
         error: console.error,
       },
     })
-
-    // Unformat simulations
-    groupObject.participants = groupObject.participants.map((participant) => {
-      return {
-        ...participant,
-        simulation: handleComputeResultsIfNone(
-          participant.simulation as unknown as HydratedDocument<SimulationType>,
-          engine
-        ),
-      }
-    }) as any
 
     setSuccessfulJSONResponse(res)
 
