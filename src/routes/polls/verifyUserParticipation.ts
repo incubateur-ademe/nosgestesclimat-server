@@ -23,9 +23,7 @@ router.route('/').post(async (req: Request, res: Response) => {
   }
 
   try {
-    const decodedSlug = decodeURIComponent(pollSlug)
-
-    const poll = await findPopulatedPollBySlug(decodedSlug)
+    const poll = await findPopulatedPollBySlug(pollSlug)
 
     if (!poll) {
       return res.status(404).send('This poll does not exist')
