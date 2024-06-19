@@ -18,7 +18,11 @@ router
       }
 
       try {
-        const pollPublicInfos = await getPollPublicInfos({ pollSlug })
+        const decodedSlug = decodeURIComponent(pollSlug)
+
+        const pollPublicInfos = await getPollPublicInfos({
+          pollSlug: decodedSlug,
+        })
 
         if (!pollPublicInfos) {
           return res.status(404).send('This poll does not exist')

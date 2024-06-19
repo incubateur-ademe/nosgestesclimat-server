@@ -21,8 +21,10 @@ router
       }
 
       try {
+        const decodedSlug = decodeURIComponent(orgaSlug)
+
         const organisation = await Organisation.findOne({
-          slug: orgaSlug,
+          slug: decodedSlug,
           administrators: { $elemMatch: { email } },
         })
 
@@ -32,7 +34,9 @@ router
             .send('Organisation not found or user is not an admin.')
         }
 
-        const poll = await Poll.findOne({ slug: pollSlug })
+        const decodedPollSlug = decodeURIComponent(pollSlug)
+
+        const poll = await Poll.findOne({ slug: decodedPollSlug })
 
         if (!poll) {
           return res.status(404).send('This poll does not exist')
