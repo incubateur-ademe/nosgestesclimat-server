@@ -14,15 +14,13 @@ const router = express.Router()
 router.get('/:orgaSlug?', async (req: Request, res: Response) => {
   const orgaSlug = req.params.orgaSlug
 
-  const decodedSlug = decodeURIComponent(orgaSlug)
-
   if (!orgaSlug) {
     return res.status(403).json('No orgaSlug provided.')
   }
 
   try {
     const organisationFound = await Organisation.findOne({
-      slug: decodedSlug,
+      slug: orgaSlug,
     }).populate('polls')
 
     if (!organisationFound) {
