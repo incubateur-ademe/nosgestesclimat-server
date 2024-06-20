@@ -9,6 +9,7 @@ import {
 } from '@incubateur-ademe/nosgestesclimat'
 import { processCondition } from './processPollData/processCondition'
 import { processFunFactsValues } from './processPollData/processFunFactsValues'
+import { getFunFactAssociatedDottedNameValue } from './processPollData/getFunFactAssociatedDottedNameValue'
 
 const MAX_VALUE = 100000
 
@@ -67,17 +68,17 @@ export function processPollData({
       }
 
       const value = filteredSimulations.reduce((acc, simulation) => {
-        const conditionResult = processCondition({
+        const valueObtained = getFunFactAssociatedDottedNameValue({
           situation: simulation.situation,
           rule: rules[dottedName],
         })
 
-        if (typeof conditionResult === 'boolean' && conditionResult === true) {
+        if (typeof valueObtained === 'boolean' && valueObtained === true) {
           return acc + 1
         }
 
-        if (typeof conditionResult === 'number') {
-          return acc + conditionResult
+        if (typeof valueObtained === 'number') {
+          return acc + valueObtained
         }
 
         return acc
