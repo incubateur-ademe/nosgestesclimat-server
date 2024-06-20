@@ -44,10 +44,10 @@ async function recomputeSimulationResults() {
       ],
     })
 
-    console.log('Simulations to migrate', simulationsWithPollOrGroup.length)
+    console.log('Simulations to migrate', simulationsWithPoll.length)
 
     let index = 0
-    for (let simulation of simulationsWithPollOrGroup) {
+    for (let simulation of simulationsWithPoll) {
       const simulationUnformatted = unformatSimulation(simulation)
 
       const { situationMigrated } = migrateSituation({
