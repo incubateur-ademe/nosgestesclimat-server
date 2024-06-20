@@ -14,7 +14,7 @@ async function migrateSituationFormat() {
     console.log('Simulations to migrate', simulations.length)
 
     let index = 0
-    for (const simulation of simulations) {
+    for (let simulation of simulations) {
       simulation.situation = unformatSituation({ ...simulation.situation })
 
       await simulation.save()

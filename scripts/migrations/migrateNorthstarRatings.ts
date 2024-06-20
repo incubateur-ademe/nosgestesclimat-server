@@ -14,7 +14,7 @@ async function migrateNorthstarRatings() {
 
     console.log('Northstar ratings to migrate', simulationWithData.length)
 
-    for (const simulation of simulationWithData) {
+    for (let simulation of simulationWithData) {
       if (simulation.data?.ratings) {
         const type = simulation.data.ratings.learned ? 'learned' : 'actions'
 
