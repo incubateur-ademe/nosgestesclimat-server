@@ -28,7 +28,7 @@ async function recomputeSimulationResults() {
   mongoose.connect(config.mongo.url)
 
   try {
-    const simulationsWithPollOrGroup = await Simulation.find({
+    const simulationsWithGroup = await Simulation.find({
       $and: [
         {
           $or: [
