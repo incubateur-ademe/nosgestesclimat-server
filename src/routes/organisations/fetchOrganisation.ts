@@ -3,7 +3,6 @@ import express, { Request, Response } from 'express'
 import { Organisation } from '../../schemas/OrganisationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
-import { validateEmail } from '../../utils/validation/validateEmail'
 
 const router = express.Router()
 
@@ -19,7 +18,7 @@ router
 
     const decodedSlug = decodeURIComponent(slug)
 
-    if (!email || !validateEmail(email)) {
+    if (!email) {
       return res.status(403).json('A valid email address must be provided.')
     }
 

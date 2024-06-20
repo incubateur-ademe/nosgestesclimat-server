@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { AxiosResponse } from 'axios'
 import { axiosConf } from '../../constants/axios'
 import { SimulationType } from '../../schemas/SimulationSchema'
 import { handleAddAttributes } from '../brevo/handleAddAttributes'
@@ -22,9 +22,13 @@ export function createOrUpdateContact({
   optin,
   otherAttributes = {},
   simulation,
-}: Props) {
+}: Props): Promise<AxiosResponse> {
   if (!email) {
-    return
+    return Promise.reject(new Error('No email provided'))
+  }
+
+  if (!validateEmail(email)) {
+    return Promise.reject(new Error('Invalid email provided'))
   }
 
   const attributes = handleAddAttributes({
@@ -34,11 +38,6 @@ export function createOrUpdateContact({
     simulation,
     otherAttributes,
   })
-
-  if (!validateEmail(email)) {
-    console.log('Invalid email', email)
-    return
-  }
 
   return axios.post(
     'https://api.brevo.com/v3/contacts',

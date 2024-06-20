@@ -1,10 +1,8 @@
 import express, { Request, Response } from 'express'
 import { Organisation } from '../../schemas/OrganisationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import { config } from '../../config'
 import { Poll } from '../../schemas/PollSchema'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
-import { validateEmail } from '../../utils/validation/validateEmail'
 
 const router = express.Router()
 

@@ -20,8 +20,7 @@ export async function sendEmail({
   templateId,
 }: Props) {
   if (!validateEmail(email)) {
-    console.log('Invalid email', email)
-    return
+    throw new Error('Invalid email provided')
   }
 
   // Add contact to list
