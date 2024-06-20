@@ -55,6 +55,7 @@ router.route('/').post(async (req, res) => {
   }
 
   try {
+    // None-blocking call to create or update the contact
     createOrUpdateContact({
       email,
       userId,
