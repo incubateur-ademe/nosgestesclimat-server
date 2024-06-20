@@ -10,6 +10,10 @@ import { unformatSimulation } from '../../src/helpers/simulation/unformatSimulat
 //@ts-ignore
 import { migrateSituation } from '@publicodes/tools/migration'
 
+/**
+ * This script is used to recompute the computed results of simulations that have computedResults of 0. There was a bug on the frontend side
+ * It is supposed to be run in production on the 24/06/2024
+ */
 async function recomputeEmptySimulationResults() {
   console.log('Start computed results migration')
 

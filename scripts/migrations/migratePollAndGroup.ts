@@ -2,6 +2,10 @@ import mongoose from 'mongoose'
 import { Simulation } from '../../src/schemas/SimulationSchema'
 import { config } from '../../src/config'
 
+/**
+ * This script is used to migrate the poll and group fields of simulations to polls and groups. We now want to be able to have multiple polls and groups on a simulation
+ * It was run in production sometime in the beginning of 2024
+ */
 async function migratePollAndGroup() {
   console.log('Start migration of poll and group')
   mongoose.connect(config.mongo.url)
