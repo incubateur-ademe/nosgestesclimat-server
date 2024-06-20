@@ -10,6 +10,7 @@ import { PollType } from '../../schemas/PollSchema'
 const router = express.Router()
 
 router.get('/', async (req: Request, res: Response) => {
+  console.log('welcome to fetchPollProcessedData', Date.now())
   const orgaSlug = decodeURIComponent(req.query.orgaSlug as string)
   const pollSlug = decodeURIComponent(req.query.pollSlug as string)
   const email = decodeURIComponent(req.query.email as string)
@@ -20,6 +21,7 @@ router.get('/', async (req: Request, res: Response) => {
   }
 
   try {
+    console.log('looking for organisation', Date.now())
     const organisationFound = await Organisation.findOne({
       slug: {
         $eq: orgaSlug,
@@ -39,6 +41,8 @@ router.get('/', async (req: Request, res: Response) => {
       return res.status(403).json('No organisation found.')
     }
 
+    console.log('organisation found. Now looking for poll', Date.now())
+
     const poll = (
       organisationFound.polls as unknown as HydratedDocument<PollType>[]
     ).find((poll) => poll.slug === pollSlug)
@@ -47,11 +51,15 @@ router.get('/', async (req: Request, res: Response) => {
       (admin) => admin.email === email
     )
 
+    console.log('poll found. Now processing data', Date.now())
+
     const pollData = processPollData({
       simulations: poll?.simulations as unknown as SimulationType[],
       // Fix : the local userId is not synced with the one in the database
       userId: admin?.userId ?? userId ?? '',
     })
+
+    console.log('data processed. Now sending back json', Date.now())
 
     setSuccessfulJSONResponse(res)
 

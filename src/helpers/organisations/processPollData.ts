@@ -21,7 +21,7 @@ function isExcluded(simulation: SimulationType) {
   if (
     [
       simulation.computedResults.bilan,
-      Object.values(simulation.computedResults.categories),
+      ...Object.values(simulation.computedResults.categories),
     ].some((value) => (value as number) > MAX_VALUE)
   ) {
     return true
@@ -54,84 +54,66 @@ export function processPollData({
   simulations: SimulationType[]
   userId: string
 }): Result {
-  // Is there a way to generate it dynamically ?
-  let computedFunFacts: FunFacts = {
-    percentageOfBicycleUsers: 0,
-    percentageOfVegetarians: 0,
-    percentageOfCarOwners: 0,
-    percentageOfPlaneUsers: 0,
-    percentageOfLongPlaneUsers: 0,
-    averageOfCarKilometers: 0,
-    averageOfTravelers: 0,
-    percentageOfElectricHeating: 0,
-    percentageOfGasHeating: 0,
-    percentageOfFuelHeating: 0,
-    percentageOfWoodHeating: 0,
-    averageOfElectricityConsumption: 0,
-    percentageOfCoolingSystem: 0,
-    percentageOfVegan: 0,
-    percentageOfRedMeat: 0,
-    percentageOfLocalAndSeasonal: 0,
-    percentageOfBottledWater: 0,
-    percentageOfZeroWaste: 0,
-    amountOfClothing: 0,
-    percentageOfStreaming: 0,
-  }
+  // We filter every simulation that are out of bounds
+  const filteredSimulations = simulations.filter(
+    (simulation) => !isExcluded(simulation)
+  )
 
-  if (!simulations.length) {
-    return {
-      funFacts: computedFunFacts,
-      simulationRecaps: [],
-    }
-  }
-
-  // Pour chaque simulation du sondage
-  const simulationRecaps = simulations.map((simulation) => {
-    Object.entries(funFactsRules).forEach(([key, dottedName]) => {
+  // We agregate the fun facts of every simulation
+  const computedFunFacts = Object.entries(funFactsRules).reduce(
+    (acc: FunFacts, [key, dottedName]) => {
       if (!Object.keys(rules).includes(dottedName)) {
-        throw new Error(`${dottedName} not found in rules`)
+        return acc
       }
 
-      const conditionResult = processCondition({
-        situation: simulation.situation,
-        rule: rules[dottedName],
-      })
+      const value = filteredSimulations.reduce((acc, simulation) => {
+        const conditionResult = processCondition({
+          situation: simulation.situation,
+          rule: rules[dottedName],
+        })
 
-      if (
-        typeof conditionResult === 'boolean' &&
-        conditionResult === true &&
-        // Remove the simulation with extreme values to avoid corrupting the fun facts
-        !isExcluded(simulation)
-      ) {
-        computedFunFacts[key as keyof FunFacts] += 1
-      }
+        if (typeof conditionResult === 'boolean' && conditionResult === true) {
+          return acc + 1
+        }
 
-      // Remove the simulation with extreme values to avoid corrupting the fun facts
-      if (typeof conditionResult === 'number' && !isExcluded(simulation)) {
-        computedFunFacts[key as keyof FunFacts] += conditionResult
+        if (typeof conditionResult === 'number') {
+          return acc + conditionResult
+        }
+
+        return acc
+      }, 0)
+
+      return {
+        ...acc,
+        [key]: value,
       }
-    })
-    return {
-      ...simulation.computedResults,
-      defaultAdditionalQuestionsAnswers: {
-        ...(simulation.defaultAdditionalQuestionsAnswers ?? {}),
-      },
-      progression: simulation.progression,
-      isCurrentUser:
-        (simulation.user as unknown as UserType)?.userId === userId,
-      date: simulation.updatedAt ? new Date(simulation.updatedAt) : undefined,
-      customAdditionalQuestionsAnswers:
-        simulation.customAdditionalQuestionsAnswers ?? [],
-    }
+    },
+    {} as FunFacts
+  )
+
+  // We compute the fun facts (percentage and stuff like that)
+  const funFacts = processFunFactsValues({
+    simulations: filteredSimulations,
+    computedFunFacts,
+    funFactsRules,
+    rules,
   })
 
+  // We format the simulation recaps (and why the fuck is it not the simulations object directly?)
+  const simulationRecaps = simulations.map((simulation) => ({
+    ...simulation.computedResults,
+    defaultAdditionalQuestionsAnswers: {
+      ...(simulation.defaultAdditionalQuestionsAnswers ?? {}),
+    },
+    progression: simulation.progression,
+    isCurrentUser: (simulation.user as unknown as UserType)?.userId === userId,
+    date: simulation.date ? new Date(simulation.date) : undefined,
+    customAdditionalQuestionsAnswers:
+      simulation.customAdditionalQuestionsAnswers ?? [],
+  }))
+
   return {
-    funFacts: processFunFactsValues({
-      simulations: simulations.filter((simulation) => !isExcluded(simulation)),
-      computedFunFacts,
-      funFactsRules,
-      rules,
-    }),
+    funFacts,
     simulationRecaps,
   }
 }
