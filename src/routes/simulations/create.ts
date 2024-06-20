@@ -13,6 +13,7 @@ import { handleUpdateGroup } from '../../helpers/groups/handleUpdateGroup'
 import { GroupType } from '../../schemas/GroupSchema'
 import { sendSimulationEmail } from '../../helpers/email/sendSimulationEmail'
 import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
+import { validateEmail } from '../../utils/validation/validateEmail'
 
 const router = express.Router()
 
@@ -31,6 +32,12 @@ router.route('/').post(async (req, res) => {
   if (!simulation) {
     console.log('No simulation provided.')
     return res.status(500).send('Error. A simulation must be provided.')
+  }
+
+  if (!email || !validateEmail(email)) {
+    return res
+      .status(500)
+      .send('Error. A valid email address must be provided.')
   }
 
   // We create or search for the user

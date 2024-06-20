@@ -2,6 +2,7 @@ import express from 'express'
 import { Group } from '../../schemas/GroupSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { sendEmail } from '../../helpers/email/sendEmail'
+import { validateEmail } from '../../utils/validation/validateEmail'
 
 const router = express.Router()
 
@@ -17,8 +18,10 @@ router.route('/').post(async (req, res) => {
   const attributes = req.body.attributes
 
   // Check if all required fields are provided
-  if (!email) {
-    return res.status(500).send('Error. An email must be provided.')
+  if (!email || !validateEmail(email)) {
+    return res
+      .status(500)
+      .send('Error. A valid email address must be provided.')
   }
 
   if (!templateId) {
