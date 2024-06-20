@@ -24,9 +24,11 @@ router.get('/', async (req: Request, res: Response) => {
   }
 
   try {
+    const decodedSlug = decodeURIComponent(orgaSlug)
+
     const organisationFound = await Organisation.findOne({
       slug: {
-        $eq: orgaSlug,
+        $eq: decodedSlug,
       },
     }).populate({
       path: 'polls',
@@ -43,9 +45,11 @@ router.get('/', async (req: Request, res: Response) => {
       return res.status(403).json('No organisation found.')
     }
 
+    const decodedPollSlug = decodeURIComponent(pollSlug)
+
     const poll = (
       organisationFound.polls as unknown as HydratedDocument<PollType>[]
-    ).find((poll) => poll.slug === pollSlug)
+    ).find((poll) => poll.slug === decodedPollSlug)
 
     let engine = undefined
 
@@ -86,7 +90,7 @@ router.get('/', async (req: Request, res: Response) => {
       ...pollData,
       organisationName: organisationFound?.name,
       name: poll?.name,
-      slug: poll?.slug,
+      slug: decodedPollSlug,
       createdAt: poll?.createdAt,
       defaultAdditionalQuestions: poll?.defaultAdditionalQuestions,
       customAdditionalQuestions: poll?.customAdditionalQuestions,

@@ -22,8 +22,9 @@ router
         return res.status(403).json('Error. Missing required info.')
       }
 
+      const decodedOrgaSlug = decodeURIComponent(orgaSlug)
       const organisationFound = await Organisation.findOne({
-        slug: orgaSlug,
+        slug: decodedOrgaSlug,
       })
 
       if (!organisationFound) {
@@ -46,8 +47,10 @@ router
         return res.status(403).json('Error. Too many custom questions.')
       }
 
+      const decodedPollSlug = decodeURIComponent(pollSlug)
+
       await Poll.findOneAndUpdate(
-        { slug: pollSlug },
+        { slug: decodedPollSlug },
         { customAdditionalQuestions }
       )
 

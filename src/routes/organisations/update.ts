@@ -30,10 +30,8 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
 
   const organisationName = req.body.name
   const administratorName = req.body.administratorName
-  const defaultAdditionalQuestions = req.body.defaultAdditionalQuestions
   const hasOptedInForCommunications =
     req.body.hasOptedInForCommunications ?? false
-  const expectedNumberOfParticipants = req.body.expectedNumberOfParticipants
   const administratorPosition = req.body.administratorPosition ?? ''
   const administratorTelephone = req.body.administratorTelephone ?? ''
   const organisationType = req.body.organisationType ?? ''
