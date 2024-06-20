@@ -1,7 +1,5 @@
 import axios from 'axios'
 import { axiosConf } from '../../constants/axios'
-import { validateEmail } from '../../utils/validation/validateEmail'
-import { create } from 'domain'
 import { createOrUpdateContact } from './createOrUpdateContact'
 
 type Props = {
