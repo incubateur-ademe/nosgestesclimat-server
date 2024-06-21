@@ -12,6 +12,7 @@ import { migrateSituation } from '@publicodes/tools/migration'
 
 /**
  * This script is used to recompute the computed results of simulations (associated to a group) that have computedResults with the starting value. There was a bug on the frontend side
+ * The helpers have been deleted because they are not in use anymore (and we don't want junior devs to use them)
  * It is supposed to be run in production on the 24/06/2024
  */
 async function recomputeSimulationResults() {
