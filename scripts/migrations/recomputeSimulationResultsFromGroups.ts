@@ -4,14 +4,15 @@ import { config } from '../../src/config'
 import Engine from 'publicodes'
 import rules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
 import { NGCRules } from '@incubateur-ademe/nosgestesclimat'
-import { computeResults } from '../../src/helpers/simulation/computeResults'
+// import { computeResults } from '../../src/helpers/simulation/computeResults'
 import migrationInstructionsJSON from '@incubateur-ademe/nosgestesclimat/public/migration.json'
-import { unformatSimulation } from '../../src/helpers/simulation/unformatSimulation'
+// import { unformatSimulation } from '../../src/helpers/simulation/unformatSimulation'
 //@ts-ignore
 import { migrateSituation } from '@publicodes/tools/migration'
 
 /**
  * This script is used to recompute the computed results of simulations (associated to a group) that have computedResults with the starting value. There was a bug on the frontend side
+ * The helpers have been deleted because they are not in use anymore (and we don't want junior devs to use them)
  * It is supposed to be run in production on the 24/06/2024
  */
 async function recomputeSimulationResults() {
@@ -47,26 +48,26 @@ async function recomputeSimulationResults() {
     console.log('Simulations to migrate', simulationsWithGroup.length)
 
     let index = 0
-    for (let simulation of simulationsWithGroup) {
-      const simulationUnformatted = unformatSimulation(simulation)
+    // for (let simulation of simulationsWithGroup) {
+    //   const simulationUnformatted = unformatSimulation(simulation)
 
-      const { situationMigrated } = migrateSituation({
-        situation: simulationUnformatted.situation,
-        migrationInstructions,
-      })
+    //   const { situationMigrated } = migrateSituation({
+    //     situation: simulationUnformatted.situation,
+    //     migrationInstructions,
+    //   })
 
-      simulation.situation = situationMigrated
+    //   simulation.situation = situationMigrated
 
-      simulation.computedResults = computeResults(situationMigrated, engine)
+    //   simulation.computedResults = computeResults(situationMigrated, engine)
 
-      await simulation.save()
+    //   await simulation.save()
 
-      index++
+    //   index++
 
-      if (index % 100 === 0) {
-        console.log(`Simulations migrated: ${index}.`, Date.now())
-      }
-    }
+    //   if (index % 100 === 0) {
+    //     console.log(`Simulations migrated: ${index}.`, Date.now())
+    //   }
+    // }
 
     console.log('Simulations computed results migration done')
   } catch (error) {
