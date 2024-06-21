@@ -20,6 +20,9 @@ router.get('/', async (req: Request, res: Response) => {
     return res.status(403).json('No orgaSlug provided.')
   }
 
+  const decodedSlug = decodeURIComponent(orgaSlug)
+  const decodedPollSlug = decodeURIComponent(pollSlug)
+
   try {
     console.log('looking for organisation', Date.now())
     const organisationFound = await Organisation.findOne({
