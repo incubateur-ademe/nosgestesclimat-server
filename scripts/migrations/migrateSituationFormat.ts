@@ -12,21 +12,29 @@ async function migrateSituationFormat() {
 
   mongoose.connect(config.mongo.url)
 
+  const numberOfSimulations = await Simulation.countDocuments()
+
+  console.log('Simulations to migrate', numberOfSimulations)
+
   try {
-    const simulations = await Simulation.find()
+    for (let cursor = 0; cursor < numberOfSimulations; cursor += 10000) {
+      console.log('Next simulation batch migration started.')
+      const simulations = await Simulation.find()
+        .skip(cursor)
+        .limit(10000)
+        .exec()
 
-    console.log('Simulations to migrate', simulations.length)
+      let index = 0
+      for (let simulation of simulations) {
+        simulation.situation = unformatSituation({ ...simulation.situation })
 
-    let index = 0
-    for (let simulation of simulations) {
-      simulation.situation = unformatSituation({ ...simulation.situation })
+        await simulation.save()
 
-      await simulation.save()
+        index++
 
-      index++
-
-      if (index % 100 === 0) {
-        console.log(`Simulations migrated: ${index}.`, Date.now())
+        if (index % 100 === 0) {
+          console.log(`Simulations migrated: ${cursor + index}.`, Date.now())
+        }
       }
     }
 
