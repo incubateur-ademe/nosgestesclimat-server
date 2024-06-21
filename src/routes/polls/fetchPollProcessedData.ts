@@ -24,7 +24,7 @@ router.get('/', async (req: Request, res: Response) => {
     console.log('looking for organisation', Date.now())
     const organisationFound = await Organisation.findOne({
       slug: {
-        $eq: orgaSlug,
+        $eq: decodedSlug,
       },
     }).populate({
       path: 'polls',
@@ -67,7 +67,7 @@ router.get('/', async (req: Request, res: Response) => {
       ...pollData,
       organisationName: organisationFound?.name,
       name: poll?.name,
-      slug: poll?.slug,
+      slug: decodedPollSlug,
       createdAt: poll?.createdAt,
       defaultAdditionalQuestions: poll?.defaultAdditionalQuestions,
       customAdditionalQuestions: poll?.customAdditionalQuestions,

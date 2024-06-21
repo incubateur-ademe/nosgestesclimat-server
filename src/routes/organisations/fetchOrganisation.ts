@@ -16,6 +16,8 @@ router
     const email = req.body.email
     const slug = req.body.slug
 
+    const decodedSlug = decodeURIComponent(slug)
+
     if (!email) {
       return res.status(403).json('No owner email provided.')
     }
@@ -23,7 +25,7 @@ router
     try {
       const organisationFound = await Organisation.findOne({
         'administrators.email': email,
-        slug,
+        slug: decodedSlug,
       }).populate('polls')
 
       if (!organisationFound) {

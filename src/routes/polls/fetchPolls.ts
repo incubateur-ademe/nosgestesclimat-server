@@ -20,7 +20,10 @@ router.post('/', async (req: Request, res: Response) => {
     const pollsPublicInfos: PollPublicInfo[] = []
 
     for (const pollSlug of pollSlugs) {
-      const pollPublicInfos = await getPollPublicInfos({ pollSlug })
+      const decodedSlug = decodeURIComponent(pollSlug)
+      const pollPublicInfos = await getPollPublicInfos({
+        pollSlug: decodedSlug,
+      })
       if (pollPublicInfos) {
         pollsPublicInfos.push(pollPublicInfos)
       }
