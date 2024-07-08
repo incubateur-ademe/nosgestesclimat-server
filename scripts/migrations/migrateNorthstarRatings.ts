@@ -3,6 +3,7 @@ import { Simulation } from '../../src/schemas/SimulationSchema'
 import { NorthstarRating } from '../../src/schemas/NorthstarSchema'
 import { config } from '../../src/config'
 
+// This was never used because no one cares about northstar ratings
 async function migrateNorthstarRatings() {
   console.log('Start migration of northstar ratings')
   mongoose.connect(config.mongo.url)
@@ -13,7 +14,7 @@ async function migrateNorthstarRatings() {
 
     console.log('Northstar ratings to migrate', simulationWithData.length)
 
-    for (const simulation of simulationWithData) {
+    for (let simulation of simulationWithData) {
       if (simulation.data?.ratings) {
         const type = simulation.data.ratings.learned ? 'learned' : 'actions'
 
