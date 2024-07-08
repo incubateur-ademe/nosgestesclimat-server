@@ -12,7 +12,7 @@ const router = express.Router()
 router.route('/').post(async (req: Request, res: Response) => {
   const pollSlug = req.body.pollSlug
   const userId = req.body.userId
-  const email = req.body.email
+  const email = req.body.email?.toLowerCase()
 
   if (!pollSlug) {
     return res.status(500).send('You must provide a poll slug')

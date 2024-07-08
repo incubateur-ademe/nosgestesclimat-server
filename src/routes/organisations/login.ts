@@ -8,7 +8,7 @@ const router = express.Router()
 
 router.route('/').post(async (req, res) => {
   try {
-    const email = req.body.email
+    const email = req.body.email?.toLowerCase()
 
     const organisationFound = await Organisation.findOne({
       administrators: { $elemMatch: { email } },

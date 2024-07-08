@@ -8,7 +8,7 @@ const router = express.Router()
 
 router.route('/').post(async (req: Request, res: Response) => {
   try {
-    const email = req.body.email
+    const email = req.body.email?.toLowerCase()
     const userId = req.body.userId
 
     if (!email) {

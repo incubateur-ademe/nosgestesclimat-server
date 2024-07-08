@@ -13,7 +13,9 @@ router
   .get(
     async (req: Request & { params: { pollSlug: string } }, res: Response) => {
       const pollSlug = req.params.pollSlug
-      const email = decodeURIComponent(req.query.email as string)
+      const email = decodeURIComponent(
+        (req.query.email as string)?.toLowerCase()
+      )
       const orgaSlug = decodeURIComponent(req.query.orgaSlug as string)
 
       if (!pollSlug || !email || !orgaSlug) {
