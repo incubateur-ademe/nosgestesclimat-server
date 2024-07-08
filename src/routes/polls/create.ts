@@ -28,7 +28,7 @@ router
         return res.status(403).json('Error. Organisation not found.')
       }
 
-      const uniqueSlug = await findUniquePollSlug(getSlug(name))
+      const uniqueSlug = await findUniquePollSlug(name)
 
       const pollCreated = new Poll({
         name,

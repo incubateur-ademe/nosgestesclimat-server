@@ -52,7 +52,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
     }
 
     if (!organisationFound.slug) {
-      const uniqueSlug = await findUniqueOrgaSlug(getSlug(organisationName))
+      const uniqueSlug = await findUniqueOrgaSlug(organisationName)
 
       organisationFound.slug = uniqueSlug
     }
