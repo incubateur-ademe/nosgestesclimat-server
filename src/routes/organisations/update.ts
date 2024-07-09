@@ -14,6 +14,8 @@ import { Poll, PollType } from '../../schemas/PollSchema'
 import { findUniqueOrgaSlug } from '../../helpers/organisations/findUniqueOrgaSlug'
 import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
 import { HydratedDocument } from 'mongoose'
+import { updateBrevoContactEmail } from '../../helpers/email/updateBrevoContactEmail'
+import { generateAndSetNewToken } from '../../helpers/authentification/generateAndSetNewToken'
 
 const router = express.Router()
 
@@ -22,8 +24,7 @@ const router = express.Router()
  * Needs to be authenticated and generates a new token at each request
  */
 router.use(authentificationMiddleware).post('/', async (req, res) => {
-  const email = req.body.email
-
+  const email = req.body.email?.toLowerCase()
   if (!email) {
     return res.status(401).send('Error. An email address must be provided.')
   }
@@ -36,6 +37,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
   const administratorTelephone = req.body.administratorTelephone ?? ''
   const organisationType = req.body.organisationType ?? ''
   const numberOfCollaborators = req.body.numberOfCollaborators ?? undefined
+  const emailModified = req.body.emailModified
 
   try {
     const organisationFound = await Organisation.findOne({
@@ -92,6 +94,21 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
       organisationFound.numberOfCollaborators = numberOfCollaborators
     }
 
+    if (emailModified && emailModified !== email) {
+      organisationFound.administrators[administratorModifiedIndex].email =
+        emailModified
+
+      // Update the Brevo contact
+      await updateBrevoContactEmail({
+        email,
+        emailModified,
+      })
+
+      // TODO : update the CONNECT contact
+
+      generateAndSetNewToken(res, emailModified)
+    }
+
     const lastPoll =
       organisationFound.polls.length > 0
         ? await Poll.findById(
@@ -108,7 +125,8 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
 
     if (administratorName || hasOptedInForCommunications !== undefined) {
       await createOrUpdateContact({
-        email,
+        // If the email was modified, use the new email
+        email: emailModified ?? email,
         name: administratorName,
         optin: hasOptedInForCommunications,
         otherAttributes: {
@@ -124,7 +142,8 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
     setSuccessfulJSONResponse(res)
 
     const organisationResult = await Organisation.findOne({
-      'administrators.email': email,
+      // If the email was modified, use the new email
+      'administrators.email': emailModified ?? email,
     }).populate('polls')
 
     res.json(organisationResult)
