@@ -65,26 +65,29 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
         ({ email: administratorEmail }) => administratorEmail === email
       )
 
-    if (administratorName && administratorModifiedIndex !== -1) {
+    // Return if no matching administrator found
+    if (administratorModifiedIndex === -1) {
+      return res.status(403).json('No matching administrator found.')
+    }
+
+    if (administratorName) {
       organisationFound.administrators[administratorModifiedIndex].name =
         administratorName
     }
 
-    if (administratorPosition && administratorModifiedIndex !== -1) {
+    if (administratorPosition) {
       organisationFound.administrators[administratorModifiedIndex].position =
         administratorPosition
     }
 
-    if (administratorTelephone && administratorModifiedIndex !== -1) {
+    if (administratorTelephone) {
       organisationFound.administrators[administratorModifiedIndex].telephone =
         administratorTelephone
     }
 
-    if (administratorModifiedIndex !== -1) {
-      organisationFound.administrators[
-        administratorModifiedIndex
-      ].hasOptedInForCommunications = hasOptedInForCommunications
-    }
+    organisationFound.administrators[
+      administratorModifiedIndex
+    ].hasOptedInForCommunications = hasOptedInForCommunications
 
     if (organisationType) {
       organisationFound.organisationType = organisationType
