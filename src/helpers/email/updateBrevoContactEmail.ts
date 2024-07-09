@@ -7,7 +7,7 @@ type Props = {
 }
 
 export async function updateBrevoContactEmail({ email, emailModified }: Props) {
-  if (!email) {
+  if (!email || !emailModified) {
     return
   }
 
