@@ -15,7 +15,7 @@ router.route('/').post(async (req, res) => {
   const groupName = req.body.name
   const groupEmoji = req.body.emoji
   const administratorName = req.body.administratorName
-  const administratorEmail = req.body.administratorEmail
+  const administratorEmail = req.body.administratorEmail?.toLowerCase()
 
   // We need the origin to send the email with the correct links
   const origin = req.get('origin') ?? 'https://nosgestesclimat.fr'

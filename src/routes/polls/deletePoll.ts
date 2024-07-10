@@ -13,7 +13,9 @@ router
     try {
       const pollSlug = req.params.pollSlug
       const orgaSlug = decodeURIComponent(req.query.orgaSlug as string)
-      const email = decodeURIComponent(req.query.email as string)
+      const email = decodeURIComponent(
+        (req.query.email as string)?.toLowerCase()
+      )
 
       if (!pollSlug || !orgaSlug || !email) {
         return res.status(403).json('Error. Missing required info.')

@@ -6,7 +6,7 @@ import { handleSendVerificationCodeAndReturnExpirationDate } from '../../helpers
 const router = express.Router()
 
 router.post('/', async (req, res) => {
-  const email = req.body.email
+  const email = req.body.email?.toLowerCase()
 
   if (!email) {
     return res.status(403).json('No owner email provided.')

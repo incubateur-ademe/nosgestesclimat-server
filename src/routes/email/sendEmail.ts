@@ -11,7 +11,7 @@ const router = express.Router()
  * It returns the created group
  */
 router.route('/').post(async (req, res) => {
-  const email = req.body.email
+  const email = req.body.email?.toLowerCase()
   const templateId = req.body.templateId
   const params = req.body.params
   const attributes = req.body.attributes

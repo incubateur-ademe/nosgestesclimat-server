@@ -23,7 +23,7 @@ const router = express.Router()
  * Needs to be authenticated and generates a new token at each request
  */
 router.use(authentificationMiddleware).post('/', async (req, res) => {
-  const email = req.body.email
+  const email = req.body.email?.toLowerCase()
 
   if (!email) {
     return res.status(401).send('Error. An email address must be provided.')
