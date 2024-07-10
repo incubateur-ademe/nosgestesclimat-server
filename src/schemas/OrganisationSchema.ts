@@ -29,7 +29,11 @@ export type OrganisationType = {
 const AdministratorSchema = new Schema<Administrator>(
   {
     name: String,
-    email: String,
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     telephone: String,
     position: String,
     verificationCode: VerificationCodeSchema,

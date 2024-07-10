@@ -15,6 +15,17 @@ router.route('/').post(async (req: Request, res: Response) => {
       return res.status(403).json('Error. An email address must be provided.')
     }
 
+    // Check if an organisation with the same email already exists
+    const organisation = await Organisation.findOne({
+      'administrators.email': email,
+    })
+
+    if (organisation) {
+      return res
+        .status(500)
+        .json("An organisation with this administrator's email already exists.")
+    }
+
     const organisationCreated = new Organisation({
       administrators: [
         {
