@@ -5,7 +5,6 @@ import {
   ATTRIBUTE_ORGANISATION_SLUG,
 } from './../../constants/brevo'
 import express from 'express'
-import slugify from 'slugify'
 
 import { Organisation } from '../../schemas/OrganisationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
@@ -14,7 +13,6 @@ import { Poll, PollType } from '../../schemas/PollSchema'
 import { findUniqueOrgaSlug } from '../../helpers/organisations/findUniqueOrgaSlug'
 import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
 import { HydratedDocument } from 'mongoose'
-import { getSlug } from '../../utils/getSlug'
 
 const router = express.Router()
 
@@ -26,7 +24,9 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
   const email = req.body.email?.toLowerCase()
 
   if (!email) {
-    return res.status(401).send('Error. An email address must be provided.')
+    return res
+      .status(401)
+      .send('Error. A valid email address must be provided.')
   }
 
   const organisationName = req.body.name
@@ -102,9 +102,6 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
           )
         : undefined
 
-    // Save the modifications
-    await organisationFound.save()
-
     if (administratorName || hasOptedInForCommunications !== undefined) {
       await createOrUpdateContact({
         email,
@@ -119,6 +116,9 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
         },
       })
     }
+
+    // Save the modifications
+    await organisationFound.save()
 
     setSuccessfulJSONResponse(res)
 

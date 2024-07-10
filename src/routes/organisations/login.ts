@@ -10,6 +10,10 @@ router.route('/').post(async (req, res) => {
   try {
     const email = req.body.email?.toLowerCase()
 
+    if (!email) {
+      return res.status(403).json('Error. An email address must be provided.')
+    }
+
     const organisationFound = await Organisation.findOne({
       administrators: { $elemMatch: { email } },
     })

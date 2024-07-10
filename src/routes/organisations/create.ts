@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express'
 import { Organisation } from '../../schemas/OrganisationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { handleSendVerificationCodeAndReturnExpirationDate } from '../../helpers/verificationCode/handleSendVerificationCodeAndReturnExpirationDate'
-import { Poll } from '../../schemas/PollSchema'
+import { validateEmail } from '../../utils/validation/validateEmail'
 
 const router = express.Router()
 
@@ -11,8 +11,10 @@ router.route('/').post(async (req: Request, res: Response) => {
     const email = req.body.email?.toLowerCase()
     const userId = req.body.userId
 
-    if (!email) {
-      return res.status(403).json('Error. An email address must be provided.')
+    if (!email || !validateEmail(email)) {
+      return res
+        .status(403)
+        .json('Error. A valid email address must be provided.')
     }
 
     // Check if an organisation with the same email already exists

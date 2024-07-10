@@ -2,6 +2,7 @@ import express from 'express'
 import { Group } from '../../schemas/GroupSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { sendGroupEmail } from '../../helpers/email/sendGroupEmail'
+import { validateEmail } from '../../utils/validation/validateEmail'
 
 const router = express.Router()
 
@@ -33,6 +34,12 @@ router.route('/').post(async (req, res) => {
 
   if (!administratorName) {
     return res.status(500).send('Error. A name must be provided.')
+  }
+
+  if (administratorEmail && !validateEmail(administratorEmail)) {
+    return res
+      .status(500)
+      .send('Error. A valid email address must be provided.')
   }
 
   try {
