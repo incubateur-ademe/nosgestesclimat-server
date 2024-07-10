@@ -88,9 +88,9 @@ export async function sendGroupEmail({
       },
       axiosConf
     )
+
+    console.log(`Email group ${isCreation ? 'creation' : ''} sent to ${email}`)
   } catch (error) {
     throw new Error(error)
   }
-
-  console.log(`Email group ${isCreation ? 'creation' : ''} sent to ${email}`)
 }

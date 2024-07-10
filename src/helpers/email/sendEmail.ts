@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { axiosConf } from '../../constants/axios'
+import { createOrUpdateContact } from './createOrUpdateContact'
 
 type Props = {
   email: string
@@ -18,21 +19,12 @@ export async function sendEmail({
   attributes,
   templateId,
 }: Props) {
-  // Add contact to list
   try {
-    await axios.post(
-      'https://api.brevo.com/v3/contacts',
-      {
-        email,
-        attributes,
-      },
-      axiosConf
-    )
-  } catch (error) {
-    // Do nothing, the contact already exists
-  }
+    await createOrUpdateContact({
+      email,
+      otherAttributes: attributes,
+    })
 
-  try {
     await axios.post(
       'https://api.brevo.com/v3/smtp/email',
       {

@@ -19,7 +19,7 @@ router
     const decodedSlug = decodeURIComponent(slug)
 
     if (!email) {
-      return res.status(403).json('No owner email provided.')
+      return res.status(403).json('A valid email address must be provided.')
     }
 
     try {

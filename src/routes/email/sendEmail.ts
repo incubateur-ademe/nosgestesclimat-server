@@ -18,7 +18,7 @@ router.route('/').post(async (req, res) => {
 
   // Check if all required fields are provided
   if (!email) {
-    return res.status(500).send('Error. An email must be provided.')
+    return res.status(500).send('Error. An email address must be provided.')
   }
 
   if (!templateId) {

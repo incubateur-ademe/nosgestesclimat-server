@@ -13,6 +13,7 @@ import { handleUpdateGroup } from '../../helpers/groups/handleUpdateGroup'
 import { GroupType } from '../../schemas/GroupSchema'
 import { sendSimulationEmail } from '../../helpers/email/sendSimulationEmail'
 import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
+import { validateEmail } from '../../utils/validation/validateEmail'
 
 const router = express.Router()
 
@@ -33,6 +34,12 @@ router.route('/').post(async (req, res) => {
     return res.status(500).send('Error. A simulation must be provided.')
   }
 
+  if (!email || !validateEmail(email)) {
+    return res
+      .status(500)
+      .send('Error. A valid email address must be provided.')
+  }
+
   // We create or search for the user
   const userDocument = await createOrUpdateUser({
     email,
@@ -42,18 +49,20 @@ router.route('/').post(async (req, res) => {
 
   // If there is no user found or created, we return an error
   if (!userDocument) {
-    console.log('Error while creating or searching for the user.')
     return res
       .status(500)
       .send('Error while creating or searching for the user.')
   }
 
   try {
+    // None-blocking call to create or update the contact
     createOrUpdateContact({
       email,
       userId,
       simulation,
       listIds: listIds ?? undefined,
+    }).catch((error) => {
+      console.log('Error while creating or updating contact:', error)
     })
 
     // We check if a poll is associated with the simulation
