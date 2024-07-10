@@ -14,6 +14,7 @@ import { Poll, PollType } from '../../schemas/PollSchema'
 import { findUniqueOrgaSlug } from '../../helpers/organisations/findUniqueOrgaSlug'
 import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
 import { HydratedDocument } from 'mongoose'
+import { getSlug } from '../../utils/getSlug'
 
 const router = express.Router()
 
@@ -51,9 +52,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
     }
 
     if (!organisationFound.slug) {
-      const uniqueSlug = await findUniqueOrgaSlug(
-        slugify(organisationName.toLowerCase())
-      )
+      const uniqueSlug = await findUniqueOrgaSlug(organisationName)
 
       organisationFound.slug = uniqueSlug
     }

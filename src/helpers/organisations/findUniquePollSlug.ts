@@ -1,6 +1,9 @@
 import { Poll } from '../../schemas/PollSchema'
+import { getSlug } from '../../utils/getSlug'
 
-export async function findUniquePollSlug(slug: string, counter = 0) {
+export async function findUniquePollSlug(name: string, counter = 0) {
+  const slug = getSlug(name)
+
   const organisationFound = await Poll.findOne({
     slug: counter === 0 ? slug : `${slug}-${counter}`,
   })

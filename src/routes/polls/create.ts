@@ -5,6 +5,7 @@ import { Poll } from '../../schemas/PollSchema'
 import { findUniquePollSlug } from '../../helpers/organisations/findUniquePollSlug'
 import slugify from 'slugify'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
+import { getSlug } from '../../utils/getSlug'
 
 const router = express.Router()
 
@@ -27,7 +28,7 @@ router
         return res.status(403).json('Error. Organisation not found.')
       }
 
-      const uniqueSlug = await findUniquePollSlug(slugify(name.toLowerCase()))
+      const uniqueSlug = await findUniquePollSlug(name)
 
       const pollCreated = new Poll({
         name,
