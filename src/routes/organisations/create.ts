@@ -22,7 +22,7 @@ router.route('/').post(async (req: Request, res: Response) => {
 
     if (organisation) {
       return res
-        .status(403)
+        .status(500)
         .json("An organisation with this administrator's email already exists.")
     }
 
