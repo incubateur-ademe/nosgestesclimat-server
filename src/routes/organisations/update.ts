@@ -14,6 +14,7 @@ import { Poll, PollType } from '../../schemas/PollSchema'
 import { findUniqueOrgaSlug } from '../../helpers/organisations/findUniqueOrgaSlug'
 import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
 import { HydratedDocument } from 'mongoose'
+import { addOrUpdateContactToConnect } from '../../helpers/connect/addOrUpdateContactToConnect'
 
 const router = express.Router()
 
@@ -120,6 +121,12 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
         },
       })
     }
+
+    await addOrUpdateContactToConnect({
+      email,
+      name: administratorName,
+      position: administratorPosition,
+    })
 
     setSuccessfulJSONResponse(res)
 

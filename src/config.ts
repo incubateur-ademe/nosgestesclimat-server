@@ -38,6 +38,11 @@ export const config = {
   mongo: {
     url: ensureEnvVar(process.env.MONGO_URL, 'mongodb://127.0.0.1:27017/ngc'),
   },
+  connect: {
+    url: ensureEnvVar(process.env.CONNECT_URL, ''),
+    clientId: ensureEnvVar(process.env.CONNECT_CLIENT_ID, ''),
+    clientSecret: ensureEnvVar(process.env.CONNECT_CLIENT_SECRET, ''),
+  },
   organisationIdsWithCustomQuestionsEnabled: ensureEnvVar(
     process.env.ORGANISATION_IDS_WITH_CUSTOM_QUESTIONS_ENABLED,
     ''
