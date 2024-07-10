@@ -122,7 +122,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
       })
     }
 
-    await addOrUpdateContactToConnect({
+    addOrUpdateContactToConnect({
       email,
       name: administratorName,
       position: administratorPosition,

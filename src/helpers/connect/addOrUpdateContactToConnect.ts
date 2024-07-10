@@ -12,19 +12,23 @@ export async function addOrUpdateContactToConnect({
   name,
   position,
 }: Props) {
-  await axios.post(
-    config.connect.url,
-    {
-      email,
-      nom: name,
-      fonction: position,
-      source: 'Nos gestes Climat',
-    },
-    {
-      headers: {
-        client_id: config.connect.clientId,
-        client_secret: config.connect.clientSecret,
+  axios
+    .post(
+      config.connect.url,
+      {
+        email,
+        nom: name,
+        fonction: position,
+        source: 'Nos gestes Climat',
       },
-    }
-  )
+      {
+        headers: {
+          client_id: config.connect.clientId,
+          client_secret: config.connect.clientSecret,
+        },
+      }
+    )
+    .catch((err) => {
+      console.error(err)
+    })
 }
