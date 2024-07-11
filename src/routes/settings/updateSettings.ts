@@ -12,7 +12,7 @@ const router = express.Router()
  * Updates the user and newsletter settings
  */
 router.route('/').post(async (req, res) => {
-  const email = req.body.email
+  const email = req.body.email?.toLowerCase()
   const userId = req.body.userId
 
   const newsletterIds: Record<string, boolean> = req.body.newsletterIds

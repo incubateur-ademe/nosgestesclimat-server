@@ -2,14 +2,15 @@ import express from 'express'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { Organisation } from '../../schemas/OrganisationSchema'
 import { handleSendVerificationCodeAndReturnExpirationDate } from '../../helpers/verificationCode/handleSendVerificationCodeAndReturnExpirationDate'
+import { validateEmail } from '../../utils/validation/validateEmail'
 
 const router = express.Router()
 
 router.post('/', async (req, res) => {
-  const email = req.body.email
+  const email = req.body.email?.toLowerCase()
 
-  if (!email) {
-    return res.status(403).json('No owner email provided.')
+  if (!email || !validateEmail(email)) {
+    return res.status(403).json('A valid email address must be provided.')
   }
 
   try {

@@ -5,7 +5,6 @@ import {
   ATTRIBUTE_ORGANISATION_SLUG,
 } from './../../constants/brevo'
 import express from 'express'
-import slugify from 'slugify'
 
 import { Organisation } from '../../schemas/OrganisationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
@@ -23,10 +22,12 @@ const router = express.Router()
  * Needs to be authenticated and generates a new token at each request
  */
 router.use(authentificationMiddleware).post('/', async (req, res) => {
-  const email = req.body.email
+  const email = req.body.email?.toLowerCase()
 
   if (!email) {
-    return res.status(401).send('Error. An email address must be provided.')
+    return res
+      .status(401)
+      .send('Error. A valid email address must be provided.')
   }
 
   const organisationName = req.body.name
@@ -52,9 +53,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
     }
 
     if (!organisationFound.slug) {
-      const uniqueSlug = await findUniqueOrgaSlug(
-        slugify(organisationName.toLowerCase())
-      )
+      const uniqueSlug = await findUniqueOrgaSlug(organisationName)
 
       organisationFound.slug = uniqueSlug
     }
@@ -104,9 +103,6 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
           )
         : undefined
 
-    // Save the modifications
-    await organisationFound.save()
-
     if (administratorName || hasOptedInForCommunications !== undefined) {
       await createOrUpdateContact({
         email,
@@ -128,13 +124,12 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
       position: administratorPosition,
     })
 
+    // Save the modifications
+    const organisationSaved = await organisationFound.save()
+
     setSuccessfulJSONResponse(res)
 
-    const organisationResult = await Organisation.findOne({
-      'administrators.email': email,
-    }).populate('polls')
-
-    res.json(organisationResult)
+    res.json(organisationSaved)
   } catch (error) {
     console.log('Error updating organisation', error)
     return res.status(403).json(error)

@@ -10,7 +10,7 @@ import { COOKIES_OPTIONS, COOKIE_MAX_AGE } from '../../constants/cookies'
 const router = express.Router()
 
 router.post('/', async (req, res) => {
-  const email = req.body.email
+  const email = req.body.email?.toLowerCase()
   const verificationCode = req.body.verificationCode
 
   if (!email || !verificationCode) {

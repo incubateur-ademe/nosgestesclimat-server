@@ -12,7 +12,7 @@ const router = express.Router()
 router.get('/', async (req: Request, res: Response) => {
   const orgaSlug = decodeURIComponent(req.query.orgaSlug as string)
   const pollSlug = decodeURIComponent(req.query.pollSlug as string)
-  const email = decodeURIComponent(req.query.email as string)
+  const email = decodeURIComponent((req.query.email as string)?.toLowerCase())
   const userId = decodeURIComponent(req.query.userId as string)
 
   if (!orgaSlug) {

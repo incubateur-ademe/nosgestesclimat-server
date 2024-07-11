@@ -14,7 +14,7 @@ router
     try {
       const pollSlug = req.body.pollSlug
       const orgaSlug = req.body.orgaSlug
-      const email = req.body.email
+      const email = req.body.email?.toLowerCase()
       const name = req.body.name
       const defaultAdditionalQuestions = req.body.defaultAdditionalQuestions
 
