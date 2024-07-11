@@ -13,6 +13,7 @@ import { Poll, PollType } from '../../schemas/PollSchema'
 import { findUniqueOrgaSlug } from '../../helpers/organisations/findUniqueOrgaSlug'
 import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
 import { HydratedDocument } from 'mongoose'
+import { addOrUpdateContactToConnect } from '../../helpers/connect/addOrUpdateContactToConnect'
 
 const router = express.Router()
 
@@ -33,7 +34,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
   const administratorName = req.body.administratorName
   const hasOptedInForCommunications =
     req.body.hasOptedInForCommunications ?? false
-  const administratorPosition = req.body.administratorPosition ?? ''
+  const position = req.body.position ?? ''
   const administratorTelephone = req.body.administratorTelephone ?? ''
   const organisationType = req.body.organisationType ?? ''
   const numberOfCollaborators = req.body.numberOfCollaborators ?? undefined
@@ -67,9 +68,9 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
         administratorName
     }
 
-    if (administratorPosition && administratorModifiedIndex !== -1) {
+    if (position && administratorModifiedIndex !== -1) {
       organisationFound.administrators[administratorModifiedIndex].position =
-        administratorPosition
+        position
     }
 
     if (administratorTelephone && administratorModifiedIndex !== -1) {
@@ -117,16 +118,18 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
       })
     }
 
+    addOrUpdateContactToConnect({
+      email,
+      name: administratorName,
+      position,
+    })
+
     // Save the modifications
-    await organisationFound.save()
+    const organisationSaved = await organisationFound.save()
 
     setSuccessfulJSONResponse(res)
 
-    const organisationResult = await Organisation.findOne({
-      'administrators.email': email,
-    }).populate('polls')
-
-    res.json(organisationResult)
+    res.json(organisationSaved)
   } catch (error) {
     console.log('Error updating organisation', error)
     return res.status(403).json(error)
