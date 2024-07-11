@@ -34,7 +34,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
   const administratorName = req.body.administratorName
   const hasOptedInForCommunications =
     req.body.hasOptedInForCommunications ?? false
-  const administratorPosition = req.body.administratorPosition ?? ''
+  const position = req.body.position ?? ''
   const administratorTelephone = req.body.administratorTelephone ?? ''
   const organisationType = req.body.organisationType ?? ''
   const numberOfCollaborators = req.body.numberOfCollaborators ?? undefined
@@ -68,9 +68,9 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
         administratorName
     }
 
-    if (administratorPosition && administratorModifiedIndex !== -1) {
+    if (position && administratorModifiedIndex !== -1) {
       organisationFound.administrators[administratorModifiedIndex].position =
-        administratorPosition
+        position
     }
 
     if (administratorTelephone && administratorModifiedIndex !== -1) {
@@ -121,7 +121,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
     addOrUpdateContactToConnect({
       email,
       name: administratorName,
-      position: administratorPosition,
+      position,
     })
 
     // Save the modifications
