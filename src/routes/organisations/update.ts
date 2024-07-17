@@ -14,6 +14,7 @@ import { findUniqueOrgaSlug } from '../../helpers/organisations/findUniqueOrgaSl
 import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
 import { HydratedDocument } from 'mongoose'
 import { addOrUpdateContactToConnect } from '../../helpers/connect/addOrUpdateContactToConnect'
+import { formatEmail } from '../../utils/formatting/formatEmail'
 
 const router = express.Router()
 
@@ -22,7 +23,7 @@ const router = express.Router()
  * Needs to be authenticated and generates a new token at each request
  */
 router.use(authentificationMiddleware).post('/', async (req, res) => {
-  const email = req.body.email?.toLowerCase()
+  const email = formatEmail(req.body.email)
 
   if (!email) {
     return res

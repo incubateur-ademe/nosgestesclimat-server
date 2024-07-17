@@ -3,12 +3,13 @@ import { Organisation } from '../../schemas/OrganisationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { handleSendVerificationCodeAndReturnExpirationDate } from '../../helpers/verificationCode/handleSendVerificationCodeAndReturnExpirationDate'
 import { validateEmail } from '../../utils/validation/validateEmail'
+import { formatEmail } from '../../utils/formatting/formatEmail'
 
 const router = express.Router()
 
 router.route('/').post(async (req: Request, res: Response) => {
   try {
-    const email = req.body.email?.toLowerCase()
+    const email = formatEmail(req.body.email)
     const userId = req.body.userId
 
     if (!email || !validateEmail(email)) {

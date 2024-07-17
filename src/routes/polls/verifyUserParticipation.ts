@@ -3,6 +3,7 @@ import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { findPopulatedPollBySlug } from '../../helpers/organisations/findPopulatedPollBySlug'
 import { SimulationType } from '../../schemas/SimulationSchema'
 import { Organisation } from '../../schemas/OrganisationSchema'
+import { formatEmail } from '../../utils/formatting/formatEmail'
 
 const router = express.Router()
 
@@ -12,7 +13,7 @@ const router = express.Router()
 router.route('/').post(async (req: Request, res: Response) => {
   const pollSlug = req.body.pollSlug
   const userId = req.body.userId
-  const email = req.body.email?.toLowerCase()
+  const email = formatEmail(req.body.email)
 
   if (!pollSlug) {
     return res.status(500).send('You must provide a poll slug')

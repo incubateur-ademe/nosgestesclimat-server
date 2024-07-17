@@ -6,11 +6,12 @@ import { VerificationCode } from '../../schemas/VerificationCodeSchema'
 import { Organisation } from '../../schemas/OrganisationSchema'
 import { config } from '../../config'
 import { COOKIES_OPTIONS, COOKIE_MAX_AGE } from '../../constants/cookies'
+import { formatEmail } from '../../utils/formatting/formatEmail'
 
 const router = express.Router()
 
 router.post('/', async (req, res) => {
-  const email = req.body.email?.toLowerCase()
+  const email = formatEmail(req.body.email)
   const verificationCode = req.body.verificationCode
 
   if (!email || !verificationCode) {

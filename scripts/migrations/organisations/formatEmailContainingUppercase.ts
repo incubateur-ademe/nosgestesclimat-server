@@ -11,7 +11,7 @@ async function formatEmailContainingUppercase() {
     })
 
     for (const organisation of organisations) {
-      const email = organisation.administrators[0].email.toLowerCase()
+      const email = organisation.administrators[0].email.toLowerCase().trim()
 
       await Organisation.updateOne(
         { _id: organisation._id },

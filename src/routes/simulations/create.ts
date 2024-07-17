@@ -14,13 +14,14 @@ import { GroupType } from '../../schemas/GroupSchema'
 import { sendSimulationEmail } from '../../helpers/email/sendSimulationEmail'
 import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
 import { validateEmail } from '../../utils/validation/validateEmail'
+import { formatEmail } from '../../utils/formatting/formatEmail'
 
 const router = express.Router()
 
 router.route('/').post(async (req, res) => {
   const simulation = req.body.simulation
   const name = req.body.name
-  const email = req.body.email?.toLowerCase()
+  const email = formatEmail(req.body.email)
   const userId = req.body.userId
   const shouldSendSimulationEmail = req.body.shouldSendSimulationEmail
   const listIds = req.body.listIds
