@@ -7,20 +7,26 @@ async function formatEmailContainingUppercase() {
     mongoose.connect(config.mongo.url)
 
     const organisations = await Organisation.find({
-      email: { $regex: /[A-Z]/ },
+      'administrators.email': { $regex: /[A-Z]/ },
     })
 
-    for (const organisation of organisations) {
+    for (let organisation of organisations) {
       const email = organisation.administrators[0].email.toLowerCase().trim()
-
+      console.log(organisation.administrators[0].email, email)
       await Organisation.updateOne(
         { _id: organisation._id },
-        { $set: { email } }
+        {
+          $set: {
+            'administrators.0.email': email,
+          },
+        }
       )
     }
   } catch (error) {
     console.error(error)
   }
+
+  process.exit(1)
 }
 
 formatEmailContainingUppercase()
