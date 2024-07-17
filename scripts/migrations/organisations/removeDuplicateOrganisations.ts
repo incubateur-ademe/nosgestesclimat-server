@@ -103,6 +103,13 @@ async function removeDuplicateOrganisations() {
           (poll: PollType) => poll?.name && poll?.name !== undefined
         )
 
+        // List the organisations that need manual intervention
+        if (hasSimulation || hasName) {
+          console.log(
+            `Keeping organisation ${organisation._id} for administrator ${organisation.administrators[0]._id}`
+          )
+        }
+
         if (!hasSimulation || !hasName) {
           console.log(
             `Removing organisation ${organisation._id} with simulation ${hasSimulation} and name ${hasName}`
