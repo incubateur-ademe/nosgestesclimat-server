@@ -1,6 +1,9 @@
 import { Organisation } from '../../../src/schemas/OrganisationSchema'
 import mongoose from 'mongoose'
 import { config } from '../../../src/config'
+import { updateEmailOfContact } from '../../../src/helpers/email/updateEmailOfContact'
+import { createOrUpdateContact } from '../../../src/helpers/email/createOrUpdateContact'
+import { formatEmail } from '../../../src/utils/formatting/formatEmail'
 
 async function formatEmailContainingUppercase() {
   try {
@@ -11,8 +14,9 @@ async function formatEmailContainingUppercase() {
     })
 
     for (let organisation of organisations) {
-      const email = organisation.administrators[0].email.toLowerCase().trim()
-      console.log(organisation.administrators[0].email, email)
+      const previousEmail = organisation.administrators[0].email
+      const email = formatEmail(organisation.administrators[0].email)
+
       await Organisation.updateOne(
         { _id: organisation._id },
         {
@@ -21,6 +25,13 @@ async function formatEmailContainingUppercase() {
           },
         }
       )
+
+      await createOrUpdateContact({
+        email: previousEmail,
+        otherAttributes: {
+          email,
+        },
+      })
     }
   } catch (error) {
     console.error(error)
