@@ -18,6 +18,7 @@ type Administrator = {
 }
 
 export type OrganisationType = {
+  _id: string
   administrators: Administrator[]
   polls: RefType[]
   name: string
