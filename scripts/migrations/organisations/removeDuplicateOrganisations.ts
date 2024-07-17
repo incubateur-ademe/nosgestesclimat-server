@@ -5,13 +5,12 @@ import {
   OrganisationType,
 } from '../../../src/schemas/OrganisationSchema'
 import { PollType } from '../../../src/schemas/PollSchema'
-import { SimulationType } from '../../../src/schemas/SimulationSchema'
 
-type AggregationResult = {
+type AdministratorObject = {
   _id: string // Email
   organisations: OrganisationType[]
   count: number
-  polls: PollType[]
+  allAdministratorPolls: PollType[]
 }
 
 async function removeDuplicateOrganisations() {
@@ -50,7 +49,7 @@ async function removeDuplicateOrganisations() {
           from: 'polls',
           localField: 'organisations.polls',
           foreignField: '_id',
-          as: 'polls',
+          as: 'allAdministratorPolls',
         },
       },
       {
@@ -62,11 +61,11 @@ async function removeDuplicateOrganisations() {
       },
     ]
 
-    const aggregationResult = (await Organisation.aggregate(
+    const administratorObjects = (await Organisation.aggregate(
       pipeline
-    )) as unknown as AggregationResult[]
+    )) as unknown as AdministratorObject[]
 
-    for (let administratorObject of aggregationResult) {
+    for (let administratorObject of administratorObjects) {
       // Skip the non problematic cases
       if (administratorObject.count <= 1) {
         continue
@@ -79,48 +78,71 @@ async function removeDuplicateOrganisations() {
               ...acc,
               {
                 ...organisation,
-                polls: administratorObject.polls.filter((poll) =>
-                  (organisation.polls as unknown as string[]).includes(poll._id)
+                polls: administratorObject.allAdministratorPolls.filter(
+                  (poll) =>
+                    (organisation.polls as unknown as string[]).findIndex(
+                      (pollId) => {
+                        return pollId.toString() === poll._id.toString()
+                      }
+                    ) > -1
                 ) as PollType[],
               },
             ] as OrganisationType[]
           },
           [] as OrganisationType[]
-        ) as unknown as (OrganisationType & {
-          polls: (PollType & { simulations: SimulationType[] })[]
-        })[]
+        )
+      console.log('--')
+      console.log('--')
+      console.log(
+        administratorObject._id,
+        ' has ',
+        organisationsWithMatchingPolls.length,
+        ' organisations'
+      )
 
-      // For each organisation :
-      // - check if the polls have simulations
-      // - check if a name is set for the poll
-      // if not remove the organisation
-      for (let organisation of organisationsWithMatchingPolls) {
-        const hasSimulation = organisation.polls.some(
-          (poll: PollType & { simulations: SimulationType[] }) =>
-            poll?.simulations && poll?.simulations?.length > 0
-        )
-        const hasName = organisation.polls.some(
-          (poll: PollType) => poll?.name && poll?.name !== undefined
-        )
+      let hasKeptOrganisation = false
+
+      for (let [
+        index,
+        organisationWithMatchingPoll,
+      ] of organisationsWithMatchingPolls.entries()) {
+        // We want to leave minimum one organisation for each administrator
+        // even if it has no polls
+        const isLastValidOrganisation =
+          !hasKeptOrganisation &&
+          index === organisationsWithMatchingPolls.length - 1
+
+        const hasSimulation = (
+          organisationWithMatchingPoll.polls as unknown as PollType[]
+        ).some((poll) => poll?.simulations && poll?.simulations?.length > 0)
+
+        const hasName = (
+          organisationWithMatchingPoll.polls as unknown as PollType[]
+        ).some((poll) => poll?.name && poll?.name !== undefined)
 
         // List the organisations that need manual intervention
-        if (hasSimulation || hasName) {
+        if (hasSimulation || hasName || isLastValidOrganisation) {
           console.log(
-            `Keeping organisation ${organisation._id} for administrator ${organisation.administrators[0]._id}`
+            `Keeping organisation ${organisationWithMatchingPoll._id} for administrator ${organisationWithMatchingPoll.administrators[0].email}`
           )
+          hasKeptOrganisation = true
+          continue
         }
 
         if (!hasSimulation || !hasName) {
           console.log(
-            `Removing organisation ${organisation._id} with simulation ${hasSimulation} and name ${hasName}`
+            `Removing organisation ${organisationWithMatchingPoll._id} with simulation ${hasSimulation} and name ${hasName}`
           )
-          await Organisation.findByIdAndDelete(organisation._id)
+          console.log('--')
+          await Organisation.findByIdAndDelete(organisationWithMatchingPoll._id)
         }
       }
     }
   } catch (error) {
     console.error(error)
   }
+
+  process.exit(0)
 }
 
 removeDuplicateOrganisations()
