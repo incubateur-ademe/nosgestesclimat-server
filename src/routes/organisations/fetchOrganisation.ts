@@ -13,13 +13,13 @@ const router = express.Router()
 router
   .use(authentificationMiddleware)
   .post('/', async (req: Request, res: Response) => {
-    const email = req.body.email
+    const email = req.body.email?.toLowerCase()
     const slug = req.body.slug
 
     const decodedSlug = decodeURIComponent(slug)
 
     if (!email) {
-      return res.status(403).json('No owner email provided.')
+      return res.status(403).json('A valid email address must be provided.')
     }
 
     try {

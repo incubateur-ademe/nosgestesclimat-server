@@ -8,7 +8,7 @@ const router = express.Router()
  * Updates the user and newsletter settings
  */
 router.route('/').get(async (req, res) => {
-  const email = req.query.email as string
+  const email = (req.query.email as string)?.toLowerCase()
 
   // Check if all required fields are provided
   if (!email) {

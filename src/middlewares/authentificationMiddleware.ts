@@ -14,7 +14,7 @@ export function authentificationMiddleware(
   res: Response,
   next: NextFunction
 ) {
-  const email = req.body.email
+  const email = req.body.email?.toLowerCase()
 
   const cookiesHeader = req.headers.cookie
 

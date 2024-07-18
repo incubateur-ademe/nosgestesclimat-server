@@ -26,44 +26,57 @@ const authorizedMethods = [
   'Actions.getPageUrl',
 ]
 
+const privateURLs = ['conférence/', 'conference/', 'sondage/']
+
+const isPrivate = (rawString: string) => {
+  const uriComponents = decodeURIComponent(rawString)
+
+  return (
+    uriComponents !== undefined &&
+    privateURLs.some((url) => uriComponents.includes(url))
+  )
+}
+
 router
   .route('/')
   .get(
     cache('1 day'),
     async (req: Request, res: Response, next: NextFunction) => {
-      const rawRequestParams = decodeURIComponent(
-        req.query.requestParams as string
-      )
-
-      const requestParams = new URLSearchParams(rawRequestParams)
-
-      const matomoMethod = requestParams.get('method')
-
-      const idSite = requestParams.get('idSite')
-
-      if (!matomoMethod || !idSite) {
-        res.statusCode = 401
-        return next('Error. Not Authorized')
-      }
-
-      const authorizedMethod = authorizedMethods.includes(matomoMethod)
-
-      const authorizedSiteId = requestParams.get('idSite') === '153'
-
-      if (!authorizedMethod || !authorizedSiteId) {
-        res.statusCode = 401
-        return next('Error. Not Authorized')
-      }
-
-      const url =
-        config.thirdParty.matomo.url +
-        '?' +
-        requestParams +
-        '&token_auth=' +
-        config.thirdParty.matomo.token
-
-      console.log('will make matomo request', requestParams)
+      let url
       try {
+        const rawRequestParams = decodeURIComponent(
+          req.query.requestParams as string
+        )
+
+        const requestParams = new URLSearchParams(rawRequestParams)
+
+        const matomoMethod = requestParams.get('method')
+
+        const idSite = requestParams.get('idSite')
+
+        if (!matomoMethod || !idSite) {
+          res.statusCode = 401
+          return next('Error. Not Authorized')
+        }
+
+        const authorizedMethod = authorizedMethods.includes(matomoMethod)
+
+        const authorizedSiteId = requestParams.get('idSite') === '153'
+
+        if (!authorizedMethod || !authorizedSiteId) {
+          res.statusCode = 401
+          return next('Error. Not Authorized')
+        }
+
+        url =
+          config.thirdParty.matomo.url +
+          '?' +
+          requestParams +
+          '&token_auth=' +
+          config.thirdParty.matomo.token
+
+        console.log('will make matomo request', requestParams)
+
         const response = await fetch(url)
 
         const json = (await response.json()) as {
@@ -88,27 +101,9 @@ router
         res.statusCode = 200
         return res.json(json)
       } catch (e) {
-        console.log(
-          'Erreur lors de la requête ou le parsing de la requête',
-          url
-        )
-        console.log(e)
-
-        res.statusCode = 500
-        return next('Error fetching or parsing stats ')
+        return res.status(500).send('Error fetching or parsing stats ')
       }
     }
   )
-
-const privateURLs = ['conférence/', 'conference/', 'sondage/']
-
-const isPrivate = (rawString: string) => {
-  const uriComponents = decodeURIComponent(rawString)
-
-  return (
-    uriComponents !== undefined &&
-    privateURLs.some((url) => uriComponents.includes(url))
-  )
-}
 
 export default router

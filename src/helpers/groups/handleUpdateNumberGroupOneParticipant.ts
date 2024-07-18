@@ -15,7 +15,7 @@ export async function handleUpdateGroupNumberOneParticipant({ group }: Props) {
     participants: { $size: 1 },
   })
 
-  await createOrUpdateContact({
+  return createOrUpdateContact({
     email: group.administrator.email ?? '',
     userId,
     otherAttributes: {

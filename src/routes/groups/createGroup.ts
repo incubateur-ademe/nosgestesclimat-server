@@ -2,6 +2,7 @@ import express from 'express'
 import { Group } from '../../schemas/GroupSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { sendGroupEmail } from '../../helpers/email/sendGroupEmail'
+import { validateEmail } from '../../utils/validation/validateEmail'
 
 const router = express.Router()
 
@@ -15,7 +16,7 @@ router.route('/').post(async (req, res) => {
   const groupName = req.body.name
   const groupEmoji = req.body.emoji
   const administratorName = req.body.administratorName
-  const administratorEmail = req.body.administratorEmail
+  const administratorEmail = req.body.administratorEmail?.toLowerCase()
 
   // We need the origin to send the email with the correct links
   const origin = req.get('origin') ?? 'https://nosgestesclimat.fr'
@@ -33,6 +34,12 @@ router.route('/').post(async (req, res) => {
 
   if (!administratorName) {
     return res.status(500).send('Error. A name must be provided.')
+  }
+
+  if (administratorEmail && !validateEmail(administratorEmail)) {
+    return res
+      .status(500)
+      .send('Error. A valid email address must be provided.')
   }
 
   try {
