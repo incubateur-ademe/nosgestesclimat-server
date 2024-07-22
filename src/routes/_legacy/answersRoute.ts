@@ -3,8 +3,8 @@ import connectdb from '../../helpers/db/initDatabase'
 import Answers from '../../schemas/_legacy/AnswerSchema'
 import Surveys from '../../schemas/_legacy/SurveySchema'
 
-import { Parser } from 'json2csv'
 import fs from 'fs'
+import { Parser } from 'json2csv'
 import yaml from 'yaml'
 
 const router = express.Router()
@@ -53,7 +53,7 @@ router.route('/:room').get((req, res, next) => {
   // Depending on the request, we serve JSON (designed for nosgestesclimat.fr) or CSV (to be opened by a LibreOffice or similar)
   const csv = req.query.format === 'csv'
 
-  connectdb.then((db) => {
+  connectdb().then(() => {
     const data = Answers.find({ survey: roomName })
     data.then(async (answers) => {
       if (!csv) {

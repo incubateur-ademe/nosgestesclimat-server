@@ -9,7 +9,7 @@ router.route('/:room').get((req, res) => {
     throw new Error('Unauthorized. A valid survey name must be provided')
   }
 
-  connectdb.then(() => {
+  connectdb().then(() => {
     const data = Survey.find({ name: req.params.room })
     // @ts-ignore
     data.then((survey) => {
