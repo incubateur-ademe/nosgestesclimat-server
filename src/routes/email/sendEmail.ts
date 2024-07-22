@@ -1,8 +1,7 @@
 import express from 'express'
-import { Group } from '../../schemas/GroupSchema'
-import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { sendEmail } from '../../helpers/email/sendEmail'
 import { formatEmail } from '../../utils/formatting/formatEmail'
+import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 
 const router = express.Router()
 
