@@ -21,19 +21,19 @@ export async function validateVerificationCode({
   )
 
   if (!verificationCodeFound) {
-    return res.status(403).json('No matching verification code found.')
+    throw new Error('No matching verification code found.')
   }
 
   // Validation of the code
   const now = new Date()
 
   if (verificationCodeFound.toObject().code !== verificationCode) {
-    return res.status(403).json('Invalid code.')
+    throw new Error('Invalid code.')
   }
 
   if (
     verificationCodeFound.toObject().expirationDate.getTime() < now.getTime()
   ) {
-    return res.status(403).json('Code expired.')
+    throw new Error('Code expired.')
   }
 }

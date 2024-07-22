@@ -37,7 +37,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
     await validateVerificationCode({
       verificationCode,
       res,
-      email,
+      email: emailModified,
     })
 
     const organisationFound = await Organisation.findOne({
@@ -89,9 +89,11 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
         emailModified
 
       // Update the Brevo contact
-      await updateBrevoContactEmail({
+      updateBrevoContactEmail({
         email,
         emailModified,
+      }).catch((error) => {
+        console.log('Error updating Brevo contact', error)
       })
 
       generateAndSetNewToken(res, emailModified)
