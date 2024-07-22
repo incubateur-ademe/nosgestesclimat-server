@@ -99,10 +99,21 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
       generateAndSetNewToken(res, emailModified)
     }
 
-    console.log('organisationFound', organisationFound)
-
     // Save the modifications
     const organisationSaved = await organisationFound.save()
+
+    try {
+      const orga1 = await Organisation.findOne({
+        'administrators.email': emailModified,
+      })
+      console.log(orga1?.administrators)
+      const orga2 = await Organisation.findOne({
+        'administrators.email': email,
+      })
+      console.log(orga2?.administrators)
+    } catch (error) {
+      console.log('Error updating organisation', error)
+    }
 
     setSuccessfulJSONResponse(res)
 

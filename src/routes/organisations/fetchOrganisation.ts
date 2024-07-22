@@ -17,7 +17,7 @@ router
     const slug = req.body.slug
 
     const decodedSlug = decodeURIComponent(slug)
-
+    console.log(email)
     if (!email) {
       return res.status(403).json('A valid email address must be provided.')
     }
