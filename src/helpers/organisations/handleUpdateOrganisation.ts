@@ -1,52 +1,58 @@
+import { Mongoose, ObjectId, Types } from 'mongoose'
 import { Organisation } from '../../schemas/OrganisationSchema'
 
 type Props = {
-  email: string
-  organisationName: string
-  uniqueSlug?: string
-  administratorName: string
-  position: string
-  administratorTelephone: string
-  hasOptedInForCommunications: boolean
-  organisationType: string
-  numberOfCollaborators: number
+  _id: Types.ObjectId
+  administratorEmail: string
+  updates: {
+    email: string
+    organisationName: string
+    uniqueSlug?: string
+    administratorName: string
+    position: string
+    administratorTelephone: string
+    hasOptedInForCommunications: boolean
+    organisationType: string
+    numberOfCollaborators: number
+  }
 }
 
 export async function handleUpdateOrganisation({
-  email,
-  organisationName,
-  uniqueSlug,
-  administratorName,
-  position,
-  administratorTelephone,
-  hasOptedInForCommunications,
-  organisationType,
-  numberOfCollaborators,
+  _id,
+  administratorEmail,
+  updates: {
+    email,
+    organisationName,
+    uniqueSlug,
+    administratorName,
+    position,
+    administratorTelephone,
+    hasOptedInForCommunications,
+    organisationType,
+    numberOfCollaborators,
+  },
 }: Props) {
+  console.log(position)
   // Update organisation using findOneAndUpdate
-  await Organisation.findOneAndUpdate(
+  return await Organisation.findOneAndUpdate(
     {
-      'administrators.email': email,
+      _id,
+      'administrators.email': administratorEmail,
     },
     {
       $set: {
         name: String(organisationName),
         ...(uniqueSlug && { slug: uniqueSlug }),
-        'administrators.$[element].name': administratorName,
-        'administrators.$[element].position': position,
-        'administrators.$[element].telephone': administratorTelephone,
-        'administrators.$[element].hasOptedInForCommunications':
+        'administrators.$.name': administratorName,
+        'administrators.$.position': position,
+        'administrators.$.telephone': administratorTelephone,
+        'administrators.$.hasOptedInForCommunications':
           hasOptedInForCommunications,
         organisationType,
         numberOfCollaborators,
+        ...(email &&
+          email !== administratorEmail && { 'administrators.$.email': email }),
       },
-    },
-    {
-      arrayFilters: [
-        {
-          'element.email': email,
-        },
-      ],
     }
   )
 }

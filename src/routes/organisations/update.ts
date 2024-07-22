@@ -57,15 +57,19 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
 
     // Handles all the update logic
     await handleUpdateOrganisation({
-      email,
-      organisationName,
-      administratorName,
-      hasOptedInForCommunications,
-      position,
-      administratorTelephone,
-      organisationType,
-      numberOfCollaborators,
-      uniqueSlug,
+      _id: organisationFound._id,
+      administratorEmail: email,
+      updates: {
+        email,
+        organisationName,
+        administratorName,
+        hasOptedInForCommunications,
+        position,
+        administratorTelephone,
+        organisationType,
+        numberOfCollaborators,
+        uniqueSlug,
+      },
     })
 
     const lastPoll =

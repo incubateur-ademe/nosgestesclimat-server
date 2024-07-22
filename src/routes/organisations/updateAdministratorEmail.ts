@@ -7,6 +7,7 @@ import { updateBrevoContactEmail } from '../../helpers/email/updateBrevoContactE
 import { generateAndSetNewToken } from '../../helpers/authentification/generateAndSetNewToken'
 import axios from 'axios'
 import { validateVerificationCode } from '../../helpers/organisations/validateVerificationCode'
+import { handleUpdateOrganisation } from '../../helpers/organisations/handleUpdateOrganisation'
 
 const router = express.Router()
 
@@ -32,6 +33,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
   const organisationType = req.body.organisationType ?? ''
   const numberOfCollaborators = req.body.numberOfCollaborators ?? undefined
   const verificationCode = req.body.verificationCode
+  const administratorTelephone = req.body.administratorTelephone ?? ''
 
   try {
     await validateVerificationCode({
@@ -48,46 +50,22 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
       return res.status(403).json('No matching organisation found.')
     }
 
-    if (organisationName) {
-      organisationFound.name = String(organisationName)
-    }
-
-    const administratorModifiedIndex =
-      organisationFound.administrators.findIndex(
-        ({ email: administratorEmail }) => administratorEmail === email
-      )
-
-    // Return if no matching administrator found
-    if (administratorModifiedIndex === -1) {
-      return res.status(403).json('No matching administrator found.')
-    }
-
-    if (administratorName) {
-      organisationFound.administrators[administratorModifiedIndex].name =
-        administratorName
-    }
-
-    if (position && administratorModifiedIndex !== -1) {
-      organisationFound.administrators[administratorModifiedIndex].position =
-        position
-    }
-
-    organisationFound.administrators[
-      administratorModifiedIndex
-    ].hasOptedInForCommunications = hasOptedInForCommunications
-
-    if (organisationType) {
-      organisationFound.organisationType = organisationType
-    }
-
-    if (numberOfCollaborators) {
-      organisationFound.numberOfCollaborators = numberOfCollaborators
-    }
+    const organisationUpdated = await handleUpdateOrganisation({
+      _id: organisationFound._id,
+      administratorEmail: email,
+      updates: {
+        email: emailModified,
+        organisationName,
+        administratorName,
+        hasOptedInForCommunications,
+        position,
+        organisationType,
+        numberOfCollaborators,
+        administratorTelephone,
+      },
+    })
 
     if (emailModified && email !== emailModified) {
-      organisationFound.administrators[administratorModifiedIndex].email =
-        emailModified
-
       // Update the Brevo contact
       updateBrevoContactEmail({
         email,
@@ -99,25 +77,9 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
       generateAndSetNewToken(res, emailModified)
     }
 
-    // Save the modifications
-    const organisationSaved = await organisationFound.save()
-
-    try {
-      const orga1 = await Organisation.findOne({
-        'administrators.email': emailModified,
-      })
-      console.log(orga1?.administrators)
-      const orga2 = await Organisation.findOne({
-        'administrators.email': email,
-      })
-      console.log(orga2?.administrators)
-    } catch (error) {
-      console.log('Error updating organisation', error)
-    }
-
     setSuccessfulJSONResponse(res)
 
-    res.json(organisationSaved)
+    res.json(organisationUpdated)
   } catch (error) {
     console.log('Error updating organisation', error)
     return res.status(403).json(error)
