@@ -94,8 +94,10 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
         emailModified,
       })
 
-      generateAndSetNewToken(res, email)
+      generateAndSetNewToken(res, emailModified)
     }
+
+    console.log('organisationFound', organisationFound)
 
     // Save the modifications
     const organisationSaved = await organisationFound.save()
