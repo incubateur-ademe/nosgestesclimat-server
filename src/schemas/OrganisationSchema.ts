@@ -1,34 +1,12 @@
-import mongoose, { RefType } from 'mongoose'
-import {
-  VerificationCodeSchema,
-  VerificationCodeType,
-} from './VerificationCodeSchema'
-import { PollType } from './PollSchema'
+import mongoose from 'mongoose'
+import { VerificationCodeSchema } from './VerificationCodeSchema'
+import type { FullInferSchemaType } from '../types/types'
 
 const Schema = mongoose.Schema
 
-type Administrator = {
-  _id: mongoose.Types.ObjectId
-  name: string
-  email: string
-  telephone: string
-  position: string
-  verificationCode: VerificationCodeType
-  hasOptedInForCommunications: boolean
-  userId: string
-}
+export type OrganisationType = FullInferSchemaType<typeof OrganisationSchema>
 
-export type OrganisationType = {
-  _id: string
-  administrators: Administrator[]
-  polls: RefType[]
-  name: string
-  slug: string
-  organisationType: string
-  numberOfCollaborators?: number
-}
-
-const AdministratorSchema = new Schema<Administrator>(
+const AdministratorSchema = new Schema(
   {
     name: String,
     email: {
@@ -47,7 +25,7 @@ const AdministratorSchema = new Schema<Administrator>(
   }
 )
 
-export const OrganisationSchema = new Schema<OrganisationType>(
+export const OrganisationSchema = new Schema(
   {
     administrators: [AdministratorSchema],
     polls: [

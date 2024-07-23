@@ -1,14 +1,16 @@
-import mongoose from 'mongoose'
+import { Organisation } from './../../../src/schemas/OrganisationSchema'
+import mongoose, { PipelineStage } from 'mongoose'
 import { config } from '../../../src/config'
-import {
-  Organisation,
-  OrganisationType,
-} from '../../../src/schemas/OrganisationSchema'
+import { OrganisationType } from '../../../src/schemas/OrganisationSchema'
 import { PollType } from '../../../src/schemas/PollSchema'
 
+type OrganisationWithPollsPopulatedType = Omit<OrganisationType, 'polls'> & {
+  polls: PollType[]
+}
+
 type AdministratorObject = {
-  _id: string // Email
-  organisations: OrganisationType[]
+  email: string // Email
+  organisations: OrganisationWithPollsPopulatedType[]
   count: number
   allAdministratorPolls: PollType[]
 }
@@ -17,7 +19,7 @@ async function removeDuplicateOrganisations() {
   try {
     mongoose.connect(config.mongo.url)
 
-    const pipeline = [
+    const pipeline: PipelineStage[] = [
       {
         $unwind: {
           path: '$administrators',
@@ -53,6 +55,14 @@ async function removeDuplicateOrganisations() {
         },
       },
       {
+        $project: {
+          email: '$_id',
+          organisations: 1,
+          count: 1,
+          allAdministratorPolls: 1,
+        },
+      },
+      {
         $match: {
           count: {
             $gt: 1,
@@ -61,11 +71,11 @@ async function removeDuplicateOrganisations() {
       },
     ]
 
-    const administratorObjects = (await Organisation.aggregate(
+    const administratorObjects = Organisation.aggregate(
       pipeline
-    )) as unknown as AdministratorObject[]
+    ).cursor<AdministratorObject>({ batchSize: 1000 })
 
-    for (let administratorObject of administratorObjects) {
+    for await (let administratorObject of administratorObjects) {
       // Skip the non problematic cases
       if (administratorObject.count <= 1) {
         continue
@@ -73,28 +83,25 @@ async function removeDuplicateOrganisations() {
 
       const organisationsWithMatchingPolls =
         administratorObject.organisations.reduce(
-          (acc: OrganisationType[], organisation: OrganisationType) => {
+          (acc: OrganisationWithPollsPopulatedType[], organisation) => {
             return [
               ...acc,
               {
                 ...organisation,
                 polls: administratorObject.allAdministratorPolls.filter(
                   (poll) =>
-                    (organisation.polls as unknown as string[]).findIndex(
-                      (pollId) => {
-                        return pollId.toString() === poll._id.toString()
-                      }
-                    ) > -1
-                ) as PollType[],
+                    organisation.polls.findIndex((pollId) => {
+                      return pollId.toString() === poll._id.toString()
+                    }) > -1
+                ),
               },
-            ] as OrganisationType[]
+            ]
           },
           []
         )
       console.log('--')
       console.log('--')
       console.log(
-        administratorObject._id,
         ' has ',
         organisationsWithMatchingPolls.length,
         ' organisations'
@@ -112,13 +119,13 @@ async function removeDuplicateOrganisations() {
           !hasKeptOrganisation &&
           index === organisationsWithMatchingPolls.length - 1
 
-        const hasSimulation = (
-          organisationWithMatchingPoll.polls as unknown as PollType[]
-        ).some((poll) => poll?.simulations && poll?.simulations?.length > 0)
+        const hasSimulation = organisationWithMatchingPoll.polls.some(
+          (poll) => poll?.simulations && poll?.simulations?.length > 0
+        )
 
-        const hasName = (
-          organisationWithMatchingPoll.polls as unknown as PollType[]
-        ).some((poll) => poll?.name && poll?.name !== undefined)
+        const hasName = organisationWithMatchingPoll.polls.some(
+          (poll) => poll?.name && poll?.name !== undefined
+        )
 
         // List the organisations that need manual intervention
         if (hasSimulation || hasName || isLastValidOrganisation) {

@@ -1,5 +1,6 @@
 import { NodeValue } from '@incubateur-ademe/nosgestesclimat'
 import { CustomAdditionalQuestionType } from '../schemas/PollSchema'
+import mongoose, { InferSchemaType } from 'mongoose'
 
 export type PollPublicInfo = {
   name: string
@@ -26,4 +27,8 @@ export type Attributes = {
 
 export type Situation = {
   [key: string]: NodeValue
+}
+
+export type FullInferSchemaType<T> = InferSchemaType<T> & {
+  _id: mongoose.Types.ObjectId
 }
