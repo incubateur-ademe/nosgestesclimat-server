@@ -89,7 +89,7 @@ async function removeDuplicateOrganisations() {
               },
             ] as OrganisationType[]
           },
-          [] as OrganisationType[]
+          []
         )
       console.log('--')
       console.log('--')

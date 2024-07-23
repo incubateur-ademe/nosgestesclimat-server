@@ -1,10 +1,11 @@
 import { Organisation } from '../../../src/schemas/OrganisationSchema'
 import mongoose from 'mongoose'
 import { config } from '../../../src/config'
-import { updateEmailOfContact } from '../../../src/helpers/email/updateEmailOfContact'
 import { createOrUpdateContact } from '../../../src/helpers/email/createOrUpdateContact'
 import { formatEmail } from '../../../src/utils/formatting/formatEmail'
 
+// This script will format the email of an organisation's administrator if it contains an uppercase letter.
+// to correct a bug caused by a lack of validation
 async function formatEmailContainingUppercase() {
   try {
     mongoose.connect(config.mongo.url)
@@ -37,7 +38,7 @@ async function formatEmailContainingUppercase() {
     console.error(error)
   }
 
-  process.exit(1)
+  process.exit(0)
 }
 
 formatEmailContainingUppercase()

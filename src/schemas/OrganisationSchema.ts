@@ -8,7 +8,7 @@ import { PollType } from './PollSchema'
 const Schema = mongoose.Schema
 
 type Administrator = {
-  _id: string
+  _id: mongoose.Types.ObjectId
   name: string
   email: string
   telephone: string
