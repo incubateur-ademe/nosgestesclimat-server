@@ -32,7 +32,6 @@ export async function handleUpdateOrganisation({
     numberOfCollaborators,
   },
 }: Props) {
-  console.log(position)
   // Update organisation using findOneAndUpdate
   return await Organisation.findOneAndUpdate(
     {
@@ -53,6 +52,9 @@ export async function handleUpdateOrganisation({
         ...(email &&
           email !== administratorEmail && { 'administrators.$.email': email }),
       },
+    },
+    {
+      new: true,
     }
   )
 }

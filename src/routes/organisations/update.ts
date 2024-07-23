@@ -56,7 +56,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
       : undefined
 
     // Handles all the update logic
-    await handleUpdateOrganisation({
+    const organisationUpdated = await handleUpdateOrganisation({
       _id: organisationFound._id,
       administratorEmail: email,
       updates: {
@@ -104,12 +104,9 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
       position,
     })
 
-    // Save the modifications
-    const organisationSaved = await organisationFound.save()
-
     setSuccessfulJSONResponse(res)
 
-    res.json(organisationSaved)
+    res.json(organisationUpdated)
   } catch (error) {
     console.log('Error updating organisation', error)
     return res.status(403).json(error)
