@@ -91,7 +91,11 @@ async function removeDuplicateOrganisations() {
                 polls: administratorObject.allAdministratorPolls.filter(
                   (poll) =>
                     organisation.polls.findIndex((pollId) => {
-                      return pollId.toString() === poll._id.toString()
+                      return (
+                        poll._id &&
+                        pollId &&
+                        pollId.toString() === poll._id.toString()
+                      )
                     }) > -1
                 ),
               },
