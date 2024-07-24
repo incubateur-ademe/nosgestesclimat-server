@@ -1,39 +1,9 @@
-import { CustomAdditionalQuestionType } from './PollSchema'
-import mongoose, { ObjectId, RefType } from 'mongoose'
+import mongoose from 'mongoose'
+import type { FullInferSchemaType } from '../types/types'
 
 const Schema = mongoose.Schema
 
-type CustomAdditionalQuestionAnswerType = Record<string, string>
-
-export interface SimulationType {
-  id: string
-  user?: RefType
-  actionChoices: Record<string, unknown>
-  progression: number
-  date: Date
-  foldedSteps: string[]
-  situation: Record<string, any>
-  computedResults: {
-    bilan: number
-    categories: Record<string, number>
-  }
-  // poll and group are legacy. They can safely be deleted once the migration is done
-  poll?: RefType
-  group?: RefType
-  polls?: RefType[]
-  groups?: RefType[]
-  defaultAdditionalQuestionsAnswers?: {
-    postalCode?: string
-    birthdate?: string
-  }
-  customAdditionalQuestionsAnswers?: CustomAdditionalQuestionAnswerType
-  savedViaEmail?: boolean
-  updatedAt?: Date
-  createdAt?: Date
-  _id?: string
-}
-
-export const SimulationSchema = new Schema<SimulationType>(
+export const SimulationSchema = new Schema(
   {
     // UI stored simulation id
     id: String,
@@ -87,6 +57,8 @@ export const SimulationSchema = new Schema<SimulationType>(
     timestamps: true,
   }
 )
+
+export type SimulationType = FullInferSchemaType<typeof SimulationSchema>
 
 SimulationSchema.index({ id: 1 })
 

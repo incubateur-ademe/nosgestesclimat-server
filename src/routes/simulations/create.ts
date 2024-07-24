@@ -1,19 +1,18 @@
-import { UserType } from './../../schemas/UserSchema'
 import express from 'express'
-import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import { createOrUpdateUser } from '../../helpers/queries/createOrUpdateUser'
-import { findPollsBySlug } from '../../helpers/organisations/findPollsBySlug'
-import { findGroupsById } from '../../helpers/groups/findGroupsById'
-import { createOrUpdateSimulation } from '../../helpers/queries/createOrUpdateSimulation'
-import { SimulationType } from '../../schemas/SimulationSchema'
-import { PollType } from '../../schemas/PollSchema'
 import { Document } from 'mongoose'
-import { handleUpdatePoll } from '../../helpers/organisations/handleUpdatePoll'
-import { handleUpdateGroup } from '../../helpers/groups/handleUpdateGroup'
-import { GroupType } from '../../schemas/GroupSchema'
-import { sendSimulationEmail } from '../../helpers/email/sendSimulationEmail'
 import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
+import { sendSimulationEmail } from '../../helpers/email/sendSimulationEmail'
+import { findGroupsById } from '../../helpers/groups/findGroupsById'
+import { handleUpdateGroup } from '../../helpers/groups/handleUpdateGroup'
+import { findPollsBySlug } from '../../helpers/organisations/findPollsBySlug'
+import { handleUpdatePoll } from '../../helpers/organisations/handleUpdatePoll'
+import { createOrUpdateSimulation } from '../../helpers/queries/createOrUpdateSimulation'
+import { createOrUpdateUser } from '../../helpers/queries/createOrUpdateUser'
+import { GroupType } from '../../schemas/GroupSchema'
+import { SimulationType } from '../../schemas/SimulationSchema'
+import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { validateEmail } from '../../utils/validation/validateEmail'
+import { UserType } from './../../schemas/UserSchema'
 
 const router = express.Router()
 
@@ -71,7 +70,7 @@ router.route('/').post(async (req, res) => {
     // We check if a group is associated with the simulation
     const groups = await findGroupsById(simulation.groups)
 
-    const simulationObject: SimulationType = {
+    const simulationObject = {
       id: simulation.id,
       user: userDocument._id,
       actionChoices: {
@@ -105,10 +104,6 @@ router.route('/').post(async (req, res) => {
         poll,
         simulationSaved,
         email,
-      } as unknown as {
-        poll: Document<PollType> & PollType
-        simulationSaved: Document<SimulationType> & SimulationType
-        email: string
       })
     }
 

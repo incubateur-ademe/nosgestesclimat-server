@@ -1,7 +1,7 @@
 import { Simulation, SimulationType } from '../../schemas/SimulationSchema'
 
 export async function createOrUpdateSimulation(
-  simulationToAdd: SimulationType
+  simulationToAdd: Partial<SimulationType>
 ) {
   const simulation = await Simulation.findOneAndUpdate(
     {

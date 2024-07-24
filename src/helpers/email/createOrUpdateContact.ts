@@ -10,7 +10,7 @@ type Props = {
   userId?: string
   listIds?: number[]
   optin?: boolean
-  otherAttributes?: Record<string, string | boolean | number>
+  otherAttributes?: Record<string, string | boolean | number | undefined>
   simulation?: SimulationType
 }
 

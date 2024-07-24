@@ -1,14 +1,9 @@
 import mongoose from 'mongoose'
+import type { FullInferSchemaType } from '../types/types'
 
 const Schema = mongoose.Schema
 
-export type QuizAnswerType = {
-  simulationId: string
-  answer: string
-  isAnswerCorrect: string
-}
-
-export const QuizAnswerSchema = new Schema<QuizAnswerType>(
+export const QuizAnswerSchema = new Schema(
   {
     simulationId: String,
     answer: String,
@@ -18,5 +13,7 @@ export const QuizAnswerSchema = new Schema<QuizAnswerType>(
     timestamps: true,
   }
 )
+
+export type QuizAnswerType = FullInferSchemaType<typeof QuizAnswerSchema>
 
 export const QuizAnswer = mongoose.model('QuizAnswer', QuizAnswerSchema)
