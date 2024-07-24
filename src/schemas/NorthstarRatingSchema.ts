@@ -1,14 +1,9 @@
 import mongoose from 'mongoose'
+import type { FullInferSchemaType } from '../types/types'
 
 const Schema = mongoose.Schema
 
-export type NorthstarRatingType = {
-  simulationId: string
-  value: string
-  type: string
-}
-
-export const NorthstarRatingSchema = new Schema<NorthstarRatingType>(
+export const NorthstarRatingSchema = new Schema(
   {
     simulationId: String,
     value: String,
@@ -18,6 +13,10 @@ export const NorthstarRatingSchema = new Schema<NorthstarRatingType>(
     timestamps: true,
   }
 )
+
+export type NorthstarRatingType = FullInferSchemaType<
+  typeof NorthstarRatingSchema
+>
 
 export const NorthstarRating = mongoose.model(
   'NorthstarRating',
