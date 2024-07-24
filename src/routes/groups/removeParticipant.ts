@@ -1,8 +1,8 @@
 import express from 'express'
 import { Group } from '../../schemas/GroupSchema'
 
-import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { Simulation } from '../../schemas/SimulationSchema'
+import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 
 const router = express.Router()
 
@@ -49,6 +49,7 @@ router.route('/').post(async (req, res) => {
     }
 
     // We remove the user from the list of participants
+    // @ts-expect-error 2740 filter like that is kind of weird
     group.participants = group.participants.filter(
       (participant) => participant.userId !== userId
     )

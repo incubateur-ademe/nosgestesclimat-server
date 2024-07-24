@@ -14,12 +14,18 @@ function processGroupsByAdministrator(
   const groupsByAdministrator: Record<string, GroupType[]> = {}
 
   for (const group of groups) {
-    if (group.administrator.email) {
-      if (!groupsByAdministrator[group.administrator.email]) {
-        groupsByAdministrator[group.administrator.email] = []
+    const { administrator } = group
+
+    if (!administrator) {
+      continue
+    }
+
+    if (administrator.email) {
+      if (!groupsByAdministrator[administrator.email]) {
+        groupsByAdministrator[administrator.email] = []
       }
 
-      groupsByAdministrator[group.administrator.email].push(group)
+      groupsByAdministrator[administrator.email].push(group)
     }
   }
 
@@ -51,7 +57,7 @@ export async function updateGroupUserInfo() {
       // Get the last poll updated
       const lastGroupCreated = groupsByAdministrator[administratorEmail]?.sort(
         (a, b) => {
-          return (b as any).createdAt.getTime() - (a as any).createdAt.getTime()
+          return b.createdAt.getTime() - a.createdAt.getTime()
         }
       )[0]
 
