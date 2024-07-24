@@ -8,9 +8,7 @@ type Props = {
 export async function getPollPublicInfos({
   pollSlug,
 }: Props): Promise<PollPublicInfo | null> {
-  const polls = await findPollsBySlug([pollSlug])
-
-  const poll = polls[0]
+  const [poll] = await findPollsBySlug([pollSlug])
 
   if (!poll) {
     return null

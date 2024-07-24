@@ -3,7 +3,7 @@ import type { Document, InferSchemaType, Types } from 'mongoose'
 import type { CustomAdditionalQuestionType } from '../schemas/PollSchema'
 
 export type PollPublicInfo = {
-  name: string
+  name?: string
   slug: string
   defaultAdditionalQuestions?: string[]
   customAdditionalQuestions?: CustomAdditionalQuestionType[]
@@ -29,5 +29,9 @@ export type Situation = {
   [key: string]: NodeValue
 }
 
+type WithRequiredProperty<Type, Keys extends keyof Type> = Type & {
+  [Property in Keys]-?: Type[Property]
+}
+
 export type FullInferSchemaType<T> = InferSchemaType<T> &
-  Document<Types.ObjectId>
+  WithRequiredProperty<Document<Types.ObjectId>, '_id'>

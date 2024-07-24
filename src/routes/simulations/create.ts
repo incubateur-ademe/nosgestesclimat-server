@@ -9,7 +9,6 @@ import { handleUpdatePoll } from '../../helpers/organisations/handleUpdatePoll'
 import { createOrUpdateSimulation } from '../../helpers/queries/createOrUpdateSimulation'
 import { createOrUpdateUser } from '../../helpers/queries/createOrUpdateUser'
 import { GroupType } from '../../schemas/GroupSchema'
-import { PollType } from '../../schemas/PollSchema'
 import { SimulationType } from '../../schemas/SimulationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { validateEmail } from '../../utils/validation/validateEmail'
@@ -71,7 +70,7 @@ router.route('/').post(async (req, res) => {
     // We check if a group is associated with the simulation
     const groups = await findGroupsById(simulation.groups)
 
-    const simulationObject: SimulationType = {
+    const simulationObject = {
       id: simulation.id,
       user: userDocument._id,
       actionChoices: {
@@ -105,10 +104,6 @@ router.route('/').post(async (req, res) => {
         poll,
         simulationSaved,
         email,
-      } as unknown as {
-        poll: Document<PollType> & PollType
-        simulationSaved: Document<SimulationType> & SimulationType
-        email: string
       })
     }
 
