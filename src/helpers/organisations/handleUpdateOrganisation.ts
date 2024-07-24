@@ -40,15 +40,21 @@ export async function handleUpdateOrganisation({
     },
     {
       $set: {
-        name: String(organisationName),
+        ...(organisationName && { name: organisationName }),
         ...(uniqueSlug && { slug: uniqueSlug }),
-        'administrators.$.name': administratorName,
-        'administrators.$.position': position,
-        'administrators.$.telephone': administratorTelephone,
-        'administrators.$.hasOptedInForCommunications':
-          hasOptedInForCommunications,
-        organisationType,
-        numberOfCollaborators,
+        ...(administratorName && {
+          'administrators.$.name': administratorName,
+        }),
+        ...(position && { 'administrators.$.position': position }),
+        ...(administratorTelephone && {
+          'administrators.$.telephone': administratorTelephone,
+        }),
+        ...(hasOptedInForCommunications !== undefined && {
+          'administrators.$.hasOptedInForCommunications':
+            hasOptedInForCommunications,
+        }),
+        ...(organisationType && { organisationType: organisationType }),
+        ...(numberOfCollaborators && { numberOfCollaborators }),
         ...(email &&
           email !== administratorEmail && { 'administrators.$.email': email }),
       },
