@@ -1,7 +1,3 @@
-export function formatEmail(email: string | undefined): string {
-  if (!email) {
-    return ''
-  }
-
-  return email.toLowerCase().trim()
+export function formatEmail(email: unknown): string {
+  return typeof email === 'string' ? email.toLowerCase().trim() : ''
 }

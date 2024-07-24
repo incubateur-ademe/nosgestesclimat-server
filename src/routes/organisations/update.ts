@@ -111,7 +111,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
         optin: hasOptedInForCommunications,
         otherAttributes: {
           [ATTRIBUTE_IS_ORGANISATION_ADMIN]: true,
-          [ATTRIBUTE_ORGANISATION_NAME]: organisationFound.name,
+          [ATTRIBUTE_ORGANISATION_NAME]: organisationFound.name ?? '',
           [ATTRIBUTE_ORGANISATION_SLUG]: organisationFound.slug,
           [ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER]:
             lastPoll?.simulations?.length ?? 0,

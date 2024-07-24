@@ -53,41 +53,53 @@ export function handleAddAttributes({
             (key) => simulation?.actionChoices[key] === true
           )?.length as number)
         : 0
-    attributesUpdated[ATTRIBUTE_LAST_SIMULATION_BILAN_FOOTPRINT] =
-      (simulation?.computedResults?.bilan / 1000)?.toLocaleString(undefined, {
-        maximumFractionDigits: 1,
-      }) ?? 0
-    attributesUpdated[ATTRIBUTE_LAST_SIMULATION_TRANSPORTS_FOOTPRINT] =
-      (
-        simulation?.computedResults?.categories?.transport / 1000
-      )?.toLocaleString(undefined, {
-        maximumFractionDigits: 1,
-      }) ?? 0
-    attributesUpdated[ATTRIBUTE_LAST_SIMULATION_ALIMENTATION_FOOTPRINT] =
-      (
-        simulation?.computedResults?.categories?.alimentation / 1000
-      )?.toLocaleString(undefined, {
-        maximumFractionDigits: 1,
-      }) ?? 0
-    attributesUpdated[ATTRIBUTE_LAST_SIMULATION_LOGEMENT_FOOTPRINT] =
-      (
-        simulation?.computedResults?.categories?.logement / 1000
-      )?.toLocaleString(undefined, {
-        maximumFractionDigits: 1,
-      }) ?? 0
-    attributesUpdated[ATTRIBUTE_LAST_SIMULATION_DIVERS_FOOTPRINT] =
-      (simulation?.computedResults?.categories?.divers / 1000)?.toLocaleString(
-        undefined,
-        {
+
+    attributesUpdated[ATTRIBUTE_LAST_SIMULATION_BILAN_FOOTPRINT] = simulation
+      ?.computedResults?.bilan
+      ? (simulation?.computedResults?.bilan / 1000)?.toLocaleString(undefined, {
           maximumFractionDigits: 1,
-        }
-      ) ?? 0
-    attributesUpdated[ATTRIBUTE_LAST_SIMULATION_SERVICES_FOOTPRINT] =
-      (
-        simulation?.computedResults?.categories?.['services sociétaux'] / 1000
-      )?.toLocaleString(undefined, {
-        maximumFractionDigits: 1,
-      }) ?? 0
+        })
+      : 0
+    attributesUpdated[ATTRIBUTE_LAST_SIMULATION_TRANSPORTS_FOOTPRINT] =
+      simulation?.computedResults?.categories?.transport
+        ? (
+            simulation?.computedResults?.categories?.transport / 1000
+          )?.toLocaleString(undefined, {
+            maximumFractionDigits: 1,
+          })
+        : 0
+    attributesUpdated[ATTRIBUTE_LAST_SIMULATION_ALIMENTATION_FOOTPRINT] =
+      simulation?.computedResults?.categories?.alimentation
+        ? (
+            simulation?.computedResults?.categories?.alimentation / 1000
+          )?.toLocaleString(undefined, {
+            maximumFractionDigits: 1,
+          })
+        : 0
+    attributesUpdated[ATTRIBUTE_LAST_SIMULATION_LOGEMENT_FOOTPRINT] = simulation
+      ?.computedResults?.categories?.logement
+      ? (
+          simulation?.computedResults?.categories?.logement / 1000
+        )?.toLocaleString(undefined, {
+          maximumFractionDigits: 1,
+        })
+      : 0
+    attributesUpdated[ATTRIBUTE_LAST_SIMULATION_DIVERS_FOOTPRINT] = simulation
+      ?.computedResults?.categories?.divers
+      ? (
+          simulation?.computedResults?.categories?.divers / 1000
+        )?.toLocaleString(undefined, {
+          maximumFractionDigits: 1,
+        })
+      : 0
+    attributesUpdated[ATTRIBUTE_LAST_SIMULATION_SERVICES_FOOTPRINT] = simulation
+      ?.computedResults?.categories?.['services sociétaux']
+      ? (
+          simulation?.computedResults?.categories?.['services sociétaux'] / 1000
+        )?.toLocaleString(undefined, {
+          maximumFractionDigits: 1,
+        })
+      : 0
   }
 
   return attributesUpdated

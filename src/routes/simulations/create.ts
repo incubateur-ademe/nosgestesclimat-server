@@ -7,7 +7,7 @@ import { findGroupsById } from '../../helpers/groups/findGroupsById'
 import { createOrUpdateSimulation } from '../../helpers/queries/createOrUpdateSimulation'
 import { SimulationType } from '../../schemas/SimulationSchema'
 import { PollType } from '../../schemas/PollSchema'
-import { Document } from 'mongoose'
+import { Document, Types } from 'mongoose'
 import { handleUpdatePoll } from '../../helpers/organisations/handleUpdatePoll'
 import { handleUpdateGroup } from '../../helpers/groups/handleUpdateGroup'
 import { GroupType } from '../../schemas/GroupSchema'
@@ -72,7 +72,7 @@ router.route('/').post(async (req, res) => {
     // We check if a group is associated with the simulation
     const groups = await findGroupsById(simulation.groups)
 
-    const simulationObject: SimulationType = {
+    const simulationObject = {
       id: simulation.id,
       user: userDocument._id,
       actionChoices: {
@@ -86,7 +86,7 @@ router.route('/').post(async (req, res) => {
       computedResults: { ...(simulation.computedResults ?? {}) },
       progression: simulation.progression,
       savedViaEmail: simulation.savedViaEmail,
-      polls: polls?.map((poll) => poll._id),
+      polls: polls?.map((poll) => poll._id as Types.ObjectId),
       groups: [...(simulation.groups ?? [])],
       defaultAdditionalQuestionsAnswers: {
         ...(simulation.defaultAdditionalQuestionsAnswers ?? {}),
@@ -94,7 +94,7 @@ router.route('/').post(async (req, res) => {
       customAdditionalQuestionsAnswers: {
         ...(simulation.customAdditionalQuestionsAnswers ?? {}),
       },
-    }
+    } as SimulationType
 
     // We create or update the simulation
     const simulationSaved = await createOrUpdateSimulation(simulationObject)

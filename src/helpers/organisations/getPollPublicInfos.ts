@@ -25,7 +25,7 @@ export async function getPollPublicInfos({
   }
 
   const pollPublicInfos: PollPublicInfo = {
-    name: poll.name,
+    name: poll.name ?? '',
     slug: poll.slug,
     defaultAdditionalQuestions: poll.defaultAdditionalQuestions,
     customAdditionalQuestions: poll.customAdditionalQuestions?.filter(
@@ -34,8 +34,8 @@ export async function getPollPublicInfos({
     expectedNumberOfParticipants: poll.expectedNumberOfParticipants,
     numberOfParticipants: poll.simulations.length,
     organisationInfo: {
-      name: organisation.name,
-      slug: organisation.slug,
+      name: organisation.name ?? '',
+      slug: organisation.slug ?? '',
     },
   }
 

@@ -20,9 +20,10 @@ const funFactsRules = importedFunFacts as { [k in keyof FunFacts]: DottedName }
 
 function isExcluded(simulation: SimulationType) {
   if (
+    simulation.computedResults &&
     [
       simulation.computedResults.bilan,
-      ...Object.values(simulation.computedResults.categories),
+      ...Object.values(simulation.computedResults.categories ?? {}),
     ].some((value) => (value as number) > MAX_VALUE)
   ) {
     return true
@@ -32,15 +33,15 @@ function isExcluded(simulation: SimulationType) {
 }
 
 type SimulationRecap = {
-  bilan: number
-  categories: {
+  bilan?: number
+  categories?: {
     [key: string]: number
   }
   defaultAdditionalQuestionsAnswers: {
     postalCode?: string
     birthdate?: string
   }
-  progression: number
+  progression?: number
 }
 
 type Result = {
