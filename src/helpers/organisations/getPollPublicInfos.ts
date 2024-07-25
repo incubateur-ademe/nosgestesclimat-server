@@ -8,9 +8,7 @@ type Props = {
 export async function getPollPublicInfos({
   pollSlug,
 }: Props): Promise<PollPublicInfo | null> {
-  const polls = await findPollsBySlug([pollSlug])
-
-  const poll = polls[0]
+  const [poll] = await findPollsBySlug([pollSlug])
 
   if (!poll) {
     return null
@@ -25,7 +23,7 @@ export async function getPollPublicInfos({
   }
 
   const pollPublicInfos: PollPublicInfo = {
-    name: poll.name,
+    name: poll.name ?? '',
     slug: poll.slug,
     defaultAdditionalQuestions: poll.defaultAdditionalQuestions,
     customAdditionalQuestions: poll.customAdditionalQuestions?.filter(
@@ -34,8 +32,8 @@ export async function getPollPublicInfos({
     expectedNumberOfParticipants: poll.expectedNumberOfParticipants,
     numberOfParticipants: poll.simulations.length,
     organisationInfo: {
-      name: organisation.name,
-      slug: organisation.slug,
+      name: organisation.name ?? '',
+      slug: organisation.slug ?? '',
     },
   }
 

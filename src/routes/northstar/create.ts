@@ -1,6 +1,6 @@
 import express from 'express'
+import { NorthstarRating } from '../../schemas/NorthstarRatingSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import { NorthstarRating } from '../../schemas/NorthstarSchema'
 
 const router = express.Router()
 

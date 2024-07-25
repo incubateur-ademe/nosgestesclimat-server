@@ -2,6 +2,7 @@ import express from 'express'
 import { Group } from '../../schemas/GroupSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { sendEmail } from '../../helpers/email/sendEmail'
+import { formatEmail } from '../../utils/formatting/formatEmail'
 
 const router = express.Router()
 
@@ -11,7 +12,7 @@ const router = express.Router()
  * It returns the created group
  */
 router.route('/').post(async (req, res) => {
-  const email = req.body.email
+  const email = formatEmail(req.body.email)
   const templateId = req.body.templateId
   const params = req.body.params
   const attributes = req.body.attributes

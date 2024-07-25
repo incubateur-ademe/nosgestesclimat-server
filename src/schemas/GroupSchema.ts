@@ -1,43 +1,10 @@
-import mongoose, { RefType } from 'mongoose'
-
-import { SimulationPreciseType } from './_legacy/SimulationPreciseSchema'
+import mongoose, { type InferSchemaType } from 'mongoose'
+import type { FullInferSchemaType } from '../types/types'
 import { MemberSchema, OwnerSchema } from './_legacy/GroupSubSchemas'
 
 const Schema = mongoose.Schema
 
-type Participant = {
-  name: string
-  email?: string
-  userId: string
-  simulation: RefType
-}
-
-export type GroupType = {
-  name: string
-  emoji: string
-  administrator: {
-    name: string
-    email?: string
-    userId: string
-  }
-  participants: Participant[]
-  // Legacy from previous version
-  // We should remove it before going to production
-  owner?: {
-    name: string
-    email: string
-    userId: string
-  }
-  members?: {
-    name: string
-    email: string
-    userId: string
-    simulation: SimulationPreciseType
-  }[]
-  _id?: string
-}
-
-const ParticipantSchema = new Schema<Participant>({
+const ParticipantSchema = new Schema({
   name: {
     type: String,
     required: true,
@@ -53,7 +20,9 @@ const ParticipantSchema = new Schema<Participant>({
   },
 })
 
-export const GroupSchema = new Schema<GroupType>(
+export type ParticipantType = InferSchemaType<typeof ParticipantSchema>
+
+export const GroupSchema = new Schema(
   {
     name: {
       type: String,
@@ -84,5 +53,7 @@ export const GroupSchema = new Schema<GroupType>(
     timestamps: true,
   }
 )
+
+export type GroupType = FullInferSchemaType<typeof GroupSchema>
 
 export const Group = mongoose.model('Group', GroupSchema)

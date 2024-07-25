@@ -4,6 +4,7 @@ import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { config } from '../../config'
 import { Poll } from '../../schemas/PollSchema'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
+import { formatEmail } from '../../utils/formatting/formatEmail'
 
 const router = express.Router()
 
@@ -14,7 +15,7 @@ router
     try {
       const pollSlug = req.body.pollSlug
       const orgaSlug = req.body.orgaSlug
-      const email = req.body.email
+      const email = formatEmail(req.body.email)
       const name = req.body.name
       const defaultAdditionalQuestions = req.body.defaultAdditionalQuestions
 
