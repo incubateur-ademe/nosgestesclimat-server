@@ -5,6 +5,7 @@ import { axiosConf } from '../../constants/axios'
 import { getContactLists } from '../../helpers/brevo/getContactLists'
 import { createOrUpdateUser } from '../../helpers/queries/createOrUpdateUser'
 import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
+import { formatEmail } from '../../utils/formatting/formatEmail'
 
 const router = express.Router()
 
@@ -12,7 +13,7 @@ const router = express.Router()
  * Updates the user and newsletter settings
  */
 router.route('/').post(async (req, res) => {
-  const email = req.body.email?.toLowerCase()
+  const email = formatEmail(req.body.email)
   const userId = req.body.userId
 
   const newsletterIds: Record<string, boolean> = req.body.newsletterIds

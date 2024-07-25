@@ -3,6 +3,7 @@ import express, { Request, Response } from 'express'
 import { Organisation } from '../../schemas/OrganisationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
+import { formatEmail } from '../../utils/formatting/formatEmail'
 
 const router = express.Router()
 
@@ -13,7 +14,7 @@ const router = express.Router()
 router
   .use(authentificationMiddleware)
   .post('/', async (req: Request, res: Response) => {
-    const email = req.body.email?.toLowerCase()
+    const email = formatEmail(req.body.email)
     const slug = req.body.slug
 
     const decodedSlug = decodeURIComponent(slug)

@@ -19,6 +19,7 @@ const funFactsRules = importedFunFacts as { [k in keyof FunFacts]: DottedName }
 
 function isExcluded(simulation: SimulationType) {
   if (
+    simulation.computedResults &&
     [
       simulation.computedResults?.bilan,
       ...Object.values(simulation.computedResults?.categories || {}),

@@ -1,5 +1,5 @@
 import express from 'express'
-import { Document } from 'mongoose'
+import { Document, Types } from 'mongoose'
 import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
 import { sendSimulationEmail } from '../../helpers/email/sendSimulationEmail'
 import { findGroupsById } from '../../helpers/groups/findGroupsById'
@@ -12,6 +12,7 @@ import { GroupType } from '../../schemas/GroupSchema'
 import { SimulationType } from '../../schemas/SimulationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { validateEmail } from '../../utils/validation/validateEmail'
+import { formatEmail } from '../../utils/formatting/formatEmail'
 import { UserType } from './../../schemas/UserSchema'
 
 const router = express.Router()
@@ -19,7 +20,7 @@ const router = express.Router()
 router.route('/').post(async (req, res) => {
   const simulation = req.body.simulation
   const name = req.body.name
-  const email = req.body.email?.toLowerCase()
+  const email = formatEmail(req.body.email)
   const userId = req.body.userId
   const shouldSendSimulationEmail = req.body.shouldSendSimulationEmail
   const listIds = req.body.listIds
@@ -84,7 +85,7 @@ router.route('/').post(async (req, res) => {
       computedResults: { ...(simulation.computedResults ?? {}) },
       progression: simulation.progression,
       savedViaEmail: simulation.savedViaEmail,
-      polls: polls?.map((poll) => poll._id),
+      polls: polls?.map((poll) => poll._id as Types.ObjectId),
       groups: [...(simulation.groups ?? [])],
       defaultAdditionalQuestionsAnswers: {
         ...(simulation.defaultAdditionalQuestionsAnswers ?? {}),
@@ -92,7 +93,7 @@ router.route('/').post(async (req, res) => {
       customAdditionalQuestionsAnswers: {
         ...(simulation.customAdditionalQuestionsAnswers ?? {}),
       },
-    }
+    } as SimulationType
 
     // We create or update the simulation
     const simulationSaved = await createOrUpdateSimulation(simulationObject)
