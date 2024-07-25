@@ -3,6 +3,7 @@ import { Organisation } from '../../schemas/OrganisationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { Poll } from '../../schemas/PollSchema'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
+import { formatEmail } from '../../utils/formatting/formatEmail'
 
 const router = express.Router()
 
@@ -13,7 +14,7 @@ router
     try {
       const pollSlug = req.params.pollSlug
       const orgaSlug = decodeURIComponent(req.query.orgaSlug as string)
-      const email = decodeURIComponent(req.query.email as string)
+      const email = decodeURIComponent(formatEmail(req.query.email as string))
 
       if (!pollSlug || !orgaSlug || !email) {
         return res.status(403).json('Error. Missing required info.')

@@ -6,13 +6,14 @@ import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { processPollData } from '../../helpers/organisations/processPollData'
 import { SimulationType } from '../../schemas/SimulationSchema'
 import { PollType } from '../../schemas/PollSchema'
+import { formatEmail } from '../../utils/formatting/formatEmail'
 
 const router = express.Router()
 
 router.get('/', async (req: Request, res: Response) => {
   const orgaSlug = decodeURIComponent(req.query.orgaSlug as string)
   const pollSlug = decodeURIComponent(req.query.pollSlug as string)
-  const email = decodeURIComponent(req.query.email as string)
+  const email = decodeURIComponent(formatEmail(req.query.email as string))
   const userId = decodeURIComponent(req.query.userId as string)
 
   if (!orgaSlug) {

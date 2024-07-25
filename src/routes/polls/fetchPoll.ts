@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { Poll } from '../../schemas/PollSchema'
 import { Organisation } from '../../schemas/OrganisationSchema'
+import { formatEmail } from '../../utils/formatting/formatEmail'
 
 const router = express.Router()
 
@@ -13,7 +14,7 @@ router
   .get(
     async (req: Request & { params: { pollSlug: string } }, res: Response) => {
       const pollSlug = req.params.pollSlug
-      const email = decodeURIComponent(req.query.email as string)
+      const email = decodeURIComponent(formatEmail(req.query.email as string))
       const orgaSlug = decodeURIComponent(req.query.orgaSlug as string)
 
       if (!pollSlug || !email || !orgaSlug) {

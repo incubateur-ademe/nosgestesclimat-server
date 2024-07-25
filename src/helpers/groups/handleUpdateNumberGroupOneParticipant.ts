@@ -1,14 +1,13 @@
-import { create } from 'domain'
+import { ATTRIBUTE_NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT } from '../../constants/brevo'
 import { Group, GroupType } from '../../schemas/GroupSchema'
 import { createOrUpdateContact } from '../email/createOrUpdateContact'
-import { ATTRIBUTE_NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT } from '../../constants/brevo'
 
 type Props = {
   group: GroupType
 }
 
 export async function handleUpdateGroupNumberOneParticipant({ group }: Props) {
-  const { userId } = group.administrator
+  const { administrator: { userId, email } = {} } = group
 
   const groupsCreatedWithOneParticipant = await Group.find({
     'administrator.userId': userId,
@@ -16,7 +15,7 @@ export async function handleUpdateGroupNumberOneParticipant({ group }: Props) {
   })
 
   return createOrUpdateContact({
-    email: group.administrator.email ?? '',
+    email: email ?? '',
     userId,
     otherAttributes: {
       [ATTRIBUTE_NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT]:

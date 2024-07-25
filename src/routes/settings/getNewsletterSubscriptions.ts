@@ -1,6 +1,7 @@
 import express from 'express'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { getContactLists } from '../../helpers/brevo/getContactLists'
+import { formatEmail } from '../../utils/formatting/formatEmail'
 
 const router = express.Router()
 
@@ -8,7 +9,7 @@ const router = express.Router()
  * Updates the user and newsletter settings
  */
 router.route('/').get(async (req, res) => {
-  const email = req.query.email as string
+  const email = formatEmail(req.query.email as string)
 
   // Check if all required fields are provided
   if (!email) {

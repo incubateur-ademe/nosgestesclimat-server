@@ -43,8 +43,8 @@ export async function updateOrgaAdminContactAttributes() {
           name: administrator.name,
           otherAttributes: {
             [ATTRIBUTE_IS_ORGANISATION_ADMIN]: true,
-            [ATTRIBUTE_ORGANISATION_NAME]: organisation.name ?? undefined,
-            [ATTRIBUTE_ORGANISATION_SLUG]: organisation.slug ?? undefined,
+            [ATTRIBUTE_ORGANISATION_NAME]: organisation.name ?? '',
+            [ATTRIBUTE_ORGANISATION_SLUG]: organisation.slug ?? '',
             [ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER]:
               lastPollCreated?.simulations?.length ?? 0,
           },
