@@ -1,5 +1,5 @@
 import { Response } from 'express'
-import { VerificationCode } from './../../schemas/VerificationCodeSchema'
+import { VerificationCode } from '../../schemas/VerificationCodeSchema'
 
 type Props = {
   verificationCode: string
@@ -7,7 +7,7 @@ type Props = {
   email: string
 }
 
-export async function validateVerificationCode({
+export async function handleVerificationCodeValidation({
   verificationCode,
   res,
   email,

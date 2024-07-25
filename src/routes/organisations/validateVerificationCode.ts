@@ -5,8 +5,8 @@ import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { Organisation } from '../../schemas/OrganisationSchema'
 import { config } from '../../config'
 import { COOKIES_OPTIONS, COOKIE_MAX_AGE } from '../../constants/cookies'
-import { validateVerificationCode } from '../../helpers/organisations/validateVerificationCode'
 import { formatEmail } from '../../utils/formatting/formatEmail'
+import { handleVerificationCodeValidation } from '../../helpers/organisations/handleVerificationCodeValidation'
 
 const router = express.Router()
 
@@ -19,7 +19,7 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    await validateVerificationCode({
+    await handleVerificationCodeValidation({
       verificationCode,
       res,
       email,

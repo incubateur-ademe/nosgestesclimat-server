@@ -6,8 +6,9 @@ import { authentificationMiddleware } from '../../middlewares/authentificationMi
 import { updateBrevoContactEmail } from '../../helpers/email/updateBrevoContactEmail'
 import { generateAndSetNewToken } from '../../helpers/authentification/generateAndSetNewToken'
 import axios from 'axios'
-import { validateVerificationCode } from '../../helpers/organisations/validateVerificationCode'
+import { handleVerificationCodeValidation } from '../../helpers/organisations/handleVerificationCodeValidation'
 import { handleUpdateOrganisation } from '../../helpers/organisations/handleUpdateOrganisation'
+import { formatEmail } from '../../utils/formatting/formatEmail'
 
 const router = express.Router()
 
@@ -16,8 +17,8 @@ const router = express.Router()
  * Needs to be authenticated and generates a new token at each request
  */
 router.use(authentificationMiddleware).post('/', async (req, res) => {
-  const email = req.body.email?.toLowerCase()?.trim()
-  const emailModified = req.body.emailModified?.toLowerCase()?.trim()
+  const email = formatEmail(req.body.email)
+  const emailModified = formatEmail(req.body.emailModified)
 
   if (!email || !emailModified) {
     return res
@@ -36,7 +37,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
   const administratorTelephone = req.body.administratorTelephone ?? ''
 
   try {
-    await validateVerificationCode({
+    await handleVerificationCodeValidation({
       verificationCode,
       res,
       email: emailModified,
