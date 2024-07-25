@@ -25,6 +25,8 @@ import updateRoute from './routes/organisations/update'
 import validateVerificationCodeRoute from './routes/organisations/validateVerificationCode'
 import logOutRoute from './routes/organisations/logout'
 import getOrgaPollSlugsRoute from './routes/organisations/getOrgaPollSlugs'
+import updateAdministratorEmail from './routes/organisations/updateAdministratorEmail'
+import sendVerificationCodeWhenModifyingEmail from './routes/organisations/sendVerificationCodeWhenModifyingEmail'
 
 // Polls routes
 import fetchPollPublicInfoRoute from './routes/polls/fetchPollPublicInfo'
@@ -132,6 +134,11 @@ app.use(
   verifyUserParticipationRoute
 )
 app.use('/organisations/get-orga-poll-slugs', getOrgaPollSlugsRoute)
+app.use('/organisations/verify-and-update', updateAdministratorEmail)
+app.use(
+  '/organisations/send-verification-code-when-modifying-email',
+  sendVerificationCodeWhenModifyingEmail
+)
 
 // Polls routes
 app.use('/polls/create', createPollRoute)

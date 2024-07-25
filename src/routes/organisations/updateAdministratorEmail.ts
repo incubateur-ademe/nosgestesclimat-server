@@ -1,19 +1,12 @@
-import {
-  ATTRIBUTE_ORGANISATION_NAME,
-  ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER,
-  ATTRIBUTE_IS_ORGANISATION_ADMIN,
-  ATTRIBUTE_ORGANISATION_SLUG,
-} from './../../constants/brevo'
 import express from 'express'
 
 import { Organisation } from '../../schemas/OrganisationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
-import { Poll, PollType } from '../../schemas/PollSchema'
-import { findUniqueOrgaSlug } from '../../helpers/organisations/findUniqueOrgaSlug'
-import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
-import { HydratedDocument } from 'mongoose'
-import { addOrUpdateContactToConnect } from '../../helpers/connect/addOrUpdateContactToConnect'
+import { updateBrevoContactEmail } from '../../helpers/email/updateBrevoContactEmail'
+import { generateAndSetNewToken } from '../../helpers/authentification/generateAndSetNewToken'
+import axios from 'axios'
+import { handleVerificationCodeValidation } from '../../helpers/organisations/handleVerificationCodeValidation'
 import { handleUpdateOrganisation } from '../../helpers/organisations/handleUpdateOrganisation'
 import { formatEmail } from '../../utils/formatting/formatEmail'
 
@@ -25,11 +18,12 @@ const router = express.Router()
  */
 router.use(authentificationMiddleware).post('/', async (req, res) => {
   const email = formatEmail(req.body.email)
+  const emailModified = formatEmail(req.body.emailModified)
 
-  if (!email) {
+  if (!email || !emailModified) {
     return res
       .status(401)
-      .send('Error. A valid email address must be provided.')
+      .send('Error. Valid email addresses must be provided.')
   }
 
   const organisationName = req.body.name
@@ -37,71 +31,52 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
   const hasOptedInForCommunications =
     req.body.hasOptedInForCommunications ?? false
   const position = req.body.position ?? ''
-  const administratorTelephone = req.body.administratorTelephone ?? ''
   const organisationType = req.body.organisationType ?? ''
   const numberOfCollaborators = req.body.numberOfCollaborators ?? undefined
+  const verificationCode = req.body.verificationCode
+  const administratorTelephone = req.body.administratorTelephone ?? ''
 
   try {
+    await handleVerificationCodeValidation({
+      verificationCode,
+      res,
+      email: emailModified,
+    })
+
     const organisationFound = await Organisation.findOne({
       'administrators.email': email,
-    }).populate('polls')
+    })
 
     if (!organisationFound) {
       return res.status(403).json('No matching organisation found.')
     }
 
-    const uniqueSlug = !organisationFound.slug
-      ? await findUniqueOrgaSlug(organisationName)
-      : undefined
-
-    // Handles all the update logic
     const organisationUpdated = await handleUpdateOrganisation({
       _id: organisationFound._id,
       administratorEmail: email,
       updates: {
-        email,
+        email: emailModified,
         organisationName,
         administratorName,
         hasOptedInForCommunications,
         position,
-        administratorTelephone,
         organisationType,
         numberOfCollaborators,
-        uniqueSlug,
+        administratorTelephone,
       },
     })
 
-    const lastPoll =
-      organisationFound.polls.length > 0
-        ? await Poll.findById(
-            (
-              organisationFound.polls[
-                organisationFound.polls.length - 1
-              ] as unknown as HydratedDocument<PollType>
-            )?._id
-          )
-        : undefined
-
-    if (administratorName || hasOptedInForCommunications !== undefined) {
-      await createOrUpdateContact({
+    if (emailModified && email !== emailModified) {
+      // Update the Brevo contact
+      updateBrevoContactEmail({
         email,
-        name: administratorName,
-        optin: hasOptedInForCommunications,
-        otherAttributes: {
-          [ATTRIBUTE_IS_ORGANISATION_ADMIN]: true,
-          [ATTRIBUTE_ORGANISATION_NAME]: organisationFound.name ?? '',
-          [ATTRIBUTE_ORGANISATION_SLUG]: organisationFound.slug,
-          [ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER]:
-            lastPoll?.simulations?.length ?? 0,
-        },
+        emailModified,
+      }).catch((error) => {
+        console.log('Error updating Brevo contact', error)
       })
-    }
 
-    addOrUpdateContactToConnect({
-      email,
-      name: administratorName,
-      position,
-    })
+      generateAndSetNewToken(res, emailModified)
+    }
 
     setSuccessfulJSONResponse(res)
 
