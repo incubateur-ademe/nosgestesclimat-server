@@ -6,6 +6,7 @@ import { findUniquePollSlug } from '../../helpers/organisations/findUniquePollSl
 import slugify from 'slugify'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
 import { getSlug } from '../../utils/getSlug'
+import mongoose from 'mongoose'
 
 const router = express.Router()
 

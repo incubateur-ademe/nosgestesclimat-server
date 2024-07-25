@@ -1,26 +1,26 @@
-import { UserType } from './../../schemas/UserSchema'
 import express from 'express'
-import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import { createOrUpdateUser } from '../../helpers/queries/createOrUpdateUser'
-import { findPollsBySlug } from '../../helpers/organisations/findPollsBySlug'
-import { findGroupsById } from '../../helpers/groups/findGroupsById'
-import { createOrUpdateSimulation } from '../../helpers/queries/createOrUpdateSimulation'
-import { SimulationType } from '../../schemas/SimulationSchema'
-import { PollType } from '../../schemas/PollSchema'
-import { Document } from 'mongoose'
-import { handleUpdatePoll } from '../../helpers/organisations/handleUpdatePoll'
-import { handleUpdateGroup } from '../../helpers/groups/handleUpdateGroup'
-import { GroupType } from '../../schemas/GroupSchema'
-import { sendSimulationEmail } from '../../helpers/email/sendSimulationEmail'
+import { Document, Types } from 'mongoose'
 import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
+import { sendSimulationEmail } from '../../helpers/email/sendSimulationEmail'
+import { findGroupsById } from '../../helpers/groups/findGroupsById'
+import { handleUpdateGroup } from '../../helpers/groups/handleUpdateGroup'
+import { findPollsBySlug } from '../../helpers/organisations/findPollsBySlug'
+import { handleUpdatePoll } from '../../helpers/organisations/handleUpdatePoll'
+import { createOrUpdateSimulation } from '../../helpers/queries/createOrUpdateSimulation'
+import { createOrUpdateUser } from '../../helpers/queries/createOrUpdateUser'
+import { GroupType } from '../../schemas/GroupSchema'
+import { SimulationType } from '../../schemas/SimulationSchema'
+import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { validateEmail } from '../../utils/validation/validateEmail'
+import { formatEmail } from '../../utils/formatting/formatEmail'
+import { UserType } from './../../schemas/UserSchema'
 
 const router = express.Router()
 
 router.route('/').post(async (req, res) => {
   const simulation = req.body.simulation
   const name = req.body.name
-  const email = req.body.email?.toLowerCase()
+  const email = formatEmail(req.body.email)
   const userId = req.body.userId
   const shouldSendSimulationEmail = req.body.shouldSendSimulationEmail
   const listIds = req.body.listIds
@@ -71,7 +71,7 @@ router.route('/').post(async (req, res) => {
     // We check if a group is associated with the simulation
     const groups = await findGroupsById(simulation.groups)
 
-    const simulationObject: SimulationType = {
+    const simulationObject = {
       id: simulation.id,
       user: userDocument._id,
       actionChoices: {
@@ -85,7 +85,7 @@ router.route('/').post(async (req, res) => {
       computedResults: { ...(simulation.computedResults ?? {}) },
       progression: simulation.progression,
       savedViaEmail: simulation.savedViaEmail,
-      polls: polls?.map((poll) => poll._id),
+      polls: polls?.map((poll) => poll._id as Types.ObjectId),
       groups: [...(simulation.groups ?? [])],
       defaultAdditionalQuestionsAnswers: {
         ...(simulation.defaultAdditionalQuestionsAnswers ?? {}),
@@ -93,7 +93,7 @@ router.route('/').post(async (req, res) => {
       customAdditionalQuestionsAnswers: {
         ...(simulation.customAdditionalQuestionsAnswers ?? {}),
       },
-    }
+    } as SimulationType
 
     // We create or update the simulation
     const simulationSaved = await createOrUpdateSimulation(simulationObject)
@@ -105,10 +105,6 @@ router.route('/').post(async (req, res) => {
         poll,
         simulationSaved,
         email,
-      } as unknown as {
-        poll: Document<PollType> & PollType
-        simulationSaved: Document<SimulationType> & SimulationType
-        email: string
       })
     }
 

@@ -3,11 +3,12 @@ import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { Organisation } from '../../schemas/OrganisationSchema'
 import { handleSendVerificationCodeAndReturnExpirationDate } from '../../helpers/verificationCode/handleSendVerificationCodeAndReturnExpirationDate'
 import { validateEmail } from '../../utils/validation/validateEmail'
+import { formatEmail } from '../../utils/formatting/formatEmail'
 
 const router = express.Router()
 
 router.post('/', async (req, res) => {
-  const email = req.body.email?.toLowerCase()
+  const email = formatEmail(req.body.email)
 
   if (!email || !validateEmail(email)) {
     return res.status(403).json('A valid email address must be provided.')

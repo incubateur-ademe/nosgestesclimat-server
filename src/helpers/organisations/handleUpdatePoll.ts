@@ -14,15 +14,15 @@ export async function handleUpdatePoll({
   simulationSaved,
   email,
 }: {
-  poll?: Document<PollType> & PollType
-  simulationSaved: Document<SimulationType> & SimulationType
+  poll?: PollType
+  simulationSaved: SimulationType
   email: string
 }) {
-  if (!poll || poll.simulations.includes(simulationSaved._id as RefType)) {
+  if (!poll || poll.simulations.includes(simulationSaved._id)) {
     return
   }
 
-  poll.simulations.push(simulationSaved._id as RefType)
+  poll.simulations.push(simulationSaved._id)
 
   await poll.save()
 

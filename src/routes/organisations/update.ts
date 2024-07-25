@@ -13,10 +13,9 @@ import { Poll, PollType } from '../../schemas/PollSchema'
 import { findUniqueOrgaSlug } from '../../helpers/organisations/findUniqueOrgaSlug'
 import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
 import { HydratedDocument } from 'mongoose'
-import { updateBrevoContactEmail } from '../../helpers/email/updateBrevoContactEmail'
-import { generateAndSetNewToken } from '../../helpers/authentification/generateAndSetNewToken'
 import { addOrUpdateContactToConnect } from '../../helpers/connect/addOrUpdateContactToConnect'
 import { handleUpdateOrganisation } from '../../helpers/organisations/handleUpdateOrganisation'
+import { formatEmail } from '../../utils/formatting/formatEmail'
 
 const router = express.Router()
 
@@ -25,7 +24,7 @@ const router = express.Router()
  * Needs to be authenticated and generates a new token at each request
  */
 router.use(authentificationMiddleware).post('/', async (req, res) => {
-  const email = req.body.email?.toLowerCase()
+  const email = formatEmail(req.body.email)
 
   if (!email) {
     return res
@@ -90,7 +89,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
         optin: hasOptedInForCommunications,
         otherAttributes: {
           [ATTRIBUTE_IS_ORGANISATION_ADMIN]: true,
-          [ATTRIBUTE_ORGANISATION_NAME]: organisationFound.name,
+          [ATTRIBUTE_ORGANISATION_NAME]: organisationFound.name ?? '',
           [ATTRIBUTE_ORGANISATION_SLUG]: organisationFound.slug,
           [ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER]:
             lastPoll?.simulations?.length ?? 0,

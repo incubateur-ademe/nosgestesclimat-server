@@ -70,6 +70,7 @@ async function migrate() {
       }
 
       group.owner = undefined
+      // @ts-expect-error 2322 cannot unset like that
       group.members = undefined
 
       const groupSaved = await group.save()

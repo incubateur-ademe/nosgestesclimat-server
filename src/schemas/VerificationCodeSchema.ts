@@ -1,14 +1,9 @@
 import mongoose from 'mongoose'
+import type { FullInferSchemaType } from '../types/types'
 
 const Schema = mongoose.Schema
 
-export type VerificationCodeType = {
-  code: string
-  expirationDate: Date
-  email: string
-}
-
-export const VerificationCodeSchema = new Schema<VerificationCodeType>(
+export const VerificationCodeSchema = new Schema(
   {
     code: {
       type: String,
@@ -28,6 +23,10 @@ export const VerificationCodeSchema = new Schema<VerificationCodeType>(
     timestamps: true,
   }
 )
+
+export type VerificationCodeType = FullInferSchemaType<
+  typeof VerificationCodeSchema
+>
 
 export const VerificationCode = mongoose.model(
   'VerificationCode',

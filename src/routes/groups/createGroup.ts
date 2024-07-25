@@ -3,6 +3,7 @@ import { Group } from '../../schemas/GroupSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { sendGroupEmail } from '../../helpers/email/sendGroupEmail'
 import { validateEmail } from '../../utils/validation/validateEmail'
+import { formatEmail } from '../../utils/formatting/formatEmail'
 
 const router = express.Router()
 
@@ -16,7 +17,7 @@ router.route('/').post(async (req, res) => {
   const groupName = req.body.name
   const groupEmoji = req.body.emoji
   const administratorName = req.body.administratorName
-  const administratorEmail = req.body.administratorEmail?.toLowerCase()
+  const administratorEmail = formatEmail(req.body.administratorEmail)
 
   // We need the origin to send the email with the correct links
   const origin = req.get('origin') ?? 'https://nosgestesclimat.fr'
