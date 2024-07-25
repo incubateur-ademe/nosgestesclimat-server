@@ -1,19 +1,17 @@
-import mongoose, { RefType } from 'mongoose'
+import mongoose, { type InferSchemaType } from 'mongoose'
 import { nanoid } from 'nanoid'
-import { FullInferSchemaType } from '../types/types'
+import type { FullInferSchemaType } from '../types/types'
 
 const Schema = mongoose.Schema
-
-export type CustomAdditionalQuestionType = FullInferSchemaType<
-  typeof CustomAdditionalQuestionSchema
->
-
-export type PollType = FullInferSchemaType<typeof PollSchema>
 
 const CustomAdditionalQuestionSchema = new Schema({
   question: String,
   isEnabled: Boolean,
 })
+
+export type CustomAdditionalQuestionType = InferSchemaType<
+  typeof CustomAdditionalQuestionSchema
+>
 
 // Should this include a reference to the parent organisation?
 export const PollSchema = new Schema(
@@ -40,5 +38,7 @@ export const PollSchema = new Schema(
     timestamps: true,
   }
 )
+
+export type PollType = FullInferSchemaType<typeof PollSchema>
 
 export const Poll = mongoose.model('Poll', PollSchema)

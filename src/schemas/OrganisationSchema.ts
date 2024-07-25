@@ -1,10 +1,8 @@
-import mongoose from 'mongoose'
-import { VerificationCodeSchema } from './VerificationCodeSchema'
+import mongoose, { type InferSchemaType } from 'mongoose'
 import type { FullInferSchemaType } from '../types/types'
+import { VerificationCodeSchema } from './VerificationCodeSchema'
 
 const Schema = mongoose.Schema
-
-export type OrganisationType = FullInferSchemaType<typeof OrganisationSchema>
 
 const AdministratorSchema = new Schema(
   {
@@ -25,6 +23,8 @@ const AdministratorSchema = new Schema(
   }
 )
 
+export type AdministratorType = InferSchemaType<typeof AdministratorSchema>
+
 export const OrganisationSchema = new Schema(
   {
     administrators: [AdministratorSchema],
@@ -43,5 +43,7 @@ export const OrganisationSchema = new Schema(
     timestamps: true,
   }
 )
+
+export type OrganisationType = FullInferSchemaType<typeof OrganisationSchema>
 
 export const Organisation = mongoose.model('Organisation', OrganisationSchema)

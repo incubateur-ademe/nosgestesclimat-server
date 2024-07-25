@@ -1,14 +1,13 @@
-import { Document, RefType } from 'mongoose'
-import { SimulationType } from '../../schemas/SimulationSchema'
-import { GroupType } from '../../schemas/GroupSchema'
-import { UserType } from '../../schemas/UserSchema'
+import type { GroupType } from '../../schemas/GroupSchema'
+import type { SimulationType } from '../../schemas/SimulationSchema'
+import type { UserType } from '../../schemas/UserSchema'
 import { sendGroupEmail } from '../email/sendGroupEmail'
 import { handleUpdateGroupNumberOneParticipant } from './handleUpdateNumberGroupOneParticipant'
 
 type Props = {
-  group?: Document<GroupType> & GroupType
-  userDocument: Document<UserType> & UserType
-  simulationSaved: Document<SimulationType> & SimulationType
+  group?: GroupType
+  userDocument: UserType
+  simulationSaved: SimulationType
   origin: string
 }
 export async function handleUpdateGroup({
@@ -28,7 +27,7 @@ export async function handleUpdateGroup({
 
   // If the user is already in the group, we update their simulation
   if (participantWithSimulation) {
-    participantWithSimulation.simulation = simulationSaved._id as RefType
+    participantWithSimulation.simulation = simulationSaved._id
     await group.save()
     console.log(`Simulation updated in group ${group.name}.`)
     return
@@ -39,7 +38,7 @@ export async function handleUpdateGroup({
     name: userDocument.name || '🦊',
     email: userDocument.email,
     userId: userDocument.userId,
-    simulation: simulationSaved._id as RefType,
+    simulation: simulationSaved._id,
   })
 
   const groupSaved = await group.save()

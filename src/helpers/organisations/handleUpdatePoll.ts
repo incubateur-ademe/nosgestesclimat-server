@@ -14,15 +14,11 @@ export async function handleUpdatePoll({
   simulationSaved,
   email,
 }: {
-  poll?: Document<PollType> & PollType
-  simulationSaved: Document<SimulationType> & SimulationType
+  poll?: PollType
+  simulationSaved: SimulationType
   email: string
 }) {
-  if (
-    !poll ||
-    !simulationSaved._id ||
-    poll.simulations.includes(simulationSaved._id)
-  ) {
+  if (!poll || poll.simulations.includes(simulationSaved._id)) {
     return
   }
 

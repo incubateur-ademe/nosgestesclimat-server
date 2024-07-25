@@ -1,15 +1,14 @@
-import { UserType } from '../../schemas/UserSchema'
-import { SimulationType } from '../../schemas/SimulationSchema'
-import importedRules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
-import importedFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRules.json'
 import {
   DottedName,
-  NGCRules,
   FunFacts,
+  NGCRules,
 } from '@incubateur-ademe/nosgestesclimat'
-import { processCondition } from './processPollData/processCondition'
-import { processFunFactsValues } from './processPollData/processFunFactsValues'
+import importedRules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
+import importedFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRules.json'
+import { SimulationType } from '../../schemas/SimulationSchema'
+import { UserType } from '../../schemas/UserSchema'
 import { getFunFactAssociatedDottedNameValue } from './processPollData/getFunFactAssociatedDottedNameValue'
+import { processFunFactsValues } from './processPollData/processFunFactsValues'
 
 const MAX_VALUE = 100000
 
@@ -22,8 +21,8 @@ function isExcluded(simulation: SimulationType) {
   if (
     simulation.computedResults &&
     [
-      simulation.computedResults.bilan,
-      ...Object.values(simulation.computedResults.categories ?? {}),
+      simulation.computedResults?.bilan,
+      ...Object.values(simulation.computedResults?.categories || {}),
     ].some((value) => (value as number) > MAX_VALUE)
   ) {
     return true

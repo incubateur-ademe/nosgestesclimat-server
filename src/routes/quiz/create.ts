@@ -1,6 +1,6 @@
 import express from 'express'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import { QuizAnswer } from '../../schemas/QuizSchema'
+import { QuizAnswer } from '../../schemas/QuizAnswerSchema'
 
 const router = express.Router()
 

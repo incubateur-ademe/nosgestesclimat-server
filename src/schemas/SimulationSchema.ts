@@ -1,10 +1,7 @@
-import { FullInferSchemaType } from '../types/types'
-import { CustomAdditionalQuestionType } from './PollSchema'
-import mongoose, { ObjectId, RefType } from 'mongoose'
+import mongoose from 'mongoose'
+import type { FullInferSchemaType } from '../types/types'
 
 const Schema = mongoose.Schema
-
-export type SimulationType = FullInferSchemaType<typeof SimulationSchema>
 
 export const SimulationSchema = new Schema(
   {
@@ -60,6 +57,8 @@ export const SimulationSchema = new Schema(
     timestamps: true,
   }
 )
+
+export type SimulationType = FullInferSchemaType<typeof SimulationSchema>
 
 SimulationSchema.index({ id: 1 })
 
