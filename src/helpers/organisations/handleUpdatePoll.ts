@@ -1,13 +1,16 @@
-import { Document, RefType } from 'mongoose'
-import { PollType } from '../../schemas/PollSchema'
-import { SimulationType } from '../../schemas/SimulationSchema'
-import { sendEmail } from '../email/sendEmail'
+import { Document } from 'mongoose'
+import {
+  ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER,
+  TEMPLATE_ID_ORGANISATION_JOINED,
+} from '../../constants/brevo'
 import {
   Organisation,
   OrganisationType,
 } from '../../schemas/OrganisationSchema'
+import { PollType } from '../../schemas/PollSchema'
+import { SimulationType } from '../../schemas/SimulationSchema'
 import { createOrUpdateContact } from '../email/createOrUpdateContact'
-import { ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER } from '../../constants/brevo'
+import { sendEmail } from '../email/sendEmail'
 
 export async function handleUpdatePoll({
   poll,
@@ -52,7 +55,7 @@ export async function handleUpdatePoll({
 
     await sendEmail({
       email,
-      templateId: 71,
+      templateId: TEMPLATE_ID_ORGANISATION_JOINED,
       params: {
         ORGANISATION_NAME: organisationFound?.name ?? '',
         DETAILED_VIEW_URL: `https://nosgestesclimat.fr/organisations/${organisationFound?.slug}/resultats-detailles`,

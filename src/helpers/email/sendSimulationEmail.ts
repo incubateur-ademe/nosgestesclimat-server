@@ -1,15 +1,15 @@
 import axios from 'axios'
-import { axiosConf } from '../../constants/axios'
-import { UserType } from '../../schemas/UserSchema'
-import { SimulationType } from '../../schemas/SimulationSchema'
 import { Document } from 'mongoose'
-import { createOrUpdateContact } from './createOrUpdateContact'
+import { axiosConf } from '../../constants/axios'
 import {
   LIST_SUBSCRIBED_END_SIMULATION,
   LIST_SUBSCRIBED_UNFINISHED_SIMULATION,
-  TEMPLATE_SIMULATION_COMPLETED,
-  TEMPLATE_SIMULATION_IN_PROGRESS,
+  TEMPLATE_ID_SIMULATION_COMPLETED,
+  TEMPLATE_ID_SIMULATION_IN_PROGRESS,
 } from '../../constants/brevo'
+import { SimulationType } from '../../schemas/SimulationSchema'
+import { UserType } from '../../schemas/UserSchema'
+import { createOrUpdateContact } from './createOrUpdateContact'
 
 /**
  * Send an email to a user when they save a simulation at the end
@@ -69,10 +69,9 @@ export async function sendSimulationEmail({
             email,
           },
         ],
-        templateId:
-          simulationSaved.progression === 1
-            ? TEMPLATE_SIMULATION_COMPLETED
-            : TEMPLATE_SIMULATION_IN_PROGRESS,
+        templateId: isSimulationCompleted
+          ? TEMPLATE_ID_SIMULATION_COMPLETED
+          : TEMPLATE_ID_SIMULATION_IN_PROGRESS,
         params: {
           SHARE_URL: `${origin}?mtm_campaign=partage-email`,
           SIMULATION_URL,
