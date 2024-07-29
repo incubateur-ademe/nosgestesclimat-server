@@ -72,7 +72,7 @@ router.route('/').post(async (req, res) => {
       if (listsRemoved.length > 0) {
         for (let listId of listsRemoved) {
           await axios.post(
-            `https://api.brevo.com/v3/contacts/lists/${listId}/contacts/remove`,
+            `/v3/contacts/lists/${listId}/contacts/remove`,
             {
               emails: [email],
             },

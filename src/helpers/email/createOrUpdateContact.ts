@@ -40,7 +40,7 @@ export function createOrUpdateContact({
   })
 
   return axios.post(
-    'https://api.brevo.com/v3/contacts',
+    '/v3/contacts',
     {
       email,
       listIds,

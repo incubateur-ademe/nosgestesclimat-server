@@ -25,7 +25,7 @@ export async function sendVerificationCodeEmail({
     })
 
     await axios.post(
-      'https://api.brevo.com/v3/smtp/email',
+      '/v3/smtp/email',
       {
         to: [
           {
