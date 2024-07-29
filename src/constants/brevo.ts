@@ -51,4 +51,14 @@ export const MATOMO_KEYWORD_KEY = 'mtm_kwd'
 export const MATOMO_KEYWORDS = {
   [TEMPLATE_ID_SIMULATION_COMPLETED]: 'fin-retrouver-simulation',
   [TEMPLATE_ID_SIMULATION_IN_PROGRESS]: 'pause-test-en-cours',
+  [TEMPLATE_ID_GROUP_CREATED]: {
+    GROUP_URL: 'groupe-admin-voir-classement',
+    SHARE_URL: 'groupe-admin-url-partage',
+    DELETE_URL: 'groupe-admin-delete',
+  },
+  [TEMPLATE_ID_GROUP_JOINED]: {
+    GROUP_URL: 'groupe-invite-voir-classement',
+    SHARE_URL: 'groupe-invite-url-partage',
+    DELETE_URL: 'groupe-invite-delete',
+  },
 } as const
