@@ -4,6 +4,10 @@ import { axiosConf } from '../../constants/axios'
 import {
   LIST_SUBSCRIBED_END_SIMULATION,
   LIST_SUBSCRIBED_UNFINISHED_SIMULATION,
+  MATOMO_CAMPAIGN_EMAIL_AUTOMATISE,
+  MATOMO_CAMPAIGN_KEY,
+  MATOMO_KEYWORD_KEY,
+  MATOMO_KEYWORDS,
   TEMPLATE_ID_SIMULATION_COMPLETED,
   TEMPLATE_ID_SIMULATION_IN_PROGRESS,
 } from '../../constants/brevo'
@@ -54,11 +58,16 @@ export async function sendSimulationEmail({
       optin: true,
     })
 
-    const SIMULATION_URL = `${origin}/${
-      isSimulationCompleted ? 'fin' : 'simulateur/bilan'
-    }?sid=${encodeURIComponent(
-      simulationSaved.id ?? ''
-    )}&mtm_campaign=retrouver-ma-simulation`
+    const templateId = isSimulationCompleted
+      ? TEMPLATE_ID_SIMULATION_COMPLETED
+      : TEMPLATE_ID_SIMULATION_IN_PROGRESS
+
+    const simulationUrl = new URL(origin)
+    simulationUrl.pathname = isSimulationCompleted ? 'fin' : 'simulateur/bilan'
+    const { searchParams } = simulationUrl
+    searchParams.append('sid', simulationSaved.id ?? '')
+    searchParams.append(MATOMO_CAMPAIGN_KEY, MATOMO_CAMPAIGN_EMAIL_AUTOMATISE)
+    searchParams.append(MATOMO_KEYWORD_KEY, MATOMO_KEYWORDS[templateId])
 
     await axios.post(
       '/v3/smtp/email',
@@ -69,12 +78,9 @@ export async function sendSimulationEmail({
             email,
           },
         ],
-        templateId: isSimulationCompleted
-          ? TEMPLATE_ID_SIMULATION_COMPLETED
-          : TEMPLATE_ID_SIMULATION_IN_PROGRESS,
+        templateId,
         params: {
-          SHARE_URL: `${origin}?mtm_campaign=partage-email`,
-          SIMULATION_URL,
+          SIMULATION_URL: simulationUrl.toString(),
         },
       },
       axiosConf

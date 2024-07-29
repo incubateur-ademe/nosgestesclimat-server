@@ -42,3 +42,13 @@ export const TEMPLATE_ID_GROUP_JOINED = 58
 export const TEMPLATE_ID_VERIFICATION_CODE = 66
 export const TEMPLATE_ID_ORGANISATION_JOINED = 71
 export const TEMPLATE_ID_SIMULATION_IN_PROGRESS = 102
+
+// Matomo campaigns & keywords
+export const MATOMO_CAMPAIGN_KEY = 'mtm_campaign'
+export const MATOMO_CAMPAIGN_EMAIL_AUTOMATISE = 'email-automatise'
+
+export const MATOMO_KEYWORD_KEY = 'mtm_kwd'
+export const MATOMO_KEYWORDS = {
+  [TEMPLATE_ID_SIMULATION_COMPLETED]: 'fin-retrouver-simulation',
+  [TEMPLATE_ID_SIMULATION_IN_PROGRESS]: 'pause-test-en-cours',
+} as const
