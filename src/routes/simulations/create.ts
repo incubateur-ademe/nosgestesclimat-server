@@ -8,11 +8,10 @@ import { findPollsBySlug } from '../../helpers/organisations/findPollsBySlug'
 import { handleUpdatePoll } from '../../helpers/organisations/handleUpdatePoll'
 import { createOrUpdateSimulation } from '../../helpers/queries/createOrUpdateSimulation'
 import { createOrUpdateUser } from '../../helpers/queries/createOrUpdateUser'
-import { GroupType } from '../../schemas/GroupSchema'
 import { SimulationType } from '../../schemas/SimulationSchema'
+import { formatEmail } from '../../utils/formatting/formatEmail'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { validateEmail } from '../../utils/validation/validateEmail'
-import { formatEmail } from '../../utils/formatting/formatEmail'
 import { UserType } from './../../schemas/UserSchema'
 
 const router = express.Router()
@@ -105,6 +104,7 @@ router.route('/').post(async (req, res) => {
         poll,
         simulationSaved,
         email,
+        origin,
       })
     }
 
@@ -116,11 +116,6 @@ router.route('/').post(async (req, res) => {
         userDocument,
         simulationSaved,
         origin,
-      } as unknown as {
-        group: Document<GroupType> & GroupType
-        userDocument: Document<UserType> & UserType
-        simulationSaved: Document<SimulationType> & SimulationType
-        origin: string
       })
     }
 
