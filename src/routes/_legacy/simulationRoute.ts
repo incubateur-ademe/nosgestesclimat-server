@@ -10,7 +10,7 @@ router.route('/:id?').get((req, res, next) => {
     return res.status(404).send('You must provide a simulation id')
   }
 
-  connectdb.then((db) => {
+  connectdb().then((db) => {
     const data = Simulation.find({ id: req.params.id })
     data.then((simulations) => {
       if (!simulations.length) {
