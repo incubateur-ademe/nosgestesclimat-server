@@ -1,6 +1,6 @@
 {
   "name": "nosgestesclimat-server",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "The server part of the website nosgestesclimat.fr",
   "main": "./dist/index.js",
   "engines": {
