@@ -1,5 +1,5 @@
 {
-  "extends": "@tsconfig/node18",
+  "extends": "@tsconfig/node22",
   "compilerOptions": {
     "outDir": "dist",
     "checkJs": true,
@@ -7,8 +7,8 @@
     "moduleResolution": "node",
     "useUnknownInCatchVariables": false, // TODO: Set to true asap
     "resolveJsonModule": true,
-    "lib": ["es2021"]
+    "lib": ["es2021"],
+    "types": ["node", "jest"]
   },
-  "include": ["src/**/*.ts", "env.d.ts", "scripts/**/*.ts"],
-  "exclude": ["node_modules", "dist/**/*.js"]
+  "exclude": ["node_modules", "dist"]
 }

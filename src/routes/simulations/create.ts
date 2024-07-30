@@ -34,7 +34,7 @@ router.route('/').post(async (req, res) => {
     return res.status(500).send('Error. A simulation must be provided.')
   }
 
-  if (!email || !validateEmail(email)) {
+  if (email && !validateEmail(email)) {
     return res
       .status(500)
       .send('Error. A valid email address must be provided.')
@@ -54,17 +54,19 @@ router.route('/').post(async (req, res) => {
       .send('Error while creating or searching for the user.')
   }
 
+  // Non-blocking call to create or update the contact
   try {
-    // None-blocking call to create or update the contact
-    createOrUpdateContact({
+    await createOrUpdateContact({
       email,
       userId,
       simulation,
       listIds: listIds ?? undefined,
-    }).catch((error) => {
-      console.log('Error while creating or updating contact:', error)
     })
+  } catch (error) {
+    // We do nothing
+  }
 
+  try {
     // We check if a poll is associated with the simulation
     const polls = await findPollsBySlug(simulation.polls)
 
