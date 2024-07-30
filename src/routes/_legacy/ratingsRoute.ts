@@ -5,7 +5,7 @@ import { Simulation } from '../../schemas/SimulationSchema'
 const router = express.Router()
 
 router.route('/').get((req, res, next) => {
-  connectdb.then(() => {
+  connectdb().then(() => {
     const data = Simulation.find({})
     data.then((simulations) => {
       if (!simulations.length) {
