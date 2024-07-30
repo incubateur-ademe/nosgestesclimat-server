@@ -40,6 +40,7 @@ export const TEMPLATE_ID_SIMULATION_COMPLETED = 55
 export const TEMPLATE_ID_GROUP_CREATED = 57
 export const TEMPLATE_ID_GROUP_JOINED = 58
 export const TEMPLATE_ID_VERIFICATION_CODE = 66
+export const TEMPLATE_ID_ORGANISATION_CREATED = 70
 export const TEMPLATE_ID_ORGANISATION_JOINED = 71
 export const TEMPLATE_ID_SIMULATION_IN_PROGRESS = 102
 
@@ -61,5 +62,6 @@ export const MATOMO_KEYWORDS = {
     SHARE_URL: 'groupe-invite-url-partage',
     DELETE_URL: 'groupe-invite-delete',
   },
+  [TEMPLATE_ID_ORGANISATION_CREATED]: 'orga-admin-creation',
   [TEMPLATE_ID_ORGANISATION_JOINED]: 'orga-invite-campagne',
 } as const

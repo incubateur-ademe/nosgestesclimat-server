@@ -1,8 +1,8 @@
 import axios, { AxiosResponse } from 'axios'
 import { axiosConf } from '../../constants/axios'
 import { SimulationType } from '../../schemas/SimulationSchema'
-import { handleAddAttributes } from '../brevo/handleAddAttributes'
 import { validateEmail } from '../../utils/validation/validateEmail'
+import { handleAddAttributes } from '../brevo/handleAddAttributes'
 
 type Props = {
   email: string

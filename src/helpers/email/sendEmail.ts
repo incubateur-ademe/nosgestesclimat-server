@@ -9,7 +9,7 @@ type Props = {
     [key: string]: string
   }
   attributes?: {
-    [key: string]: string
+    [key: string]: string | boolean | number | undefined
   }
 }
 
