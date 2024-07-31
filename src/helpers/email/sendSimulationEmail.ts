@@ -65,7 +65,9 @@ export async function sendSimulationEmail({
     const simulationUrl = new URL(origin)
     simulationUrl.pathname = isSimulationCompleted ? 'fin' : 'simulateur/bilan'
     const { searchParams } = simulationUrl
-    searchParams.append('sid', simulationSaved.id ?? '')
+if (simulationSaved.id) {
+    searchParams.append('sid', simulationSaved.id)
+}
     searchParams.append(MATOMO_CAMPAIGN_KEY, MATOMO_CAMPAIGN_EMAIL_AUTOMATISE)
     searchParams.append(MATOMO_KEYWORD_KEY, MATOMO_KEYWORDS[templateId])
 
