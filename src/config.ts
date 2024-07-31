@@ -28,6 +28,7 @@ export const config = {
   },
   thirdParty: {
     brevo: {
+      url: ensureEnvVar(process.env.BREVO_URL, 'https://api.brevo.com'),
       apiKey: ensureEnvVar(process.env.BREVO_API_KEY, ''),
     },
     matomo: {
