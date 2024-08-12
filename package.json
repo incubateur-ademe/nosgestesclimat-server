@@ -24,7 +24,7 @@
   "license": "MIT",
   "dependencies": {
     "@incubateur-ademe/nosgestesclimat": "^2.4.2",
-    "@publicodes/tools": "^1.1.2",
+    "@publicodes/tools": "^1.2.5",
     "@types/express": "^4.17.21",
     "@types/supertest": "^6.0.2",
     "apicache": "^1.6.3",

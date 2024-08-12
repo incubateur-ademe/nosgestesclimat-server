@@ -3,6 +3,28 @@ import type { FullInferSchemaType } from '../types/types'
 
 const Schema = mongoose.Schema
 
+const CategorySchema = new Schema({
+  alimentation: Number,
+  transport: Number,
+  logement: Number,
+  divers: Number,
+  'services sociétaux': Number,
+})
+
+const SubcategorySchema = new Schema({
+  alimentation: Object,
+  transport: Object,
+  logement: Object,
+  divers: Object,
+  'services sociétaux': Object,
+})
+
+const MetricComputedResultsSchema = new Schema({
+  bilan: Number,
+  categories: CategorySchema,
+  subcategories: SubcategorySchema,
+})
+
 export const SimulationSchema = new Schema(
   {
     // UI stored simulation id
@@ -17,14 +39,8 @@ export const SimulationSchema = new Schema(
     foldedSteps: [String],
     situation: Object,
     computedResults: {
-      bilan: Number,
-      categories: {
-        alimentation: Number,
-        transport: Number,
-        logement: Number,
-        divers: Number,
-        'services sociétaux': Number,
-      },
+      carbone: MetricComputedResultsSchema,
+      eau: MetricComputedResultsSchema,
     },
     poll: {
       type: Schema.Types.ObjectId,
@@ -59,6 +75,9 @@ export const SimulationSchema = new Schema(
 )
 
 export type SimulationType = FullInferSchemaType<typeof SimulationSchema>
+export type MetricComputedResultsType = FullInferSchemaType<
+  typeof MetricComputedResultsSchema
+>
 
 SimulationSchema.index({ id: 1 })
 
