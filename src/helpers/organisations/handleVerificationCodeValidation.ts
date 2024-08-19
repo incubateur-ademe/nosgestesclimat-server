@@ -1,15 +1,12 @@
-import { Response } from 'express'
 import { VerificationCode } from '../../schemas/VerificationCodeSchema'
 
 type Props = {
   verificationCode: string
-  res: Response
   email: string
 }
 
 export async function handleVerificationCodeValidation({
   verificationCode,
-  res,
   email,
 }: Props) {
   const verificationCodeFound = await VerificationCode.findOne(

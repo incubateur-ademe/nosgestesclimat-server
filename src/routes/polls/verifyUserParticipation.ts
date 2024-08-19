@@ -1,9 +1,9 @@
-import express, { Request, Response } from 'express'
-import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
+import type { Request, Response } from 'express'
+import express from 'express'
 import { findPopulatedPollBySlug } from '../../helpers/organisations/findPopulatedPollBySlug'
-import { SimulationType } from '../../schemas/SimulationSchema'
 import { Organisation } from '../../schemas/OrganisationSchema'
 import { formatEmail } from '../../utils/formatting/formatEmail'
+import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 
 const router = express.Router()
 
@@ -32,17 +32,12 @@ router.route('/').post(async (req: Request, res: Response) => {
       return res.status(404).send('This poll does not exist')
     }
 
-    const hasUserAlreadyParticipated = (
-      poll.simulations as unknown as SimulationType[]
-    ).some((simulation) => {
-      if ((simulation?.user as any).userId === userId) {
+    const hasUserAlreadyParticipated = poll.simulations.some((simulation) => {
+      if (simulation?.user.userId === userId) {
         return true
       }
 
-      if (
-        (simulation?.user as any).email &&
-        (simulation?.user as any).email === email
-      ) {
+      if ((simulation?.user).email && (simulation?.user).email === email) {
         return true
       }
     })
@@ -64,6 +59,7 @@ router.route('/').post(async (req: Request, res: Response) => {
       organisationSlug: organisation?.slug,
     })
   } catch (error) {
+    console.error(error)
     return res.status(500).send('Error while fetching poll')
   }
 })

@@ -1,9 +1,9 @@
 import express from 'express'
-import { Group } from '../../schemas/GroupSchema'
-import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { sendGroupEmail } from '../../helpers/email/sendGroupEmail'
-import { validateEmail } from '../../utils/validation/validateEmail'
+import { Group } from '../../schemas/GroupSchema'
 import { formatEmail } from '../../utils/formatting/formatEmail'
+import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
+import { validateEmail } from '../../utils/validation/validateEmail'
 
 const router = express.Router()
 
@@ -81,6 +81,7 @@ router.route('/').post(async (req, res) => {
 
     console.log(`Group created: ${group._id} (${groupName})`)
   } catch (error) {
+    console.warn(error)
     return res.status(500).send('Error while creating group.')
   }
 })

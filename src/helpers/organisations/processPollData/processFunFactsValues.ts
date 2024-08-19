@@ -1,9 +1,9 @@
-import {
+import type {
   DottedName,
   NGCRules,
   FunFacts,
 } from '@incubateur-ademe/nosgestesclimat'
-import { SimulationType } from '../../../schemas/SimulationSchema'
+import type { SimulationType } from '../../../schemas/SimulationSchema'
 
 export function processFunFactsValues({
   simulations,

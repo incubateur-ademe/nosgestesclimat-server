@@ -11,7 +11,6 @@ router.route('/:room').get((req, res) => {
 
   connectdb().then(() => {
     const data = Survey.find({ name: req.params.room })
-    // @ts-ignore
     data.then((survey) => {
       res.setHeader('Content-Type', 'application/json')
       res.statusCode = 200

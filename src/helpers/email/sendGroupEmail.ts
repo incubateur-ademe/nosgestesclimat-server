@@ -13,7 +13,8 @@ import {
   TEMPLATE_ID_GROUP_CREATED,
   TEMPLATE_ID_GROUP_JOINED,
 } from '../../constants/brevo'
-import { Group, GroupType } from '../../schemas/GroupSchema'
+import type { GroupType } from '../../schemas/GroupSchema'
+import { Group } from '../../schemas/GroupSchema'
 import { createOrUpdateContact } from './createOrUpdateContact'
 
 /**

@@ -1,12 +1,12 @@
-import jwt from 'jsonwebtoken'
 import express from 'express'
+import jwt from 'jsonwebtoken'
 
-import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import { Organisation } from '../../schemas/OrganisationSchema'
 import { config } from '../../config'
 import { COOKIES_OPTIONS, COOKIE_MAX_AGE } from '../../constants/cookies'
-import { formatEmail } from '../../utils/formatting/formatEmail'
 import { handleVerificationCodeValidation } from '../../helpers/organisations/handleVerificationCodeValidation'
+import { Organisation } from '../../schemas/OrganisationSchema'
+import { formatEmail } from '../../utils/formatting/formatEmail'
+import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 
 const router = express.Router()
 
@@ -21,7 +21,6 @@ router.post('/', async (req, res) => {
   try {
     await handleVerificationCodeValidation({
       verificationCode,
-      res,
       email,
     })
 

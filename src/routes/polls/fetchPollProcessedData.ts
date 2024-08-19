@@ -1,12 +1,13 @@
-import { HydratedDocument } from 'mongoose'
-import express, { Request, Response } from 'express'
+import type { Request, Response } from 'express'
+import express from 'express'
+import type { HydratedDocument } from 'mongoose'
 
-import { Organisation } from '../../schemas/OrganisationSchema'
-import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { processPollData } from '../../helpers/organisations/processPollData'
-import { SimulationType } from '../../schemas/SimulationSchema'
-import { PollType } from '../../schemas/PollSchema'
+import { Organisation } from '../../schemas/OrganisationSchema'
+import type { PollType } from '../../schemas/PollSchema'
+import type { SimulationType } from '../../schemas/SimulationSchema'
 import { formatEmail } from '../../utils/formatting/formatEmail'
+import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 
 const router = express.Router()
 
@@ -70,6 +71,7 @@ router.get('/', async (req: Request, res: Response) => {
       isAdmin: !!admin,
     })
   } catch (error) {
+    console.warn(error)
     res.status(500).json('Server error.')
   }
 })

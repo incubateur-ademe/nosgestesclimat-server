@@ -14,12 +14,7 @@ export async function createOrUpdateUser({ userId, email, name }: Props) {
     return
   }
 
-  try {
-    // Check if user already exists (based on userId)
-    userDocument = await User.findOne({ userId })
-  } catch (error) {
-    // Do nothing
-  }
+  userDocument = await User.findOne({ userId })
 
   // If not, we create a new one
   if (!userDocument) {

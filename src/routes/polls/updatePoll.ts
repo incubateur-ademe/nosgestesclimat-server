@@ -1,10 +1,10 @@
-import express, { Request, Response } from 'express'
-import { Organisation } from '../../schemas/OrganisationSchema'
-import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import { config } from '../../config'
-import { Poll } from '../../schemas/PollSchema'
+import type { Request, Response } from 'express'
+import express from 'express'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
+import { Organisation } from '../../schemas/OrganisationSchema'
+import { Poll } from '../../schemas/PollSchema'
 import { formatEmail } from '../../utils/formatting/formatEmail'
+import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 
 const router = express.Router()
 
