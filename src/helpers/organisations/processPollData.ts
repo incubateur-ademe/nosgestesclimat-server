@@ -21,8 +21,8 @@ function isExcluded(simulation: SimulationType) {
   if (
     simulation.computedResults &&
     [
-      simulation.computedResults?.bilan,
-      ...Object.values(simulation.computedResults?.categories || {}),
+      simulation.computedResults.carbone?.bilan,
+      ...Object.values(simulation.computedResults.carbone || {}),
     ].some((value) => (value as number) > MAX_VALUE)
   ) {
     return true

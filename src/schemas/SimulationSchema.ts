@@ -12,17 +12,19 @@ const CategorySchema = new Schema({
 })
 
 const SubcategorySchema = new Schema({
-  alimentation: Object,
-  transport: Object,
-  logement: Object,
-  divers: Object,
-  'services sociétaux': Object,
+  type: Map,
+  of: Number,
 })
 
 const MetricComputedResultsSchema = new Schema({
   bilan: Number,
   categories: CategorySchema,
   subcategories: SubcategorySchema,
+})
+
+const ComputedResultsSchema = new Schema({
+  carbone: MetricComputedResultsSchema,
+  eau: MetricComputedResultsSchema,
 })
 
 export const SimulationSchema = new Schema(
@@ -38,10 +40,7 @@ export const SimulationSchema = new Schema(
     date: Date,
     foldedSteps: [String],
     situation: Object,
-    computedResults: {
-      carbone: MetricComputedResultsSchema,
-      eau: MetricComputedResultsSchema,
-    },
+    computedResults: ComputedResultsSchema,
     poll: {
       type: Schema.Types.ObjectId,
       ref: 'Poll',

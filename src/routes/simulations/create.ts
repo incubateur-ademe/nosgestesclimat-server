@@ -83,7 +83,7 @@ router.route('/').post(async (req, res) => {
       situation: {
         ...(simulation.situation ?? {}),
       },
-      computedResults: simulation.computedResults.bilan
+      computedResults: simulation.computedResults.carbone.bilan
         ? {
             carbone: { ...simulation.computedResults },
           }

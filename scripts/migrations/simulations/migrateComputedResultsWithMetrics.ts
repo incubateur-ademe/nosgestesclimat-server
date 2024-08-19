@@ -16,30 +16,8 @@ async function migrateComputedResults() {
     }).cursor({ batch: 1000 })
 
     for await (let simulation of simulations) {
-      const defaultSubcategories = {
-        alimentation: Object.assign({}),
-        transport: Object.assign({}),
-        logement: Object.assign({}),
-        divers: Object.assign({}),
-        'services sociétaux': Object.assign({}),
-      }
-
       simulation.computedResults = {
-        carbone: {
-          ...(simulation.computedResults as MetricComputedResultsType),
-          subcategories: defaultSubcategories,
-        },
-        eau: {
-          bilan: 0,
-          categories: {
-            alimentation: 0,
-            transport: 0,
-            logement: 0,
-            divers: 0,
-            'services sociétaux': 0,
-          },
-          subcategories: defaultSubcategories,
-        },
+        carbone: { ...simulation.computedResults, subcategories: {} },
       }
 
       await simulation.save()
