@@ -83,7 +83,11 @@ router.route('/').post(async (req, res) => {
       situation: {
         ...(simulation.situation ?? {}),
       },
-      computedResults: { ...(simulation.computedResults ?? {}) },
+      computedResults: simulation.computedResults.bilan
+        ? {
+            carbone: { ...simulation.computedResults },
+          }
+        : { ...simulation.computedResults },
       progression: simulation.progression,
       savedViaEmail: simulation.savedViaEmail,
       polls: polls?.map((poll) => poll._id as Types.ObjectId),
