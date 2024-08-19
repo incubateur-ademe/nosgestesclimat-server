@@ -17,7 +17,7 @@ async function migrateComputedResults() {
 
     for await (let simulation of simulations) {
       simulation.computedResults = {
-        carbone: { ...simulation.computedResults, subcategories: {} },
+        carbone: simulation.computedResults as MetricComputedResultsType,
       }
 
       await simulation.save()
