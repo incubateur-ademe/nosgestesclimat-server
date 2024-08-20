@@ -23,7 +23,6 @@ describe(`Given an existing NGC user organisation`, () => {
 
   describe(`When the administator changes its email`, () => {
     let email: string
-    let response
     let scope: nock.Scope
 
     beforeEach(async () => {
@@ -40,7 +39,7 @@ describe(`Given an existing NGC user organisation`, () => {
         .reply(200)
 
       email = faker.internet.email().toLocaleLowerCase()
-      response = await request.post(url).send({
+      await request.post(url).send({
         previousEmail: createFullOrganisationFixture.email,
         email,
       })

@@ -11,8 +11,8 @@ import {
   ATTRIBUTE_PRENOM,
   ATTRIBUTE_USER_ID,
 } from '../../constants/brevo'
-import { SimulationType } from '../../schemas/SimulationSchema'
-import { Attributes } from '../../types/types'
+import type { SimulationType } from '../../schemas/SimulationSchema'
+import type { Attributes } from '../../types/types'
 
 type Props = {
   name?: string

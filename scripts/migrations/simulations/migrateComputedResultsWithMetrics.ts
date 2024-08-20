@@ -1,10 +1,8 @@
-import { AnyBulkWriteOperation } from 'mongodb'
+import type { AnyBulkWriteOperation } from 'mongodb'
 import mongoose from 'mongoose'
 import { config } from '../../../src/config'
-import {
-  Simulation,
-  SimulationType,
-} from '../../../src/schemas/SimulationSchema'
+import type { SimulationType } from '../../../src/schemas/SimulationSchema'
+import { Simulation } from '../../../src/schemas/SimulationSchema'
 
 type ProjectedSimulation = Pick<SimulationType, '_id' | 'computedResults'>
 
@@ -31,7 +29,7 @@ async function migrateComputedResults() {
     let updated = 0
     const bulkWrites: AnyBulkWriteOperation[] = []
 
-    for await (let simulation of simulations) {
+    for await (const simulation of simulations) {
       // Should not happen but just in case
       if (!simulation.computedResults) {
         continue

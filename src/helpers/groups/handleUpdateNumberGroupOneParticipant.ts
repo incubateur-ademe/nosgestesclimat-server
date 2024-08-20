@@ -1,5 +1,6 @@
 import { ATTRIBUTE_NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT } from '../../constants/brevo'
-import { Group, GroupType } from '../../schemas/GroupSchema'
+import type { GroupType } from '../../schemas/GroupSchema'
+import { Group } from '../../schemas/GroupSchema'
 import { createOrUpdateContact } from '../email/createOrUpdateContact'
 
 type Props = {

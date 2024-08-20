@@ -1,13 +1,18 @@
-import { Simulation } from '../src/schemas/SimulationSchema'
-import connectdb from '../src/helpers/db/initDatabase'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { DottedName } from '@incubateur-ademe/nosgestesclimat'
 import fs from 'fs'
+import connectdb from '../src/helpers/db/initDatabase'
+import type { SimulationType } from '../src/schemas/SimulationSchema'
+import { Simulation } from '../src/schemas/SimulationSchema'
+
+type SimulationWithData = SimulationType & {
+  data: any
+}
 
 const dateFileExtension = (date: Date) =>
   date.toLocaleDateString('fr-FR').replace(/\//g, '-')
-// @ts-ignore
 connectdb().then((db) => {
-  let request = Simulation.find()
-  // @ts-ignore
+  const request = Simulation.find<SimulationWithData>()
   request.then((simulations) => {
     fs.writeFileSync(
       `./export/simulations-${dateFileExtension(new Date())}.json`,
@@ -16,8 +21,7 @@ connectdb().then((db) => {
     toCSV(simulations).then((content) =>
       fs.writeFileSync(
         `./export/simulations-${dateFileExtension(new Date())}.csv`,
-        // @ts-ignore
-        content
+        content || 'No content'
       )
     )
     db.disconnect()
@@ -36,17 +40,14 @@ const categories = [
 ]
 
 const defaultValueToken = '_defaultValue'
-// @ts-ignore
-const toCSV = async (list) => {
+
+const toCSV = async (list: SimulationWithData[]) => {
   try {
     const response = await fetch(url)
     if (!response.ok) console.log('Oups')
-    const rules = await response.json()
-    // @ts-ignore
+    const rules = (await response.json()) as Record<DottedName, any>
     console.log('got ', Object.keys(rules).length, ' rules')
-    // @ts-ignore
     const questionRules = Object.entries(rules)
-      // @ts-ignore
       .map(([dottedName, v]) => ({ ...v, dottedName }))
       .filter((el) => el && el.question)
     const questionDottedNames = questionRules.map((rule) => rule.dottedName)
@@ -61,8 +62,8 @@ const toCSV = async (list) => {
       'total',
       ...questionDottedNames,
     ]
-    // @ts-ignore
-    const questionValue = (data, question) => {
+
+    const questionValue = (data: any, question: any) => {
       const value = data.situation[question]
       if (value == null) {
         if (data.answeredQuestions.includes(question)) return defaultValueToken
@@ -80,7 +81,6 @@ const toCSV = async (list) => {
     }
     const newList = list
       .map(
-        // @ts-ignore
         (simulation) =>
           isValidSimulation(simulation) && [
             simulation.id,
@@ -98,7 +98,6 @@ const toCSV = async (list) => {
       .filter(Boolean)
     const csv = [
       separate(header),
-      // @ts-ignore
       ...newList.map((list) => separate(list)),
     ].join('\r\n')
     return csv
@@ -107,9 +106,9 @@ const toCSV = async (list) => {
   }
 }
 const guillemet = '"'
-// @ts-ignore
-const separate = (line) =>
+
+const separate = (line: string[]) =>
   guillemet + line.join(`${guillemet};${guillemet}`) + guillemet
-// @ts-ignore
-const isValidSimulation = (simulation) =>
+
+const isValidSimulation = (simulation: SimulationWithData) =>
   simulation.data && simulation.data.results && simulation.data.situation

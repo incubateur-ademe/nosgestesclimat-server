@@ -16,7 +16,7 @@ async function migratePollAndGroup() {
 
     console.log('Simulations to migrate', simulationsWithPollOrGroup.length)
 
-    for (let simulation of simulationsWithPollOrGroup) {
+    for (const simulation of simulationsWithPollOrGroup) {
       if (simulation.poll) {
         simulation.polls = [simulation.poll]
         delete simulation.poll

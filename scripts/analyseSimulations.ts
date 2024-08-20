@@ -1,19 +1,19 @@
-import fs from 'fs'
 import fastStats from 'fast-stats'
+import fs from 'fs'
 
 const Stats = fastStats.Stats
 
-let list = JSON.parse(fs.readFileSync('simu26-2.json', 'utf8'))
+const list = JSON.parse(fs.readFileSync('simu26-2.json', 'utf8'))
 const filtered = list.filter(
-  // @ts-ignore
+  // @ts-expect-error should type list
   (line) => new Date(line.updatedAt) > new Date('2023-04-25T15:00:33.076Z')
 )
 
 console.log(list.length, filtered.length)
-// @ts-ignore
+// @ts-expect-error should type list
 const getTotal = (line) => line.data.results.total
 const mean =
-  // @ts-ignore
+  // @ts-expect-error should type list
   filtered.reduce((memo, next) => memo + getTotal(next), 0) / filtered.length
 
 console.log(mean)

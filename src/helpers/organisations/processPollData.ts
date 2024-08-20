@@ -1,12 +1,12 @@
-import {
+import type {
   DottedName,
   FunFacts,
   NGCRules,
 } from '@incubateur-ademe/nosgestesclimat'
 import importedRules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
 import importedFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRules.json'
-import { SimulationType } from '../../schemas/SimulationSchema'
-import { UserType } from '../../schemas/UserSchema'
+import type { SimulationType } from '../../schemas/SimulationSchema'
+import type { UserType } from '../../schemas/UserSchema'
 import { getFunFactAssociatedDottedNameValue } from './processPollData/getFunFactAssociatedDottedNameValue'
 import { processFunFactsValues } from './processPollData/processFunFactsValues'
 

@@ -41,6 +41,6 @@ export async function sendVerificationCodeEmail({
       axiosConf
     )
   } catch (error) {
-    console.log('Error sending email: ')
+    console.warn('Error sending email: ', error)
   }
 }

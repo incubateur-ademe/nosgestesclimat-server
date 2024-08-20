@@ -1,8 +1,8 @@
 import { unformatKey } from './unformatKey'
 
-export function unformatSituation(situation?: { [key: string]: any }) {
-  return Object.entries({ ...situation } as { [key: string]: any }).reduce(
-    (acc: { [key: string]: any }, [key, value]: [string, any]) => {
+export function unformatSituation(situation?: { [key: string]: unknown }) {
+  return Object.entries({ ...situation }).reduce(
+    (acc: { [key: string]: unknown }, [key, value]: [string, unknown]) => {
       // Key is not formatted
       if (!key.includes('_')) {
         acc[key] = value

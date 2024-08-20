@@ -1,6 +1,7 @@
-import jwt, { JwtPayload } from 'jsonwebtoken'
+import type { JwtPayload } from 'jsonwebtoken'
+import jwt from 'jsonwebtoken'
 import dotenv from 'dotenv'
-import { NextFunction, Request, Response } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import { config } from '../config'
 import { generateAndSetNewToken } from '../helpers/authentification/generateAndSetNewToken'
 

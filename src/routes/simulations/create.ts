@@ -1,5 +1,5 @@
 import express from 'express'
-import { Document, Types } from 'mongoose'
+import type { Document, Types } from 'mongoose'
 import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
 import { sendSimulationEmail } from '../../helpers/email/sendSimulationEmail'
 import { findGroupsById } from '../../helpers/groups/findGroupsById'
@@ -8,11 +8,11 @@ import { findPollsBySlug } from '../../helpers/organisations/findPollsBySlug'
 import { handleUpdatePoll } from '../../helpers/organisations/handleUpdatePoll'
 import { createOrUpdateSimulation } from '../../helpers/queries/createOrUpdateSimulation'
 import { createOrUpdateUser } from '../../helpers/queries/createOrUpdateUser'
-import { SimulationType } from '../../schemas/SimulationSchema'
+import type { SimulationType } from '../../schemas/SimulationSchema'
 import { formatEmail } from '../../utils/formatting/formatEmail'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { validateEmail } from '../../utils/validation/validateEmail'
-import { UserType } from './../../schemas/UserSchema'
+import type { UserType } from './../../schemas/UserSchema'
 
 const router = express.Router()
 
@@ -62,6 +62,7 @@ router.route('/').post(async (req, res) => {
       listIds: listIds ?? undefined,
     })
   } catch (error) {
+    console.warn(error)
     // We do nothing
   }
 
@@ -145,6 +146,7 @@ router.route('/').post(async (req, res) => {
 
     console.log(`Simulation created: ${simulationSaved._id}`)
   } catch (error) {
+    console.warn(error)
     return res.status(500).send('Error while creating simulation.')
   }
 })
