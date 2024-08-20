@@ -32,6 +32,11 @@ async function migrateComputedResults() {
     const bulkWrites: AnyBulkWriteOperation[] = []
 
     for await (let simulation of simulations) {
+      // Should not happen but just in case
+      if (!simulation.computedResults) {
+        continue
+      }
+
       bulkWrites.push({
         updateOne: {
           filter: {
