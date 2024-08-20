@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import type { FullInferSchemaType } from '../types/types'
+import type { FullInferSchemaType, LeanInferSchemaType } from '../types/types'
 
 const Schema = mongoose.Schema
 
@@ -74,9 +74,7 @@ export const SimulationSchema = new Schema(
 )
 
 export type SimulationType = FullInferSchemaType<typeof SimulationSchema>
-export type MetricComputedResultsType = FullInferSchemaType<
-  typeof MetricComputedResultsSchema
->
+export type LeanSimulationType = LeanInferSchemaType<typeof SimulationSchema>
 
 SimulationSchema.index({ id: 1 })
 
