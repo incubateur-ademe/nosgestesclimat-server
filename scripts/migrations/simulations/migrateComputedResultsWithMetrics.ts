@@ -58,9 +58,11 @@ async function migrateComputedResults() {
       }
     }
 
-    const { modifiedCount } = await Simulation.bulkWrite(bulkWrites)
-    updated += modifiedCount
-    bulkWrites.length = 0
+    if (bulkWrites.length) {
+      const { modifiedCount } = await Simulation.bulkWrite(bulkWrites)
+      updated += modifiedCount
+      bulkWrites.length = 0
+    }
 
     console.log('Computed results migration done. Updated simulations', updated)
   } catch (error) {
