@@ -75,7 +75,7 @@ router.route('/').post(async (req, res) => {
 
     // TODO: Should delete when we launch empreinte eau
     // We format the computed results if it does not contain metrics
-    const computedResults = simulation.computedResults.bilan
+    const computedResults = simulation.computedResults?.bilan
       ? { carbone: simulation.computedResults }
       : simulation.computedResults
 
@@ -85,8 +85,8 @@ router.route('/').post(async (req, res) => {
       actionChoices: {
         ...(simulation?.actionChoices ?? {}),
       },
-      date: new Date(simulation.date),
-      foldedSteps: [...(simulation.foldedSteps ?? {})],
+      date: simulation.date ? new Date(simulation.date) : new Date(),
+      foldedSteps: [...(simulation.foldedSteps ?? [])],
       situation: {
         ...(simulation.situation ?? {}),
       },

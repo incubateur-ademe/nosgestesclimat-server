@@ -3,29 +3,41 @@ import type { FullInferSchemaType, LeanInferSchemaType } from '../types/types'
 
 const Schema = mongoose.Schema
 
-const CategorySchema = new Schema({
-  alimentation: Number,
-  transport: Number,
-  logement: Number,
-  divers: Number,
-  'services sociétaux': Number,
-})
+const CategorySchema = new Schema(
+  {
+    alimentation: Number,
+    transport: Number,
+    logement: Number,
+    divers: Number,
+    'services sociétaux': Number,
+  },
+  { _id: false }
+)
 
-const SubcategorySchema = new Schema({
-  type: Map,
-  of: Number,
-})
+const SubcategorySchema = new Schema(
+  {
+    type: Map,
+    of: Number,
+  },
+  { _id: false }
+)
 
-const MetricComputedResultsSchema = new Schema({
-  bilan: Number,
-  categories: CategorySchema,
-  subcategories: SubcategorySchema,
-})
+const MetricComputedResultsSchema = new Schema(
+  {
+    bilan: Number,
+    categories: CategorySchema,
+    subcategories: SubcategorySchema,
+  },
+  { _id: false }
+)
 
-const ComputedResultsSchema = new Schema({
-  carbone: MetricComputedResultsSchema,
-  eau: MetricComputedResultsSchema,
-})
+const ComputedResultsSchema = new Schema(
+  {
+    carbone: MetricComputedResultsSchema,
+    eau: MetricComputedResultsSchema,
+  },
+  { _id: false }
+)
 
 export const SimulationSchema = new Schema(
   {
