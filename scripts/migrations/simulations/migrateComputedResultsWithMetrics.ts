@@ -8,6 +8,10 @@ import {
 
 type ProjectedSimulation = Pick<SimulationType, '_id' | 'computedResults'>
 
+/**
+ * This script migrates the computed results format of all simulations to add metrics (carbone, eau, etc.)
+ * It is supposed to be run in production on the 21/08/2024
+ */
 async function migrateComputedResults() {
   console.log('Start computed results migration')
 
@@ -16,6 +20,7 @@ async function migrateComputedResults() {
   try {
     const simulations = Simulation.find<ProjectedSimulation>(
       {
+        computedResults: { $exists: true },
         'computedResults.bilan': { $exists: true },
       },
       { computedResults: true }
@@ -46,6 +51,7 @@ async function migrateComputedResults() {
         const { modifiedCount } = await Simulation.bulkWrite(bulkWrites)
         updated += modifiedCount
         bulkWrites.length = 0
+        console.log('Updated simulations', updated)
       }
     }
 
