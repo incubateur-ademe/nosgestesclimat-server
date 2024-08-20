@@ -41,6 +41,7 @@ router.route('/').post(async (req, res) => {
 
     console.log(`Northstar rating created: ${northstarRating._id}`)
   } catch (error) {
+    console.warn(error)
     return res.status(500).send('Error while creating northstar value.')
   }
 })

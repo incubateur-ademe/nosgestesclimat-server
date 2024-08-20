@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { Document } from 'mongoose'
+import type { Document } from 'mongoose'
 import { axiosConf } from '../../constants/axios'
 import {
   LIST_SUBSCRIBED_END_SIMULATION,
@@ -11,8 +11,8 @@ import {
   TEMPLATE_ID_SIMULATION_COMPLETED,
   TEMPLATE_ID_SIMULATION_IN_PROGRESS,
 } from '../../constants/brevo'
-import { SimulationType } from '../../schemas/SimulationSchema'
-import { UserType } from '../../schemas/UserSchema'
+import type { SimulationType } from '../../schemas/SimulationSchema'
+import type { UserType } from '../../schemas/UserSchema'
 import { createOrUpdateContact } from './createOrUpdateContact'
 
 /**
@@ -65,9 +65,9 @@ export async function sendSimulationEmail({
     const simulationUrl = new URL(origin)
     simulationUrl.pathname = isSimulationCompleted ? 'fin' : 'simulateur/bilan'
     const { searchParams } = simulationUrl
-if (simulationSaved.id) {
-    searchParams.append('sid', simulationSaved.id)
-}
+    if (simulationSaved.id) {
+      searchParams.append('sid', simulationSaved.id)
+    }
     searchParams.append(MATOMO_CAMPAIGN_KEY, MATOMO_CAMPAIGN_EMAIL_AUTOMATISE)
     searchParams.append(MATOMO_KEYWORD_KEY, MATOMO_KEYWORDS[templateId])
 

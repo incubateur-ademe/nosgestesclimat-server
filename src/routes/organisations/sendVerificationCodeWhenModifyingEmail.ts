@@ -1,9 +1,9 @@
 import express from 'express'
-import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import { Organisation } from '../../schemas/OrganisationSchema'
 import { handleSendVerificationCodeAndReturnExpirationDate } from '../../helpers/verificationCode/handleSendVerificationCodeAndReturnExpirationDate'
-import { validateEmail } from '../../utils/validation/validateEmail'
+import { Organisation } from '../../schemas/OrganisationSchema'
 import { formatEmail } from '../../utils/formatting/formatEmail'
+import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
+import { validateEmail } from '../../utils/validation/validateEmail'
 
 const router = express.Router()
 
@@ -45,6 +45,7 @@ router.post('/', async (req, res) => {
 
     console.log('Verification code sent.')
   } catch (error) {
+    console.warn(error)
     return res.status(403).json("Une erreur s'est produite.")
   }
 })

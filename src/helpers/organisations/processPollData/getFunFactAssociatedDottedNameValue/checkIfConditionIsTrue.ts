@@ -1,4 +1,4 @@
-import { Situation } from '../../../../types/types'
+import type { Situation } from '../../../../types/types'
 
 function checkIfConditionWithOperatorIsTrue(
   [dottedName, operator, value]: [string, string, string],
@@ -35,7 +35,7 @@ function checkIfConditionWithOperatorIsTrue(
 export function checkIfConditionIsTrue(
   condition: string,
   situation: Situation
-): Boolean {
+): boolean {
   // The condition we'll define can be split in 3 parts: the dottedName,
   // the operator (=, <, >) and the value. We split the condition in an array.
   const splitedCondition = condition.split(/(\s*[=<>]\s*)/).filter(Boolean)

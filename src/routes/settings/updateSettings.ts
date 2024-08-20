@@ -1,11 +1,11 @@
-import express from 'express'
-import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import axios from 'axios'
+import express from 'express'
 import { axiosConf } from '../../constants/axios'
 import { getContactLists } from '../../helpers/brevo/getContactLists'
-import { createOrUpdateUser } from '../../helpers/queries/createOrUpdateUser'
 import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
+import { createOrUpdateUser } from '../../helpers/queries/createOrUpdateUser'
 import { formatEmail } from '../../utils/formatting/formatEmail'
+import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 
 const router = express.Router()
 
@@ -31,6 +31,7 @@ router.route('/').post(async (req, res) => {
       try {
         currentListIds = await getContactLists(email)
       } catch (e) {
+        console.warn(e)
         // The contact does not exist in Brevo
         currentListIds = []
       }
@@ -70,7 +71,7 @@ router.route('/').post(async (req, res) => {
 
       // We need to use a specific endpoint to remove contacts from lists
       if (listsRemoved.length > 0) {
-        for (let listId of listsRemoved) {
+        for (const listId of listsRemoved) {
           await axios.post(
             `/v3/contacts/lists/${listId}/contacts/remove`,
             {

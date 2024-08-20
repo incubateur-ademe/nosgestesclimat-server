@@ -1,5 +1,6 @@
 import express from 'express'
 
+import cors from 'cors'
 import answersRoute from './routes/_legacy/answersRoute'
 import ratingsRoute from './routes/_legacy/ratingsRoute'
 import simulationRoute from './routes/_legacy/simulationRoute'
@@ -57,7 +58,6 @@ import sendEmailRoute from './routes/email/sendEmail'
 import getNewsletterSubscriptions from './routes/settings/getNewsletterSubscriptions'
 import updateSettingsRoute from './routes/settings/updateSettings'
 
-import cors from 'cors'
 import { origin } from './config'
 
 const app = express()

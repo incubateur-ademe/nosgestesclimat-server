@@ -30,7 +30,6 @@ describe(`Given a validated NGC user organisation`, () => {
   })
 
   describe(`When the administator enters the last infos`, () => {
-    let response
     let scope: nock.Scope
 
     beforeEach(async () => {
@@ -71,7 +70,7 @@ describe(`Given a validated NGC user organisation`, () => {
 
       nock(process.env.CONNECT_URL!).post(`/`).reply(200)
 
-      response = await request
+      await request
         .post(url)
         .set({ cookie: `ngcjwt=${validatedOrganisationFixture.cookie}` })
         .send({

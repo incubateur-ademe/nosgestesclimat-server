@@ -1,5 +1,5 @@
 import { Organisation } from '../../schemas/OrganisationSchema'
-import { PollPublicInfo } from '../../types/types'
+import type { PollPublicInfo } from '../../types/types'
 import { findPollsBySlug } from './findPollsBySlug'
 
 type Props = {

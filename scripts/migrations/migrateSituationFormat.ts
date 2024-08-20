@@ -25,7 +25,7 @@ async function migrateSituationFormat() {
         .exec()
 
       let index = 0
-      for (let simulation of simulations) {
+      for (const simulation of simulations) {
         simulation.situation = unformatSituation({ ...simulation.situation })
 
         await simulation.save()
