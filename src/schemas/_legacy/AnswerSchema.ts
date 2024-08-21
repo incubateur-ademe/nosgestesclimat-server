@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import type { FullInferSchemaType } from '../../types/types'
 
 const Schema = mongoose.Schema
 
@@ -23,5 +24,7 @@ const AnswerSchema = new Schema(
     timestamps: true,
   }
 )
+
+export type AnswerType = FullInferSchemaType<typeof AnswerSchema>
 
 export default mongoose.model('Answer', AnswerSchema)

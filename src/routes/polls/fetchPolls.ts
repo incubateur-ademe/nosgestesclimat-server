@@ -1,8 +1,9 @@
-import express, { Request, Response } from 'express'
+import type { Request, Response } from 'express'
+import express from 'express'
 
-import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import { PollPublicInfo } from '../../types/types'
 import { getPollPublicInfos } from '../../helpers/organisations/getPollPublicInfos'
+import type { PollPublicInfo } from '../../types/types'
+import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 
 const router = express.Router()
 
@@ -33,6 +34,7 @@ router.post('/', async (req: Request, res: Response) => {
 
     res.json(pollsPublicInfos)
   } catch (error) {
+    console.warn(error)
     return res.status(500).send('Error while fetching poll')
   }
 })

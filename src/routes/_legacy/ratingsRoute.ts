@@ -4,7 +4,7 @@ import { Simulation } from '../../schemas/SimulationSchema'
 
 const router = express.Router()
 
-router.route('/').get((req, res, next) => {
+router.route('/').get((req, res) => {
   connectdb().then(() => {
     const data = Simulation.find({})
     data.then((simulations) => {
@@ -12,7 +12,7 @@ router.route('/').get((req, res, next) => {
         return res.status(404).send('No ratings found')
       }
       const ratings = simulations
-        // @ts-ignore
+        // @ts-expect-error 2339 no more data on simulation
         .map(({ data, updatedAt, createdAt }) => ({
           ratings: data?.ratings,
           createdAt,

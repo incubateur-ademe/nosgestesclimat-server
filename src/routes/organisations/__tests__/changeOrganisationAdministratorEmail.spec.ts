@@ -7,28 +7,29 @@ import app from '../../../app'
 import * as verificationCodeUtils from '../../../utils/generateRandomNumberWithLength'
 import {
   SEND_ORGANISATION_VERIFICATION_CODE_WHEN_MODIFYING_EMAIL_ROUTE,
-  createOrganisation,
+  createFullOrganisation,
 } from './fixtures/organisations.fixture'
 
-describe(`Given a NGC user organisation`, () => {
+describe(`Given an existing NGC user organisation`, () => {
   const url = SEND_ORGANISATION_VERIFICATION_CODE_WHEN_MODIFYING_EMAIL_ROUTE
   const request = supertest(app)
-  let createOrganisationFixture: Awaited<ReturnType<typeof createOrganisation>>
+  let createFullOrganisationFixture: Awaited<
+    ReturnType<typeof createFullOrganisation>
+  >
 
   beforeEach(async () => {
-    createOrganisationFixture = await createOrganisation(request)
+    createFullOrganisationFixture = await createFullOrganisation(request)
   })
 
   describe(`When the administator changes its email`, () => {
     let email: string
-    let response
     let scope: nock.Scope
 
     beforeEach(async () => {
       jest
         .mocked(verificationCodeUtils)
         .generateRandomNumberWithLength.mockImplementationOnce(
-          () => +createOrganisationFixture.verificationCode
+          () => +createFullOrganisationFixture.verificationCode
         )
 
       scope = nock(process.env.BREVO_URL!)
@@ -38,8 +39,8 @@ describe(`Given a NGC user organisation`, () => {
         .reply(200)
 
       email = faker.internet.email().toLocaleLowerCase()
-      response = await request.post(url).send({
-        previousEmail: createOrganisationFixture.email,
+      await request.post(url).send({
+        previousEmail: createFullOrganisationFixture.email,
         email,
       })
     })

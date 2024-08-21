@@ -1,20 +1,26 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import mongoose from 'mongoose'
 import { config } from '../../src/config'
 import { NorthstarRating } from '../../src/schemas/NorthstarRatingSchema'
+import type { SimulationType } from '../../src/schemas/SimulationSchema'
 import { Simulation } from '../../src/schemas/SimulationSchema'
+
+type SimulationWithData = SimulationType & {
+  data: any
+}
 
 // This was never used because no one cares about northstar ratings
 async function migrateNorthstarRatings() {
   console.log('Start migration of northstar ratings')
   mongoose.connect(config.mongo.url)
   try {
-    const simulationWithData = (await Simulation.find({
+    const simulationWithData = await Simulation.find<SimulationWithData>({
       data: { $exists: true },
-    })) as any
+    })
 
     console.log('Northstar ratings to migrate', simulationWithData.length)
 
-    for (let simulation of simulationWithData) {
+    for (const simulation of simulationWithData) {
       if (simulation.data?.ratings) {
         const type = simulation.data.ratings.learned ? 'learned' : 'actions'
 

@@ -1,9 +1,10 @@
-import express, { Request, Response } from 'express'
+import type { Request, Response } from 'express'
+import express from 'express'
 
+import type { HydratedDocument } from 'mongoose'
 import { Organisation } from '../../schemas/OrganisationSchema'
+import type { PollType } from '../../schemas/PollSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import { PollType } from '../../schemas/PollSchema'
-import { HydratedDocument } from 'mongoose'
 
 const router = express.Router()
 
@@ -37,6 +38,7 @@ router.get('/:orgaSlug?', async (req: Request, res: Response) => {
       )
     )
   } catch (error) {
+    console.warn(error)
     res.status(403).json('No organisation found.')
   }
 })

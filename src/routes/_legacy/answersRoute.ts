@@ -1,11 +1,10 @@
 import express from 'express'
-import connectdb from '../../helpers/db/initDatabase'
-import Answers from '../../schemas/_legacy/AnswerSchema'
-import Surveys from '../../schemas/_legacy/SurveySchema'
-
 import fs from 'fs'
 import { Parser } from 'json2csv'
 import yaml from 'yaml'
+import connectdb from '../../helpers/db/initDatabase'
+import Answers from '../../schemas/_legacy/AnswerSchema'
+import Surveys from '../../schemas/_legacy/SurveySchema'
 
 const router = express.Router()
 
@@ -32,18 +31,20 @@ const getCsvHeader = async (roomName: string) => {
     const rules = Object.keys(yaml.parse(data))
     const contextHeaders = [
       ...new Set(
-        rules.reduce((res, rule) => {
+        rules.reduce((res: string[], rule) => {
           const header = rule.split(' . ')[1]
-          header && res.push(header as never)
+          if (header) {
+            res.push(header)
+          }
           return res
         }, [])
       ),
     ]
-    return contextHeaders.concat(defaultCsvHeader as never[])
+    return contextHeaders.concat(defaultCsvHeader)
   }
 }
 
-router.route('/:room').get((req, res, next) => {
+router.route('/:room').get((req, res) => {
   const roomName = req.params.room
 
   if (roomName == null) {
@@ -66,24 +67,19 @@ router.route('/:room').get((req, res, next) => {
           // Hence we build the data schema here based on configuration files stored on the disk
 
           const csvHeader = await getCsvHeader(roomName)
-          // @ts-ignore
+          // @ts-expect-error 2561 bad typings or deprecated API => json2csv is obsolete though
           const parser = new Parser({ csvHeader })
-          const json = answers.map((answer) =>
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const json = answers.map((answer: any) =>
             Object.fromEntries(
               csvHeader.map((field) => {
-                // @ts-ignore
                 return answer.data[field]
-                  ? // @ts-ignore
-                    [field, answer.data[field]]
-                  : // @ts-ignore
-                  answer.data.byCategory.get(field)
-                  ? // @ts-ignore
-                    [field, answer.data.byCategory.get(field)]
-                  : // @ts-ignore
-                  answer.data.context && answer.data.context.get(field) // we take into account old answers with no context and answers with empty context in case of undefined get resultfor the two firts conditions
-                  ? // @ts-ignore
-                    [field, answer.data.context.get(field)]
-                  : [field, undefined]
+                  ? [field, answer.data[field]]
+                  : answer.data.byCategory.get(field)
+                    ? [field, answer.data.byCategory.get(field)]
+                    : answer.data.context && answer.data.context.get(field) // we take into account old answers with no context and answers with empty context in case of undefined get resultfor the two firts conditions
+                      ? [field, answer.data.context.get(field)]
+                      : [field, undefined]
               })
             )
           )

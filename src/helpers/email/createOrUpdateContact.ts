@@ -1,8 +1,9 @@
-import axios, { AxiosResponse } from 'axios'
+import type { AxiosResponse } from 'axios'
+import axios from 'axios'
 import { axiosConf } from '../../constants/axios'
-import { SimulationType } from '../../schemas/SimulationSchema'
-import { handleAddAttributes } from '../brevo/handleAddAttributes'
+import type { SimulationType } from '../../schemas/SimulationSchema'
 import { validateEmail } from '../../utils/validation/validateEmail'
+import { handleAddAttributes } from '../brevo/handleAddAttributes'
 
 type Props = {
   email: string
@@ -40,7 +41,7 @@ export function createOrUpdateContact({
   })
 
   return axios.post(
-    'https://api.brevo.com/v3/contacts',
+    '/v3/contacts',
     {
       email,
       listIds,

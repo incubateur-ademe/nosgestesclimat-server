@@ -1,10 +1,6 @@
-import { HydratedDocument } from 'mongoose'
 import express from 'express'
 import { Group } from '../../schemas/GroupSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import { NGCRules } from '@incubateur-ademe/nosgestesclimat'
-import Engine from 'publicodes'
-import rules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
 
 const router = express.Router()
 
@@ -35,20 +31,13 @@ router.route('/').post(async (req, res) => {
 
     const groupObject = group.toObject()
 
-    const engine = new Engine(rules as unknown as NGCRules, {
-      logger: {
-        log: console.log,
-        warn: () => null,
-        error: console.error,
-      },
-    })
-
     setSuccessfulJSONResponse(res)
 
     res.json(groupObject)
 
     console.log(`Group fetched: ${groupId}`)
   } catch (error) {
+    console.warn(error)
     res.status(500).send('Error. Group not found.')
   }
 })

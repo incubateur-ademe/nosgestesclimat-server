@@ -1,4 +1,5 @@
-import express, { Request, Response } from 'express'
+import type { Request, Response } from 'express'
+import express from 'express'
 import { Organisation } from '../../schemas/OrganisationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { Poll } from '../../schemas/PollSchema'

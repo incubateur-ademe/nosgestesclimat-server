@@ -1,6 +1,7 @@
-import jwt, { JwtPayload, Secret } from 'jsonwebtoken'
 import dotenv from 'dotenv'
-import { Request, Response } from 'express'
+import type { Request, Response } from 'express'
+import type { JwtPayload } from 'jsonwebtoken'
+import jwt from 'jsonwebtoken'
 import { config } from '../../config'
 
 dotenv.config()

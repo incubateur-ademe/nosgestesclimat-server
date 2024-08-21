@@ -1,4 +1,4 @@
-import { CookieOptions } from 'express'
+import type { CookieOptions } from 'express'
 import { config } from '../config'
 
 export const COOKIE_MAX_AGE = 1000 * 60 * 60 * 24 * 61 // 2 months

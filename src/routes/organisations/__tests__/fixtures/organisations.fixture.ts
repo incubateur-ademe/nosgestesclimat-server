@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker'
 import nock from 'nock'
-import supertest from 'supertest'
+import type supertest from 'supertest'
 import * as verificationCodeUtils from '../../../../utils/generateRandomNumberWithLength'
 
 type TestAgent = ReturnType<typeof supertest>
@@ -20,12 +20,8 @@ export const SEND_ORGANISATION_VERIFICATION_CODE_WHEN_MODIFYING_EMAIL_ROUTE =
   '/organisations/send-verification-code-when-modifying-email'
 
 export const createOrganisation = async (agent: TestAgent) => {
-  let organisation
-  let cookie
   const userId = faker.string.uuid()
   const email = faker.internet.email().toLocaleLowerCase()
-  const name = faker.company.name()
-  const administratorName = faker.person.fullName()
   const verificationCode = faker.number
     .int({ min: 100000, max: 999999 })
     .toString()
@@ -47,6 +43,16 @@ export const createOrganisation = async (agent: TestAgent) => {
     userId,
   })
 
+  return {
+    verificationCode,
+    userId,
+    email,
+  }
+}
+
+export const validateOrganisation = async (agent: TestAgent) => {
+  const { verificationCode, userId, email } = await createOrganisation(agent)
+
   const validateOrganisationResponse = await agent
     .post(VALIDATE_ORGANISATION_VERIFICATION_CODE_ROUTE)
     .send({
@@ -55,7 +61,22 @@ export const createOrganisation = async (agent: TestAgent) => {
     })
 
   const cookies = validateOrganisationResponse.get('Set-Cookie')
-  cookie = cookies?.pop()?.match(NGC_JWT_REGEX)?.slice(1).shift() || ''
+  const cookie = cookies?.pop()?.match(NGC_JWT_REGEX)?.slice(1).shift() || ''
+
+  return {
+    verificationCode,
+    cookie,
+    userId,
+    email,
+  }
+}
+
+export const createFullOrganisation = async (agent: TestAgent) => {
+  const { verificationCode, cookie, userId, email } =
+    await validateOrganisation(agent)
+
+  const name = faker.company.name()
+  const administratorName = faker.person.fullName()
 
   nock(process.env.BREVO_URL!).post(`/v3/contacts`).reply(200)
   nock(process.env.CONNECT_URL!).post(`/`).reply(200)
@@ -69,7 +90,7 @@ export const createOrganisation = async (agent: TestAgent) => {
       administratorName,
     })
 
-  ;({ body: organisation } = updateOrganisationResponse)
+  const { body: organisation } = updateOrganisationResponse
 
   return {
     verificationCode,

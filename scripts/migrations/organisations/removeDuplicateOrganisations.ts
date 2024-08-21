@@ -1,8 +1,9 @@
-import { Organisation } from './../../../src/schemas/OrganisationSchema'
-import mongoose, { PipelineStage } from 'mongoose'
+import type { PipelineStage } from 'mongoose'
+import mongoose from 'mongoose'
 import { config } from '../../../src/config'
-import { OrganisationType } from '../../../src/schemas/OrganisationSchema'
-import { PollType } from '../../../src/schemas/PollSchema'
+import type { OrganisationType } from '../../../src/schemas/OrganisationSchema'
+import type { PollType } from '../../../src/schemas/PollSchema'
+import { Organisation } from './../../../src/schemas/OrganisationSchema'
 
 type OrganisationWithPollsPopulatedType = Omit<OrganisationType, 'polls'> & {
   polls: PollType[]
@@ -75,7 +76,7 @@ async function removeDuplicateOrganisations() {
       pipeline
     ).cursor<AdministratorObject>({ batchSize: 1000 })
 
-    for await (let administratorObject of administratorObjects) {
+    for await (const administratorObject of administratorObjects) {
       // Skip the non problematic cases
       if (administratorObject.count <= 1) {
         continue
@@ -113,7 +114,7 @@ async function removeDuplicateOrganisations() {
 
       let hasKeptOrganisation = false
 
-      for (let [
+      for (const [
         index,
         organisationWithMatchingPoll,
       ] of organisationsWithMatchingPolls.entries()) {

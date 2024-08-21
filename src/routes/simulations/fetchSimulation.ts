@@ -1,7 +1,7 @@
 import express from 'express'
+import mongoose from 'mongoose'
 import { Simulation } from '../../schemas/SimulationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import mongoose from 'mongoose'
 
 const router = express.Router()
 

@@ -1,4 +1,4 @@
-import { Mongoose, ObjectId, Types } from 'mongoose'
+import type { Types } from 'mongoose'
 import { Organisation } from '../../schemas/OrganisationSchema'
 
 type Props = {

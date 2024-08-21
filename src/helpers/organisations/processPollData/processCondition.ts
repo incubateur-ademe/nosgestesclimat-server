@@ -1,9 +1,5 @@
-import { Situation } from '../../../types/types'
-import {
-  DottedName,
-  NGCRule,
-  NodeValue,
-} from '@incubateur-ademe/nosgestesclimat'
+import type { DottedName, NGCRule } from '@incubateur-ademe/nosgestesclimat'
+import type { Situation } from '../../../types/types'
 
 export function processCondition({
   situation,
@@ -11,7 +7,7 @@ export function processCondition({
 }: {
   situation: Situation
   rule: NGCRule
-}): Boolean | number | string {
+}): boolean | number | string {
   if (!situation) {
     return false
   }
@@ -24,7 +20,7 @@ export function processCondition({
   // if `somme` attibute is used in ui rule, we want to return the sum of values of dottedNames
   if (rule?.formule?.somme) {
     return rule.formule.somme.reduce((acc: number, dottedName: DottedName) => {
-      let itemValue = parseFloat(situation[dottedName] as string)
+      const itemValue = parseFloat(situation[dottedName] as string)
       return acc + (!isNaN(itemValue) ? itemValue : 0)
     }, 0)
   }
@@ -47,9 +43,9 @@ export function processCondition({
   return false
 }
 
-function checkCondition(condition: string, situation: Situation): Boolean {
+function checkCondition(condition: string, situation: Situation): boolean {
   // The condition well defined can be split in 3 parts: the dottedName, the operator (=, <, >) and the value. We split the condition in an array.
-  let split_condition = condition.split(/(\s*[=<>]\s*)/).filter(Boolean)
+  const split_condition = condition.split(/(\s*[=<>]\s*)/).filter(Boolean)
 
   if (!split_condition) {
     return false
@@ -80,7 +76,7 @@ function checkConditionWithOperator(
   split_condition: [string, string, string],
   situation: Situation
 ) {
-  let operator = split_condition[1].replace(/\s/g, '')
+  const operator = split_condition[1].replace(/\s/g, '')
 
   const answerType = isNaN(parseFloat(split_condition[2])) ? 'string' : 'number'
 

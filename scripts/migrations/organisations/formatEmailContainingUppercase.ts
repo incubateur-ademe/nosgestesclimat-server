@@ -1,5 +1,5 @@
-import { Organisation } from '../../../src/schemas/OrganisationSchema'
 import mongoose from 'mongoose'
+import { Organisation } from '../../../src/schemas/OrganisationSchema'
 import { config } from '../../../src/config'
 import { createOrUpdateContact } from '../../../src/helpers/email/createOrUpdateContact'
 import { formatEmail } from '../../../src/utils/formatting/formatEmail'
@@ -14,7 +14,7 @@ async function formatEmailContainingUppercase() {
       'administrators.email': { $regex: /[A-Z]/ },
     }).cursor({ batchSize: 1000 })
 
-    for await (let organisation of organisations) {
+    for await (const organisation of organisations) {
       const previousEmail = organisation.administrators[0].email
       const email = formatEmail(organisation.administrators[0].email)
 
