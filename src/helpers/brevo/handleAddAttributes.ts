@@ -46,19 +46,20 @@ export function handleAddAttributes({
   }
 
   if (simulation) {
-    const {
-      actionChoices,
-      computedResults: {
-        bilan = 0,
-        categories: {
-          alimentation = 0,
-          divers = 0,
-          logement = 0,
-          transport = 0,
-          'services sociétaux': serviceSocietaux = 0,
-        } = {},
-      } = {},
-    } = simulation
+    const actionChoices = simulation.actionChoices ?? {}
+
+    const bilan = simulation.computedResults?.carbone?.bilan ?? 0
+    const transport =
+      simulation.computedResults?.carbone?.categories?.transport ?? 0
+    const alimentation =
+      simulation.computedResults?.carbone?.categories?.alimentation ?? 0
+    const logement =
+      simulation.computedResults?.carbone?.categories?.logement ?? 0
+    const divers = simulation.computedResults?.carbone?.categories?.divers ?? 0
+    const serviceSocietaux =
+      simulation.computedResults?.carbone?.categories?.['services sociétaux'] ??
+      0
+
     attributesUpdated[ATTRIBUTE_LAST_SIMULATION_DATE] = new Date().toISOString()
     attributesUpdated[ATTRIBUTE_ACTIONS_SELECTED_NUMBER] = actionChoices
       ? (Object.keys(actionChoices)?.filter(
