@@ -14,7 +14,7 @@
     "format": "prettier --write \"**/*.{js,ts,md,json}\" && eslint . --fix --ext .js,.ts",
     "generateEnvDeclaration": "yarn run-script scripts/generateEnvDeclaration.ts",
     "lint": "prettier --check \"**/*.{js,ts,md,json}\" && eslint . --ext .js,.ts",
-    "run-script": "ts-node --project scripts/tsconfig.json",
+    "run-script": "ts-node --project tsconfig.json",
     "start": "NODE_OPTIONS=--max-old-space-size=8192 node ./dist/src/index.js",
     "test": "jest",
     "test:coverage": "jest --coverage",
