@@ -1,7 +1,8 @@
+import dotenv from 'dotenv'
 import { ensureEnvVar } from './utils/os'
 
 if (process.env.NODE_ENV === 'development') {
-  require('dotenv').config()
+  dotenv.config()
 }
 
 export const config = {
@@ -10,13 +11,12 @@ export const config = {
     'development' as 'development' | 'production' | 'test'
   ),
   get app() {
-    const parentConfig = this
     return {
       get port() {
         return ensureEnvVar(
           process.env.PORT,
           Number,
-          parentConfig.env === 'development' ? 3001 : 3000
+          config.env === 'development' ? 3001 : 3000
         )
       },
     }
@@ -28,6 +28,7 @@ export const config = {
   },
   thirdParty: {
     brevo: {
+      url: ensureEnvVar(process.env.BREVO_URL, 'https://api.brevo.com'),
       apiKey: ensureEnvVar(process.env.BREVO_API_KEY, ''),
     },
     matomo: {

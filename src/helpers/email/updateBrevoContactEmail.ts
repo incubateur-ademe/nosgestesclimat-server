@@ -12,7 +12,7 @@ export async function updateBrevoContactEmail({ email, emailModified }: Props) {
   }
 
   return axios.put(
-    `https://api.brevo.com/v3/contacts/${email}`,
+    `/v3/contacts/${email}`,
     {
       email: emailModified,
     },

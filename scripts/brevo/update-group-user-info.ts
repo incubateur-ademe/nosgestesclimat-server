@@ -6,7 +6,8 @@ import {
   ATTRIBUTE_NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT,
 } from '../../src/constants/brevo'
 import { createOrUpdateContact } from '../../src/helpers/email/createOrUpdateContact'
-import { Group, GroupType } from '../../src/schemas/GroupSchema'
+import type { GroupType } from '../../src/schemas/GroupSchema'
+import { Group } from '../../src/schemas/GroupSchema'
 
 function processGroupsByAdministrator(
   groups: GroupType[]
@@ -76,9 +77,8 @@ export async function updateGroupUserInfo() {
           otherAttributes: {
             [ATTRIBUTE_NUMBER_CREATED_GROUPS]:
               groupsByAdministrator[administratorEmail]?.length,
-            [ATTRIBUTE_LAST_GROUP_CREATION_DATE]: (
-              lastGroupCreated as any
-            ).createdAt.toISOString(),
+            [ATTRIBUTE_LAST_GROUP_CREATION_DATE]:
+              lastGroupCreated.createdAt.toISOString(),
             [ATTRIBUTE_NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT]:
               numberGroupWithOneParticipant,
           },

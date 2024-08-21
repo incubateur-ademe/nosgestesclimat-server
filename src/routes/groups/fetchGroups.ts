@@ -1,7 +1,9 @@
-import express, { Request, Response } from 'express'
+import type { Request, Response } from 'express'
+import express from 'express'
 
+import type { GroupType } from '../../schemas/GroupSchema'
+import { Group } from '../../schemas/GroupSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import { Group, GroupType } from '../../schemas/GroupSchema'
 
 const router = express.Router()
 
@@ -43,6 +45,7 @@ router.post('/', async (req: Request, res: Response) => {
 
     console.log(`Groups of user ${userId} fetched`)
   } catch (error) {
+    console.warn(error)
     return res.status(500).send('Error while fetching groups')
   }
 })

@@ -1,14 +1,13 @@
 import express from 'express'
 
-import { Organisation } from '../../schemas/OrganisationSchema'
-import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
-import { updateBrevoContactEmail } from '../../helpers/email/updateBrevoContactEmail'
 import { generateAndSetNewToken } from '../../helpers/authentification/generateAndSetNewToken'
-import axios from 'axios'
-import { handleVerificationCodeValidation } from '../../helpers/organisations/handleVerificationCodeValidation'
+import { updateBrevoContactEmail } from '../../helpers/email/updateBrevoContactEmail'
 import { handleUpdateOrganisation } from '../../helpers/organisations/handleUpdateOrganisation'
+import { handleVerificationCodeValidation } from '../../helpers/organisations/handleVerificationCodeValidation'
+import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
+import { Organisation } from '../../schemas/OrganisationSchema'
 import { formatEmail } from '../../utils/formatting/formatEmail'
+import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 
 const router = express.Router()
 
@@ -39,7 +38,6 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
   try {
     await handleVerificationCodeValidation({
       verificationCode,
-      res,
       email: emailModified,
     })
 

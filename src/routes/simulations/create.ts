@@ -1,5 +1,5 @@
 import express from 'express'
-import { Document, Types } from 'mongoose'
+import type { Document, Types } from 'mongoose'
 import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
 import { sendSimulationEmail } from '../../helpers/email/sendSimulationEmail'
 import { findGroupsById } from '../../helpers/groups/findGroupsById'
@@ -8,12 +8,11 @@ import { findPollsBySlug } from '../../helpers/organisations/findPollsBySlug'
 import { handleUpdatePoll } from '../../helpers/organisations/handleUpdatePoll'
 import { createOrUpdateSimulation } from '../../helpers/queries/createOrUpdateSimulation'
 import { createOrUpdateUser } from '../../helpers/queries/createOrUpdateUser'
-import { GroupType } from '../../schemas/GroupSchema'
-import { SimulationType } from '../../schemas/SimulationSchema'
+import type { SimulationType } from '../../schemas/SimulationSchema'
+import { formatEmail } from '../../utils/formatting/formatEmail'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { validateEmail } from '../../utils/validation/validateEmail'
-import { formatEmail } from '../../utils/formatting/formatEmail'
-import { UserType } from './../../schemas/UserSchema'
+import type { UserType } from './../../schemas/UserSchema'
 
 const router = express.Router()
 
@@ -63,6 +62,7 @@ router.route('/').post(async (req, res) => {
       listIds: listIds ?? undefined,
     })
   } catch (error) {
+    console.warn(error)
     // We do nothing
   }
 
@@ -73,18 +73,24 @@ router.route('/').post(async (req, res) => {
     // We check if a group is associated with the simulation
     const groups = await findGroupsById(simulation.groups)
 
+    // TODO: Should delete when we launch empreinte eau
+    // We format the computed results if it does not contain metrics
+    const computedResults = simulation.computedResults?.bilan
+      ? { carbone: simulation.computedResults }
+      : simulation.computedResults
+
     const simulationObject = {
       id: simulation.id,
       user: userDocument._id,
       actionChoices: {
         ...(simulation?.actionChoices ?? {}),
       },
-      date: new Date(simulation.date),
-      foldedSteps: [...(simulation.foldedSteps ?? {})],
+      date: simulation.date ? new Date(simulation.date) : new Date(),
+      foldedSteps: [...(simulation.foldedSteps ?? [])],
       situation: {
         ...(simulation.situation ?? {}),
       },
-      computedResults: { ...(simulation.computedResults ?? {}) },
+      computedResults,
       progression: simulation.progression,
       savedViaEmail: simulation.savedViaEmail,
       polls: polls?.map((poll) => poll._id as Types.ObjectId),
@@ -107,6 +113,7 @@ router.route('/').post(async (req, res) => {
         poll,
         simulationSaved,
         email,
+        origin,
       })
     }
 
@@ -118,11 +125,6 @@ router.route('/').post(async (req, res) => {
         userDocument,
         simulationSaved,
         origin,
-      } as unknown as {
-        group: Document<GroupType> & GroupType
-        userDocument: Document<UserType> & UserType
-        simulationSaved: Document<SimulationType> & SimulationType
-        origin: string
       })
     }
 
@@ -144,6 +146,7 @@ router.route('/').post(async (req, res) => {
 
     console.log(`Simulation created: ${simulationSaved._id}`)
   } catch (error) {
+    console.warn(error)
     return res.status(500).send('Error while creating simulation.')
   }
 })

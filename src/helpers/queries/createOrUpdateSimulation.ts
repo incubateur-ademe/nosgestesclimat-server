@@ -1,4 +1,5 @@
-import { Simulation, SimulationType } from '../../schemas/SimulationSchema'
+import type { SimulationType } from '../../schemas/SimulationSchema'
+import { Simulation } from '../../schemas/SimulationSchema'
 
 export async function createOrUpdateSimulation(
   simulationToAdd: Partial<SimulationType>

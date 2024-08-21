@@ -85,5 +85,4 @@ async function migrate() {
 }
 
 console.log('Running migration...')
-//@ts-ignore
 migrate()

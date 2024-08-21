@@ -1,14 +1,13 @@
+// import type { NGCRules } from '@incubateur-ademe/nosgestesclimat'
+// import rules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
+// import migrationInstructionsJSON from '@incubateur-ademe/nosgestesclimat/public/migration.json'
 import mongoose from 'mongoose'
-import { Simulation } from '../../src/schemas/SimulationSchema'
-import { config } from '../../src/config'
-import Engine from 'publicodes'
-import rules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
-import { NGCRules } from '@incubateur-ademe/nosgestesclimat'
+// import Engine from 'publicodes'
+// import { migrateSituation } from '@publicodes/tools/migration'
 // import { computeResults } from '../../src/helpers/simulation/computeResults'
-import migrationInstructionsJSON from '@incubateur-ademe/nosgestesclimat/public/migration.json'
 // import { unformatSimulation } from '../../src/helpers/simulation/unformatSimulation'
-//@ts-ignore
-import { migrateSituation } from '@publicodes/tools/migration'
+import { config } from '../../src/config'
+import { Simulation } from '../../src/schemas/SimulationSchema'
 
 /**
  * This script is used to recompute the computed results of simulations (associated to a group) that have computedResults with the starting value. There was a bug on the frontend side
@@ -18,17 +17,17 @@ import { migrateSituation } from '@publicodes/tools/migration'
 async function recomputeSimulationResults() {
   console.log('Start computed results migration')
 
-  const migrationInstructions = JSON.parse(
-    JSON.stringify(migrationInstructionsJSON)
-  )
+  // const migrationInstructions = JSON.parse(
+  //   JSON.stringify(migrationInstructionsJSON)
+  // )
 
-  let engine = new Engine(rules as unknown as NGCRules, {
-    logger: {
-      log: () => null,
-      warn: () => null,
-      error: console.error,
-    },
-  })
+  // const engine = new Engine(rules as unknown as NGCRules, {
+  //   logger: {
+  //     log: () => null,
+  //     warn: () => null,
+  //     error: console.error,
+  //   },
+  // })
 
   mongoose.connect(config.mongo.url)
 
@@ -47,7 +46,7 @@ async function recomputeSimulationResults() {
 
     console.log('Simulations to migrate', simulationsWithGroup.length)
 
-    let index = 0
+    // let index = 0
     // for (let simulation of simulationsWithGroup) {
     //   const simulationUnformatted = unformatSimulation(simulation)
 
