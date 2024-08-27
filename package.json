@@ -10,6 +10,7 @@
     "prebuild": "yarn clean",
     "build": "tsc -p tsconfig.build.json",
     "clean": "rimraf dist/*",
+    "db:migrate": "prisma migrate deploy",
     "dev": "NODE_ENV=development nodemon --watch ./src ./src/index.ts",
     "format": "prettier --write \"**/*.{js,ts,md,json}\" && eslint . --fix --ext .js,.ts",
     "generateEnvDeclaration": "yarn run-script scripts/generateEnvDeclaration.ts",
