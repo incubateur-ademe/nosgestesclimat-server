@@ -50,7 +50,9 @@
     "supertest": "^7.0.0",
     "winston": "^3.14.2",
     "winston-transport-sentry-node": "^3.0.0",
-    "yaml": "^2.0.1"
+    "yaml": "^2.0.1",
+    "zod": "^3.23.8",
+    "zod-express-middleware": "^1.4.0"
   },
   "devDependencies": {
     "@faker-js/faker": "^8.4.1",

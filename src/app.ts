@@ -50,6 +50,7 @@ import fetchSimulationRoute from './routes/simulations/fetchSimulation'
 import createQuizAnswerRoute from './routes/quiz/create'
 
 // Northstar routes
+import northstarRatingsController from './features/northstar-ratings/northstar-ratings.controller'
 import createNorthstarRatingRoute from './routes/northstar/create'
 
 // Email route
@@ -146,6 +147,7 @@ app.use('/polls/update-custom-questions', updateCustomQuestionsRoute)
 app.use('/quiz/answers/create', createQuizAnswerRoute)
 
 // Northstar routes
+app.use('/northstar-ratings', northstarRatingsController)
 app.use('/northstar/ratings/create', createNorthstarRatingRoute)
 
 // Email route
