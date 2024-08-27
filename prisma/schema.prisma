@@ -12,3 +12,17 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum NorthstarRatingType {
+  learned
+  actions
+}
+
+model NorthstarRating {
+  id           String              @id @default(cuid())
+  simulationId String              @db.Uuid @unique
+  type         NorthstarRatingType
+  value        Int?                @db.SmallInt
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+}
