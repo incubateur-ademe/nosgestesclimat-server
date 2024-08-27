@@ -3,6 +3,12 @@ import mongoose from 'mongoose'
 import connect from './src/helpers/db/initDatabase'
 
 jest.mock('winston')
+jest.mock('@prisma/client', () => {
+  return {
+    ...jest.requireActual('@prisma/client'),
+    PrismaClient: jest.requireActual('prismock').PrismockClient,
+  }
+})
 
 let mongod: MongoMemoryServer | undefined
 
