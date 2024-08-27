@@ -2,6 +2,7 @@ import express from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { validateRequest } from 'zod-express-middleware'
 import logger from '../../logger'
+import { createNorthStarRating } from './northstar-ratings.service'
 import { NorthstarRatingCreateValidator } from './northstar-ratings.validator'
 
 const router = express.Router()
@@ -11,13 +12,15 @@ const router = express.Router()
  */
 router
   .route('/')
-  .post(validateRequest(NorthstarRatingCreateValidator), (req, res) => {
+  .post(validateRequest(NorthstarRatingCreateValidator), async (req, res) => {
     try {
-      return res.sendStatus(StatusCodes.CREATED).json({})
+      const northStarRating = await createNorthStarRating(req.body)
+
+      return res.status(StatusCodes.CREATED).json(northStarRating)
     } catch (err) {
       logger.error('NorthstarRating creation failed', err)
 
-      return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR).json({})
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
     }
   })
 

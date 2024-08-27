@@ -1,10 +1,8 @@
-import { PrismaClient } from '@prisma/client'
 import mongoose from 'mongoose'
+import { prisma } from '../../src/adapters/prisma/client'
 import { config } from '../../src/config'
 import logger from '../../src/logger'
 import { NorthstarRating } from '../../src/schemas/NorthstarRatingSchema'
-
-const prisma = new PrismaClient()
 
 const migrateNorthstarRatingToPg = async () => {
   try {

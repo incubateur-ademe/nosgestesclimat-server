@@ -1,14 +1,12 @@
 import { faker } from '@faker-js/faker'
-import { PrismaClient } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
+import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
 import {
   NorthstarRatingEnum,
   type NorthstarRatingCreateDto,
 } from '../northstar-ratings.validator'
-
-const prisma = new PrismaClient()
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)
@@ -61,14 +59,23 @@ describe('Given a NGC user', () => {
     })
 
     test(`It should return a ${StatusCodes.CREATED} response`, async () => {
-      await agent
+      const payload = {
+        simulationId: faker.string.uuid(),
+        value: 5,
+        type: NorthstarRatingEnum.learned,
+      }
+
+      const response = await agent
         .post(url)
-        .send({
-          simulationId: faker.string.uuid(),
-          value: 5,
-          type: NorthstarRatingEnum.learned,
-        })
+        .send(payload)
         .expect(StatusCodes.CREATED)
+
+      expect(response.body).toEqual({
+        id: expect.any(String),
+        createdAt: expect.any(String),
+        updatedAt: null,
+        ...payload,
+      })
     })
 
     test('It should store a northstar rating in database', async () => {
@@ -88,8 +95,8 @@ describe('Given a NGC user', () => {
 
       expect(createdNorthstarRating).toEqual({
         id: expect.any(String),
-        createdAt: expect.any(Date),
-        updatedAt: expect.any(Date),
+        createdAt: expect.anything(), // is not instance of Date due to jest
+        updatedAt: null,
         ...payload,
       })
     })
