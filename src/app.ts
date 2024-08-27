@@ -1,4 +1,5 @@
 import express from 'express'
+import morgan from 'morgan'
 
 import cors from 'cors'
 import answersRoute from './routes/_legacy/answersRoute'
@@ -59,6 +60,7 @@ import getNewsletterSubscriptions from './routes/settings/getNewsletterSubscript
 import updateSettingsRoute from './routes/settings/updateSettings'
 
 import { origin } from './config'
+import logger from './logger'
 
 const app = express()
 
@@ -73,6 +75,14 @@ app.use(
 
 // serve static context files
 app.use(express.static('contextes-sondage'))
+
+app.use(
+  morgan(':method :url :status :res[content-length] - :response-time ms', {
+    stream: {
+      write: (message) => logger.info(message.trim()),
+    },
+  })
+)
 
 // Legacy routes
 app.use('/answers', answersRoute)

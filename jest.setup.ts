@@ -2,6 +2,8 @@ import { MongoMemoryServer } from 'mongodb-memory-server'
 import mongoose from 'mongoose'
 import connect from './src/helpers/db/initDatabase'
 
+jest.mock('winston')
+
 let mongod: MongoMemoryServer | undefined
 
 beforeAll(async () => {
