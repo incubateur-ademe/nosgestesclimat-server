@@ -19,3 +19,5 @@ export const NorthstarRatingCreateDto = z.object({
 export const NorthstarRatingCreateValidator = {
   body: NorthstarRatingCreateDto,
 }
+
+export type NorthstarRatingCreateDto = z.infer<typeof NorthstarRatingCreateDto>
