@@ -1,23 +1,14 @@
-import rules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
 import migrationInstructionsJSON from '@incubateur-ademe/nosgestesclimat/public/migration.json'
 // @ts-expect-error Typing error in the library
 import { migrateSituation } from '@publicodes/tools/migration'
 import express from 'express'
 import mongoose from 'mongoose'
-import Engine from 'publicodes'
+import { engine } from '../../constants/publicode'
 import { computeResults } from '../../helpers/simulation/computeResults'
 import { Simulation } from '../../schemas/SimulationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 
 const router = express.Router()
-
-const engine = new Engine(rules, {
-  logger: {
-    log: () => null,
-    warn: () => null,
-    error: console.error,
-  },
-})
 
 router.route('/').post(async (req, res) => {
   const simulationId = req.body.simulationId
@@ -50,15 +41,13 @@ router.route('/').post(async (req, res) => {
       const computedResults = computeResults(situationMigrated, engine)
 
       simulationFound = await Simulation.findByIdAndUpdate(
-        {
-          _id: simulationFound._id,
-        },
+        simulationFound._id,
         {
           computedResults: {
             carbone: computedResults,
           },
         },
-        { $new: true }
+        { new: true }
       )
     }
 
