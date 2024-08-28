@@ -3,8 +3,9 @@ import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
+import logger from '../../../logger'
 import {
-  NorthstarRatingEnum,
+  NorthstarRatingTypeEnum,
   type NorthstarRatingCreateDto,
 } from '../northstar-ratings.validator'
 
@@ -26,7 +27,7 @@ describe('Given a NGC user', () => {
           .send({
             simulationId: faker.string.alpha(34),
             value: 5,
-            type: NorthstarRatingEnum.learned,
+            type: NorthstarRatingTypeEnum.learned,
           })
           .expect(StatusCodes.BAD_REQUEST)
       })
@@ -39,7 +40,7 @@ describe('Given a NGC user', () => {
           .send({
             simulationId: faker.string.uuid(),
             value: 42,
-            type: NorthstarRatingEnum.learned,
+            type: NorthstarRatingTypeEnum.learned,
           })
           .expect(StatusCodes.BAD_REQUEST)
       })
@@ -62,7 +63,7 @@ describe('Given a NGC user', () => {
       const payload = {
         simulationId: faker.string.uuid(),
         value: 5,
-        type: NorthstarRatingEnum.learned,
+        type: NorthstarRatingTypeEnum.learned,
       }
 
       const response = await agent
@@ -82,7 +83,7 @@ describe('Given a NGC user', () => {
       const payload: NorthstarRatingCreateDto = {
         simulationId: faker.string.uuid(),
         value: 5,
-        type: NorthstarRatingEnum.learned,
+        type: NorthstarRatingTypeEnum.learned,
       }
 
       await agent.post(url).send(payload)
@@ -98,6 +99,40 @@ describe('Given a NGC user', () => {
         createdAt: expect.anything(), // is not instance of Date due to jest
         updatedAt: null,
         ...payload,
+      })
+    })
+
+    describe('And database failure', () => {
+      const databaseError = new Error('Something went wrong')
+
+      beforeEach(() => {
+        jest
+          .spyOn(prisma.northstarRating, 'upsert')
+          .mockRejectedValueOnce(databaseError)
+      })
+
+      test(`Then it should return a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
+        await agent
+          .post(url)
+          .send({
+            simulationId: faker.string.uuid(),
+            value: 5,
+            type: NorthstarRatingTypeEnum.learned,
+          })
+          .expect(StatusCodes.INTERNAL_SERVER_ERROR)
+      })
+
+      test(`Then it should log the exception`, async () => {
+        await agent.post(url).send({
+          simulationId: faker.string.uuid(),
+          value: 5,
+          type: NorthstarRatingTypeEnum.learned,
+        })
+
+        expect(logger.error).toHaveBeenCalledWith(
+          'NorthstarRating creation failed',
+          databaseError
+        )
       })
     })
   })
