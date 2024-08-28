@@ -47,6 +47,7 @@ import createSimulationRoute from './routes/simulations/create'
 import fetchSimulationRoute from './routes/simulations/fetchSimulation'
 
 // Quiz routes
+import quizzAnswersController from './features/quizz-answers/quizz-answers.controller'
 import createQuizAnswerRoute from './routes/quiz/create'
 
 // Northstar routes
@@ -144,6 +145,7 @@ app.use(
 app.use('/polls/update-custom-questions', updateCustomQuestionsRoute)
 
 // Quiz routes
+app.use('/quizz-answers', quizzAnswersController)
 app.use('/quiz/answers/create', createQuizAnswerRoute)
 
 // Northstar routes
