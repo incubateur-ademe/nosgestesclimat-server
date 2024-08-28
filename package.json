@@ -10,6 +10,7 @@
     "prebuild": "yarn clean",
     "build": "tsc -p tsconfig.build.json",
     "clean": "rimraf dist/*",
+    "db:migrate": "prisma migrate deploy",
     "dev": "NODE_ENV=development nodemon --watch ./src ./src/index.ts",
     "format": "prettier --write \"**/*.{js,ts,md,json}\" && eslint . --fix --ext .js,.ts",
     "generateEnvDeclaration": "yarn run-script scripts/generateEnvDeclaration.ts",
@@ -25,6 +26,7 @@
   "license": "MIT",
   "dependencies": {
     "@incubateur-ademe/nosgestesclimat": "^2.4.2",
+    "@prisma/client": "^5.18.0",
     "@publicodes/tools": "^1.2.5",
     "@sentry/node": "^8.26.0",
     "@types/express": "^4.17.21",
@@ -49,7 +51,9 @@
     "supertest": "^7.0.0",
     "winston": "^3.14.2",
     "winston-transport-sentry-node": "^3.0.0",
-    "yaml": "^2.0.1"
+    "yaml": "^2.0.1",
+    "zod": "^3.23.8",
+    "zod-express-middleware": "^1.4.0"
   },
   "devDependencies": {
     "@faker-js/faker": "^8.4.1",
@@ -77,6 +81,8 @@
     "mongodb-memory-server": "^10.0.0",
     "nock": "^13.5.4",
     "prettier": "^3.3.3",
+    "prisma": "^5.18.0",
+    "prismock": "^1.32.1",
     "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
