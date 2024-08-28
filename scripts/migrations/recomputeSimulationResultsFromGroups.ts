@@ -1,8 +1,5 @@
-// import type { NGCRules } from '@incubateur-ademe/nosgestesclimat'
-// import rules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
 // import migrationInstructionsJSON from '@incubateur-ademe/nosgestesclimat/public/migration.json'
 import mongoose from 'mongoose'
-// import Engine from 'publicodes'
 // import { migrateSituation } from '@publicodes/tools/migration'
 // import { computeResults } from '../../src/helpers/simulation/computeResults'
 // import { unformatSimulation } from '../../src/helpers/simulation/unformatSimulation'
@@ -20,14 +17,6 @@ async function recomputeSimulationResults() {
   // const migrationInstructions = JSON.parse(
   //   JSON.stringify(migrationInstructionsJSON)
   // )
-
-  // const engine = new Engine(rules as unknown as NGCRules, {
-  //   logger: {
-  //     log: () => null,
-  //     warn: () => null,
-  //     error: console.error,
-  //   },
-  // })
 
   mongoose.connect(config.mongo.url)
 
@@ -57,7 +46,7 @@ async function recomputeSimulationResults() {
 
     //   simulation.situation = situationMigrated
 
-    //   simulation.computedResults = computeResults(situationMigrated, engine)
+    //   simulation.computedResults = computeResults(situationMigrated)
 
     //   await simulation.save()
 
