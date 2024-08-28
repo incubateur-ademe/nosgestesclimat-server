@@ -2,7 +2,6 @@ import migrationInstructionsJSON from '@incubateur-ademe/nosgestesclimat/public/
 // @ts-expect-error Typing error in the library
 import { migrateSituation } from '@publicodes/tools/migration'
 import express from 'express'
-import { engine } from '../../constants/publicode'
 import { computeResults } from '../../helpers/simulation/computeResults'
 import type { GroupType, ParticipantType } from '../../schemas/GroupSchema'
 import { Group } from '../../schemas/GroupSchema'
@@ -58,7 +57,7 @@ router.route('/').post(async (req, res) => {
         migrationInstructionsJSON
       )
 
-      const computedResults = computeResults(situationMigrated, engine)
+      const computedResults = computeResults(situationMigrated)
 
       participant.simulation = (await Simulation.findByIdAndUpdate(
         simulation._id,

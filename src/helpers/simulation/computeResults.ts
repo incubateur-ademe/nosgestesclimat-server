@@ -1,14 +1,12 @@
 import type { DottedName } from '@incubateur-ademe/nosgestesclimat'
 import rules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
-import Engine from 'publicodes'
+import { engine } from '../../constants/publicode'
 import type { Situation } from '../../types/types'
 import { safeGetSituation } from '../situation/safeGetSituation'
 
 const everyRules = new Set<DottedName>(Object.keys(rules) as DottedName[])
 
-export function computeResults(situation: Situation, initiatedEngine?: Engine) {
-  const engine = initiatedEngine || new Engine(rules)
-
+export function computeResults(situation: Situation) {
   // We use the safeGetSituation function to remove unsupported dottedNames from the situation
 
   const safeSituation = safeGetSituation({

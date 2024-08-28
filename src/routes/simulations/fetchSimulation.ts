@@ -3,7 +3,6 @@ import migrationInstructionsJSON from '@incubateur-ademe/nosgestesclimat/public/
 import { migrateSituation } from '@publicodes/tools/migration'
 import express from 'express'
 import mongoose from 'mongoose'
-import { engine } from '../../constants/publicode'
 import { computeResults } from '../../helpers/simulation/computeResults'
 import { Simulation } from '../../schemas/SimulationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
@@ -38,7 +37,7 @@ router.route('/').post(async (req, res) => {
         migrationInstructionsJSON
       )
 
-      const computedResults = computeResults(situationMigrated, engine)
+      const computedResults = computeResults(situationMigrated)
 
       simulationFound = await Simulation.findByIdAndUpdate(
         simulationFound._id,
