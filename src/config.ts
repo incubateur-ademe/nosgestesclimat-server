@@ -35,6 +35,9 @@ export const config = {
       url: ensureEnvVar(process.env.MATOMO_URL, 'https://stats.data.gouv.fr'),
       token: ensureEnvVar(process.env.MATOMO_TOKEN, ''),
     },
+    sentry: {
+      dsn: ensureEnvVar(process.env.SENTRY_DSN, ''),
+    },
   },
   mongo: {
     url: ensureEnvVar(process.env.MONGO_URL, 'mongodb://127.0.0.1:27017/ngc'),

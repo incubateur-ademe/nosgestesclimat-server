@@ -1,5 +1,9 @@
+import migrationInstructionsJSON from '@incubateur-ademe/nosgestesclimat/public/migration.json'
+// @ts-expect-error Typing error in the library
+import { migrateSituation } from '@publicodes/tools/migration'
 import express from 'express'
 import mongoose from 'mongoose'
+import { computeResults } from '../../helpers/simulation/computeResults'
 import { Simulation } from '../../schemas/SimulationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 
@@ -21,10 +25,32 @@ router.route('/').post(async (req, res) => {
     : { id: simulationId }
 
   try {
-    const simulationFound = await Simulation.findOne(searchQuery)
+    let simulationFound = await Simulation.findOne(searchQuery)
 
     if (!simulationFound) {
       return res.status(404).send('No matching simulation found.')
+    }
+
+    if (
+      !simulationFound.computedResults ||
+      !simulationFound.computedResults.carbone
+    ) {
+      const situationMigrated = migrateSituation(
+        simulationFound.situation,
+        migrationInstructionsJSON
+      )
+
+      const computedResults = computeResults(situationMigrated)
+
+      simulationFound = await Simulation.findByIdAndUpdate(
+        simulationFound._id,
+        {
+          computedResults: {
+            carbone: computedResults,
+          },
+        },
+        { new: true }
+      )
     }
 
     setSuccessfulJSONResponse(res)

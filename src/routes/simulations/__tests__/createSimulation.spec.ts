@@ -1,6 +1,9 @@
 import supertest from 'supertest'
 import app from '../../../app'
-import type { LeanSimulationType } from '../../../schemas/SimulationSchema'
+import {
+  Simulation,
+  type LeanSimulationType,
+} from '../../../schemas/SimulationSchema'
 import type { ModelToDto } from '../../../types/types'
 import {
   createSimulation,
@@ -18,21 +21,48 @@ describe('Given a NGC user', () => {
     })
 
     it('Then it should not store computedResults', async () => {
-      const { body: simulation } = await agent.post(url).send({
-        simulationId,
-      })
+      const simulation = await Simulation.findOne(
+        {
+          id: simulationId,
+        },
+        { computedResults: true }
+      )
 
-      expect(simulation).toEqual({
-        __v: expect.any(Number),
-        _id: expect.any(String),
-        id: simulationId,
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        date: expect.any(String),
-        foldedSteps: [],
-        groups: [],
-        polls: [],
-        user: expect.any(String),
+      expect(simulation!.computedResults).toBeUndefined()
+    })
+
+    describe(`And he recovers it`, () => {
+      it('Then it should evaluate and store computedResults', async () => {
+        const { body: simulationDto } = await agent.post(url).send({
+          simulationId,
+        })
+
+        const simulation = await Simulation.findOne(
+          {
+            id: simulationId,
+          },
+          { computedResults: true }
+        )
+
+        expect(simulation!.computedResults).not.toBeUndefined()
+        expect(simulationDto).toEqual({
+          __v: expect.any(Number),
+          _id: expect.any(String),
+          id: simulationId,
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+          computedResults: {
+            carbone: {
+              bilan: expect.any(Number),
+              categories: expect.any(Object),
+            },
+          },
+          date: expect.any(String),
+          foldedSteps: [],
+          groups: [],
+          polls: [],
+          user: expect.any(String),
+        })
       })
     })
   })
