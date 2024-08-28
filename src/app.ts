@@ -144,11 +144,11 @@ app.use(
 )
 app.use('/polls/update-custom-questions', updateCustomQuestionsRoute)
 
-// Quiz routes
+// quizz-answers routes
 app.use('/quizz-answers', quizzAnswersController)
 app.use('/quiz/answers/create', createQuizAnswerRoute)
 
-// Northstar routes
+// northstar-ratings routes
 app.use('/northstar-ratings', northstarRatingsController)
 app.use('/northstar/ratings/create', createNorthstarRatingRoute)
 
