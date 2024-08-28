@@ -48,7 +48,10 @@ router.route('/').post(async (req, res) => {
     for (const participant of group.participants) {
       const { simulation } = participant
 
-      if (!simulation || !!simulation.computedResults) {
+      if (
+        !simulation ||
+        (!!simulation.computedResults && !!simulation.computedResults.carbone)
+      ) {
         continue
       }
 
