@@ -31,7 +31,10 @@ router.route('/').post(async (req, res) => {
       return res.status(404).send('No matching simulation found.')
     }
 
-    if (!simulationFound.computedResults) {
+    if (
+      !simulationFound.computedResults ||
+      !simulationFound.computedResults.carbone
+    ) {
       const situationMigrated = migrateSituation(
         simulationFound.situation,
         migrationInstructionsJSON
