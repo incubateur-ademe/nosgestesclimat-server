@@ -1,8 +1,25 @@
 import mongoose from 'mongoose'
+import z from 'zod'
 import { prisma } from '../../src/adapters/prisma/client'
 import { config } from '../../src/config'
 import logger from '../../src/logger'
 import { QuizAnswer } from '../../src/schemas/QuizAnswerSchema'
+
+const QuizzAnswerSchema = z
+  .object({
+    _id: z.instanceof(mongoose.Types.ObjectId),
+    simulationId: z.string(),
+    isAnswerCorrect: z.union([
+      z.literal('correct'),
+      z.literal('almost'),
+      z.literal('wrong'),
+    ]),
+    answer: z.string(),
+    createdAt: z.instanceof(Date),
+    updatedAt: z.instanceof(Date),
+    __v: z.number(),
+  })
+  .strict()
 
 const migrateQuizzAnswerToPg = async () => {
   try {
@@ -11,7 +28,8 @@ const migrateQuizzAnswerToPg = async () => {
 
     const quizzAnswers = QuizAnswer.find({}).lean().cursor({ batchSize: 1000 })
 
-    for await (const quizzAnswer of quizzAnswers) {
+    for await (const rawQuizzAnswer of quizzAnswers) {
+      const quizzAnswer = QuizzAnswerSchema.parse(rawQuizzAnswer)
       const id = quizzAnswer._id.toString()
       const simulationId = quizzAnswer.simulationId!
       const updatedAt = quizzAnswer.updatedAt
