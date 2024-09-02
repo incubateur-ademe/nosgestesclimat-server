@@ -1,4 +1,6 @@
 import express from 'express'
+import { prisma } from '../../adapters/prisma/client'
+import logger from '../../logger'
 import { QuizAnswer } from '../../schemas/QuizAnswerSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 
@@ -36,6 +38,30 @@ router.route('/').post(async (req, res) => {
 
     await quizAnswer.save()
 
+    try {
+      await prisma.quizzAnswer.upsert({
+        where: {
+          simulationId_answer: {
+            simulationId,
+            answer,
+          },
+        },
+        create: {
+          id: quizAnswer._id.toString(),
+          isAnswerCorrect,
+          simulationId,
+          answer,
+        },
+        update: {
+          isAnswerCorrect,
+          simulationId,
+          answer,
+        },
+      })
+    } catch (error) {
+      logger.error('postgre QuizzAnswers replication failed', error)
+    }
+
     setSuccessfulJSONResponse(res)
 
     res.json(quizAnswer)
@@ -47,4 +73,7 @@ router.route('/').post(async (req, res) => {
   }
 })
 
+/**
+ * @deprecated should use features/quizz-answers instead
+ */
 export default router
