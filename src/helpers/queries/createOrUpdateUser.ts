@@ -1,3 +1,5 @@
+import { prisma } from '../../adapters/prisma/client'
+import logger from '../../logger'
 import { User } from '../../schemas/UserSchema'
 
 type Props = {
@@ -34,7 +36,27 @@ export async function createOrUpdateUser({ userId, email, name }: Props) {
   if (name && userDocument.name !== name) {
     userDocument.name = name
   }
-  await userDocument.save()
+
+  await Promise.all([
+    userDocument.save(),
+    prisma.user
+      .upsert({
+        where: {
+          id: userId,
+        },
+        create: {
+          id: userId,
+          name,
+          email,
+        },
+        update: {
+          id: userId,
+          name,
+          email,
+        },
+      })
+      .catch((e) => logger.error('postgre Users replication failed', e)),
+  ])
 
   return userDocument
 }
