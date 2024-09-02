@@ -34,12 +34,20 @@ enum QuizzAnswerIsAnswerCorrect {
 }
 
 model QuizzAnswer {
-  id              String              @id @default(cuid())
-  simulationId    String              @db.Uuid
+  id              String                     @id @default(cuid())
+  simulationId    String                     @db.Uuid
   isAnswerCorrect QuizzAnswerIsAnswerCorrect
   answer          String
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
+  createdAt       DateTime                   @default(now())
+  updatedAt       DateTime                   @updatedAt
 
   @@unique([simulationId, answer])
+}
+
+model User {
+  id        String   @id @db.Uuid
+  name      String?
+  email     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
