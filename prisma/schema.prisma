@@ -26,3 +26,20 @@ model NorthstarRating {
   createdAt    DateTime            @default(now())
   updatedAt    DateTime            @updatedAt
 }
+
+enum QuizzAnswerIsAnswerCorrect {
+  correct
+  almost
+  wrong
+}
+
+model QuizzAnswer {
+  id              String              @id @default(cuid())
+  simulationId    String              @db.Uuid
+  isAnswerCorrect QuizzAnswerIsAnswerCorrect
+  answer          String
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@unique([simulationId, answer])
+}

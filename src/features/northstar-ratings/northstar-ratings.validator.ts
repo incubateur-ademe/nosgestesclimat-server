@@ -1,13 +1,13 @@
 import z from 'zod'
 
-export enum NorthstarRatingEnum {
+export enum NorthstarRatingTypeEnum {
   actions = 'actions',
   learned = 'learned',
 }
 
 const NorthstarRatingType = z.enum([
-  NorthstarRatingEnum.actions,
-  NorthstarRatingEnum.learned,
+  NorthstarRatingTypeEnum.actions,
+  NorthstarRatingTypeEnum.learned,
 ])
 
 export const NorthstarRatingCreateDto = z.object({

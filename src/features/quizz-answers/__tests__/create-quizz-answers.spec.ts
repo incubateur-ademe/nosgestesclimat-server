@@ -4,16 +4,14 @@ import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
 import logger from '../../../logger'
-import {
-  NorthstarRatingTypeEnum,
-  type NorthstarRatingCreateDto,
-} from '../northstar-ratings.validator'
+import type { QuizzAnswerCreateDto } from '../quizz-answers.validator'
+import { QuizzAnswerIsAnswerCorrectEnum } from '../quizz-answers.validator'
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)
-  const url = '/northstar-ratings'
+  const url = '/quizz-answers'
 
-  describe('When creating a northstar rating', () => {
+  describe('When creating a quizz answer', () => {
     describe('And no data provided', () => {
       test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent.post(url).expect(StatusCodes.BAD_REQUEST)
@@ -26,34 +24,33 @@ describe('Given a NGC user', () => {
           .post(url)
           .send({
             simulationId: faker.string.alpha(34),
-            value: 5,
-            type: NorthstarRatingTypeEnum.learned,
+            answer: 'transport . voiture',
+            isAnswerCorrect: QuizzAnswerIsAnswerCorrectEnum.correct,
           })
           .expect(StatusCodes.BAD_REQUEST)
       })
     })
 
-    describe('And invalid value', () => {
+    describe('And missing answer', () => {
       test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent
           .post(url)
           .send({
             simulationId: faker.string.uuid(),
-            value: 42,
-            type: NorthstarRatingTypeEnum.learned,
+            isAnswerCorrect: QuizzAnswerIsAnswerCorrectEnum.correct,
           })
           .expect(StatusCodes.BAD_REQUEST)
       })
     })
 
-    describe('And invalid type', () => {
+    describe('And invalid isAnswerCorrect', () => {
       test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent
           .post(url)
           .send({
             simulationId: faker.string.uuid(),
-            value: 5,
-            type: 'my-invalid-type',
+            answer: 'transport . voiture',
+            isAnswerCorrect: 'my-invalid-isAnswerCorrect',
           })
           .expect(StatusCodes.BAD_REQUEST)
       })
@@ -62,8 +59,8 @@ describe('Given a NGC user', () => {
     test(`It should return a ${StatusCodes.CREATED} response`, async () => {
       const payload = {
         simulationId: faker.string.uuid(),
-        value: 5,
-        type: NorthstarRatingTypeEnum.learned,
+        answer: 'transport . voiture',
+        isAnswerCorrect: QuizzAnswerIsAnswerCorrectEnum.correct,
       }
 
       const response = await agent
@@ -79,22 +76,23 @@ describe('Given a NGC user', () => {
       })
     })
 
-    test('It should store a northstar rating in database', async () => {
-      const payload: NorthstarRatingCreateDto = {
+    test('It should store a quizz answer in database', async () => {
+      const payload: QuizzAnswerCreateDto = {
         simulationId: faker.string.uuid(),
-        value: 5,
-        type: NorthstarRatingTypeEnum.learned,
+        answer: 'transport . voiture',
+        isAnswerCorrect: QuizzAnswerIsAnswerCorrectEnum.correct,
       }
 
       await agent.post(url).send(payload)
 
-      const createdNorthstarRating = await prisma.northstarRating.findFirst({
+      const createdQuizzAnswer = await prisma.quizzAnswer.findFirst({
         where: {
           simulationId: payload.simulationId,
+          answer: payload.answer,
         },
       })
 
-      expect(createdNorthstarRating).toEqual({
+      expect(createdQuizzAnswer).toEqual({
         id: expect.any(String),
         createdAt: expect.anything(), // is not instance of Date due to jest
         updatedAt: null,
@@ -107,7 +105,7 @@ describe('Given a NGC user', () => {
 
       beforeEach(() => {
         jest
-          .spyOn(prisma.northstarRating, 'upsert')
+          .spyOn(prisma.quizzAnswer, 'upsert')
           .mockRejectedValueOnce(databaseError)
       })
 
@@ -116,8 +114,8 @@ describe('Given a NGC user', () => {
           .post(url)
           .send({
             simulationId: faker.string.uuid(),
-            value: 5,
-            type: NorthstarRatingTypeEnum.learned,
+            answer: 'transport . voiture',
+            isAnswerCorrect: QuizzAnswerIsAnswerCorrectEnum.correct,
           })
           .expect(StatusCodes.INTERNAL_SERVER_ERROR)
       })
@@ -125,12 +123,12 @@ describe('Given a NGC user', () => {
       test(`Then it should log the exception`, async () => {
         await agent.post(url).send({
           simulationId: faker.string.uuid(),
-          value: 5,
-          type: NorthstarRatingTypeEnum.learned,
+          answer: 'transport . voiture',
+          isAnswerCorrect: QuizzAnswerIsAnswerCorrectEnum.correct,
         })
 
         expect(logger.error).toHaveBeenCalledWith(
-          'NorthstarRating creation failed',
+          'QuizzAnswer creation failed',
           databaseError
         )
       })
