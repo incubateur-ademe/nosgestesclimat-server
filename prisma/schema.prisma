@@ -13,6 +13,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Answer {
+  id         String   @id @db.Uuid
+  survey     String
+  total      Float    @db.DoublePrecision
+  progress   Float    @db.Real
+  byCategory Json
+  context    Json?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+   @@unique([id, survey])
+}
+
 model EmailSimulation {
   id        String   @id @default(cuid())
   data      Json
