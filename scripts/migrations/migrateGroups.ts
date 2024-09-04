@@ -16,8 +16,8 @@ async function migrate() {
     console.log('Groups length', groups.length)
 
     for (const group of groups) {
-      const owner = group.owner
-      const members = group.members ?? []
+      // @ts-expect-error 2339 old schema is gone
+      const { owner, members = [] } = group
 
       if (!owner || !(members.length > 0)) {
         console.log('Group has no owner or members')
@@ -69,8 +69,9 @@ async function migrate() {
         })
       }
 
+      // @ts-expect-error 2339 old schema is gone
       group.owner = undefined
-      // @ts-expect-error 2322 cannot unset like that
+      // @ts-expect-error 2339 & 2322 old schema is gone & cannot unset like that
       group.members = undefined
 
       const groupSaved = await group.save()

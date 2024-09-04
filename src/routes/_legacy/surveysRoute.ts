@@ -1,5 +1,7 @@
 import express from 'express'
+import { prisma } from '../../adapters/prisma/client'
 import connectdb from '../../helpers/db/initDatabase'
+import logger from '../../logger'
 import Survey from '../../schemas/_legacy/SurveySchema'
 
 const router = express.Router()
@@ -20,32 +22,51 @@ router.route('/:room').get((req, res) => {
 })
 
 router.route('/').post(async (req, res, next) => {
-  if (req.body.room == null) {
+  const name = req.body.room
+
+  if (name == null) {
     return next('Error. A survey name must be provided')
   }
 
-  const found = await Survey.find({ name: req.body.room })
+  const found = await Survey.find({ name })
   if (found.length) {
     res.setHeader('Content-Type', 'application/json')
     res.statusCode = 409
     res.json(found[0])
 
-    console.log('Survey exists', req.body.room)
+    console.log('Survey exists', name)
     return
   }
 
-  const survey = new Survey({ name: req.body.room })
-  survey.save((error) => {
-    if (error) {
-      res.send(error)
-    }
+  try {
+    const survey = new Survey({ name })
+    await survey.save()
+
+    await prisma.survey
+      .upsert({
+        where: {
+          name,
+        },
+        create: {
+          id: survey._id.toString(),
+          name,
+        },
+        update: {
+          name,
+        },
+      })
+      .catch((error) =>
+        logger.error('postgre Surveys replication failed', error)
+      )
 
     res.setHeader('Content-Type', 'application/json')
     res.statusCode = 200
     res.json(survey)
 
-    console.log('New survey create', req.body.room)
-  })
+    console.log('New survey create', name)
+  } catch (error) {
+    return res.status(500).send(error).end()
+  }
 })
 
 export default router
