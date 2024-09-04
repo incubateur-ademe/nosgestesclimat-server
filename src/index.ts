@@ -1,11 +1,13 @@
 import { Server as HttpServer } from 'http'
 import type { AddressInfo } from 'net'
 import { Server as SocketIOServer } from 'socket.io'
+import { prisma } from './adapters/prisma/client'
 import app from './app'
 import { config, origin } from './config'
 import connect from './helpers/db/initDatabase'
-import type { AnswerType } from './schemas/_legacy/AnswerSchema'
+import type { LeanAnswerType } from './schemas/_legacy/AnswerSchema'
 import Answer from './schemas/_legacy/AnswerSchema'
+import type { ModelToDto } from './types/types'
 
 const server = new HttpServer(app)
 
@@ -25,7 +27,13 @@ connect().then(() => {
     })
     socket.on(
       'answer',
-      async ({ room, answer }: { room: string; answer: AnswerType }) => {
+      async ({
+        room,
+        answer,
+      }: {
+        room: string
+        answer: ModelToDto<LeanAnswerType>
+      }) => {
         socket.join(room)
         console.log(
           `update ${answer.id} user's data in survey ${room} with total ${answer.data?.total}`
@@ -33,12 +41,40 @@ connect().then(() => {
 
         socket.to(room).emit('received', { answer })
 
-        const query = { id: answer.id }
-        const update = answer
-        const options = { upsert: true, new: true, setDefaultsOnInsert: true }
+        const id = answer.id!
+        const survey = answer.survey!
+        const data = answer.data
+        const update = {
+          survey,
+          byCategory: data?.byCategory || {},
+          progress: data?.progress || 0,
+          total: data?.total || 0,
+          ...(!!data?.context && Object.keys(data.context).length !== 0
+            ? { context: data.context }
+            : {}),
+        }
 
         // Find the document
-        await Answer.findOneAndUpdate(query, update, options)
+        await Promise.all([
+          Answer.findOneAndUpdate({ id }, answer, {
+            upsert: true,
+            new: true,
+            setDefaultsOnInsert: true,
+          }),
+          prisma.answer.upsert({
+            where: {
+              id_survey: {
+                id,
+                survey,
+              },
+            },
+            create: {
+              id,
+              ...update,
+            },
+            update,
+          }),
+        ])
       }
     )
   })

@@ -1,6 +1,5 @@
 import mongoose, { type InferSchemaType } from 'mongoose'
 import type { FullInferSchemaType } from '../types/types'
-import { MemberSchema, OwnerSchema } from './_legacy/GroupSubSchemas'
 
 const Schema = mongoose.Schema
 
@@ -44,10 +43,6 @@ export const GroupSchema = new Schema(
       },
     },
     participants: [ParticipantSchema],
-    // Legacy from previous version
-    // We should remove it before going to production
-    owner: OwnerSchema,
-    members: [MemberSchema],
   },
   {
     timestamps: true,
