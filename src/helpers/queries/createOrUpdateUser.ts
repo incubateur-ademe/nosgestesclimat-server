@@ -1,4 +1,5 @@
 import { prisma } from '../../adapters/prisma/client'
+import { isValidEmail } from '../../core/typeguards/isValidEmail'
 import logger from '../../logger'
 import { User } from '../../schemas/UserSchema'
 
@@ -47,12 +48,12 @@ export async function createOrUpdateUser({ userId, email, name }: Props) {
         create: {
           id: userId,
           name,
-          email,
+          email: isValidEmail(email) ? email : null,
         },
         update: {
           id: userId,
           name,
-          email,
+          email: isValidEmail(email) ? email : null,
         },
       })
       .catch((e) => logger.error('postgre Users replication failed', e)),
