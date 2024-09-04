@@ -1,8 +1,21 @@
 import mongoose from 'mongoose'
+import z from 'zod'
 import { prisma } from '../../src/adapters/prisma/client'
 import { config } from '../../src/config'
 import logger from '../../src/logger'
 import { NorthstarRating } from '../../src/schemas/NorthstarRatingSchema'
+
+const NorthstarRatingSchema = z
+  .object({
+    _id: z.instanceof(mongoose.Types.ObjectId),
+    simulationId: z.string(),
+    type: z.literal('learned'),
+    value: z.coerce.number().min(0).max(5).optional().nullable(),
+    createdAt: z.instanceof(Date),
+    updatedAt: z.instanceof(Date),
+    __v: z.number(),
+  })
+  .strict()
 
 const migrateNorthstarRatingToPg = async () => {
   try {
@@ -13,14 +26,15 @@ const migrateNorthstarRatingToPg = async () => {
       .lean()
       .cursor({ batchSize: 1000 })
 
-    for await (const northstarRating of northstarRatings) {
+    for await (const rawNorthstarRating of northstarRatings) {
+      const northstarRating = NorthstarRatingSchema.parse(rawNorthstarRating)
       const id = northstarRating._id.toString()
-      const simulationId = northstarRating.simulationId!
+      const simulationId = northstarRating.simulationId
       const updatedAt = northstarRating.updatedAt
       const update = {
         simulationId,
-        type: northstarRating.type as 'learned',
-        value: northstarRating.value ? +northstarRating.value : 0,
+        type: northstarRating.type,
+        value: northstarRating.value ? northstarRating.value : 0,
         createdAt: northstarRating.createdAt,
         updatedAt,
       }

@@ -1,8 +1,21 @@
 import mongoose from 'mongoose'
+import z from 'zod'
 import { prisma } from '../../src/adapters/prisma/client'
 import { config } from '../../src/config'
 import logger from '../../src/logger'
 import { User } from '../../src/schemas/UserSchema'
+
+const UserSchema = z
+  .object({
+    _id: z.instanceof(mongoose.Types.ObjectId),
+    userId: z.string().uuid(),
+    name: z.string().nullable().optional(),
+    email: z.string().nullable().optional(),
+    createdAt: z.instanceof(Date),
+    updatedAt: z.instanceof(Date),
+    __v: z.number(),
+  })
+  .strict()
 
 const EMAIL_REGEX =
   /^[a-zA-Z0-9.!#$%&''*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
@@ -17,7 +30,8 @@ const migrateUserToPg = async () => {
 
     const users = User.find({}).lean().cursor({ batchSize: 1000 })
 
-    for await (const user of users) {
+    for await (const rawUser of users) {
+      const user = UserSchema.parse(rawUser)
       const id = user.userId.toString()
       const update = {
         name: user.name,
