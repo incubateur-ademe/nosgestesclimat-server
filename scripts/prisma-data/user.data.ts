@@ -2,6 +2,7 @@ import mongoose from 'mongoose'
 import z from 'zod'
 import { prisma } from '../../src/adapters/prisma/client'
 import { config } from '../../src/config'
+import { isValidEmail } from '../../src/core/typeguards/isValidEmail'
 import logger from '../../src/logger'
 import { User } from '../../src/schemas/UserSchema'
 
@@ -16,12 +17,6 @@ const UserSchema = z
     __v: z.number(),
   })
   .strict()
-
-const EMAIL_REGEX =
-  /^[a-zA-Z0-9.!#$%&''*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
-
-const isValidEmail = (email: unknown): email is string =>
-  typeof email === 'string' && EMAIL_REGEX.test(email.toLocaleLowerCase())
 
 const migrateUserToPg = async () => {
   try {
