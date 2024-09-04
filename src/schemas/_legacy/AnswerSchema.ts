@@ -1,5 +1,8 @@
 import mongoose from 'mongoose'
-import type { FullInferSchemaType } from '../../types/types'
+import type {
+  FullInferSchemaType,
+  LeanInferSchemaType,
+} from '../../types/types'
 
 const Schema = mongoose.Schema
 
@@ -26,5 +29,7 @@ const AnswerSchema = new Schema(
 )
 
 export type AnswerType = FullInferSchemaType<typeof AnswerSchema>
+
+export type LeanAnswerType = LeanInferSchemaType<typeof AnswerSchema>
 
 export default mongoose.model('Answer', AnswerSchema)

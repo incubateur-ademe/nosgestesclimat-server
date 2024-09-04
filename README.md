@@ -2,26 +2,58 @@
 
 Une application NodeJs-Express-MongoDB-Websocket qui gère la fonctionnalité
 sondage de
-[nosgestesclimat-site](https://github.com/datagir/nosgestesclimat-site).
+[nosgestesclimat-site](https://github.com/incubateur-ademe/nosgestesclimat-site) et
+[nosgestesclimat-site-nextjs](https://github.com/datagir/nosgestesclimat-site-nextjs).
 
 ## Dev
 
-Pour l'utiliser en local, cloner nosgestesclimat-site et créer un fichier .env contenant
+### Pré-requis
 
+Ce projet utilise [node](https://nodejs.org), [yarn](https://yarnpkg.com/), [docker](https://www.docker.com/) et [docker-compose](https://docs.docker.com/compose/)
+
+Pour l'utiliser en local, cloner ce repo et créer un fichier .env contenant les variables contenues dans le fichier [`.env.development`](./.env.development)
+
+### Commandes utiles
+
+Installe les dépendances
+
+```bash
+yarn install
 ```
-SERVER_URL=localhost:3000
+
+Lance les services bases de données
+
+```bash
+docker-compose up
 ```
 
-Ensuite,
+Lance les tests (requiert les dépendances)
 
-```
-sudo service mongod start # Sur ubuntu
-
-yarn dev
+```bash
+yarn test
 ```
 
-Pour se connecter à la base de données, on peut utiliser la commande utilisant
-le CLI `scalingo`.
+Builde le projet (requiert les dépendances)
+
+```bash
+yarn build
+```
+
+Migre la base de donnée (requiert les dépendances et les services)
+
+```bash
+yarn db:migrate
+```
+
+Lance le service (requiert le build, les services et la migration)
+
+```bash
+yarn start
+```
+
+### Scalingo
+
+Pour se connecter à la base de données, on peut utiliser la commande utilisant la CLI `scalingo`.
 Pour une interface graphique, on peut utiliser MongoDB Compass en suivant [ce
 guide](https://doc.scalingo.com/databases/mongodb/compass#connection-via-the-db-tunnel-of-our-cli)
 (la connexion est compliquée sans ce guide).

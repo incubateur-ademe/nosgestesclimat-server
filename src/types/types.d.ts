@@ -47,15 +47,11 @@ type ValueToDto<T> = T extends Types.ObjectId
     ? never
     : T extends Date
       ? string
-      : T extends Date | null
-        ? string | null
-        : T extends Date | undefined
-          ? string | undefined
-          : T extends Date | null | undefined
-            ? string | null | undefined
-            : T extends object
-              ? ModelToDto<T>
-              : T
+      : T extends Map<infer Key, infer Value>
+        ? Record<Key, ModelToDto<Value>>
+        : T extends object
+          ? ModelToDto<T>
+          : T
 
 export type ModelToDto<T> = {
   [key in keyof T]: ValueToDto<T[key]>

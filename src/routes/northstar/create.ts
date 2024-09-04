@@ -1,4 +1,7 @@
 import express from 'express'
+import { prisma } from '../../adapters/prisma/client'
+import type { NorthstarRatingTypeEnum } from '../../features/northstar-ratings/northstar-ratings.validator'
+import logger from '../../logger'
 import { NorthstarRating } from '../../schemas/NorthstarRatingSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 
@@ -12,7 +15,7 @@ const router = express.Router()
 router.route('/').post(async (req, res) => {
   const simulationId = req.body.simulationId
   const value = req.body.value
-  const type = req.body.type
+  const type: NorthstarRatingTypeEnum = req.body.type
 
   // If no simulationId, value or type is provided, we return an error
   if (!simulationId) {
@@ -35,6 +38,27 @@ router.route('/').post(async (req, res) => {
 
     await northstarRating.save()
 
+    try {
+      await prisma.northstarRating.upsert({
+        where: {
+          simulationId,
+        },
+        create: {
+          id: northstarRating._id.toString(),
+          simulationId,
+          type,
+          value: +value,
+        },
+        update: {
+          simulationId,
+          type,
+          value: +value,
+        },
+      })
+    } catch (error) {
+      logger.error('postgre NothstarRatings replication failed', error)
+    }
+
     setSuccessfulJSONResponse(res)
 
     res.json(northstarRating)
@@ -46,4 +70,7 @@ router.route('/').post(async (req, res) => {
   }
 })
 
+/**
+ * @deprecated should use features/northstar-ratings instead
+ */
 export default router

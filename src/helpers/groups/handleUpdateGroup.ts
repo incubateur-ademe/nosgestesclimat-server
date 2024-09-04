@@ -1,3 +1,4 @@
+import { isValidEmail } from '../../core/typeguards/isValidEmail'
 import type { GroupType } from '../../schemas/GroupSchema'
 import type { SimulationType } from '../../schemas/SimulationSchema'
 import type { UserType } from '../../schemas/UserSchema'
@@ -43,10 +44,13 @@ export async function handleUpdateGroup({
 
   const groupSaved = await group.save()
 
-  // Update the number of group with one participant of the administrator
-  await handleUpdateGroupNumberOneParticipant({
-    group: groupSaved,
-  })
+  // createOrUpdateContact in brevo will raise otherwise
+  if (isValidEmail(groupSaved.administrator?.email)) {
+    // Update the number of group with one participant of the administrator
+    await handleUpdateGroupNumberOneParticipant({
+      group: groupSaved,
+    })
+  }
 
   console.log(
     `User and simulation saved in group ${group._id} (${group.name}).`
