@@ -7,6 +7,7 @@ import logger from '../../logger'
 import {
   createGroup,
   createParticipant,
+  deleteGroup,
   fetchGroup,
   fetchGroups,
   removeParticipant,
@@ -14,6 +15,7 @@ import {
 } from './groups.service'
 import {
   GroupCreateValidator,
+  GroupDeleteValidator,
   GroupFetchValidator,
   GroupsFetchValidator,
   GroupUpdateValidator,
@@ -147,5 +149,29 @@ router
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
     }
   })
+
+/**
+ * Deletes group for a user and an id
+ */
+router
+  .route('/:userId/:groupId')
+  .delete(
+    validateRequest(GroupDeleteValidator),
+    async ({ params: { userId, groupId } }, res) => {
+      try {
+        await deleteGroup({ userId, groupId })
+
+        return res.status(StatusCodes.NO_CONTENT).end()
+      } catch (err) {
+        if (err instanceof EntityNotFoundException) {
+          return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
+        }
+
+        logger.error('Group delete failed', err)
+
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
+      }
+    }
+  )
 
 export default router

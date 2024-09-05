@@ -20,6 +20,8 @@ export const FETCH_USER_GROUPS_ROUTE = '/groups/:userId'
 
 export const FETCH_USER_GROUP_ROUTE = '/groups/:userId/:groupId'
 
+export const DELETE_USER_GROUP_ROUTE = '/groups/:userId/:groupId'
+
 export const createGroup = async ({
   agent,
   group: { administrator, participants, emoji, name } = {},

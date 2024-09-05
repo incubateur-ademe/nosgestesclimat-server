@@ -118,3 +118,9 @@ export const GroupFetchValidator = {
   params: UserGroupParams,
   query: z.object({}).strict().optional(),
 }
+
+export const GroupDeleteValidator = {
+  body: z.object({}).strict().optional(),
+  params: UserGroupParams,
+  query: z.object({}).strict().optional(),
+}

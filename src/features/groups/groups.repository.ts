@@ -243,3 +243,20 @@ export const fetchUserGroup = ({ userId, groupId }: UserGroupParams) => {
     select: defaultGroupSelection,
   })
 }
+
+export const deleteUserGroup = async ({
+  userId,
+  groupId,
+}: {
+  userId: string
+  groupId: string
+}) => {
+  return prisma.group.delete({
+    where: {
+      id: groupId,
+      administrator: {
+        userId,
+      },
+    },
+  })
+}

@@ -1,7 +1,7 @@
 import express from 'express'
 import { Group } from '../../schemas/GroupSchema'
-import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { Simulation } from '../../schemas/SimulationSchema'
+import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 
 const router = express.Router()
 
@@ -60,4 +60,7 @@ router.route('/').post(async (req, res) => {
   }
 })
 
+/**
+ * @deprecated should use features/groups instead
+ */
 export default router
