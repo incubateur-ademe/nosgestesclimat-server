@@ -28,10 +28,34 @@ const GroupCreateDto = z
   })
   .strict()
 
+export type GroupCreateDto = z.infer<typeof GroupCreateDto>
+
 export const GroupCreateValidator = {
   body: GroupCreateDto,
   params: z.object({}).strict().optional(),
   query: z.object({}).strict().optional(),
 }
 
-export type GroupCreateDto = z.infer<typeof GroupCreateDto>
+export const UserGroupParams = z
+  .object({
+    groupId: z.string(),
+    userId: z.string().uuid(),
+  })
+  .strict()
+
+export type UserGroupParams = z.infer<typeof UserGroupParams>
+
+export const GroupUpdateDto = GroupCreateDto.omit({
+  administrator: true,
+  participants: true,
+})
+  .partial()
+  .strict()
+
+export type GroupUpdateDto = z.infer<typeof GroupUpdateDto>
+
+export const GroupUpdateValidator = {
+  body: GroupUpdateDto,
+  params: UserGroupParams,
+  query: z.object({}).strict().optional(),
+}

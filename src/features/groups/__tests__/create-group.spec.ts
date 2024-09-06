@@ -5,10 +5,11 @@ import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
 import logger from '../../../logger'
 import type { GroupCreateDto } from '../groups.validator'
+import { CREATE_GROUP_ROUTE } from './fixtures/groups.fixture'
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)
-  const url = '/groups'
+  const url = CREATE_GROUP_ROUTE
 
   describe('When creating his group', () => {
     describe('And no data provided', () => {
@@ -348,6 +349,10 @@ describe('Given a NGC user', () => {
 
       beforeEach(() => {
         jest.spyOn(prisma.user, 'upsert').mockRejectedValueOnce(databaseError)
+      })
+
+      afterEach(() => {
+        jest.spyOn(prisma.user, 'upsert').mockRestore()
       })
 
       test(`Then it should return a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {

@@ -1,6 +1,10 @@
 import { randomUUID } from 'crypto'
 import { prisma } from '../../adapters/prisma/client'
-import type { GroupCreateDto } from './groups.validator'
+import type {
+  GroupCreateDto,
+  GroupUpdateDto,
+  UserGroupParams,
+} from './groups.validator'
 
 const defaultUserSelection = {
   select: {
@@ -10,6 +14,26 @@ const defaultUserSelection = {
     createdAt: true,
     updatedAt: true,
   },
+}
+
+const defaultSelection = {
+  id: true,
+  name: true,
+  emoji: true,
+  administrator: {
+    select: {
+      user: defaultUserSelection,
+    },
+  },
+  participants: {
+    select: {
+      id: true,
+      user: defaultUserSelection,
+      simulationId: true,
+    },
+  },
+  updatedAt: true,
+  createdAt: true,
 }
 
 export const createGroupAndUser = async ({
@@ -57,24 +81,22 @@ export const createGroupAndUser = async ({
           }
         : {}),
     },
-    select: {
-      id: true,
-      name: true,
-      emoji: true,
+    select: defaultSelection,
+  })
+}
+
+export const updateUserGroup = (
+  { groupId, userId }: UserGroupParams,
+  update: GroupUpdateDto
+) => {
+  return prisma.group.update({
+    where: {
+      id: groupId,
       administrator: {
-        select: {
-          user: defaultUserSelection,
-        },
+        userId,
       },
-      participants: {
-        select: {
-          id: true,
-          user: defaultUserSelection,
-          simulationId: true,
-        },
-      },
-      updatedAt: true,
-      createdAt: true,
     },
+    data: update,
+    select: defaultSelection,
   })
 }
