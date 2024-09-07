@@ -8,6 +8,7 @@ import {
   createGroupAndUser,
   createParticipantAndUser,
   deleteParticipantById,
+  fetchUserGroup,
   fetchUserGroups,
   findGroupById,
   findGroupParticipantById,
@@ -167,4 +168,17 @@ export const fetchGroups = async (
   const groups = await fetchUserGroups(params, filters)
 
   return groups.map((p) => groupToDto(p, params.userId))
+}
+
+export const fetchGroup = async (params: UserGroupParams) => {
+  try {
+    const group = await fetchUserGroup(params)
+
+    return groupToDto(group, params.userId)
+  } catch (e) {
+    if (isPrismaErrorNotFound(e)) {
+      throw new EntityNotFoundException('Group not found')
+    }
+    throw e
+  }
 }

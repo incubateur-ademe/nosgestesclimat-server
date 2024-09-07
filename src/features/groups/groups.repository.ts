@@ -218,3 +218,28 @@ export const fetchUserGroups = (
     select: defaultGroupSelection,
   })
 }
+
+export const fetchUserGroup = ({ userId, groupId }: UserGroupParams) => {
+  return prisma.group.findUniqueOrThrow({
+    where: {
+      id: groupId,
+      OR: [
+        {
+          administrator: {
+            user: {
+              id: userId,
+            },
+          },
+        },
+        {
+          participants: {
+            some: {
+              userId,
+            },
+          },
+        },
+      ],
+    },
+    select: defaultGroupSelection,
+  })
+}

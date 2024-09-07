@@ -112,3 +112,9 @@ export const GroupsFetchValidator = {
   params: UserParams,
   query: GroupsFetchQuery,
 }
+
+export const GroupFetchValidator = {
+  body: z.object({}).strict().optional(),
+  params: UserGroupParams,
+  query: z.object({}).strict().optional(),
+}

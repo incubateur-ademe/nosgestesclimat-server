@@ -7,12 +7,14 @@ import logger from '../../logger'
 import {
   createGroup,
   createParticipant,
+  fetchGroup,
   fetchGroups,
   removeParticipant,
   updateGroup,
 } from './groups.service'
 import {
   GroupCreateValidator,
+  GroupFetchValidator,
   GroupsFetchValidator,
   GroupUpdateValidator,
   ParticipantCreateValidator,
@@ -124,5 +126,26 @@ router
       }
     }
   )
+
+/**
+ * Returns group for a user and an id
+ */
+router
+  .route('/:userId/:groupId')
+  .get(validateRequest(GroupFetchValidator), async ({ params }, res) => {
+    try {
+      const group = await fetchGroup(params)
+
+      return res.status(StatusCodes.OK).json(group)
+    } catch (err) {
+      if (err instanceof EntityNotFoundException) {
+        return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
+      }
+
+      logger.error('Group fetch failed', err)
+
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
+    }
+  })
 
 export default router

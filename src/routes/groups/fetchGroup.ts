@@ -84,4 +84,7 @@ router.route('/').post(async (req, res) => {
   }
 })
 
+/**
+ * @deprecated should use features/groups instead
+ */
 export default router
