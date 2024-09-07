@@ -8,6 +8,7 @@ import {
   createGroupAndUser,
   createParticipantAndUser,
   deleteParticipantById,
+  fetchUserGroups,
   findGroupById,
   findGroupParticipantById,
   updateUserGroup,
@@ -15,33 +16,56 @@ import {
 import type {
   GroupCreateDto,
   GroupParams,
+  GroupsFetchQuery,
   GroupUpdateDto,
   ParticipantCreateDto,
   UserGroupParams,
   UserGroupParticipantParams,
+  UserParams,
 } from './groups.validator'
 
 /**
  * Maps a database group to a dto for the UI
  */
-const groupToDto = (group: Awaited<ReturnType<typeof createGroupAndUser>>) => ({
+const groupToDto = (
+  group: Awaited<ReturnType<typeof createGroupAndUser>>,
+  connectedUser: string
+) => ({
   ...group,
-  administrator: group.administrator?.user,
-  participants: (group.participants || []).map(participantToDto),
+  administrator:
+    group.administrator?.user.id === connectedUser
+      ? group.administrator?.user
+      : {
+          name: group.administrator?.user.name,
+        },
+  participants: (group.participants || []).map((p) =>
+    participantToDto(p, connectedUser)
+  ),
 })
 
 /**
  * Maps a database participant to a dto for the UI
  */
-const participantToDto = ({
-  id,
-  simulationId,
-  user: { id: userId, ...rest },
-}: Awaited<ReturnType<typeof createParticipantAndUser>>) => ({
-  id,
-  simulation: simulationId,
-  userId,
-  ...rest,
+const participantToDto = (
+  {
+    id,
+    simulationId,
+    user: { id: userId, ...rest },
+  }: Awaited<ReturnType<typeof createParticipantAndUser>>,
+  connectedUser: string
+) => ({
+  ...(userId === connectedUser
+    ? {
+        id,
+        simulation: simulationId,
+        userId,
+        ...rest,
+      }
+    : {
+        id,
+        name: rest.name,
+        simulation: simulationId,
+      }),
 })
 
 const findGroup = async (groupId: string) => {
@@ -69,7 +93,7 @@ const findGroupParticipant = async (groupId: string) => {
 export const createGroup = async (groupDto: GroupCreateDto) => {
   const group = await createGroupAndUser(groupDto)
 
-  return groupToDto(group)
+  return groupToDto(group, groupDto.administrator.userId)
 }
 
 export const updateGroup = async (
@@ -79,7 +103,7 @@ export const updateGroup = async (
   try {
     const group = await updateUserGroup(params, update)
 
-    return groupToDto(group)
+    return groupToDto(group, params.userId)
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('Group not found')
@@ -95,7 +119,7 @@ export const createParticipant = async (
   try {
     const participant = await createParticipantAndUser(params, participantDto)
 
-    return participantToDto(participant)
+    return participantToDto(participant, participantDto.userId)
   } catch (e) {
     if (isPrismaErrorForeignKeyConstraintFailed(e)) {
       throw new EntityNotFoundException('Group not found')
@@ -134,4 +158,13 @@ export const removeParticipant = async (params: UserGroupParticipantParams) => {
     }
     throw e
   }
+}
+
+export const fetchGroups = async (
+  params: UserParams,
+  filters: GroupsFetchQuery
+) => {
+  const groups = await fetchUserGroups(params, filters)
+
+  return groups.map((p) => groupToDto(p, params.userId))
 }

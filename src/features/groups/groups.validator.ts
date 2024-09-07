@@ -9,13 +9,15 @@ export const GroupParams = z
 
 export type GroupParams = z.infer<typeof GroupParams>
 
-export const UserGroupParams = GroupParams.merge(
-  z
-    .object({
-      userId: z.string().uuid(),
-    })
-    .strict()
-)
+export const UserParams = z
+  .object({
+    userId: z.string().uuid(),
+  })
+  .strict()
+
+export type UserParams = z.infer<typeof UserParams>
+
+export const UserGroupParams = GroupParams.merge(UserParams)
 
 export type UserGroupParams = z.infer<typeof UserGroupParams>
 
@@ -97,4 +99,16 @@ export const ParticipantDeleteValidator = {
   body: z.object({}).strict().optional(),
   params: UserGroupParticipantParams,
   query: z.object({}).strict().optional(),
+}
+
+export const GroupsFetchQuery = z.object({
+  groupIds: z.array(z.string()).optional(),
+})
+
+export type GroupsFetchQuery = z.infer<typeof GroupsFetchQuery>
+
+export const GroupsFetchValidator = {
+  body: z.object({}).strict().optional(),
+  params: UserParams,
+  query: GroupsFetchQuery,
 }

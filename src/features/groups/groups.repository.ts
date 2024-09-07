@@ -1,6 +1,11 @@
 import { randomUUID } from 'crypto'
 import { prisma } from '../../adapters/prisma/client'
-import type { GroupParams, ParticipantCreateDto } from './groups.validator'
+import type {
+  GroupParams,
+  GroupsFetchQuery,
+  ParticipantCreateDto,
+  UserParams,
+} from './groups.validator'
 import {
   type GroupCreateDto,
   type GroupUpdateDto,
@@ -177,5 +182,39 @@ export const deleteParticipantById = (id: string) => {
     where: {
       id,
     },
+  })
+}
+
+export const fetchUserGroups = (
+  { userId }: UserParams,
+  { groupIds }: GroupsFetchQuery
+) => {
+  return prisma.group.findMany({
+    where: {
+      OR: [
+        {
+          administrator: {
+            user: {
+              id: userId,
+            },
+          },
+        },
+        {
+          participants: {
+            some: {
+              userId,
+            },
+          },
+        },
+      ],
+      ...(groupIds?.length
+        ? {
+            id: {
+              in: groupIds,
+            },
+          }
+        : {}),
+    },
+    select: defaultGroupSelection,
   })
 }
