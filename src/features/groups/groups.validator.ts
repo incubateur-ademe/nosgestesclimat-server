@@ -19,6 +19,18 @@ export const UserGroupParams = GroupParams.merge(
 
 export type UserGroupParams = z.infer<typeof UserGroupParams>
 
+export const UserGroupParticipantParams = UserGroupParams.merge(
+  z
+    .object({
+      participantId: z.string(),
+    })
+    .strict()
+)
+
+export type UserGroupParticipantParams = z.infer<
+  typeof UserGroupParticipantParams
+>
+
 const GroupCreateParticipant = z
   .object({
     simulation: z.string().uuid(),
@@ -78,5 +90,11 @@ export type ParticipantCreateDto = z.infer<typeof ParticipantCreateDto>
 export const ParticipantCreateValidator = {
   body: ParticipantCreateDto,
   params: GroupParams,
+  query: z.object({}).strict().optional(),
+}
+
+export const ParticipantDeleteValidator = {
+  body: z.object({}).strict().optional(),
+  params: UserGroupParticipantParams,
   query: z.object({}).strict().optional(),
 }

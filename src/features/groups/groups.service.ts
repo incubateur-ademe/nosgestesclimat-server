@@ -1,4 +1,5 @@
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
+import { ForbiddenException } from '../../core/errors/ForbiddenException'
 import {
   isPrismaErrorForeignKeyConstraintFailed,
   isPrismaErrorNotFound,
@@ -6,6 +7,9 @@ import {
 import {
   createGroupAndUser,
   createParticipantAndUser,
+  deleteParticipantById,
+  findGroupById,
+  findGroupParticipantById,
   updateUserGroup,
 } from './groups.repository'
 import type {
@@ -14,6 +18,7 @@ import type {
   GroupUpdateDto,
   ParticipantCreateDto,
   UserGroupParams,
+  UserGroupParticipantParams,
 } from './groups.validator'
 
 /**
@@ -38,6 +43,28 @@ const participantToDto = ({
   userId,
   ...rest,
 })
+
+const findGroup = async (groupId: string) => {
+  try {
+    return await findGroupById(groupId)
+  } catch (e) {
+    if (isPrismaErrorNotFound(e)) {
+      throw new EntityNotFoundException('Group not found')
+    }
+    throw e
+  }
+}
+
+const findGroupParticipant = async (groupId: string) => {
+  try {
+    return await findGroupParticipantById(groupId)
+  } catch (e) {
+    if (isPrismaErrorNotFound(e)) {
+      throw new EntityNotFoundException('GroupParticipant not found')
+    }
+    throw e
+  }
+}
 
 export const createGroup = async (groupDto: GroupCreateDto) => {
   const group = await createGroupAndUser(groupDto)
@@ -72,6 +99,38 @@ export const createParticipant = async (
   } catch (e) {
     if (isPrismaErrorForeignKeyConstraintFailed(e)) {
       throw new EntityNotFoundException('Group not found')
+    }
+    throw e
+  }
+}
+
+export const removeParticipant = async (params: UserGroupParticipantParams) => {
+  try {
+    const [group, participant] = await Promise.all([
+      findGroup(params.groupId),
+      findGroupParticipant(params.participantId),
+    ])
+
+    const administratorId = group.administrator?.userId
+    const isConnectedUserGroupAdmin = params.userId === administratorId
+
+    if (isConnectedUserGroupAdmin && administratorId === participant.userId) {
+      throw new ForbiddenException(
+        'Forbidden ! Administrator cannot leave group, delete it instead.'
+      )
+    }
+
+    if (!isConnectedUserGroupAdmin && params.userId !== participant.userId) {
+      throw new ForbiddenException(
+        'Forbidden ! You cannot remove other participants from this group.'
+      )
+    }
+
+    await deleteParticipantById(params.participantId)
+  } catch (e) {
+    if (isPrismaErrorNotFound(e)) {
+      // Participant already deleted
+      return
     }
     throw e
   }

@@ -143,3 +143,39 @@ export const createParticipantAndUser = async (
     select: defaultParticipantSelection,
   })
 }
+
+export const findGroupById = (id: string) => {
+  return prisma.group.findUniqueOrThrow({
+    where: {
+      id,
+    },
+    select: {
+      id: true,
+      administrator: {
+        select: {
+          userId: true,
+        },
+      },
+    },
+  })
+}
+
+export const findGroupParticipantById = (id: string) => {
+  return prisma.groupParticipant.findUniqueOrThrow({
+    where: {
+      id,
+    },
+    select: {
+      id: true,
+      userId: true,
+    },
+  })
+}
+
+export const deleteParticipantById = (id: string) => {
+  return prisma.groupParticipant.delete({
+    where: {
+      id,
+    },
+  })
+}
