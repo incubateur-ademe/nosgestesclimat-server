@@ -8,6 +8,8 @@ export const CREATE_GROUP_ROUTE = '/groups'
 
 export const UPDATE_USER_GROUP_ROUTE = '/groups/:userId/:groupId'
 
+export const CREATE_PARTICIPANT_ROUTE = '/groups/:groupId/participants'
+
 export const createGroup = async ({
   agent,
   group: { administrator, participants, emoji, name } = {},

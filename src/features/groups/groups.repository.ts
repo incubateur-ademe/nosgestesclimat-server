@@ -1,9 +1,10 @@
 import { randomUUID } from 'crypto'
 import { prisma } from '../../adapters/prisma/client'
-import type {
-  GroupCreateDto,
-  GroupUpdateDto,
-  UserGroupParams,
+import type { GroupParams, ParticipantCreateDto } from './groups.validator'
+import {
+  type GroupCreateDto,
+  type GroupUpdateDto,
+  type UserGroupParams,
 } from './groups.validator'
 
 const defaultUserSelection = {
@@ -16,7 +17,13 @@ const defaultUserSelection = {
   },
 }
 
-const defaultSelection = {
+const defaultParticipantSelection = {
+  id: true,
+  user: defaultUserSelection,
+  simulationId: true,
+}
+
+const defaultGroupSelection = {
   id: true,
   name: true,
   emoji: true,
@@ -26,11 +33,7 @@ const defaultSelection = {
     },
   },
   participants: {
-    select: {
-      id: true,
-      user: defaultUserSelection,
-      simulationId: true,
-    },
+    select: defaultParticipantSelection,
   },
   updatedAt: true,
   createdAt: true,
@@ -81,7 +84,7 @@ export const createGroupAndUser = async ({
           }
         : {}),
     },
-    select: defaultSelection,
+    select: defaultGroupSelection,
   })
 }
 
@@ -97,6 +100,46 @@ export const updateUserGroup = (
       },
     },
     data: update,
-    select: defaultSelection,
+    select: defaultGroupSelection,
+  })
+}
+
+export const createParticipantAndUser = async (
+  { groupId }: GroupParams,
+  { userId, name, email, simulation: simulationId }: ParticipantCreateDto
+) => {
+  // upsert user
+  await prisma.user.upsert({
+    where: {
+      id: userId,
+    },
+    create: {
+      id: userId,
+      name,
+      email,
+    },
+    update: {
+      name,
+      email,
+    },
+  })
+
+  return prisma.groupParticipant.upsert({
+    where: {
+      groupId_userId: {
+        groupId,
+        userId,
+      },
+    },
+    create: {
+      id: randomUUID(),
+      groupId,
+      userId,
+      simulationId,
+    },
+    update: {
+      simulationId,
+    },
+    select: defaultParticipantSelection,
   })
 }

@@ -1,9 +1,18 @@
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
-import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaErrorNotFound'
-import { createGroupAndUser, updateUserGroup } from './groups.repository'
+import {
+  isPrismaErrorForeignKeyConstraintFailed,
+  isPrismaErrorNotFound,
+} from '../../core/typeguards/isPrismaError'
+import {
+  createGroupAndUser,
+  createParticipantAndUser,
+  updateUserGroup,
+} from './groups.repository'
 import type {
   GroupCreateDto,
+  GroupParams,
   GroupUpdateDto,
+  ParticipantCreateDto,
   UserGroupParams,
 } from './groups.validator'
 
@@ -13,14 +22,21 @@ import type {
 const groupToDto = (group: Awaited<ReturnType<typeof createGroupAndUser>>) => ({
   ...group,
   administrator: group.administrator?.user,
-  participants: (group.participants || []).map(
-    ({ id, simulationId, user: { id: userId, ...rest } }) => ({
-      id,
-      simulation: simulationId,
-      userId,
-      ...rest,
-    })
-  ),
+  participants: (group.participants || []).map(participantToDto),
+})
+
+/**
+ * Maps a database participant to a dto for the UI
+ */
+const participantToDto = ({
+  id,
+  simulationId,
+  user: { id: userId, ...rest },
+}: Awaited<ReturnType<typeof createParticipantAndUser>>) => ({
+  id,
+  simulation: simulationId,
+  userId,
+  ...rest,
 })
 
 export const createGroup = async (groupDto: GroupCreateDto) => {
@@ -39,7 +55,23 @@ export const updateGroup = async (
     return groupToDto(group)
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
-      throw new EntityNotFoundException()
+      throw new EntityNotFoundException('Group not found')
+    }
+    throw e
+  }
+}
+
+export const createParticipant = async (
+  params: GroupParams,
+  participantDto: ParticipantCreateDto
+) => {
+  try {
+    const participant = await createParticipantAndUser(params, participantDto)
+
+    return participantToDto(participant)
+  } catch (e) {
+    if (isPrismaErrorForeignKeyConstraintFailed(e)) {
+      throw new EntityNotFoundException('Group not found')
     }
     throw e
   }

@@ -1,5 +1,5 @@
 export class EntityNotFoundException extends Error {
-  constructor() {
-    super('Entity not found')
+  constructor(message?: string) {
+    super(message || 'Entity not found')
   }
 }
