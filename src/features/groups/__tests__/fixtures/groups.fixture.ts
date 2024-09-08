@@ -7,20 +7,20 @@ import type {
 
 type TestAgent = ReturnType<typeof supertest>
 
-export const CREATE_GROUP_ROUTE = '/groups'
+export const CREATE_GROUP_ROUTE = '/groups/v1'
 
-export const UPDATE_USER_GROUP_ROUTE = '/groups/:userId/:groupId'
+export const UPDATE_USER_GROUP_ROUTE = '/groups/v1/:userId/:groupId'
 
-export const CREATE_PARTICIPANT_ROUTE = '/groups/:groupId/participants'
+export const CREATE_PARTICIPANT_ROUTE = '/groups/v1/:groupId/participants'
 
 export const DELETE_PARTICIPANT_ROUTE =
-  '/groups/:userId/:groupId/participants/:participantId'
+  '/groups/v1/:userId/:groupId/participants/:participantId'
 
-export const FETCH_USER_GROUPS_ROUTE = '/groups/:userId'
+export const FETCH_USER_GROUPS_ROUTE = '/groups/v1/:userId'
 
-export const FETCH_USER_GROUP_ROUTE = '/groups/:userId/:groupId'
+export const FETCH_USER_GROUP_ROUTE = '/groups/v1/:userId/:groupId'
 
-export const DELETE_USER_GROUP_ROUTE = '/groups/:userId/:groupId'
+export const DELETE_USER_GROUP_ROUTE = '/groups/v1/:userId/:groupId'
 
 export const createGroup = async ({
   agent,

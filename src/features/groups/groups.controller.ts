@@ -29,7 +29,7 @@ const router = express.Router()
  * Creates a new group
  */
 router
-  .route('/')
+  .route('/v1/')
   .post(validateRequest(GroupCreateValidator), async (req, res) => {
     try {
       const group = await createGroup(req.body)
@@ -46,7 +46,7 @@ router
  * Updates a user group
  */
 router
-  .route('/:userId/:groupId')
+  .route('/v1/:userId/:groupId')
   .put(validateRequest(GroupUpdateValidator), async (req, res) => {
     try {
       const group = await updateGroup(req.params, req.body)
@@ -67,7 +67,7 @@ router
  * Adds a participant to a group (participant joins)
  */
 router
-  .route('/:groupId/participants')
+  .route('/v1/:groupId/participants')
   .post(validateRequest(ParticipantCreateValidator), async (req, res) => {
     try {
       const participant = await createParticipant(req.params, req.body)
@@ -88,7 +88,7 @@ router
  * Removes a participant from a group (participant leaves)
  */
 router
-  .route('/:userId/:groupId/participants/:participantId')
+  .route('/v1/:userId/:groupId/participants/:participantId')
   .delete(validateRequest(ParticipantDeleteValidator), async (req, res) => {
     try {
       await removeParticipant(req.params)
@@ -113,7 +113,7 @@ router
  * Returns groups for a user
  */
 router
-  .route('/:userId')
+  .route('/v1/:userId')
   .get(
     validateRequest(GroupsFetchValidator),
     async ({ params, query }, res) => {
@@ -133,7 +133,7 @@ router
  * Returns group for a user and an id
  */
 router
-  .route('/:userId/:groupId')
+  .route('/v1/:userId/:groupId')
   .get(validateRequest(GroupFetchValidator), async ({ params }, res) => {
     try {
       const group = await fetchGroup(params)
@@ -154,7 +154,7 @@ router
  * Deletes group for a user and an id
  */
 router
-  .route('/:userId/:groupId')
+  .route('/v1/:userId/:groupId')
   .delete(
     validateRequest(GroupDeleteValidator),
     async ({ params: { userId, groupId } }, res) => {
