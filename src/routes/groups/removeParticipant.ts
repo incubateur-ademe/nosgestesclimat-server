@@ -1,6 +1,8 @@
 import express from 'express'
 import { Group } from '../../schemas/GroupSchema'
 
+import { prisma } from '../../adapters/prisma/client'
+import logger from '../../logger'
 import { Simulation } from '../../schemas/SimulationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 
@@ -54,7 +56,21 @@ router.route('/').post(async (req, res) => {
       (participant) => participant.userId !== userId
     )
 
-    await group.save()
+    await Promise.all([
+      group.save(),
+      prisma.groupParticipant
+        .delete({
+          where: {
+            groupId_userId: {
+              groupId,
+              userId,
+            },
+          },
+        })
+        .catch((error) =>
+          logger.error('postgre Groups replication failed', error)
+        ),
+    ])
 
     setSuccessfulJSONResponse(res)
 
