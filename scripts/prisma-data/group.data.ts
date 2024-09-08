@@ -134,11 +134,15 @@ const migrateGroupToPg = async () => {
             create: {
               id: userId,
               name,
-              email: isValidEmail(email) ? email : null,
+              ...(email && isValidEmail(email)
+                ? { email: email.toLocaleLowerCase() }
+                : {}),
             },
             update: {
               name,
-              email: isValidEmail(email) ? email : null,
+              ...(email && isValidEmail(email)
+                ? { email: email.toLocaleLowerCase() }
+                : {}),
             },
           })
         )

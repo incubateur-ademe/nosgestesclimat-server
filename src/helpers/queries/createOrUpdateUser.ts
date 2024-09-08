@@ -48,15 +48,17 @@ export async function createOrUpdateUser({ userId, email, name }: Props) {
         create: {
           id: userId,
           name,
-          email: isValidEmail(email) ? email : null,
+          ...(email && isValidEmail(email) ? { email } : {}),
         },
         update: {
           id: userId,
           name,
-          email: isValidEmail(email) ? email : null,
+          ...(email && isValidEmail(email) ? { email } : {}),
         },
       })
-      .catch((e) => logger.error('postgre Users replication failed', e)),
+      .catch((error) =>
+        logger.error('postgre Users replication failed', error)
+      ),
   ])
 
   return userDocument
