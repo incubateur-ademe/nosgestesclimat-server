@@ -24,7 +24,7 @@ export type UserGroupParams = z.infer<typeof UserGroupParams>
 export const UserGroupParticipantParams = UserGroupParams.merge(
   z
     .object({
-      participantId: z.string(),
+      participantId: z.string().uuid(),
     })
     .strict()
 )
@@ -44,7 +44,11 @@ export type GroupCreateParticipant = z.infer<typeof GroupCreateParticipant>
 const GroupCreateUser = z
   .object({
     userId: z.string().uuid(),
-    email: z.string().regex(EMAIL_REGEX).optional(),
+    email: z
+      .string()
+      .regex(EMAIL_REGEX)
+      .transform((email) => email.toLocaleLowerCase())
+      .optional(),
     name: z.string(),
   })
   .strict()

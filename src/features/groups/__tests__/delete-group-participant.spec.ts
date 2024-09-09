@@ -31,7 +31,7 @@ describe('Given a NGC user', () => {
           .delete(
             url
               .replace(':groupId', faker.database.mongodbObjectId())
-              .replace(':participantId', faker.string.alpha(34))
+              .replace(':participantId', faker.string.uuid())
               .replace(':userId', faker.string.uuid())
           )
           .expect(StatusCodes.NOT_FOUND)
@@ -43,7 +43,7 @@ describe('Given a NGC user', () => {
           .delete(
             url
               .replace(':groupId', faker.database.mongodbObjectId())
-              .replace(':participantId', faker.string.alpha(34))
+              .replace(':participantId', faker.string.uuid())
               .replace(':userId', faker.string.uuid())
           )
           .expect(StatusCodes.INTERNAL_SERVER_ERROR)
@@ -61,8 +61,21 @@ describe('Given a NGC user', () => {
             .delete(
               url
                 .replace(':groupId', groupId)
-                .replace(':participantId', faker.string.alpha(34))
+                .replace(':participantId', faker.string.uuid())
                 .replace(':userId', faker.string.alpha(34))
+            )
+            .expect(StatusCodes.BAD_REQUEST)
+        })
+      })
+
+      describe('And invalid participant id', () => {
+        test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
+          await agent
+            .delete(
+              url
+                .replace(':groupId', groupId)
+                .replace(':participantId', faker.string.alpha(34))
+                .replace(':userId', faker.string.uuid())
             )
             .expect(StatusCodes.BAD_REQUEST)
         })
@@ -84,7 +97,7 @@ describe('Given a NGC user', () => {
             .delete(
               url
                 .replace(':groupId', groupId)
-                .replace(':participantId', faker.string.alpha(34))
+                .replace(':participantId', faker.string.uuid())
                 .replace(':userId', faker.string.uuid())
             )
             .expect(StatusCodes.NOT_FOUND)
@@ -96,7 +109,7 @@ describe('Given a NGC user', () => {
             .delete(
               url
                 .replace(':groupId', groupId)
-                .replace(':participantId', faker.string.alpha(34))
+                .replace(':participantId', faker.string.uuid())
                 .replace(':userId', faker.string.uuid())
             )
             .expect(StatusCodes.INTERNAL_SERVER_ERROR)
@@ -144,7 +157,7 @@ describe('Given a NGC user', () => {
               .delete(
                 url
                   .replace(':groupId', faker.database.mongodbObjectId())
-                  .replace(':participantId', faker.string.alpha(34))
+                  .replace(':participantId', faker.string.uuid())
                   .replace(':userId', faker.string.uuid())
               )
               .expect(StatusCodes.INTERNAL_SERVER_ERROR)
@@ -155,7 +168,7 @@ describe('Given a NGC user', () => {
               .delete(
                 url
                   .replace(':groupId', faker.database.mongodbObjectId())
-                  .replace(':participantId', faker.string.alpha(34))
+                  .replace(':participantId', faker.string.uuid())
                   .replace(':userId', faker.string.uuid())
               )
               .expect(StatusCodes.INTERNAL_SERVER_ERROR)
