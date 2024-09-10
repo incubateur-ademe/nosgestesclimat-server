@@ -14,19 +14,11 @@ const CategorySchema = new Schema(
   { _id: false }
 )
 
-const SubcategorySchema = new Schema(
-  {
-    type: Map,
-    of: Number,
-  },
-  { _id: false }
-)
-
 const MetricComputedResultsSchema = new Schema(
   {
     bilan: Number,
     categories: CategorySchema,
-    subcategories: SubcategorySchema,
+    subcategories: Object,
   },
   { _id: false }
 )
