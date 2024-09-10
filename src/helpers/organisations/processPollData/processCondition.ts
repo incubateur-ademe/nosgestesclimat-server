@@ -12,13 +12,17 @@ export function processCondition({
     return false
   }
 
+  if (typeof rule?.formule !== 'object') {
+    return false
+  }
+
   // if `moyenne` attibute is used in ui rule, we want to return the value of the dottedName. Average is computed elsewhere
-  if (rule?.formule?.moyenne) {
+  if (Array.isArray(rule?.formule?.moyenne)) {
     return (situation[rule.formule.moyenne[0]] ?? 0) as string | number
   }
 
   // if `somme` attibute is used in ui rule, we want to return the sum of values of dottedNames
-  if (rule?.formule?.somme) {
+  if (Array.isArray(rule?.formule?.somme)) {
     return rule.formule.somme.reduce((acc: number, dottedName: DottedName) => {
       const itemValue = parseFloat(situation[dottedName] as string)
       return acc + (!isNaN(itemValue) ? itemValue : 0)
@@ -26,14 +30,14 @@ export function processCondition({
   }
 
   // if `une de ces conditions` attibute is used in ui rule, we want to return true if one of the conditions is true. The condition is dealt with in checkCondition.
-  if (rule?.formule?.['une de ces conditions']) {
+  if (Array.isArray(rule?.formule?.['une de ces conditions'])) {
     return rule.formule['une de ces conditions'].some((condition: string) =>
       checkCondition(condition, situation)
     )
   }
 
   // if `une de ces conditions` attibute is used in ui rule, we want to return true if all conditions are true. The condition is dealt with in checkCondition.
-  if (rule?.formule?.['toutes ces conditions']) {
+  if (Array.isArray(rule?.formule?.['toutes ces conditions'])) {
     return rule.formule['toutes ces conditions'].every((condition: string) =>
       checkCondition(condition, situation)
     )
