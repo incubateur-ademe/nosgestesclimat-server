@@ -56,3 +56,5 @@ type ValueToDto<T> = T extends Types.ObjectId
 export type ModelToDto<T> = {
   [key in keyof T]: ValueToDto<T[key]>
 }
+
+export type Metric = 'carbone' | 'eau'
