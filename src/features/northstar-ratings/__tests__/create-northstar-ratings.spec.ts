@@ -11,7 +11,7 @@ import {
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)
-  const url = '/northstar-ratings'
+  const url = '/northstar-ratings/v1'
 
   describe('When creating a northstar rating', () => {
     describe('And no data provided', () => {

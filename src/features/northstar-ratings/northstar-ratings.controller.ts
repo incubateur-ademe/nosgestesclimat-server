@@ -11,7 +11,7 @@ const router = express.Router()
  * Creates a new northstar rating
  */
 router
-  .route('/')
+  .route('/v1/')
   .post(validateRequest(NorthstarRatingCreateValidator), async (req, res) => {
     try {
       const northStarRating = await createNorthStarRating(req.body)

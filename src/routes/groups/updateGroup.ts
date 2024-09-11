@@ -1,6 +1,8 @@
 import express from 'express'
 import { Group } from '../../schemas/GroupSchema'
 
+import { updateUserGroup } from '../../features/groups/groups.repository'
+import logger from '../../logger'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 
 const router = express.Router()
@@ -43,7 +45,18 @@ router.route('/').post(async (req, res) => {
       group.name = name
     }
 
-    const groupUpdated = await group.save()
+    const [groupUpdated] = await Promise.all([
+      group.save(),
+      updateUserGroup(
+        {
+          groupId,
+          userId,
+        },
+        { name }
+      ).catch((error) =>
+        logger.error('postgre Groups replication failed', error)
+      ),
+    ])
 
     setSuccessfulJSONResponse(res)
 
@@ -55,4 +68,7 @@ router.route('/').post(async (req, res) => {
   }
 })
 
+/**
+ * @deprecated should use features/groups instead
+ */
 export default router
