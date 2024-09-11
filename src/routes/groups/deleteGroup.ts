@@ -1,7 +1,9 @@
 import express from 'express'
+import { deleteUserGroup } from '../../features/groups/groups.repository'
+import logger from '../../logger'
 import { Group } from '../../schemas/GroupSchema'
-import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { Simulation } from '../../schemas/SimulationSchema'
+import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 
 const router = express.Router()
 
@@ -47,7 +49,15 @@ router.route('/').post(async (req, res) => {
     }
 
     // We delete the group
-    await group.delete()
+    await Promise.all([
+      group.delete(),
+      deleteUserGroup({
+        groupId,
+        userId,
+      }).catch((error) =>
+        logger.error('postgre Groups replication failed', error)
+      ),
+    ])
 
     setSuccessfulJSONResponse(res)
 
@@ -60,4 +70,7 @@ router.route('/').post(async (req, res) => {
   }
 })
 
+/**
+ * @deprecated should use features/groups instead
+ */
 export default router

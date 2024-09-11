@@ -9,6 +9,7 @@ import surveysRoute from './routes/_legacy/surveysRoute'
 import statsRoute from './routes/stats/statsRoute'
 
 // Groups routes
+import groupsController from './features/groups/groups.controller'
 import createGroupRoute from './routes/groups/createGroup'
 import deleteGroupRoute from './routes/groups/deleteGroup'
 import fetchGroupRoute from './routes/groups/fetchGroup'
@@ -102,6 +103,7 @@ app.use('/group/fetch', fetchGroupRoute)
 app.use('/group/create', createGroupRoute)
 app.use('/group/update', updateGroupRoute)
 app.use('/group/delete', deleteGroupRoute)
+app.use('/groups', groupsController)
 
 // Group participants routes
 app.use('/group/fetch-groups', fetchGroupsRoute)

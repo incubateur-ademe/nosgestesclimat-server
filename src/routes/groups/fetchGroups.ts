@@ -50,4 +50,7 @@ router.post('/', async (req: Request, res: Response) => {
   }
 })
 
+/**
+ * @deprecated should use features/groups instead
+ */
 export default router
