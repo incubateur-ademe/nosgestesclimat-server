@@ -1,9 +1,12 @@
 import { faker } from '@faker-js/faker'
+import dayjs from 'dayjs'
 import { StatusCodes } from 'http-status-codes'
+import nock from 'nock'
 import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
 import logger from '../../../logger'
+import * as authenticationService from '../authentication.service'
 import type { VerificationCodeCreateDto } from '../verification-codes.validator'
 
 describe('Given a NGC user', () => {
@@ -11,6 +14,26 @@ describe('Given a NGC user', () => {
   const url = '/verification-codes/v1'
 
   describe('When creating a verification-code', () => {
+    let code: string
+    let expirationDate: Date
+
+    beforeEach(() => {
+      code = faker.number.int({ min: 100000, max: 999999 }).toString()
+      expirationDate = dayjs().add(1, 'hour').toDate()
+      jest
+        .mocked(authenticationService)
+        .generateVerificationCodeAndExpiration.mockReturnValueOnce({
+          code,
+          expirationDate,
+        })
+    })
+
+    afterEach(() => {
+      jest
+        .mocked(authenticationService)
+        .generateVerificationCodeAndExpiration.mockRestore()
+    })
+
     describe('And no data provided', () => {
       test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent.post(url).expect(StatusCodes.BAD_REQUEST)
@@ -47,6 +70,8 @@ describe('Given a NGC user', () => {
         email: faker.internet.email(),
       }
 
+      nock(process.env.BREVO_URL!).post('/v3/smtp/email').reply(200)
+
       const response = await agent
         .post(url)
         .send(payload)
@@ -56,7 +81,7 @@ describe('Given a NGC user', () => {
         id: expect.any(String),
         createdAt: expect.any(String),
         updatedAt: null,
-        expirationDate: expect.any(String),
+        expirationDate: expirationDate.toISOString(),
         ...payload,
       })
     })
@@ -66,6 +91,8 @@ describe('Given a NGC user', () => {
         userId: faker.string.uuid(),
         email: faker.internet.email(),
       }
+
+      nock(process.env.BREVO_URL!).post('/v3/smtp/email').reply(200)
 
       await agent.post(url).send(payload)
 
@@ -79,12 +106,45 @@ describe('Given a NGC user', () => {
       // dates are not instance of Date due to jest
       expect(createdVerificationCode).toEqual({
         id: expect.any(String),
-        code: expect.any(String),
+        code,
+        expirationDate,
         createdAt: expect.anything(),
         updatedAt: null,
-        expirationDate: expect.anything(),
         ...payload,
       })
+    })
+
+    test('It should send an email with the code', async () => {
+      const email = faker.internet.email()
+
+      const scope = nock(process.env.BREVO_URL!, {
+        reqheaders: {
+          'api-key': process.env.BREVO_API_KEY!,
+        },
+      })
+        .post(
+          '/v3/smtp/email',
+          JSON.stringify({
+            to: [
+              {
+                name: email,
+                email,
+              },
+            ],
+            templateId: 66,
+            params: {
+              VERIFICATION_CODE: code,
+            },
+          })
+        )
+        .reply(200)
+
+      await agent.post(url).send({
+        userId: faker.string.uuid(),
+        email,
+      })
+
+      expect(scope.isDone()).toBeTruthy()
     })
 
     describe('And database failure', () => {

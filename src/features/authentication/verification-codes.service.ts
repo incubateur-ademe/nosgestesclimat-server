@@ -1,19 +1,28 @@
-import dayjs from 'dayjs'
+import { EventBus } from '../../core/event-bus/event-bus'
+import { generateVerificationCodeAndExpiration } from './authentication.service'
+import { VerificationCodeCreatedEvent } from './events/VerificationCodeCreated.event'
 import { createUserVerificationCode } from './verification-codes.repository'
 import type { VerificationCodeCreateDto } from './verification-codes.validator'
 
-export const generateVerificationCodeAndExpiration = () => ({
-  code: Math.floor(
-    Math.pow(10, 5) + Math.random() * (Math.pow(10, 6) - Math.pow(10, 5) - 1)
-  ).toString(),
-  expirationDate: dayjs().add(1, 'hour').toDate(),
-})
-
-export const createVerificationCode = (
+export const createVerificationCode = async (
   verificationCodeDto: VerificationCodeCreateDto
 ) => {
-  return createUserVerificationCode({
+  const { code, expirationDate } = generateVerificationCodeAndExpiration()
+
+  const verificationCode = await createUserVerificationCode({
     ...verificationCodeDto,
-    ...generateVerificationCodeAndExpiration(),
+    code,
+    expirationDate,
   })
+
+  const verificationCodeCreatedEvent = new VerificationCodeCreatedEvent({
+    ...verificationCode,
+    code,
+  })
+
+  EventBus.emit(verificationCodeCreatedEvent)
+
+  await EventBus.once(verificationCodeCreatedEvent)
+
+  return verificationCode
 }

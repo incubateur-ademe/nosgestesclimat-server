@@ -1,7 +1,5 @@
-import axios from 'axios'
-import { axiosConf } from '../../constants/axios'
+import { sendVerificationCodeEmail as sendBrevoVerificationCodeEmail } from '../../adapters/brevo/client'
 import { LIST_ID_ORGANISATIONS } from '../../constants/brevo'
-import { TEMPLATE_ID_VERIFICATION_CODE } from './../../constants/brevo'
 import { createOrUpdateContact } from './createOrUpdateContact'
 
 type Props = {
@@ -24,22 +22,10 @@ export async function sendVerificationCodeEmail({
       },
     })
 
-    await axios.post(
-      '/v3/smtp/email',
-      {
-        to: [
-          {
-            name: email,
-            email,
-          },
-        ],
-        templateId: TEMPLATE_ID_VERIFICATION_CODE,
-        params: {
-          VERIFICATION_CODE: verificationCode,
-        },
-      },
-      axiosConf
-    )
+    await sendBrevoVerificationCodeEmail({
+      code: verificationCode.toString(),
+      email,
+    })
   } catch (error) {
     console.warn('Error sending email: ', error)
   }
