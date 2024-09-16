@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express'
 import express from 'express'
-import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { COOKIES_OPTIONS } from '../../constants/cookies'
+import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 
 const router = express.Router()
 
@@ -27,4 +27,7 @@ router
     }
   })
 
+/**
+ * @deprecated should use features/authentication instead
+ */
 export default router

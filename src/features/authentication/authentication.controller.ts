@@ -31,4 +31,21 @@ router
     }
   })
 
+/**
+ * Logs a user out
+ */
+router.route('/v1/logout').post(async (_, res) => {
+  try {
+    res.clearCookie(COOKIE_NAME, {
+      httpOnly: true,
+    })
+
+    return res.status(StatusCodes.OK).end()
+  } catch (err) {
+    logger.error('Logout failed', err)
+
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
+  }
+})
+
 export default router
