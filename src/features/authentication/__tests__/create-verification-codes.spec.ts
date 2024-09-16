@@ -8,10 +8,11 @@ import app from '../../../app'
 import logger from '../../../logger'
 import * as authenticationService from '../authentication.service'
 import type { VerificationCodeCreateDto } from '../verification-codes.validator'
+import { CREATE_VERIFICATION_CODE_ROUTE } from './fixtures/verification-codes.fixture'
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)
-  const url = '/verification-codes/v1'
+  const url = CREATE_VERIFICATION_CODE_ROUTE
 
   describe('When creating a verification-code', () => {
     let code: string

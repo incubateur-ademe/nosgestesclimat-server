@@ -9,6 +9,7 @@ import surveysRoute from './routes/_legacy/surveysRoute'
 import statsRoute from './routes/stats/statsRoute'
 
 // Authentication route
+import authenticationController from './features/authentication/authentication.controller'
 import verificationCodeController from './features/authentication/verification-codes.controller'
 
 // Groups routes
@@ -98,6 +99,7 @@ app.use('/simulation', simulationRoute)
 app.use('/ratings', ratingsRoute)
 
 // Authentication routes
+app.use('/authentication', authenticationController)
 app.use('/verification-codes', verificationCodeController)
 
 // Simulations route
