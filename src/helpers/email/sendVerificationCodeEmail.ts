@@ -4,7 +4,7 @@ import { createOrUpdateContact } from './createOrUpdateContact'
 
 type Props = {
   email: string
-  verificationCode: number
+  verificationCode: string
   userId?: string
 }
 
