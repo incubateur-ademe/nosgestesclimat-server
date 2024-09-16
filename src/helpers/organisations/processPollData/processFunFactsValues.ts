@@ -1,7 +1,7 @@
 import type {
   DottedName,
-  NGCRules,
   FunFacts,
+  NGCRules,
 } from '@incubateur-ademe/nosgestesclimat'
 import type { SimulationType } from '../../../schemas/SimulationSchema'
 
@@ -25,12 +25,12 @@ export function processFunFactsValues({
         key === 'averageOfElectricityConsumption'
       ) {
         const totalAnswers = simulations.reduce((acc, simulation) => {
-          return (
-            acc +
-            (simulation.situation[rules[funFactsRules[key]].formule.moyenne[0]]
-              ? 1
-              : 0)
-          )
+          const formule = rules[funFactsRules[key]].formule
+          if (typeof formule !== 'object' || !Array.isArray(formule.moyenne)) {
+            return acc
+          }
+
+          return acc + (simulation.situation[formule.moyenne[0]] ? 1 : 0)
         }, 0)
         return [key, value / totalAnswers]
       }

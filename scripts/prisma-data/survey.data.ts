@@ -49,22 +49,16 @@ const migrateSurveyToPg = async () => {
         continue
       }
 
-      try {
-        await prisma.survey.upsert({
-          where: {
-            name,
-          },
-          create: {
-            id,
-            ...update,
-          },
-          update,
-        })
-      } catch (e) {
-        console.error(e)
-        console.error(update)
-        throw e
-      }
+      await prisma.survey.upsert({
+        where: {
+          name,
+        },
+        create: {
+          id,
+          ...update,
+        },
+        update,
+      })
 
       documents++
     }

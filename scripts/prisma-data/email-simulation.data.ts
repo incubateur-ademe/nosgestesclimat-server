@@ -214,22 +214,16 @@ const migrateEmailSimulationToPg = async () => {
         updatedAt: emailSimulation.updatedAt,
       }
 
-      try {
-        await prisma.emailSimulation.upsert({
-          where: {
-            id,
-          },
-          create: {
-            id,
-            ...update,
-          },
-          update,
-        })
-      } catch (e) {
-        console.error(e)
-        console.error(update)
-        throw e
-      }
+      await prisma.emailSimulation.upsert({
+        where: {
+          id,
+        },
+        create: {
+          id,
+          ...update,
+        },
+        update,
+      })
 
       documents++
     }

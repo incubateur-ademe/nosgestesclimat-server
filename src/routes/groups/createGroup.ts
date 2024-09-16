@@ -1,5 +1,7 @@
 import express from 'express'
+import { prisma } from '../../adapters/prisma/client'
 import { sendGroupEmail } from '../../helpers/email/sendGroupEmail'
+import logger from '../../logger'
 import { Group } from '../../schemas/GroupSchema'
 import { formatEmail } from '../../utils/formatting/formatEmail'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
@@ -57,6 +59,38 @@ router.route('/').post(async (req, res) => {
     })
 
     const group = await newGroup.save()
+
+    try {
+      await prisma.user.upsert({
+        where: {
+          id: userId,
+        },
+        create: {
+          id: userId,
+          name: administratorName,
+          email: administratorEmail,
+        },
+        update: {
+          name: administratorName,
+          email: administratorEmail,
+        },
+      })
+
+      await prisma.group.create({
+        data: {
+          id: group._id.toString(),
+          name: groupName,
+          emoji: groupEmoji,
+          administrator: {
+            create: {
+              userId,
+            },
+          },
+        },
+      })
+    } catch (error) {
+      logger.error('postgre Groups replication failed', error)
+    }
 
     // Get the numbers of created groups by the administrator
     const createdGroups = await Group.find({

@@ -16,8 +16,10 @@ export const NorthstarRatingCreateDto = z.object({
   type: NorthstarRatingType,
 })
 
+export type NorthstarRatingCreateDto = z.infer<typeof NorthstarRatingCreateDto>
+
 export const NorthstarRatingCreateValidator = {
   body: NorthstarRatingCreateDto,
+  params: z.object({}).strict().optional(),
+  query: z.object({}).strict().optional(),
 }
-
-export type NorthstarRatingCreateDto = z.infer<typeof NorthstarRatingCreateDto>
