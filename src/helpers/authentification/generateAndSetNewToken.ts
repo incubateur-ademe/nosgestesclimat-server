@@ -1,7 +1,11 @@
 import type { Response } from 'express'
 import jwt from 'jsonwebtoken'
 import { config } from '../../config'
-import { COOKIE_MAX_AGE, COOKIES_OPTIONS } from '../../constants/cookies'
+import {
+  COOKIE_MAX_AGE,
+  COOKIE_NAME,
+  COOKIES_OPTIONS,
+} from '../../features/authentication/authentication.service'
 
 export function generateAndSetNewToken(res: Response, email: string) {
   // Generate a new token
@@ -9,5 +13,5 @@ export function generateAndSetNewToken(res: Response, email: string) {
     expiresIn: COOKIE_MAX_AGE,
   })
 
-  res.cookie('ngcjwt', newToken, COOKIES_OPTIONS)
+  res.cookie(COOKIE_NAME, newToken, COOKIES_OPTIONS)
 }

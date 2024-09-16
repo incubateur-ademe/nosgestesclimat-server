@@ -2,7 +2,11 @@ import express from 'express'
 import jwt from 'jsonwebtoken'
 
 import { config } from '../../config'
-import { COOKIES_OPTIONS, COOKIE_MAX_AGE } from '../../constants/cookies'
+import {
+  COOKIE_MAX_AGE,
+  COOKIE_NAME,
+  COOKIES_OPTIONS,
+} from '../../features/authentication/authentication.service'
 import { handleVerificationCodeValidation } from '../../helpers/organisations/handleVerificationCodeValidation'
 import { Organisation } from '../../schemas/OrganisationSchema'
 import { formatEmail } from '../../utils/formatting/formatEmail'
@@ -30,7 +34,7 @@ router.post('/', async (req, res) => {
 
     setSuccessfulJSONResponse(res)
 
-    res.cookie('ngcjwt', token, COOKIES_OPTIONS)
+    res.cookie(COOKIE_NAME, token, COOKIES_OPTIONS)
 
     const organisation = await Organisation.findOne({
       'administrators.email': email,
