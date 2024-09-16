@@ -1,4 +1,7 @@
+import { prisma } from '../../adapters/prisma/client'
 import { isValidEmail } from '../../core/typeguards/isValidEmail'
+import { createParticipantAndUser } from '../../features/groups/groups.repository'
+import logger from '../../logger'
 import type { GroupType } from '../../schemas/GroupSchema'
 import type { SimulationType } from '../../schemas/SimulationSchema'
 import type { UserType } from '../../schemas/UserSchema'
@@ -29,7 +32,24 @@ export async function handleUpdateGroup({
   // If the user is already in the group, we update their simulation
   if (participantWithSimulation) {
     participantWithSimulation.simulation = simulationSaved._id
-    await group.save()
+    await Promise.all([
+      group.save(),
+      prisma.groupParticipant
+        .update({
+          where: {
+            groupId_userId: {
+              groupId: group._id.toString(),
+              userId: userDocument.userId,
+            },
+          },
+          data: {
+            simulationId: simulationSaved._id.toString(),
+          },
+        })
+        .catch((error) =>
+          logger.error('postgre Groups replication failed', error)
+        ),
+    ])
     console.log(`Simulation updated in group ${group.name}.`)
     return
   }
@@ -42,7 +62,22 @@ export async function handleUpdateGroup({
     simulation: simulationSaved._id,
   })
 
-  const groupSaved = await group.save()
+  const [groupSaved] = await Promise.all([
+    group.save(),
+    createParticipantAndUser(
+      {
+        groupId: group._id.toString(),
+      },
+      {
+        name: userDocument.name || '🦊',
+        email: userDocument.email,
+        userId: userDocument.userId,
+        simulation: simulationSaved._id.toString(),
+      }
+    ).catch((error) =>
+      logger.error('postgre Groups replication failed', error)
+    ),
+  ])
 
   // createOrUpdateContact in brevo will raise otherwise
   if (isValidEmail(groupSaved.administrator?.email)) {

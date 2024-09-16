@@ -18,8 +18,10 @@ export const QuizzAnswerCreateDto = z.object({
   answer: z.string(),
 })
 
+export type QuizzAnswerCreateDto = z.infer<typeof QuizzAnswerCreateDto>
+
 export const QuizzAnswerCreateValidator = {
   body: QuizzAnswerCreateDto,
+  params: z.object({}).strict().optional(),
+  query: z.object({}).strict().optional(),
 }
-
-export type QuizzAnswerCreateDto = z.infer<typeof QuizzAnswerCreateDto>

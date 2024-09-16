@@ -30,27 +30,23 @@ const migrateUserToPg = async () => {
       const id = user.userId.toString()
       const update = {
         name: user.name,
-        email: isValidEmail(user.email) ? user.email.toLocaleLowerCase() : null,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
+        ...(user.email && isValidEmail(user.email)
+          ? { email: user.email.toLocaleLowerCase() }
+          : {}),
       }
 
-      try {
-        await prisma.user.upsert({
-          where: {
-            id,
-          },
-          create: {
-            id,
-            ...update,
-          },
-          update,
-        })
-      } catch (e) {
-        console.error(e)
-        console.error(update)
-        throw e
-      }
+      await prisma.user.upsert({
+        where: {
+          id,
+        },
+        create: {
+          id,
+          ...update,
+        },
+        update,
+      })
 
       documents++
     }
