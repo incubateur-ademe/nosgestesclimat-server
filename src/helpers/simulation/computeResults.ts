@@ -60,13 +60,13 @@ export function computeResults(situation: Situation) {
   } catch (e) {
     console.error(e)
     return {
-      bilan: undefined,
+      bilan: 0,
       categories: {
-        transport: undefined,
-        alimentation: undefined,
-        logement: undefined,
-        divers: undefined,
-        'services sociétaux': undefined,
+        transport: 0,
+        alimentation: 0,
+        logement: 0,
+        divers: 0,
+        'services sociétaux': 0,
       },
     }
   }
@@ -97,24 +97,24 @@ export function fullComputeResults(situation: Situation) {
     console.error(e)
     return {
       carbone: {
-        bilan: undefined,
+        bilan: 0,
         categories: {
-          transport: undefined,
-          alimentation: undefined,
-          logement: undefined,
-          divers: undefined,
-          'services sociétaux': undefined,
+          transport: 0,
+          alimentation: 0,
+          logement: 0,
+          divers: 0,
+          'services sociétaux': 0,
         },
         subcategories: {},
       },
       eau: {
-        bilan: undefined,
+        bilan: 0,
         categories: {
-          transport: undefined,
-          alimentation: undefined,
-          logement: undefined,
-          divers: undefined,
-          'services sociétaux': undefined,
+          transport: 0,
+          alimentation: 0,
+          logement: 0,
+          divers: 0,
+          'services sociétaux': 0,
         },
         subcategories: {},
       },
