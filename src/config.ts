@@ -10,6 +10,7 @@ export const config = {
     process.env.NODE_ENV,
     'development' as 'development' | 'production' | 'test'
   ),
+  origin: ensureEnvVar(process.env.ORIGIN, 'https://nosgestesclimat.fr'),
   get app() {
     return {
       get port() {

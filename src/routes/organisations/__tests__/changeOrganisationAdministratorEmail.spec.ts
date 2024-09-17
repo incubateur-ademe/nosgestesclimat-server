@@ -41,9 +41,9 @@ describe(`Given an existing NGC user organisation`, () => {
         })
 
       scope = nock(process.env.BREVO_URL!)
-        .post(`/v3/contacts`)
+        .post('/v3/contacts')
         .reply(200)
-        .post(`/v3/smtp/email`)
+        .post('/v3/smtp/email')
         .reply(200)
 
       email = faker.internet.email().toLocaleLowerCase()
