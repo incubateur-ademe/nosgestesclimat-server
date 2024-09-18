@@ -16,9 +16,16 @@ import { OrganisationUpdatedEvent } from './events/OrganisationUpdated.event'
 import { addOrUpdateBrevoContact } from './handlers/add-or-update-brevo-contact'
 import { addOrUpdateConnectContact } from './handlers/add-or-update-connect-contact'
 import { sendOrganisationCreated } from './handlers/send-organisation-created'
-import { createOrganisation, updateOrganisation } from './organisations.service'
+import {
+  createOrganisation,
+  fetchOrganisation,
+  fetchOrganisations,
+  updateOrganisation,
+} from './organisations.service'
 import {
   OrganisationCreateValidator,
+  OrganisationFetchValidator,
+  OrganisationsFetchValidator,
   OrganisationUpdateValidator,
 } from './organisations.validator'
 
@@ -92,6 +99,52 @@ router
         }
 
         logger.error('Organisation update failed', err)
+
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
+      }
+    }
+  )
+
+/**
+ * Returns organisations for a user
+ */
+router
+  .route('/v1/')
+  .get(
+    authentificationMiddleware,
+    validateRequest(OrganisationsFetchValidator),
+    async ({ user }, res) => {
+      try {
+        const organisations = await fetchOrganisations(user!)
+
+        return res.status(StatusCodes.OK).json(organisations)
+      } catch (err) {
+        logger.error('Organisations fetch failed', err)
+
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
+      }
+    }
+  )
+
+/**
+ * Returns organisation for an id or a slug
+ */
+router
+  .route('/v1/:organisationIdOrSlug')
+  .get(
+    authentificationMiddleware,
+    validateRequest(OrganisationFetchValidator),
+    async ({ params, user }, res) => {
+      try {
+        const organisation = await fetchOrganisation({ params, user: user! })
+
+        return res.status(StatusCodes.OK).json(organisation)
+      } catch (err) {
+        if (err instanceof EntityNotFoundException) {
+          return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
+        }
+
+        logger.error('Organisation fetch failed', err)
 
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
       }

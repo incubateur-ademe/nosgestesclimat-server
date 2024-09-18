@@ -11,6 +11,8 @@ import { OrganisationCreatedEvent } from './events/OrganisationCreated.event'
 import { OrganisationUpdatedEvent } from './events/OrganisationUpdated.event'
 import {
   createOrganisationAndAdministrator,
+  fetchUserOrganisation,
+  fetchUserOrganisations,
   updateAdministratorOrganisation,
 } from './organisations.repository'
 import type {
@@ -20,9 +22,11 @@ import type {
 } from './organisations.validator'
 
 const organisationToDto = (
-  organisation: Awaited<
-    ReturnType<typeof createOrganisationAndAdministrator>
-  >['organisation'],
+  organisation:
+    | Awaited<
+        ReturnType<typeof createOrganisationAndAdministrator>
+      >['organisation']
+    | Awaited<ReturnType<typeof fetchUserOrganisation>>,
   connectedUser: string
 ) => ({
   ...organisation,
@@ -156,6 +160,35 @@ export const updateOrganisation = async ({
       throw new ForbiddenException(
         'Forbidden ! This email already belongs to another organisation.'
       )
+    }
+    throw e
+  }
+}
+
+export const fetchOrganisations = async (
+  user: NonNullable<Request['user']>
+) => {
+  const organisations = await fetchUserOrganisations(user)
+
+  return organisations.map((organisation) =>
+    organisationToDto(organisation, user.userId)
+  )
+}
+
+export const fetchOrganisation = async ({
+  params,
+  user,
+}: {
+  params: OrganisationParams
+  user: NonNullable<Request['user']>
+}) => {
+  try {
+    const organisation = await fetchUserOrganisation(params, user)
+
+    return organisationToDto(organisation, user.userId)
+  } catch (e) {
+    if (isPrismaErrorNotFound(e)) {
+      throw new EntityNotFoundException('Organisation not found')
     }
     throw e
   }

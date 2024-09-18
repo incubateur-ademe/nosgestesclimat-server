@@ -13,6 +13,11 @@ export const CREATE_ORGANISATION_ROUTE = '/organisations/v1'
 export const UPDATE_ORGANISATION_ROUTE =
   '/organisations/v1/:organisationIdOrSlug'
 
+export const FETCH_ORGANISATIONS_ROUTE = '/organisations/v1'
+
+export const FETCH_ORGANISATION_ROUTE =
+  '/organisations/v1/:organisationIdOrSlug'
+
 type TestAgent = ReturnType<typeof supertest>
 
 const organisationTypes = [

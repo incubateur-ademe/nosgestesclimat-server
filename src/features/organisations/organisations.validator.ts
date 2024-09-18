@@ -102,3 +102,15 @@ export const OrganisationUpdateValidator = {
   params: OrganisationParams,
   query: OrganisationUpdateQuery,
 }
+
+export const OrganisationsFetchValidator = {
+  body: z.object({}).strict().optional(),
+  params: z.object({}).strict().optional(),
+  query: z.object({}).strict().optional(),
+}
+
+export const OrganisationFetchValidator = {
+  body: z.object({}).strict().optional(),
+  params: OrganisationParams,
+  query: z.object({}).strict().optional(),
+}

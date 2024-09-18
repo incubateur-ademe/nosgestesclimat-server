@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client'
 import type { Request } from 'express'
 import slugify from 'slugify'
 import { prisma } from '../../adapters/prisma/client'
@@ -72,9 +73,12 @@ const findUniqueOrganisationSlug = async (
   return counter === 0 ? slug : `${slug}-${counter}`
 }
 
-const findOrganisationBySlugOrId = (
+const findOrganisationBySlugOrId = <
+  T extends Prisma.OrganisationSelect = { id: true },
+>(
   { organisationIdOrSlug }: OrganisationParams,
-  { email: userEmail }: NonNullable<Request['user']>
+  { email: userEmail }: NonNullable<Request['user']>,
+  select: T = { id: true } as T
 ) => {
   return prisma.organisation.findFirstOrThrow({
     where: {
@@ -85,9 +89,7 @@ const findOrganisationBySlugOrId = (
         },
       },
     },
-    select: {
-      id: true,
-    },
+    select,
   })
 }
 
@@ -222,4 +224,26 @@ export const updateAdministratorOrganisation = async (
     organisation,
     administrator,
   }
+}
+
+export const fetchUserOrganisations = ({
+  email: userEmail,
+}: NonNullable<Request['user']>) => {
+  return prisma.organisation.findMany({
+    where: {
+      administrators: {
+        some: {
+          userEmail,
+        },
+      },
+    },
+    select: defaultOrganisationSelection,
+  })
+}
+
+export const fetchUserOrganisation = (
+  params: OrganisationParams,
+  user: NonNullable<Request['user']>
+) => {
+  return findOrganisationBySlugOrId(params, user, defaultOrganisationSelection)
 }
