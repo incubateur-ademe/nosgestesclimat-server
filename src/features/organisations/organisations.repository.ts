@@ -5,6 +5,7 @@ import { prisma } from '../../adapters/prisma/client'
 import type {
   OrganisationCreateDto,
   OrganisationParams,
+  OrganisationPollCreateDto,
   OrganisationUpdateDto,
 } from './organisations.validator'
 
@@ -46,31 +47,35 @@ const defaultOrganisationSelection = {
   updatedAt: true,
 }
 
-const findUniqueOrganisationSlug = async (
-  name: string,
-  counter = 0
-): Promise<string> => {
-  const slug =
-    counter === 0
-      ? slugify(name.toLowerCase(), {
-          strict: true,
-        })
-      : name
+const findModelUniqueSlug = (
+  model: typeof prisma.organisation | typeof prisma.poll
+) => {
+  const findUniqueSlug = async (name: string, counter = 0): Promise<string> => {
+    const slug =
+      counter === 0
+        ? slugify(name.toLowerCase(), {
+            strict: true,
+          })
+        : name
 
-  const organisationFound = await prisma.organisation.findUnique({
-    where: {
-      slug: counter === 0 ? slug : `${slug}-${counter}`,
-    },
-    select: {
-      slug: true,
-    },
-  })
+    // @ts-expect-error 2349 the two models are different but that's OK
+    const entityFound = await model.findUnique({
+      where: {
+        slug: counter === 0 ? slug : `${slug}-${counter}`,
+      },
+      select: {
+        slug: true,
+      },
+    })
 
-  if (organisationFound) {
-    return findUniqueOrganisationSlug(slug, counter + 1)
+    if (entityFound) {
+      return findUniqueSlug(slug, counter + 1)
+    }
+
+    return counter === 0 ? slug : `${slug}-${counter}`
   }
 
-  return counter === 0 ? slug : `${slug}-${counter}`
+  return findUniqueSlug
 }
 
 const findOrganisationBySlugOrId = <
@@ -92,6 +97,8 @@ const findOrganisationBySlugOrId = <
     select,
   })
 }
+
+const findUniqueOrganisationSlug = findModelUniqueSlug(prisma.organisation)
 
 export const createOrganisationAndAdministrator = async (
   {
@@ -246,4 +253,61 @@ export const fetchUserOrganisation = (
   user: NonNullable<Request['user']>
 ) => {
   return findOrganisationBySlugOrId(params, user, defaultOrganisationSelection)
+}
+
+const findUniquePollSlug = findModelUniqueSlug(prisma.poll)
+
+export const createOrganisationPoll = async (
+  params: OrganisationParams,
+  {
+    name,
+    expectedNumberOfParticipants,
+    defaultAdditionalQuestions,
+    customAdditionalQuestions = [],
+  }: OrganisationPollCreateDto,
+  user: NonNullable<Request['user']>
+) => {
+  const slug = await findUniquePollSlug(name)
+
+  return prisma.organisation.update({
+    where: await findOrganisationBySlugOrId(params, user),
+    data: {
+      polls: {
+        create: {
+          slug,
+          name,
+          customAdditionalQuestions,
+          expectedNumberOfParticipants,
+          ...(!!defaultAdditionalQuestions?.length
+            ? {
+                defaultAdditionalQuestions: {
+                  createMany: {
+                    data: defaultAdditionalQuestions.map((type) => ({
+                      type,
+                    })),
+                  },
+                },
+              }
+            : {}),
+        },
+      },
+    },
+    select: {
+      polls: {
+        where: {
+          slug,
+        },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          defaultAdditionalQuestions: true,
+          customAdditionalQuestions: true,
+          expectedNumberOfParticipants: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
+    },
+  })
 }

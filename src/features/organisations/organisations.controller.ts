@@ -18,6 +18,7 @@ import { addOrUpdateConnectContact } from './handlers/add-or-update-connect-cont
 import { sendOrganisationCreated } from './handlers/send-organisation-created'
 import {
   createOrganisation,
+  createPoll,
   fetchOrganisation,
   fetchOrganisations,
   updateOrganisation,
@@ -25,6 +26,7 @@ import {
 import {
   OrganisationCreateValidator,
   OrganisationFetchValidator,
+  OrganisationPollCreateValidator,
   OrganisationsFetchValidator,
   OrganisationUpdateValidator,
 } from './organisations.validator'
@@ -145,6 +147,35 @@ router
         }
 
         logger.error('Organisation fetch failed', err)
+
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
+      }
+    }
+  )
+
+/**
+ * Creates a new poll for an organisation
+ */
+router
+  .route('/v1/:organisationIdOrSlug/polls')
+  .post(
+    authentificationMiddleware,
+    validateRequest(OrganisationPollCreateValidator),
+    async ({ body, params, user }, res) => {
+      try {
+        const poll = await createPoll({
+          pollDto: body,
+          user: user!,
+          params,
+        })
+
+        return res.status(StatusCodes.CREATED).json(poll)
+      } catch (err) {
+        if (err instanceof EntityNotFoundException) {
+          return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
+        }
+
+        logger.error('Poll creation failed', err)
 
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
       }

@@ -114,3 +114,46 @@ export const OrganisationFetchValidator = {
   params: OrganisationParams,
   query: z.object({}).strict().optional(),
 }
+
+export enum PollDefaultAdditionalQuestionTypeEnum {
+  birthdate = 'birthdate',
+  postalCode = 'postalCode',
+}
+
+const OrganisationPollCreateCustomAdditionalQuestion = z
+  .object({
+    question: z.string(),
+    isEnabled: z.boolean(),
+  })
+  .strict()
+
+const MAX_CUSTOM_ADDITIONAL_QUESTIONS = 4
+
+const OrganisationPollCreateDto = z
+  .object({
+    name: z.string().min(1).max(150),
+    expectedNumberOfParticipants: z.number().optional(),
+    defaultAdditionalQuestions: z
+      .array(
+        z.enum([
+          PollDefaultAdditionalQuestionTypeEnum.birthdate,
+          PollDefaultAdditionalQuestionTypeEnum.postalCode,
+        ])
+      )
+      .optional(),
+    customAdditionalQuestions: z
+      .array(OrganisationPollCreateCustomAdditionalQuestion)
+      .max(MAX_CUSTOM_ADDITIONAL_QUESTIONS)
+      .optional(),
+  })
+  .strict()
+
+export type OrganisationPollCreateDto = z.infer<
+  typeof OrganisationPollCreateDto
+>
+
+export const OrganisationPollCreateValidator = {
+  body: OrganisationPollCreateDto,
+  params: OrganisationParams,
+  query: z.object({}).strict().optional(),
+}

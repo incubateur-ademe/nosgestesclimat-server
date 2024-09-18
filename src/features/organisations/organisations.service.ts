@@ -11,6 +11,7 @@ import { OrganisationCreatedEvent } from './events/OrganisationCreated.event'
 import { OrganisationUpdatedEvent } from './events/OrganisationUpdated.event'
 import {
   createOrganisationAndAdministrator,
+  createOrganisationPoll,
   fetchUserOrganisation,
   fetchUserOrganisations,
   updateAdministratorOrganisation,
@@ -18,6 +19,7 @@ import {
 import type {
   OrganisationCreateDto,
   OrganisationParams,
+  OrganisationPollCreateDto,
   OrganisationUpdateDto,
 } from './organisations.validator'
 
@@ -186,6 +188,38 @@ export const fetchOrganisation = async ({
     const organisation = await fetchUserOrganisation(params, user)
 
     return organisationToDto(organisation, user.userId)
+  } catch (e) {
+    if (isPrismaErrorNotFound(e)) {
+      throw new EntityNotFoundException('Organisation not found')
+    }
+    throw e
+  }
+}
+
+const pollToDto = (
+  poll: Awaited<ReturnType<typeof createOrganisationPoll>>['polls'][number]
+) => ({
+  ...poll,
+  defaultAdditionalQuestions: poll.defaultAdditionalQuestions.map(
+    ({ type }) => type
+  ),
+})
+
+export const createPoll = async ({
+  params,
+  pollDto,
+  user,
+}: {
+  params: OrganisationParams
+  pollDto: OrganisationPollCreateDto
+  user: NonNullable<Request['user']>
+}) => {
+  try {
+    const {
+      polls: [poll],
+    } = await createOrganisationPoll(params, pollDto, user)
+
+    return pollToDto(poll)
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('Organisation not found')
