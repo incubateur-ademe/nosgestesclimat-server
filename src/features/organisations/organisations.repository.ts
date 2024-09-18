@@ -6,6 +6,8 @@ import type {
   OrganisationCreateDto,
   OrganisationParams,
   OrganisationPollCreateDto,
+  OrganisationPollParams,
+  OrganisationPollUpdateDto,
   OrganisationUpdateDto,
 } from './organisations.validator'
 
@@ -255,6 +257,17 @@ export const fetchUserOrganisation = (
   return findOrganisationBySlugOrId(params, user, defaultOrganisationSelection)
 }
 
+const defaultPollSelection = {
+  id: true,
+  name: true,
+  slug: true,
+  defaultAdditionalQuestions: true,
+  customAdditionalQuestions: true,
+  expectedNumberOfParticipants: true,
+  createdAt: true,
+  updatedAt: true,
+}
+
 const findUniquePollSlug = findModelUniqueSlug(prisma.poll)
 
 export const createOrganisationPoll = async (
@@ -297,17 +310,85 @@ export const createOrganisationPoll = async (
         where: {
           slug,
         },
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          defaultAdditionalQuestions: true,
-          customAdditionalQuestions: true,
-          expectedNumberOfParticipants: true,
-          createdAt: true,
-          updatedAt: true,
+        select: defaultPollSelection,
+      },
+    },
+  })
+}
+
+export const updateOrganisationPoll = async (
+  { organisationIdOrSlug, pollIdOrSlug }: OrganisationPollParams,
+  {
+    name,
+    expectedNumberOfParticipants,
+    defaultAdditionalQuestions,
+    customAdditionalQuestions: updateCustomAdditionalQuestions,
+  }: OrganisationPollUpdateDto,
+  { email: userEmail }: NonNullable<Request['user']>
+) => {
+  const {
+    id,
+    customAdditionalQuestions: existingCustomAdditionalQuestions,
+    defaultAdditionalQuestions: existingDefaultAdditionalQuestions,
+  } = await prisma.poll.findFirstOrThrow({
+    where: {
+      OR: [{ id: pollIdOrSlug }, { slug: pollIdOrSlug }],
+      organisation: {
+        OR: [{ id: organisationIdOrSlug }, { slug: organisationIdOrSlug }],
+        administrators: {
+          some: {
+            userEmail,
+          },
         },
       },
     },
+    select: {
+      id: true,
+      customAdditionalQuestions: true,
+      defaultAdditionalQuestions: true,
+    },
+  })
+
+  const customAdditionalQuestions =
+    updateCustomAdditionalQuestions || existingCustomAdditionalQuestions
+
+  return prisma.poll.update({
+    where: { id },
+    data: {
+      name,
+      expectedNumberOfParticipants,
+      ...(!!customAdditionalQuestions
+        ? {
+            customAdditionalQuestions,
+          }
+        : {}),
+      ...(!!defaultAdditionalQuestions
+        ? {
+            defaultAdditionalQuestions: {
+              ...(!!existingDefaultAdditionalQuestions.length
+                ? {
+                    deleteMany: {
+                      id: {
+                        in: existingDefaultAdditionalQuestions.map(
+                          ({ id }) => id
+                        ),
+                      },
+                    },
+                  }
+                : {}),
+              ...(!!defaultAdditionalQuestions.length
+                ? {
+                    createMany: {
+                      data: defaultAdditionalQuestions.map((type) => ({
+                        type,
+                      })),
+                    },
+                  }
+                : {}),
+            },
+          }
+        : {}),
+    },
+    select: defaultPollSelection,
   })
 }

@@ -22,11 +22,13 @@ import {
   fetchOrganisation,
   fetchOrganisations,
   updateOrganisation,
+  updatePoll,
 } from './organisations.service'
 import {
   OrganisationCreateValidator,
   OrganisationFetchValidator,
   OrganisationPollCreateValidator,
+  OrganisationPollUpdateValidator,
   OrganisationsFetchValidator,
   OrganisationUpdateValidator,
 } from './organisations.validator'
@@ -176,6 +178,35 @@ router
         }
 
         logger.error('Poll creation failed', err)
+
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
+      }
+    }
+  )
+
+/**
+ * Updates a poll for an organisation
+ */
+router
+  .route('/v1/:organisationIdOrSlug/polls/:pollIdOrSlug')
+  .put(
+    authentificationMiddleware,
+    validateRequest(OrganisationPollUpdateValidator),
+    async ({ body, params, user }, res) => {
+      try {
+        const poll = await updatePoll({
+          pollDto: body,
+          user: user!,
+          params,
+        })
+
+        return res.status(StatusCodes.OK).json(poll)
+      } catch (err) {
+        if (err instanceof EntityNotFoundException) {
+          return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
+        }
+
+        logger.error('Poll update failed', err)
 
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
       }

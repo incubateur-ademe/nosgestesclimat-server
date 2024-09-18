@@ -9,6 +9,18 @@ const OrganisationParams = z
 
 export type OrganisationParams = z.infer<typeof OrganisationParams>
 
+const PollParams = z
+  .object({
+    pollIdOrSlug: z.string(),
+  })
+  .strict()
+
+export type PollParams = z.infer<typeof PollParams>
+
+const OrganisationPollParams = OrganisationParams.merge(PollParams)
+
+export type OrganisationPollParams = z.infer<typeof OrganisationPollParams>
+
 export enum OrganisationTypeEnum {
   association = 'association',
   company = 'company',
@@ -155,5 +167,17 @@ export type OrganisationPollCreateDto = z.infer<
 export const OrganisationPollCreateValidator = {
   body: OrganisationPollCreateDto,
   params: OrganisationParams,
+  query: z.object({}).strict().optional(),
+}
+
+const OrganisationPollUpdateDto = OrganisationPollCreateDto.partial()
+
+export type OrganisationPollUpdateDto = z.infer<
+  typeof OrganisationPollUpdateDto
+>
+
+export const OrganisationPollUpdateValidator = {
+  body: OrganisationPollUpdateDto,
+  params: OrganisationPollParams,
   query: z.object({}).strict().optional(),
 }

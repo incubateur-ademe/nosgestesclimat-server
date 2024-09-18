@@ -24,6 +24,9 @@ export const FETCH_ORGANISATION_ROUTE =
 export const CREATE_ORGANISATION_POLL_ROUTE =
   '/organisations/v1/:organisationIdOrSlug/polls'
 
+export const UPDATE_ORGANISATION_POLL_ROUTE =
+  '/organisations/v1/:organisationIdOrSlug/polls/:pollIdOrSlug'
+
 type TestAgent = ReturnType<typeof supertest>
 
 const organisationTypes = [
@@ -180,6 +183,7 @@ export const createOrganisationPoll = async ({
 
   return {
     ...poll,
+    createdAt: poll.createdAt.toISOString(),
     defaultAdditionalQuestions: poll.defaultAdditionalQuestions.map(
       ({ type }) => type
     ),
