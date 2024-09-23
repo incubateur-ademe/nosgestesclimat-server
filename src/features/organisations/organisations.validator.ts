@@ -181,3 +181,9 @@ export const OrganisationPollUpdateValidator = {
   params: OrganisationPollParams,
   query: z.object({}).strict().optional(),
 }
+
+export const OrganisationPollDeleteValidator = {
+  body: z.object({}).strict().optional(),
+  params: OrganisationPollParams,
+  query: z.object({}).strict().optional(),
+}

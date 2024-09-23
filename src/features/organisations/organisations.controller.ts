@@ -19,6 +19,7 @@ import { sendOrganisationCreated } from './handlers/send-organisation-created'
 import {
   createOrganisation,
   createPoll,
+  deletePoll,
   fetchOrganisation,
   fetchOrganisations,
   updateOrganisation,
@@ -28,6 +29,7 @@ import {
   OrganisationCreateValidator,
   OrganisationFetchValidator,
   OrganisationPollCreateValidator,
+  OrganisationPollDeleteValidator,
   OrganisationPollUpdateValidator,
   OrganisationsFetchValidator,
   OrganisationUpdateValidator,
@@ -207,6 +209,34 @@ router
         }
 
         logger.error('Poll update failed', err)
+
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
+      }
+    }
+  )
+
+/**
+ * Deletes a poll for an organisation
+ */
+router
+  .route('/v1/:organisationIdOrSlug/polls/:pollIdOrSlug')
+  .delete(
+    authentificationMiddleware,
+    validateRequest(OrganisationPollDeleteValidator),
+    async ({ params, user }, res) => {
+      try {
+        await deletePoll({
+          user: user!,
+          params,
+        })
+
+        return res.status(StatusCodes.NO_CONTENT).end()
+      } catch (err) {
+        if (err instanceof EntityNotFoundException) {
+          return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
+        }
+
+        logger.error('Poll delete failed', err)
 
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
       }

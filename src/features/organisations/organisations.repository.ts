@@ -100,6 +100,29 @@ const findOrganisationBySlugOrId = <
   })
 }
 
+const findOrganisationPollBySlugOrId = <
+  T extends Prisma.PollSelect = { id: true },
+>(
+  { organisationIdOrSlug, pollIdOrSlug }: OrganisationPollParams,
+  { email: userEmail }: NonNullable<Request['user']>,
+  select: T = { id: true } as T
+) => {
+  return prisma.poll.findFirstOrThrow({
+    where: {
+      OR: [{ id: pollIdOrSlug }, { slug: pollIdOrSlug }],
+      organisation: {
+        OR: [{ id: organisationIdOrSlug }, { slug: organisationIdOrSlug }],
+        administrators: {
+          some: {
+            userEmail,
+          },
+        },
+      },
+    },
+    select,
+  })
+}
+
 const findUniqueOrganisationSlug = findModelUniqueSlug(prisma.organisation)
 
 export const createOrganisationAndAdministrator = async (
@@ -317,36 +340,23 @@ export const createOrganisationPoll = async (
 }
 
 export const updateOrganisationPoll = async (
-  { organisationIdOrSlug, pollIdOrSlug }: OrganisationPollParams,
+  params: OrganisationPollParams,
   {
     name,
     expectedNumberOfParticipants,
     defaultAdditionalQuestions,
     customAdditionalQuestions: updateCustomAdditionalQuestions,
   }: OrganisationPollUpdateDto,
-  { email: userEmail }: NonNullable<Request['user']>
+  user: NonNullable<Request['user']>
 ) => {
   const {
     id,
     customAdditionalQuestions: existingCustomAdditionalQuestions,
     defaultAdditionalQuestions: existingDefaultAdditionalQuestions,
-  } = await prisma.poll.findFirstOrThrow({
-    where: {
-      OR: [{ id: pollIdOrSlug }, { slug: pollIdOrSlug }],
-      organisation: {
-        OR: [{ id: organisationIdOrSlug }, { slug: organisationIdOrSlug }],
-        administrators: {
-          some: {
-            userEmail,
-          },
-        },
-      },
-    },
-    select: {
-      id: true,
-      customAdditionalQuestions: true,
-      defaultAdditionalQuestions: true,
-    },
+  } = await findOrganisationPollBySlugOrId(params, user, {
+    id: true,
+    customAdditionalQuestions: true,
+    defaultAdditionalQuestions: true,
   })
 
   const customAdditionalQuestions =
@@ -390,5 +400,14 @@ export const updateOrganisationPoll = async (
         : {}),
     },
     select: defaultPollSelection,
+  })
+}
+
+export const deleteOrganisationPoll = async (
+  params: OrganisationPollParams,
+  user: NonNullable<Request['user']>
+) => {
+  return prisma.poll.delete({
+    where: await findOrganisationPollBySlugOrId(params, user),
   })
 }

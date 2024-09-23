@@ -12,6 +12,7 @@ import { OrganisationUpdatedEvent } from './events/OrganisationUpdated.event'
 import {
   createOrganisationAndAdministrator,
   createOrganisationPoll,
+  deleteOrganisationPoll,
   fetchUserOrganisation,
   fetchUserOrganisations,
   updateAdministratorOrganisation,
@@ -244,6 +245,23 @@ export const updatePoll = async ({
     const poll = await updateOrganisationPoll(params, pollDto, user)
 
     return pollToDto(poll)
+  } catch (e) {
+    if (isPrismaErrorNotFound(e)) {
+      throw new EntityNotFoundException('Poll not found')
+    }
+    throw e
+  }
+}
+
+export const deletePoll = async ({
+  params,
+  user,
+}: {
+  params: OrganisationPollParams
+  user: NonNullable<Request['user']>
+}) => {
+  try {
+    return await deleteOrganisationPoll(params, user)
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('Poll not found')
