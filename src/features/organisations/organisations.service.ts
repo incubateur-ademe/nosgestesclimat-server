@@ -1,4 +1,5 @@
 import type { Request } from 'express'
+import { config } from '../../config'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
 import { ForbiddenException } from '../../core/errors/ForbiddenException'
 import { EventBus } from '../../core/event-bus/event-bus'
@@ -38,6 +39,8 @@ const organisationToDto = (
   connectedUser: string
 ) => ({
   ...organisation,
+  hasCustomQuestionEnabled:
+    config.organisationIdsWithCustomQuestionsEnabled.has(organisation.id),
   administrators: organisation.administrators.map(
     ({
       id,

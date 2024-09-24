@@ -35,7 +35,7 @@ router
       }
 
       if (
-        !config.organisationIdsWithCustomQuestionsEnabled.includes(
+        !config.organisationIdsWithCustomQuestionsEnabled.has(
           organisationFound._id.toString()
         )
       ) {
