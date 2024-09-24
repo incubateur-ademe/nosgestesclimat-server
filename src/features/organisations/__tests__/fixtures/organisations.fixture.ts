@@ -30,6 +30,12 @@ export const UPDATE_ORGANISATION_POLL_ROUTE =
 export const DELETE_ORGANISATION_POLL_ROUTE =
   '/organisations/v1/:organisationIdOrSlug/polls/:pollIdOrSlug'
 
+export const FETCH_ORGANISATION_POLLS_ROUTE =
+  '/organisations/v1/:organisationIdOrSlug/polls'
+
+export const FETCH_ORGANISATION_POLL_ROUTE =
+  '/organisations/v1/:organisationIdOrSlug/polls/:pollIdOrSlug'
+
 type TestAgent = ReturnType<typeof supertest>
 
 const organisationTypes = [

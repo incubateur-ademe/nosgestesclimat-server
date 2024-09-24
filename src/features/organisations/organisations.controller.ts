@@ -22,6 +22,8 @@ import {
   deletePoll,
   fetchOrganisation,
   fetchOrganisations,
+  fetchPoll,
+  fetchPolls,
   updateOrganisation,
   updatePoll,
 } from './organisations.service'
@@ -30,6 +32,8 @@ import {
   OrganisationFetchValidator,
   OrganisationPollCreateValidator,
   OrganisationPollDeleteValidator,
+  OrganisationPollFetchValidator,
+  OrganisationPollsFetchValidator,
   OrganisationPollUpdateValidator,
   OrganisationsFetchValidator,
   OrganisationUpdateValidator,
@@ -237,6 +241,62 @@ router
         }
 
         logger.error('Poll delete failed', err)
+
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
+      }
+    }
+  )
+
+/**
+ * Returns polls for an organisation
+ */
+router
+  .route('/v1/:organisationIdOrSlug/polls')
+  .get(
+    authentificationMiddleware,
+    validateRequest(OrganisationPollsFetchValidator),
+    async ({ params, user }, res) => {
+      try {
+        const polls = await fetchPolls({
+          user: user!,
+          params,
+        })
+
+        return res.status(StatusCodes.OK).json(polls)
+      } catch (err) {
+        if (err instanceof EntityNotFoundException) {
+          return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
+        }
+
+        logger.error('Polls fetch failed', err)
+
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
+      }
+    }
+  )
+
+/**
+ * Returns poll for an organisation and an id or a slug
+ */
+router
+  .route('/v1/:organisationIdOrSlug/polls/:pollIdOrSlug')
+  .get(
+    authentificationMiddleware,
+    validateRequest(OrganisationPollFetchValidator),
+    async ({ params, user }, res) => {
+      try {
+        const poll = await fetchPoll({
+          user: user!,
+          params,
+        })
+
+        return res.status(StatusCodes.OK).json(poll)
+      } catch (err) {
+        if (err instanceof EntityNotFoundException) {
+          return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
+        }
+
+        logger.error('Poll fetch failed', err)
 
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
       }

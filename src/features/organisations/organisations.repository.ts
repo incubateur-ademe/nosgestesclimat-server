@@ -411,3 +411,24 @@ export const deleteOrganisationPoll = async (
     where: await findOrganisationPollBySlugOrId(params, user),
   })
 }
+
+export const fetchOrganisationPolls = async (
+  params: OrganisationParams,
+  user: NonNullable<Request['user']>
+) => {
+  return prisma.organisation.findUniqueOrThrow({
+    where: await findOrganisationBySlugOrId(params, user),
+    select: {
+      polls: {
+        select: defaultPollSelection,
+      },
+    },
+  })
+}
+
+export const fetchOrganisationPoll = (
+  params: OrganisationPollParams,
+  user: NonNullable<Request['user']>
+) => {
+  return findOrganisationPollBySlugOrId(params, user, defaultPollSelection)
+}

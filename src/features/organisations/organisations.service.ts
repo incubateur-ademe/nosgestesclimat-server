@@ -13,6 +13,8 @@ import {
   createOrganisationAndAdministrator,
   createOrganisationPoll,
   deleteOrganisationPoll,
+  fetchOrganisationPoll,
+  fetchOrganisationPolls,
   fetchUserOrganisation,
   fetchUserOrganisations,
   updateAdministratorOrganisation,
@@ -262,6 +264,44 @@ export const deletePoll = async ({
 }) => {
   try {
     return await deleteOrganisationPoll(params, user)
+  } catch (e) {
+    if (isPrismaErrorNotFound(e)) {
+      throw new EntityNotFoundException('Poll not found')
+    }
+    throw e
+  }
+}
+
+export const fetchPolls = async ({
+  params,
+  user,
+}: {
+  params: OrganisationParams
+  user: NonNullable<Request['user']>
+}) => {
+  try {
+    const { polls } = await fetchOrganisationPolls(params, user)
+
+    return polls.map(pollToDto)
+  } catch (e) {
+    if (isPrismaErrorNotFound(e)) {
+      throw new EntityNotFoundException('Organisation not found')
+    }
+    throw e
+  }
+}
+
+export const fetchPoll = async ({
+  params,
+  user,
+}: {
+  params: OrganisationPollParams
+  user: NonNullable<Request['user']>
+}) => {
+  try {
+    const poll = await fetchOrganisationPoll(params, user)
+
+    return pollToDto(poll)
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('Poll not found')
