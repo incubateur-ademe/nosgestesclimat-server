@@ -60,9 +60,8 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
       return res.status(403).json('No matching organisation found.')
     }
 
-    const uniqueSlug = !organisationFound.slug
-      ? await findUniqueOrgaSlug(organisationName)
-      : undefined
+    const uniqueSlug =
+      organisationFound.slug || (await findUniqueOrgaSlug(organisationName))
 
     // Handles all the update logic
     const organisationUpdated = await handleUpdateOrganisation({

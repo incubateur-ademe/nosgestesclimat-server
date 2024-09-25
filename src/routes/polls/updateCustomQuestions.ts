@@ -1,10 +1,12 @@
 import type { Request, Response } from 'express'
 import express from 'express'
-import { Organisation } from '../../schemas/OrganisationSchema'
-import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
+import { prisma } from '../../adapters/prisma/client'
 import { config } from '../../config'
-import { Poll } from '../../schemas/PollSchema'
+import logger from '../../logger'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
+import { Organisation } from '../../schemas/OrganisationSchema'
+import { Poll } from '../../schemas/PollSchema'
+import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 
 const router = express.Router()
 
@@ -50,10 +52,24 @@ router
 
       const decodedPollSlug = decodeURIComponent(pollSlug)
 
-      await Poll.findOneAndUpdate(
-        { slug: decodedPollSlug },
-        { customAdditionalQuestions }
-      )
+      await Promise.all([
+        Poll.findOneAndUpdate(
+          { slug: decodedPollSlug },
+          { customAdditionalQuestions }
+        ),
+        prisma.poll
+          .update({
+            where: {
+              slug: decodedPollSlug,
+            },
+            data: {
+              customAdditionalQuestions,
+            },
+          })
+          .catch((error) =>
+            logger.error('postgre Polls replication failed', error)
+          ),
+      ])
 
       setSuccessfulJSONResponse(res)
       res.json(true)
