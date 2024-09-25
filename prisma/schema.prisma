@@ -80,6 +80,67 @@ model NorthstarRating {
   updatedAt    DateTime            @updatedAt
 }
 
+enum OrganisationType {
+  association
+  company
+  cooperative
+  groupOfFriends
+  other
+  publicOrRegionalAuthority
+  universityOrSchool
+}
+
+model Organisation {
+  id                    String                      @id @default(cuid())
+  name                  String                      @db.VarChar(100)
+  slug                  String                      @unique @db.VarChar(105)
+  type                  OrganisationType?
+  administrators        OrganisationAdministrator[]
+  numberOfCollaborators Int?                        @db.Integer
+  polls                 Poll[]
+  createdAt             DateTime                    @default(now())
+  updatedAt             DateTime                    @updatedAt
+}
+
+model OrganisationAdministrator {
+  id             String       @id @default(uuid())
+  user           VerifiedUser @relation(fields: [userEmail], references: [email])
+  userEmail      String       @unique
+  organisation   Organisation @relation(fields: [organisationId], onDelete: Cascade, references: [id])
+  organisationId String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Poll {
+  id                           String                          @id @default(cuid())
+  name                         String                          @db.VarChar(150)
+  slug                         String                          @unique @db.VarChar(155)
+  expectedNumberOfParticipants Int?                            @db.Integer
+  customAdditionalQuestions    Json
+  defaultAdditionalQuestions   PollDefaultAdditionalQuestion[]
+  organisationId               String
+  organisation                 Organisation                    @relation(fields: [organisationId], onDelete: Cascade, references: [id])
+  createdAt                    DateTime                        @default(now())
+  updatedAt                    DateTime                        @updatedAt
+}
+
+enum PollDefaultAdditionalQuestionType {
+  postalCode
+  birthdate
+}
+
+model PollDefaultAdditionalQuestion {
+  id        String                            @id @default(uuid())
+  pollId    String
+  poll      Poll                              @relation(fields: [pollId], onDelete: Cascade, references: [id])
+  type      PollDefaultAdditionalQuestionType
+  createdAt DateTime                          @default(now())
+  updatedAt DateTime                          @updatedAt
+
+  @@unique([pollId, type])
+}
+
 enum QuizzAnswerIsAnswerCorrect {
   correct
   almost
@@ -113,4 +174,26 @@ model User {
   member        GroupParticipant[]
   createdAt     DateTime             @default(now())
   updatedAt     DateTime             @updatedAt
+}
+
+model VerificationCode {
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String   @db.Uuid
+  email          String
+  code           String   @db.VarChar(6)
+  expirationDate DateTime
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model VerifiedUser {
+  email                    String                      @id
+  id                       String                      @db.Uuid
+  name                     String?
+  telephone                String?
+  position                 String?
+  optedInForCommunications Boolean                     @default(false)
+  administrator            OrganisationAdministrator[]
+  createdAt                DateTime                    @default(now())
+  updatedAt                DateTime                    @updatedAt
 }

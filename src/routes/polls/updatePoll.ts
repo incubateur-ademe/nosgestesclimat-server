@@ -1,5 +1,7 @@
 import type { Request, Response } from 'express'
 import express from 'express'
+import { prisma } from '../../adapters/prisma/client'
+import logger from '../../logger'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
 import { Organisation } from '../../schemas/OrganisationSchema'
 import { Poll } from '../../schemas/PollSchema'
@@ -53,7 +55,37 @@ router
         poll.name = name
       }
 
-      await poll.save()
+      await Promise.all([
+        poll.save(),
+        prisma.poll
+          .update({
+            where: {
+              slug: decodedPollSlug,
+            },
+            data: {
+              name,
+              defaultAdditionalQuestions: {
+                deleteMany: {
+                  pollId: poll._id.toString(),
+                },
+                ...(!!defaultAdditionalQuestions?.length
+                  ? {
+                      createMany: {
+                        data: defaultAdditionalQuestions.map(
+                          (type: string) => ({
+                            type,
+                          })
+                        ),
+                      },
+                    }
+                  : {}),
+              },
+            },
+          })
+          .catch((error) =>
+            logger.error('postgre Polls replication failed', error)
+          ),
+      ])
 
       setSuccessfulJSONResponse(res)
       res.json(true)
