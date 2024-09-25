@@ -1,5 +1,6 @@
 import express from 'express'
 import { prisma } from '../../adapters/prisma/client'
+import { isValidEmail } from '../../core/typeguards/isValidEmail'
 import { sendGroupEmail } from '../../helpers/email/sendGroupEmail'
 import logger from '../../logger'
 import { Group } from '../../schemas/GroupSchema'
@@ -68,11 +69,15 @@ router.route('/').post(async (req, res) => {
         create: {
           id: userId,
           name: administratorName,
-          email: administratorEmail,
+          ...(administratorEmail && isValidEmail(administratorEmail)
+            ? { email: administratorEmail }
+            : {}),
         },
         update: {
           name: administratorName,
-          email: administratorEmail,
+          ...(administratorEmail && isValidEmail(administratorEmail)
+            ? { email: administratorEmail }
+            : {}),
         },
       })
 

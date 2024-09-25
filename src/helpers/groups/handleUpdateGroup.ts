@@ -43,7 +43,7 @@ export async function handleUpdateGroup({
             },
           },
           data: {
-            simulationId: simulationSaved._id.toString(),
+            simulationId: simulationSaved.id.toString(),
           },
         })
         .catch((error) =>
@@ -70,9 +70,11 @@ export async function handleUpdateGroup({
       },
       {
         name: userDocument.name || '🦊',
-        email: userDocument.email,
         userId: userDocument.userId,
-        simulation: simulationSaved._id.toString(),
+        simulation: simulationSaved.id,
+        ...(userDocument.email && isValidEmail(userDocument.email)
+          ? { email: userDocument.email }
+          : {}),
       }
     ).catch((error) =>
       logger.error('postgre Groups replication failed', error)
