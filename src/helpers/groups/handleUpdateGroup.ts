@@ -71,7 +71,7 @@ export async function handleUpdateGroup({
       {
         name: userDocument.name || '🦊',
         userId: userDocument.userId,
-        simulation: simulationSaved._id.toString(),
+        simulation: simulationSaved.id,
         ...(userDocument.email && isValidEmail(userDocument.email)
           ? { email: userDocument.email }
           : {}),
