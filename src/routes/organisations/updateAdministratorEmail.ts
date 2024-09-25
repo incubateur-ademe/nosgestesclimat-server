@@ -54,6 +54,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
       administratorEmail: email,
       updates: {
         email: emailModified,
+        uniqueSlug: organisationFound.slug!,
         organisationName,
         administratorName,
         hasOptedInForCommunications,
