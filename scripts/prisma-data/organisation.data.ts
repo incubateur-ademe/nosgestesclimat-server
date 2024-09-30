@@ -1,4 +1,3 @@
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 import mongoose from 'mongoose'
 import slugify from 'slugify'
 import z, { ZodError } from 'zod'
@@ -109,18 +108,22 @@ const OrganisationSchema = z
   })
   .strict()
 
-const getSlug = (name: string, map: Map<string, number>) => {
-  const rawSlug = slugify(name.toLocaleLowerCase(), {
-    strict: true,
-  })
-
-  if (map.has(rawSlug)) {
-    const slug = `${rawSlug}-${map.get(rawSlug)}`
-    map.set(rawSlug, (map.get(rawSlug) || 0) + 1)
-    return slug
+const getSlug = (slug: string, set: Set<string>, count = 0): string => {
+  if (count === 0) {
+    slug = slugify(slug.toLocaleLowerCase(), {
+      strict: true,
+    })
+  } else {
+    slug = `${slug}-${count}`
   }
 
-  return rawSlug
+  if (set.has(slug)) {
+    return getSlug(slug, set, count + 1)
+  }
+
+  set.add(slug)
+
+  return slug
 }
 
 const migrateOrganisationToPg = async () => {
@@ -137,8 +140,8 @@ const migrateOrganisationToPg = async () => {
       .lean()
       .cursor({ batchSize: 1000 })
 
-    const organisationSlugMap = new Map<string, number>()
-    const pollSlugMap = new Map<string, number>()
+    const organisationSlugSet = new Set<string>()
+    const pollSlugSet = new Set<string>()
 
     for await (const rawOrganisation of organisations) {
       data = rawOrganisation
@@ -258,116 +261,125 @@ const migrateOrganisationToPg = async () => {
       }
 
       const id = organisationId.toString()
-      const name = organisationName || 'Organisation'
-      const slug = organisationSlug || getSlug(name, organisationSlugMap)
-
-      if (!organisationSlugMap.has(slug)) {
-        organisationSlugMap.set(slug, 1)
-      }
-
-      await prisma.organisation.upsert({
+      const existingOrganisation = await prisma.organisation.findUnique({
         where: {
           id,
         },
-        create: {
-          id,
-          name,
-          slug,
-          numberOfCollaborators,
-          type: getOrganisationType(organisationType),
-          administrators: {
-            createMany: {
-              data: administrators.map(({ email: userEmail }) => ({
-                userEmail,
-                createdAt,
-                updatedAt,
-              })),
+      })
+
+      const name = organisationName || 'Organisation'
+      const slug =
+        organisationSlug ||
+        existingOrganisation?.slug ||
+        getSlug(name, organisationSlugSet)
+
+      organisationSlugSet.add(slug)
+
+      if (existingOrganisation) {
+        await prisma.organisation.update({
+          where: {
+            id,
+          },
+          data: {
+            name,
+            slug,
+            numberOfCollaborators,
+            type: getOrganisationType(organisationType),
+            administrators: {
+              deleteMany: {
+                organisationId: id,
+              },
+              createMany: {
+                data: administrators.map(({ email: userEmail }) => ({
+                  userEmail,
+                  createdAt,
+                  updatedAt,
+                })),
+              },
+            },
+            polls: {
+              deleteMany: {
+                organisationId: id,
+              },
             },
           },
-          polls: {
-            createMany: {
-              data: polls.map(
-                ({
-                  _id,
-                  name: pollName,
-                  slug: pollSlug,
+        })
+      } else {
+        await prisma.organisation.create({
+          data: {
+            id,
+            name,
+            slug,
+            numberOfCollaborators,
+            type: getOrganisationType(organisationType),
+            administrators: {
+              createMany: {
+                data: administrators.map(({ email: userEmail }) => ({
+                  userEmail,
+                  createdAt,
+                  updatedAt,
+                })),
+              },
+            },
+          },
+        })
+      }
+
+      const chunkSize = 30
+      for (let i = 0; i < polls.length; i += chunkSize) {
+        const pollsChunk = polls.slice(i, i + chunkSize)
+
+        await Promise.all(
+          pollsChunk.map(
+            ({
+              _id,
+              name: pollName,
+              slug: pollSlug,
+              expectedNumberOfParticipants,
+              createdAt,
+              updatedAt,
+              customAdditionalQuestions,
+              defaultAdditionalQuestions,
+            }) => {
+              const name = pollName || 'Campagne'
+              const slug = pollSlug || getSlug(name, pollSlugSet)
+
+              pollSlugSet.add(slug)
+
+              importedPolls++
+
+              customAdditionalQuestions = (
+                customAdditionalQuestions || []
+              ).filter(({ question }) => !!question)
+
+              return prisma.poll.create({
+                data: {
+                  id: _id.toString(),
+                  name,
+                  slug,
+                  organisationId: id,
                   expectedNumberOfParticipants,
                   createdAt,
                   updatedAt,
                   customAdditionalQuestions,
-                }) => {
-                  const name = pollName || 'Campagne'
-                  const slug = pollSlug || getSlug(name, pollSlugMap)
-
-                  pollSlugMap.set(
-                    slug,
-                    (organisationSlugMap.get(slug) || 0) + 1
-                  )
-
-                  importedPolls++
-
-                  customAdditionalQuestions = (
-                    customAdditionalQuestions || []
-                  ).filter(({ question }) => !!question)
-
-                  return {
-                    id: _id.toString(),
-                    name,
-                    slug,
-                    expectedNumberOfParticipants,
-                    createdAt,
-                    updatedAt,
-                    customAdditionalQuestions,
-                  }
-                }
-              ),
-            },
-          },
-        },
-        update: {
-          name,
-          slug,
-          numberOfCollaborators,
-          type: getOrganisationType(organisationType),
-        },
-      })
-
-      const chunkSize = 30
-      for (let i = 0; i < polls.length; i += chunkSize) {
-        const defaultAdditionalQuestionsChunk = polls
-          .slice(i, i + chunkSize)
-          .flatMap(
-            ({ _id, defaultAdditionalQuestions, createdAt, updatedAt }) =>
-              defaultAdditionalQuestions?.map((question) => ({
-                _id,
-                question,
-                createdAt,
-                updatedAt,
-              })) || []
-          )
-
-        await Promise.all(
-          defaultAdditionalQuestionsChunk.map(
-            ({ _id, question, createdAt, updatedAt }) =>
-              prisma.pollDefaultAdditionalQuestion
-                .create({
-                  data: {
-                    type: question,
-                    pollId: _id.toString(),
-                    createdAt,
-                    updatedAt,
-                  },
-                })
-                .catch((e) => {
-                  if (
-                    e instanceof PrismaClientKnownRequestError &&
-                    e.code === 'P2002'
-                  ) {
-                    // question already exists
-                    return
-                  }
-                  throw e
-                })
+                  ...(!!defaultAdditionalQuestions?.length
+                    ? {
+                        defaultAdditionalQuestions: {
+                          createMany: {
+                            data: defaultAdditionalQuestions.map(
+                              (question) => ({
+                                type: question,
+                                createdAt,
+                                updatedAt,
+                              })
+                            ),
+                          },
+                        },
+                      }
+                    : {}),
+                },
+              })
+            }
           )
         )
       }
