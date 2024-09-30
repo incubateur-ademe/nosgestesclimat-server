@@ -39,7 +39,7 @@ export async function handleUpdateGroup({
           where: {
             groupId_userId: {
               groupId: group._id.toString(),
-              userId: userDocument.userId,
+              userId: participantWithSimulation.userId,
             },
           },
           data: {
