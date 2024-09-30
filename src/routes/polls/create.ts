@@ -1,6 +1,8 @@
 import type { Request, Response } from 'express'
 import express from 'express'
+import { prisma } from '../../adapters/prisma/client'
 import { findUniquePollSlug } from '../../helpers/organisations/findUniquePollSlug'
+import logger from '../../logger'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
 import { Organisation } from '../../schemas/OrganisationSchema'
 import { Poll } from '../../schemas/PollSchema'
@@ -38,6 +40,31 @@ router
       })
 
       const newlySavedPoll = await pollCreated.save()
+
+      try {
+        await prisma.poll.create({
+          data: {
+            id: newlySavedPoll._id.toString(),
+            name,
+            slug: uniqueSlug,
+            organisationId,
+            customAdditionalQuestions: customAdditionalQuestions || [],
+            ...(defaultAdditionalQuestions?.length
+              ? {
+                  defaultAdditionalQuestions: {
+                    createMany: defaultAdditionalQuestions.map(
+                      (type: string) => ({
+                        type,
+                      })
+                    ),
+                  },
+                }
+              : {}),
+          },
+        })
+      } catch (error) {
+        logger.error('postgre Polls replication failed', error)
+      }
 
       organisation.polls.push(newlySavedPoll._id)
 

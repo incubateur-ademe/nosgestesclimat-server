@@ -1,10 +1,12 @@
 import type { Request, Response } from 'express'
 import express from 'express'
-import { Organisation } from '../../schemas/OrganisationSchema'
-import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
+import { prisma } from '../../adapters/prisma/client'
 import { handleSendVerificationCodeAndReturnExpirationDate } from '../../helpers/verificationCode/handleSendVerificationCodeAndReturnExpirationDate'
-import { validateEmail } from '../../utils/validation/validateEmail'
+import logger from '../../logger'
+import { Organisation } from '../../schemas/OrganisationSchema'
 import { formatEmail } from '../../utils/formatting/formatEmail'
+import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
+import { validateEmail } from '../../utils/validation/validateEmail'
 
 const router = express.Router()
 
@@ -41,7 +43,25 @@ router.route('/').post(async (req: Request, res: Response) => {
     })
 
     // Save the organisation
-    const newlySavedOrganisation = await organisationCreated.save()
+    const [newlySavedOrganisation] = await Promise.all([
+      organisationCreated.save(),
+      prisma.verifiedUser
+        .upsert({
+          where: {
+            email,
+          },
+          create: {
+            id: userId,
+            email,
+          },
+          update: {
+            id: userId,
+          },
+        })
+        .catch((error) =>
+          logger.error('postgre Organisations replication failed', error)
+        ),
+    ])
 
     const verificationCodeObject =
       await handleSendVerificationCodeAndReturnExpirationDate({ email })

@@ -1,5 +1,5 @@
-import type { EvaluatedNode, PublicodesExpression } from 'publicodes'
 import type Engine from 'publicodes'
+import type { EvaluatedNode, PublicodesExpression } from 'publicodes'
 import { carbonMetric } from '../../constants/ngc'
 import type { Metric } from '../../types/types'
 
@@ -23,8 +23,8 @@ export function safeEvaluate({
 
   try {
     evaluation = engine.evaluate(exprWithContext)
-  } catch (error) {
-    console.error(error)
+  } catch (e) {
+    console.error(e)
     return null
   }
 

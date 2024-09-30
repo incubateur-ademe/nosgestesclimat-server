@@ -1,5 +1,6 @@
 import express from 'express'
-import { createGroupAndUser } from '../../features/groups/groups.repository'
+import { prisma } from '../../adapters/prisma/client'
+import { isValidEmail } from '../../core/typeguards/isValidEmail'
 import { sendGroupEmail } from '../../helpers/email/sendGroupEmail'
 import logger from '../../logger'
 import { Group } from '../../schemas/GroupSchema'
@@ -58,20 +59,43 @@ router.route('/').post(async (req, res) => {
       participants: [],
     })
 
-    const [group] = await Promise.all([
-      newGroup.save(),
-      createGroupAndUser({
-        name: groupName,
-        emoji: groupEmoji,
-        administrator: {
-          name: administratorName,
-          email: administratorEmail,
-          userId,
+    const group = await newGroup.save()
+
+    try {
+      await prisma.user.upsert({
+        where: {
+          id: userId,
         },
-      }).catch((error) =>
-        logger.error('postgre Groups replication failed', error)
-      ),
-    ])
+        create: {
+          id: userId,
+          name: administratorName,
+          ...(administratorEmail && isValidEmail(administratorEmail)
+            ? { email: administratorEmail }
+            : {}),
+        },
+        update: {
+          name: administratorName,
+          ...(administratorEmail && isValidEmail(administratorEmail)
+            ? { email: administratorEmail }
+            : {}),
+        },
+      })
+
+      await prisma.group.create({
+        data: {
+          id: group._id.toString(),
+          name: groupName,
+          emoji: groupEmoji,
+          administrator: {
+            create: {
+              userId,
+            },
+          },
+        },
+      })
+    } catch (error) {
+      logger.error('postgre Groups replication failed', error)
+    }
 
     // Get the numbers of created groups by the administrator
     const createdGroups = await Group.find({
