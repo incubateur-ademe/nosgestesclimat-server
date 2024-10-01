@@ -132,7 +132,10 @@ export async function handleUpdateOrganisation({
         name: organisationName,
         slug: uniqueSlug,
         type: getOrganisationType(organisationType),
-        numberOfCollaborators,
+        numberOfCollaborators:
+          typeof numberOfCollaborators === 'string'
+            ? +numberOfCollaborators || null
+            : numberOfCollaborators,
         administrators: {
           create: {
             userEmail: administratorEmail,
