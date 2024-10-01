@@ -1,4 +1,58 @@
 import z from 'zod'
+import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail'
+import { PollDefaultAdditionalQuestionTypeEnum } from '../organisations/organisations.validator'
+
+const ActionChoicesSchema = z.record(z.string(), z.boolean())
+
+const CategoriesSchema = z
+  .object({
+    alimentation: z.number(),
+    transport: z.number(),
+    logement: z.number(),
+    divers: z.number(),
+    'services sociétaux': z.number(),
+  })
+  .strict()
+
+const MetricComputedResultSchema = z
+  .object({
+    bilan: z.number(),
+    categories: CategoriesSchema,
+    subcategories: z.record(z.string(), z.number()),
+  })
+  .strict()
+
+const ComputedResultSchema = z
+  .object({
+    carbone: MetricComputedResultSchema,
+    eau: MetricComputedResultSchema,
+  })
+  .strict()
+
+export enum SimulationAdditionalQuestionAnswerType {
+  custom = 'custom',
+  default = 'default',
+}
+
+const AdditionalQuestionsAnswersSchema = z.array(
+  z.union([
+    z.object({
+      type: z.literal(SimulationAdditionalQuestionAnswerType.custom),
+      key: z.string(),
+      answer: z.string(),
+    }),
+    z.object({
+      type: z.literal(SimulationAdditionalQuestionAnswerType.default),
+      key: z.enum([
+        PollDefaultAdditionalQuestionTypeEnum.birthdate,
+        PollDefaultAdditionalQuestionTypeEnum.postalCode,
+      ]),
+      answer: z.string(),
+    }),
+  ])
+)
+
+const FoldedStepsSchema = z.array(z.string())
 
 export const SituationSchema = z.record(
   z.string(),
@@ -66,3 +120,38 @@ export const SituationSchema = z.record(
 export type SituationSchemaInput = z.input<typeof SituationSchema>
 
 export type SituationSchema = z.infer<typeof SituationSchema>
+
+const SimulationCreateUser = z
+  .object({
+    id: z.string().uuid(),
+    email: z
+      .string()
+      .regex(EMAIL_REGEX)
+      .transform((email) => email.toLocaleLowerCase())
+      .optional(),
+    name: z.string().optional(),
+  })
+  .strict()
+
+export const SimulationCreateDto = z.object({
+  id: z.string().uuid(),
+  date: z.coerce.date().default(() => new Date()),
+  progression: z.number(),
+  savedViaEmail: z.boolean().default(false),
+  computedResults: ComputedResultSchema,
+  actionChoices: ActionChoicesSchema.default({}),
+  additionalQuestionsAnswers: AdditionalQuestionsAnswersSchema.optional(),
+  foldedSteps: FoldedStepsSchema.default([]),
+  situation: SituationSchema,
+  user: SimulationCreateUser,
+})
+
+export type SimulationCreateDto = z.infer<typeof SimulationCreateDto>
+
+export type SimulationCreateInputDto = z.input<typeof SimulationCreateDto>
+
+export const SimulationCreateValidator = {
+  body: SimulationCreateDto,
+  params: z.object({}).strict().optional(),
+  query: z.object({}).strict().optional(),
+}

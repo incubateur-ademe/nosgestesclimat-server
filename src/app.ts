@@ -52,6 +52,7 @@ import updatePollRoute from './routes/polls/updatePoll'
 import verifyUserParticipationRoute from './routes/polls/verifyUserParticipation'
 
 // Simulation routes
+import simulationController from './features/simulations/simulations.controller'
 import createSimulationRoute from './routes/simulations/create'
 import fetchSimulationRoute from './routes/simulations/fetchSimulation'
 
@@ -107,6 +108,7 @@ app.use('/authentication', authenticationController)
 app.use('/verification-codes', verificationCodeController)
 
 // Simulations route
+app.use('/simulations', simulationController)
 app.use('/simulations/create', createSimulationRoute)
 app.use('/simulations/fetch-simulation', fetchSimulationRoute)
 

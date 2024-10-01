@@ -8,6 +8,8 @@ import { engine } from '../../../../constants/publicode'
 import type { Metric } from '../../../../types/types'
 import type { SituationSchema } from '../../simulations.validator'
 
+export const CREATE_SIMULATION_ROUTE = '/simulations/v1'
+
 const categories = [
   'transport',
   'alimentation',
@@ -118,14 +120,19 @@ const getComputedResults = (situation: SituationSchema) => {
   }
 }
 
-export const getRandomPersonaSituation = () =>
+const getRandomPersona = () =>
   personas[
     faker.helpers.arrayElement(Object.keys(personas)) as keyof typeof personas
-  ].situation
+  ]
 
-export const getTestCases = () =>
-  Object.values(personas).map(({ situation, nom }) => ({
+export const getRandomPersonaSituation = () => getRandomPersona().situation
+
+export const getRandomTestCase = () => {
+  const { nom, situation } = getRandomPersona()
+
+  return {
     computedResults: getComputedResults(situation),
     situation,
     nom,
-  }))
+  }
+}
