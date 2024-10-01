@@ -4,6 +4,10 @@ import z, { ZodError } from 'zod'
 import { prisma } from '../../src/adapters/prisma/client'
 import { config } from '../../src/config'
 import { isPrismaErrorInconsistentColumnData } from '../../src/core/typeguards/isPrismaError'
+import {
+  findVerifiedUser,
+  getSimulationAdditionalQuestionsAnswers,
+} from '../../src/helpers/queries/createOrUpdateSimulation'
 import logger from '../../src/logger'
 import { Poll } from '../../src/schemas/PollSchema'
 import { Simulation } from '../../src/schemas/SimulationSchema'
@@ -328,74 +332,6 @@ const findSimulationUserId = async (simulation: SimulationSchema) => {
   }
 }
 
-const findVerifiedUser = async (
-  userId: string,
-  simulationId: string
-): Promise<{
-  email?: string | null | undefined
-}> => {
-  const user = await prisma.user.findUnique({
-    where: {
-      id: userId,
-    },
-    select: {
-      email: true,
-    },
-  })
-
-  if (!user) {
-    logger.warn(
-      `Could not find user for userId ${userId}. Trying in Verified users`
-    )
-  }
-
-  const { email } = user || {}
-
-  if (email) {
-    const verifiedUser = await prisma.verifiedUser.findUnique({
-      where: {
-        email,
-      },
-      select: {
-        email: true,
-      },
-    })
-
-    return verifiedUser ? verifiedUser : {}
-  }
-  const verifiedUsers = await prisma.verifiedUser.findMany({
-    where: {
-      id: userId,
-    },
-    select: {
-      email: true,
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  })
-
-  if (!verifiedUsers.length) {
-    return {}
-  }
-
-  if (verifiedUsers.length > 1) {
-    logger.warn(
-      `Found more than one user for userId ${userId}, simulation ${simulationId}. Taking first one`
-    )
-  }
-
-  const [verifiedUser] = verifiedUsers
-
-  return verifiedUser
-}
-
-type AditionalQuestionAnswer = {
-  type: 'default' | 'custom'
-  key: string
-  answer: string
-}
-
 const migrateSimulationToPg = async () => {
   let documents = 0
   let invalidUUIDs = 0
@@ -464,32 +400,11 @@ const migrateSimulationToPg = async () => {
       // Filter with typeguard does not work
       const foldedSteps = rawFoldedSteps.flatMap((s) => (s ? [s] : []))
 
-      const additionalQuestionsAnswers = [
-        ...Object.entries(defaultAdditionalQuestionsAnswers).reduce(
-          (acc: AditionalQuestionAnswer[], [key, value]) => {
-            acc.push({
-              type: 'default',
-              key,
-              answer: value?.toString() || '',
-            })
-
-            return acc
-          },
-          []
-        ),
-        ...Object.entries(customAdditionalQuestionsAnswers).reduce(
-          (acc: AditionalQuestionAnswer[], [key, value]) => {
-            acc.push({
-              type: 'custom',
-              key,
-              answer: value?.toString() || '',
-            })
-
-            return acc
-          },
-          []
-        ),
-      ]
+      const additionalQuestionsAnswers =
+        getSimulationAdditionalQuestionsAnswers({
+          customAdditionalQuestionsAnswers,
+          defaultAdditionalQuestionsAnswers,
+        })
 
       const existingSimulation = await prisma.simulation.findUnique({
         where: {

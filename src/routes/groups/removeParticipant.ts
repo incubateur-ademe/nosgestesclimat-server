@@ -42,6 +42,7 @@ router.route('/').post(async (req, res) => {
     }
 
     // We delete the group from the simulation of the participant
+    // The group participant postgre removal is done below
     const simulation = await Simulation.findById(participant.simulation)
     if (simulation) {
       simulation.groups = simulation.groups?.filter(
