@@ -42,7 +42,6 @@ export const LIST_NOS_GESTES_TRANSPORT_NEWSLETTER = 32
 // Template IDs
 export const TEMPLATE_ID_GROUP_CREATED = 57
 export const TEMPLATE_ID_GROUP_JOINED = 58
-export const TEMPLATE_ID_ORGANISATION_JOINED = 71
 
 // Matomo campaigns & keywords
 export const MATOMO_CAMPAIGN_KEY = 'mtm_campaign'
@@ -63,5 +62,5 @@ export const MATOMO_KEYWORDS = {
     DELETE_URL: 'groupe-invite-delete',
   },
   [TemplateIds.ORGANISATION_CREATED]: 'orga-admin-creation',
-  [TEMPLATE_ID_ORGANISATION_JOINED]: 'orga-invite-campagne',
+  [TemplateIds.ORGANISATION_JOINED]: 'orga-invite-campagne',
 } as const

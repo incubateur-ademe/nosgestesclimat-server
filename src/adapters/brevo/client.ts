@@ -118,6 +118,34 @@ export const sendSimulationUpsertedEmail = ({
   })
 }
 
+export const sendPollSimulationUpsertedEmail = async ({
+  email,
+  origin,
+  organisation: { name, slug },
+}: Readonly<{
+  email: string
+  origin: string
+  organisation: Pick<Organisation, 'name' | 'slug'>
+}>) => {
+  const templateId = TemplateIds.ORGANISATION_JOINED
+
+  const detailedViewUrl = new URL(
+    `${origin}/organisations/${slug}/resultats-detailles`
+  )
+  const { searchParams } = detailedViewUrl
+  searchParams.append(MATOMO_CAMPAIGN_KEY, MATOMO_CAMPAIGN_EMAIL_AUTOMATISE)
+  searchParams.append(MATOMO_KEYWORD_KEY, MATOMO_KEYWORDS[templateId])
+
+  await sendEmail({
+    email,
+    templateId,
+    params: {
+      ORGANISATION_NAME: name,
+      DETAILED_VIEW_URL: detailedViewUrl.toString(),
+    },
+  })
+}
+
 export const addOrUpdateContact = ({
   email,
   listIds,

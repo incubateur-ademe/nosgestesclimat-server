@@ -3,6 +3,7 @@ export enum TemplateIds {
   VERIFICATION_CODE = 66,
   ORGANISATION_CREATED = 70,
   SIMULATION_IN_PROGRESS = 102,
+  ORGANISATION_JOINED = 71,
 }
 
 export enum Attributes {

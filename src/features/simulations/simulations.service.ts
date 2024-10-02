@@ -63,14 +63,29 @@ export const fetchSimulation = async (params: UserSimulationParams) => {
 }
 
 export const createPollSimulation = async ({
+  origin,
   params,
   simulationDto,
 }: {
+  origin: string
   params: OrganisationPollParams
   simulationDto: SimulationCreateDto
 }) => {
   try {
-    const simulation = await createPollUserSimulation(params, simulationDto)
+    const { organisation, simulation } = await createPollUserSimulation(
+      params,
+      simulationDto
+    )
+
+    const simulationUpsertedEvent = new SimulationUpsertedEvent({
+      organisation,
+      simulation,
+      origin,
+    })
+
+    EventBus.emit(simulationUpsertedEvent)
+
+    await EventBus.once(simulationUpsertedEvent)
 
     return simulationToDto(simulation, simulationDto.user.id)
   } catch (e) {

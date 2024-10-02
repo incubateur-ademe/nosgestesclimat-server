@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker'
 import { StatusCodes } from 'http-status-codes'
+import nock from 'nock'
 import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
@@ -178,17 +179,21 @@ describe('Given a NGC user', () => {
       describe('And poll does exist', () => {
         let organisationId: string
         let organisationSlug: string
+        let organisationName: string
         let pollId: string
         let pollSlug: string
         let poll: Awaited<ReturnType<typeof createOrganisationPoll>>
 
         beforeEach(async () => {
           const { cookie } = await login({ agent })
-          ;({ id: organisationId, slug: organisationSlug } =
-            await createOrganisation({
-              agent,
-              cookie,
-            }))
+          ;({
+            id: organisationId,
+            name: organisationName,
+            slug: organisationSlug,
+          } = await createOrganisation({
+            agent,
+            cookie,
+          }))
           poll = await createOrganisationPoll({
             agent,
             cookie,
@@ -271,6 +276,8 @@ describe('Given a NGC user', () => {
               email: faker.internet.email().toLocaleLowerCase(),
             },
           }
+
+          nock(process.env.BREVO_URL!).post('/v3/smtp/email').reply(200)
 
           const {
             body: { id },
@@ -375,6 +382,101 @@ describe('Given a NGC user', () => {
                 email: null,
                 name: null,
               },
+            })
+          })
+        })
+
+        describe('And leaving his/her email', () => {
+          test('Then it sends a creation email', async () => {
+            const email = faker.internet.email().toLocaleLowerCase()
+            const payload: SimulationCreateInputDto = {
+              id: faker.string.uuid(),
+              situation,
+              computedResults,
+              progression: 1,
+              user: {
+                id: faker.string.uuid(),
+                email,
+              },
+            }
+
+            const scope = nock(process.env.BREVO_URL!, {
+              reqheaders: {
+                'api-key': process.env.BREVO_API_KEY!,
+              },
+            })
+              .post('/v3/smtp/email', {
+                to: [
+                  {
+                    name: email,
+                    email,
+                  },
+                ],
+                templateId: 71,
+                params: {
+                  ORGANISATION_NAME: organisationName,
+                  DETAILED_VIEW_URL: `https://nosgestesclimat.fr/organisations/${organisationSlug}/resultats-detailles?mtm_campaign=email-automatise&mtm_kwd=orga-invite-campagne`,
+                },
+              })
+              .reply(200)
+
+            await agent
+              .post(
+                url
+                  .replace(':organisationIdOrSlug', organisationId)
+                  .replace(':pollIdOrSlug', pollId)
+              )
+              .send(payload)
+              .expect(StatusCodes.CREATED)
+
+            expect(scope.isDone()).toBeTruthy()
+          })
+
+          describe('And custom user origin (preprod)', () => {
+            test('Then it sends a creation email', async () => {
+              const email = faker.internet.email().toLocaleLowerCase()
+              const payload: SimulationCreateInputDto = {
+                id: faker.string.uuid(),
+                situation,
+                computedResults,
+                progression: 1,
+                user: {
+                  id: faker.string.uuid(),
+                  email,
+                },
+              }
+
+              const scope = nock(process.env.BREVO_URL!, {
+                reqheaders: {
+                  'api-key': process.env.BREVO_API_KEY!,
+                },
+              })
+                .post('/v3/smtp/email', {
+                  to: [
+                    {
+                      name: email,
+                      email,
+                    },
+                  ],
+                  templateId: 71,
+                  params: {
+                    ORGANISATION_NAME: organisationName,
+                    DETAILED_VIEW_URL: `https://preprod.nosgestesclimat.fr/organisations/${organisationSlug}/resultats-detailles?mtm_campaign=email-automatise&mtm_kwd=orga-invite-campagne`,
+                  },
+                })
+                .reply(200)
+
+              await agent
+                .post(
+                  url
+                    .replace(':organisationIdOrSlug', organisationId)
+                    .replace(':pollIdOrSlug', pollId)
+                )
+                .set('origin', 'https://preprod.nosgestesclimat.fr')
+                .send(payload)
+                .expect(StatusCodes.CREATED)
+
+              expect(scope.isDone()).toBeTruthy()
             })
           })
         })

@@ -176,7 +176,10 @@ export const createPollUserSimulation = async (
     simulationId,
   }
 
-  const { simulation } = await prisma.simulationPoll.upsert({
+  const {
+    simulation,
+    poll: { organisation },
+  } = await prisma.simulationPoll.upsert({
     where: {
       simulationId_pollId: relation,
     },
@@ -186,8 +189,19 @@ export const createPollUserSimulation = async (
       simulation: {
         select: defaultSimulationSelection,
       },
+      poll: {
+        select: {
+          organisation: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
+        },
+      },
     },
   })
 
-  return simulation
+  return { simulation, organisation }
 }
