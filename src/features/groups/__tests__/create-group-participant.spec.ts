@@ -6,7 +6,8 @@ import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
 import logger from '../../../logger'
-import type { ParticipantCreateDto } from '../groups.validator'
+import { getSimulationPayload } from '../../simulations/__tests__/fixtures/simulations.fixtures'
+import type { ParticipantInputCreateDto } from '../groups.validator'
 import {
   CREATE_PARTICIPANT_ROUTE,
   createGroup,
@@ -36,7 +37,7 @@ describe('Given a NGC user', () => {
           .send({
             name: faker.person.fullName(),
             userId: faker.string.uuid(),
-            simulation: faker.string.uuid(),
+            simulation: getSimulationPayload(),
           })
           .expect(StatusCodes.NOT_FOUND)
 
@@ -67,7 +68,7 @@ describe('Given a NGC user', () => {
               name: faker.person.fullName(),
               email: 'Je ne donne jamais mon email',
               userId: faker.string.uuid(),
-              simulation: faker.string.uuid(),
+              simulation: getSimulationPayload(),
             })
             .expect(StatusCodes.BAD_REQUEST)
         })
@@ -80,30 +81,65 @@ describe('Given a NGC user', () => {
             .send({
               name: faker.person.fullName(),
               userId: faker.string.alpha(34),
-              simulation: faker.string.uuid(),
+              simulation: getSimulationPayload(),
             })
             .expect(StatusCodes.BAD_REQUEST)
         })
       })
 
-      describe('And invalid participant simulation', () => {
+      describe('And invalid participant simulation id', () => {
         test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
           await agent
             .post(url.replace(':groupId', groupId))
             .send({
               id: faker.string.uuid(),
               name: faker.person.fullName(),
-              simulation: faker.string.alpha(34),
+              simulation: {
+                ...getSimulationPayload(),
+                id: faker.string.alpha(34),
+              },
+            })
+            .expect(StatusCodes.BAD_REQUEST)
+        })
+      })
+
+      describe('And invalid participant simulation situation', () => {
+        test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
+          await agent
+            .post(url.replace(':groupId', groupId))
+            .send({
+              id: faker.string.uuid(),
+              name: faker.person.fullName(),
+              simulation: {
+                ...getSimulationPayload(),
+                situation: null,
+              },
+            })
+            .expect(StatusCodes.BAD_REQUEST)
+        })
+      })
+
+      describe('And invalid participant simulation computedResults', () => {
+        test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
+          await agent
+            .post(url.replace(':groupId', groupId))
+            .send({
+              id: faker.string.uuid(),
+              name: faker.person.fullName(),
+              simulation: {
+                ...getSimulationPayload(),
+                computedResults: null,
+              },
             })
             .expect(StatusCodes.BAD_REQUEST)
         })
       })
 
       test(`Then it returns a ${StatusCodes.CREATED} response with created participant`, async () => {
-        const payload: ParticipantCreateDto = {
+        const payload: ParticipantInputCreateDto = {
           name: faker.person.fullName(),
           userId: faker.string.uuid(),
-          simulation: faker.string.uuid(),
+          simulation: getSimulationPayload(),
         }
 
         const response = await agent
@@ -114,6 +150,17 @@ describe('Given a NGC user', () => {
         expect(response.body).toEqual({
           id: expect.any(String),
           ...payload,
+          simulation: {
+            ...payload.simulation,
+            date: expect.any(String),
+            createdAt: expect.any(String),
+            updatedAt: null,
+            polls: [],
+            foldedSteps: [],
+            actionChoices: {},
+            savedViaEmail: false,
+            additionalQuestionsAnswers: [],
+          },
           createdAt: expect.any(String),
           updatedAt: null,
           email: null,
@@ -121,11 +168,11 @@ describe('Given a NGC user', () => {
       })
 
       test(`Then it stores a participant in database`, async () => {
-        const payload: ParticipantCreateDto = {
+        const payload: ParticipantInputCreateDto = {
           userId: faker.string.uuid(),
           name: faker.person.fullName(),
-          email: faker.internet.email(),
-          simulation: faker.string.uuid(),
+          email: faker.internet.email().toLocaleLowerCase(),
+          simulation: getSimulationPayload(),
         }
 
         await agent.post(url.replace(':groupId', groupId)).send(payload)
@@ -157,7 +204,7 @@ describe('Given a NGC user', () => {
             createdAt: expect.anything(),
             updatedAt: null,
           },
-          simulationId: payload.simulation,
+          simulationId: payload.simulation.id,
           createdAt: expect.anything(),
           updatedAt: null,
           groupId,
@@ -181,7 +228,7 @@ describe('Given a NGC user', () => {
             .send({
               name: faker.person.fullName(),
               userId: faker.string.uuid(),
-              simulation: faker.string.uuid(),
+              simulation: getSimulationPayload(),
             })
             .expect(StatusCodes.INTERNAL_SERVER_ERROR)
         })
@@ -190,7 +237,7 @@ describe('Given a NGC user', () => {
           await agent.post(url.replace(':groupId', groupId)).send({
             name: faker.person.fullName(),
             userId: faker.string.uuid(),
-            simulation: faker.string.uuid(),
+            simulation: getSimulationPayload(),
           })
 
           expect(logger.error).toHaveBeenCalledWith(
@@ -220,10 +267,10 @@ describe('Given a NGC user', () => {
     )
 
     test(`Then it returns a ${StatusCodes.CREATED} response with updated participant`, async () => {
-      const payload: ParticipantCreateDto = {
+      const payload: ParticipantInputCreateDto = {
         userId,
         name: userName,
-        simulation: faker.string.uuid(),
+        simulation: getSimulationPayload(),
       }
 
       const response = await agent
@@ -234,6 +281,17 @@ describe('Given a NGC user', () => {
       expect(response.body).toEqual({
         id: expect.any(String),
         ...payload,
+        simulation: {
+          ...payload.simulation,
+          date: expect.any(String),
+          createdAt: expect.any(String),
+          updatedAt: null,
+          polls: [],
+          foldedSteps: [],
+          actionChoices: {},
+          savedViaEmail: false,
+          additionalQuestionsAnswers: [],
+        },
         email: userEmail,
         createdAt: expect.any(String),
         updatedAt: null,

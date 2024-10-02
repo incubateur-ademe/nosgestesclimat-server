@@ -7,7 +7,10 @@ import type supertest from 'supertest'
 import { carbonMetric, waterMetric } from '../../../../constants/ngc'
 import { engine } from '../../../../constants/publicode'
 import type { Metric } from '../../../../types/types'
-import type { SimulationCreateInputDto } from '../../simulations.validator'
+import type {
+  SimulationCreateInputDto,
+  SimulationParticipantCreateInputDto,
+} from '../../simulations.validator'
 import { SituationSchema } from '../../simulations.validator'
 
 type TestAgent = ReturnType<typeof supertest>
@@ -149,29 +152,22 @@ export const getRandomTestCase = () => {
   }
 }
 
-export const createSimulation = async ({
-  simulation: {
-    id,
-    date,
-    user,
-    situation,
-    foldedSteps,
-    progression,
-    savedViaEmail,
-    actionChoices,
-    computedResults,
-    additionalQuestionsAnswers,
-  } = {},
-  agent,
-}: {
-  agent: TestAgent
-  simulation?: Partial<SimulationCreateInputDto>
-}) => {
+export const getSimulationPayload = ({
+  id,
+  date,
+  situation,
+  foldedSteps,
+  progression,
+  savedViaEmail,
+  actionChoices,
+  computedResults,
+  additionalQuestionsAnswers,
+}: Partial<SimulationParticipantCreateInputDto> = {}): SimulationParticipantCreateInputDto => {
   situation = situation || getRandomPersonaSituation()
   computedResults =
     computedResults || getComputedResults(SituationSchema.parse(situation))
 
-  const payload: SimulationCreateInputDto = {
+  return {
     id: id || faker.string.uuid(),
     date,
     situation,
@@ -181,6 +177,19 @@ export const createSimulation = async ({
     actionChoices,
     computedResults,
     additionalQuestionsAnswers,
+  }
+}
+
+export const createSimulation = async ({
+  agent,
+  simulation = {},
+}: {
+  agent: TestAgent
+  simulation?: Partial<SimulationCreateInputDto>
+}) => {
+  const { user } = simulation
+  const payload: SimulationCreateInputDto = {
+    ...getSimulationPayload(simulation),
     user: {
       ...user,
       id: user?.id || faker.string.uuid(),

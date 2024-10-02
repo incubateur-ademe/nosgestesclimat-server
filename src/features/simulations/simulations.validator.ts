@@ -1,10 +1,10 @@
 import z from 'zod'
 import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail'
-import { UserParams } from '../groups/groups.validator'
 import {
   OrganisationPollParams,
   PollDefaultAdditionalQuestionTypeEnum,
 } from '../organisations/organisations.validator'
+import { UserParams } from '../users/users.validator'
 
 const SimulationParams = z
   .object({
@@ -149,7 +149,7 @@ const SimulationCreateUser = z
   })
   .strict()
 
-export const SimulationCreateDto = z.object({
+export const SimulationParticipantCreateDto = z.object({
   id: z.string().uuid(),
   date: z.coerce.date().default(() => new Date()),
   progression: z.number(),
@@ -159,8 +159,21 @@ export const SimulationCreateDto = z.object({
   additionalQuestionsAnswers: AdditionalQuestionsAnswersSchema.optional(),
   foldedSteps: FoldedStepsSchema.default([]),
   situation: SituationSchema,
-  user: SimulationCreateUser,
 })
+
+export type SimulationParticipantCreateDto = z.infer<
+  typeof SimulationParticipantCreateDto
+>
+
+export type SimulationParticipantCreateInputDto = z.input<
+  typeof SimulationParticipantCreateDto
+>
+
+export const SimulationCreateDto = SimulationParticipantCreateDto.merge(
+  z.object({
+    user: SimulationCreateUser,
+  })
+)
 
 export type SimulationCreateDto = z.infer<typeof SimulationCreateDto>
 

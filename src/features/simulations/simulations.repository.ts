@@ -1,10 +1,14 @@
+import type { Prisma } from '@prisma/client'
 import { prisma } from '../../adapters/prisma/client'
-import type { UserParams } from '../groups/groups.validator'
 import type { OrganisationPollParams } from '../organisations/organisations.validator'
-import type { UserSimulationParams } from './simulations.validator'
+import type { UserParams } from '../users/users.validator'
+import type {
+  SimulationParticipantCreateDto,
+  UserSimulationParams,
+} from './simulations.validator'
 import { type SimulationCreateDto } from './simulations.validator'
 
-const defaultSimulationSelection = {
+const defaultGroupParticipantSimulationSelection = {
   id: true,
   date: true,
   situation: true,
@@ -25,6 +29,12 @@ const defaultSimulationSelection = {
       pollId: true,
     },
   },
+  createdAt: true,
+  updatedAt: true,
+}
+
+const defaultSimulationSelection = {
+  ...defaultGroupParticipantSimulationSelection,
   user: {
     select: {
       id: true,
@@ -32,22 +42,12 @@ const defaultSimulationSelection = {
       email: true,
     },
   },
-  createdAt: true,
-  updatedAt: true,
 }
 
-export const createUserSimulation = async ({
-  user: { id: userId, name, email },
-  id,
-  actionChoices,
-  computedResults,
-  date,
-  foldedSteps,
-  progression,
-  situation,
-  savedViaEmail,
-  additionalQuestionsAnswers,
-}: SimulationCreateDto) => {
+export const createUserSimulation = async (simulation: SimulationCreateDto) => {
+  const {
+    user: { id: userId, name, email },
+  } = simulation
   await prisma.user.upsert({
     where: {
       id: userId,
@@ -68,7 +68,32 @@ export const createUserSimulation = async ({
     },
   })
 
-  return await prisma.simulation.upsert({
+  return createParticipantSimulation(
+    userId,
+    simulation,
+    defaultSimulationSelection
+  )
+}
+
+export const createParticipantSimulation = <
+  T extends
+    Prisma.SimulationSelect = typeof defaultGroupParticipantSimulationSelection,
+>(
+  userId: string,
+  {
+    id,
+    actionChoices,
+    computedResults,
+    date,
+    foldedSteps,
+    progression,
+    situation,
+    savedViaEmail,
+    additionalQuestionsAnswers,
+  }: SimulationParticipantCreateDto,
+  select: T = defaultGroupParticipantSimulationSelection as T
+) => {
+  return prisma.simulation.upsert({
     where: {
       id,
     },
@@ -127,7 +152,7 @@ export const createUserSimulation = async ({
           : {}),
       },
     },
-    select: defaultSimulationSelection,
+    select,
   })
 }
 
@@ -150,6 +175,15 @@ export const fetchUserSimulation = ({
       userId,
     },
     select: defaultSimulationSelection,
+  })
+}
+
+export const fetchParticipantSimulation = (simulationId: string) => {
+  return prisma.simulation.findUnique({
+    where: {
+      id: simulationId,
+    },
+    select: defaultGroupParticipantSimulationSelection,
   })
 }
 

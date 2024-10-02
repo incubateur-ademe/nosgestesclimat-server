@@ -14,11 +14,13 @@ import {
   updateGroup,
 } from './groups.service'
 import {
+  GroupCreateDto,
   GroupCreateValidator,
   GroupDeleteValidator,
   GroupFetchValidator,
   GroupsFetchValidator,
   GroupUpdateValidator,
+  ParticipantCreateDto,
   ParticipantCreateValidator,
   ParticipantDeleteValidator,
 } from './groups.validator'
@@ -32,7 +34,7 @@ router
   .route('/v1/')
   .post(validateRequest(GroupCreateValidator), async (req, res) => {
     try {
-      const group = await createGroup(req.body)
+      const group = await createGroup(GroupCreateDto.parse(req.body)) // default values are not set in middleware
 
       return res.status(StatusCodes.CREATED).json(group)
     } catch (err) {
@@ -70,7 +72,10 @@ router
   .route('/v1/:groupId/participants')
   .post(validateRequest(ParticipantCreateValidator), async (req, res) => {
     try {
-      const participant = await createParticipant(req.params, req.body)
+      const participant = await createParticipant(
+        req.params,
+        ParticipantCreateDto.parse(req.body) // default values are not set in middleware
+      )
 
       return res.status(StatusCodes.CREATED).json(participant)
     } catch (err) {

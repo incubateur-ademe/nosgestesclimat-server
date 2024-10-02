@@ -1,8 +1,9 @@
 import { faker } from '@faker-js/faker'
 import type supertest from 'supertest'
+import { getSimulationPayload } from '../../../simulations/__tests__/fixtures/simulations.fixtures'
 import type {
-  GroupCreateDto,
-  ParticipantCreateDto,
+  GroupCreateInputDto,
+  ParticipantInputCreateDto,
 } from '../../groups.validator'
 
 type TestAgent = ReturnType<typeof supertest>
@@ -27,9 +28,9 @@ export const createGroup = async ({
   group: { administrator, participants, emoji, name } = {},
 }: {
   agent: TestAgent
-  group?: Partial<GroupCreateDto>
+  group?: Partial<GroupCreateInputDto>
 }) => {
-  const payload: GroupCreateDto = {
+  const payload: GroupCreateInputDto = {
     emoji: emoji || faker.internet.emoji(),
     name: name || faker.company.name(),
     administrator: administrator || {
@@ -51,13 +52,13 @@ export const joinGroup = async ({
   groupId,
 }: {
   agent: TestAgent
-  participant?: Partial<ParticipantCreateDto>
+  participant?: Partial<ParticipantInputCreateDto>
   groupId: string
 }) => {
-  const payload: ParticipantCreateDto = {
+  const payload: ParticipantInputCreateDto = {
     userId: userId || faker.string.uuid(),
     name: name || faker.person.fullName(),
-    simulation: simulation || faker.string.uuid(),
+    simulation: simulation || getSimulationPayload(),
     email,
   }
 

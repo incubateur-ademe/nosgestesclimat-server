@@ -1,9 +1,13 @@
 import { prisma } from '../../adapters/prisma/client'
+import {
+  createParticipantSimulation,
+  fetchParticipantSimulation,
+} from '../simulations/simulations.repository'
+import type { UserParams } from '../users/users.validator'
 import type {
   GroupParams,
   GroupsFetchQuery,
   ParticipantCreateDto,
-  UserParams,
 } from './groups.validator'
 import {
   type GroupCreateDto,
@@ -43,6 +47,26 @@ const defaultGroupSelection = {
   createdAt: true,
 }
 
+const getParticipantsWithSimulations = <
+  T extends { simulationId: string },
+>(group: {
+  participants: T[]
+}): Promise<
+  Array<
+    T & {
+      simulation: NonNullable<
+        Awaited<ReturnType<typeof fetchParticipantSimulation>>
+      >
+    }
+  >
+> =>
+  Promise.all(
+    group.participants.map(async (p) => ({
+      ...p,
+      simulation: (await fetchParticipantSimulation(p.simulationId))!,
+    }))
+  )
+
 export const createGroupAndUser = async ({
   name: groupName,
   emoji,
@@ -64,38 +88,54 @@ export const createGroupAndUser = async ({
       email,
     },
   })
-  // create group
-  return prisma.group.create({
-    data: {
-      name: groupName,
-      emoji,
-      administrator: {
-        create: {
-          userId,
+
+  // For now no relation
+  const [group, ...simulations] = await Promise.all([
+    // create group
+    prisma.group.create({
+      data: {
+        name: groupName,
+        emoji,
+        administrator: {
+          create: {
+            userId,
+          },
         },
-      },
-      ...(participants?.length
-        ? {
-            participants: {
-              createMany: {
-                data: participants.map(({ simulation }) => ({
-                  userId,
-                  simulationId: simulation,
-                })),
+        ...(participants?.length
+          ? {
+              participants: {
+                createMany: {
+                  data: participants.map(({ simulation: { id } }) => ({
+                    userId,
+                    simulationId: id,
+                  })),
+                },
               },
-            },
-          }
-        : {}),
-    },
-    select: defaultGroupSelection,
-  })
+            }
+          : {}),
+      },
+      select: defaultGroupSelection,
+    }),
+    // create simulation if any
+    ...(participants || []).map((p) =>
+      createParticipantSimulation(userId, p.simulation)
+    ),
+  ])
+
+  return {
+    ...group,
+    participants: group.participants.map((p, i) => ({
+      ...p,
+      simulation: simulations[i],
+    })),
+  }
 }
 
-export const updateUserGroup = (
+export const updateUserGroup = async (
   { groupId, userId }: UserGroupParams,
   update: GroupUpdateDto
 ) => {
-  return prisma.group.update({
+  const group = await prisma.group.update({
     where: {
       id: groupId,
       administrator: {
@@ -105,11 +145,16 @@ export const updateUserGroup = (
     data: update,
     select: defaultGroupSelection,
   })
+
+  return {
+    ...group,
+    participants: await getParticipantsWithSimulations(group),
+  }
 }
 
 export const createParticipantAndUser = async (
   { groupId }: GroupParams,
-  { userId, name, email, simulation: simulationId }: ParticipantCreateDto
+  { userId, name, email, simulation: simulationDto }: ParticipantCreateDto
 ) => {
   // upsert user
   await prisma.user.upsert({
@@ -127,23 +172,33 @@ export const createParticipantAndUser = async (
     },
   })
 
-  return prisma.groupParticipant.upsert({
-    where: {
-      groupId_userId: {
+  // For now no relation
+  const { id: simulationId } = simulationDto
+  const [simulation, participant] = await Promise.all([
+    createParticipantSimulation(userId, simulationDto),
+    prisma.groupParticipant.upsert({
+      where: {
+        groupId_userId: {
+          groupId,
+          userId,
+        },
+      },
+      create: {
         groupId,
         userId,
+        simulationId,
       },
-    },
-    create: {
-      groupId,
-      userId,
-      simulationId,
-    },
-    update: {
-      simulationId,
-    },
-    select: defaultParticipantSelection,
-  })
+      update: {
+        simulationId,
+      },
+      select: defaultParticipantSelection,
+    }),
+  ])
+
+  return {
+    ...participant,
+    simulation,
+  }
 }
 
 export const findGroupById = (id: string) => {
@@ -182,11 +237,11 @@ export const deleteParticipantById = (id: string) => {
   })
 }
 
-export const fetchUserGroups = (
+export const fetchUserGroups = async (
   { userId }: UserParams,
   { groupIds }: GroupsFetchQuery
 ) => {
-  return prisma.group.findMany({
+  const groups = await prisma.group.findMany({
     where: {
       OR: [
         {
@@ -214,10 +269,17 @@ export const fetchUserGroups = (
     },
     select: defaultGroupSelection,
   })
+
+  return Promise.all(
+    groups.map(async (group) => ({
+      ...group,
+      participants: await getParticipantsWithSimulations(group),
+    }))
+  )
 }
 
-export const fetchUserGroup = ({ userId, groupId }: UserGroupParams) => {
-  return prisma.group.findUniqueOrThrow({
+export const fetchUserGroup = async ({ userId, groupId }: UserGroupParams) => {
+  const group = await prisma.group.findUniqueOrThrow({
     where: {
       id: groupId,
       OR: [
@@ -239,6 +301,11 @@ export const fetchUserGroup = ({ userId, groupId }: UserGroupParams) => {
     },
     select: defaultGroupSelection,
   })
+
+  return {
+    ...group,
+    participants: await getParticipantsWithSimulations(group),
+  }
 }
 
 export const deleteUserGroup = async ({

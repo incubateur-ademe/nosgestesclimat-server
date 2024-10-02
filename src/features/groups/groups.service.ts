@@ -4,6 +4,7 @@ import {
   isPrismaErrorForeignKeyConstraintFailed,
   isPrismaErrorNotFound,
 } from '../../core/typeguards/isPrismaError'
+import type { UserParams } from '../users/users.validator'
 import {
   createGroupAndUser,
   createParticipantAndUser,
@@ -23,7 +24,6 @@ import type {
   ParticipantCreateDto,
   UserGroupParams,
   UserGroupParticipantParams,
-  UserParams,
 } from './groups.validator'
 
 /**
@@ -51,7 +51,7 @@ const groupToDto = (
 const participantToDto = (
   {
     id,
-    simulationId,
+    simulation,
     user: { id: userId, ...rest },
   }: Awaited<ReturnType<typeof createParticipantAndUser>>,
   connectedUser: string
@@ -59,14 +59,14 @@ const participantToDto = (
   ...(userId === connectedUser
     ? {
         id,
-        simulation: simulationId,
+        simulation,
         userId,
         ...rest,
       }
     : {
         id,
         name: rest.name,
-        simulation: simulationId,
+        simulation,
       }),
 })
 

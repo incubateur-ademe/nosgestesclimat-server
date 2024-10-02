@@ -4,7 +4,8 @@ import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
 import logger from '../../../logger'
-import type { GroupCreateDto } from '../groups.validator'
+import { getSimulationPayload } from '../../simulations/__tests__/fixtures/simulations.fixtures'
+import type { GroupCreateDto, GroupCreateInputDto } from '../groups.validator'
 import { CREATE_GROUP_ROUTE } from './fixtures/groups.fixture'
 
 describe('Given a NGC user', () => {
@@ -55,7 +56,7 @@ describe('Given a NGC user', () => {
       })
     })
 
-    describe('And invalid participant simulation', () => {
+    describe('And invalid participant simulation id', () => {
       test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent
           .post(url)
@@ -68,7 +69,58 @@ describe('Given a NGC user', () => {
             },
             participants: [
               {
-                simulation: faker.string.alpha(34),
+                simulation: {
+                  ...getSimulationPayload(),
+                  id: faker.string.alpha(34),
+                },
+              },
+            ],
+          })
+          .expect(StatusCodes.BAD_REQUEST)
+      })
+    })
+
+    describe('And invalid participant simulation situation', () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
+        await agent
+          .post(url)
+          .send({
+            name: faker.company.name(),
+            emoji: faker.internet.emoji(),
+            administrator: {
+              userId: faker.string.uuid(),
+              name: faker.person.fullName(),
+            },
+            participants: [
+              {
+                simulation: {
+                  ...getSimulationPayload(),
+                  situation: null,
+                },
+              },
+            ],
+          })
+          .expect(StatusCodes.BAD_REQUEST)
+      })
+    })
+
+    describe('And invalid participant simulation computedResults', () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
+        await agent
+          .post(url)
+          .send({
+            name: faker.company.name(),
+            emoji: faker.internet.emoji(),
+            administrator: {
+              userId: faker.string.uuid(),
+              name: faker.person.fullName(),
+            },
+            participants: [
+              {
+                simulation: {
+                  ...getSimulationPayload(),
+                  computedResults: null,
+                },
               },
             ],
           })
@@ -91,7 +143,7 @@ describe('Given a NGC user', () => {
               {
                 userId: faker.string.uuid(),
                 name: faker.person.fullName(),
-                simulation: faker.string.alpha(34),
+                simulation: getSimulationPayload(),
               },
             ],
           })
@@ -112,10 +164,10 @@ describe('Given a NGC user', () => {
             },
             participants: [
               {
-                simulation: faker.string.uuid(),
+                simulation: getSimulationPayload(),
               },
               {
-                simulation: faker.string.uuid(),
+                simulation: getSimulationPayload(),
               },
             ],
           })
@@ -159,7 +211,7 @@ describe('Given a NGC user', () => {
 
       test('Then it stores a group in database', async () => {
         const userId = faker.string.uuid()
-        const email = faker.internet.email()
+        const email = faker.internet.email().toLocaleLowerCase()
         const name = faker.person.fullName()
         const payload: GroupCreateDto = {
           name: faker.company.name(),
@@ -222,8 +274,8 @@ describe('Given a NGC user', () => {
       test(`Then it returns a ${StatusCodes.CREATED} response with the created group`, async () => {
         const userId = faker.string.uuid()
         const name = faker.person.fullName()
-        const simulation = faker.string.uuid()
-        const payload: GroupCreateDto = {
+        const simulation = getSimulationPayload()
+        const payload: GroupCreateInputDto = {
           name: faker.company.name(),
           emoji: faker.internet.emoji(),
           administrator: {
@@ -257,7 +309,17 @@ describe('Given a NGC user', () => {
               id: expect.any(String),
               ...payload.administrator,
               email: null,
-              simulation,
+              simulation: {
+                ...simulation,
+                date: expect.any(String),
+                createdAt: expect.any(String),
+                updatedAt: null,
+                polls: [],
+                foldedSteps: [],
+                actionChoices: {},
+                savedViaEmail: false,
+                additionalQuestionsAnswers: [],
+              },
               createdAt: expect.any(String),
               updatedAt: null,
             },
@@ -269,10 +331,10 @@ describe('Given a NGC user', () => {
 
       test('Then it stores a group in database', async () => {
         const userId = faker.string.uuid()
-        const email = faker.internet.email()
+        const email = faker.internet.email().toLocaleLowerCase()
         const name = faker.person.fullName()
-        const simulation = faker.string.uuid()
-        const payload: GroupCreateDto = {
+        const simulation = getSimulationPayload()
+        const payload: GroupCreateInputDto = {
           name: faker.company.name(),
           emoji: faker.internet.emoji(),
           administrator: {
@@ -334,7 +396,7 @@ describe('Given a NGC user', () => {
           participants: [
             {
               id: expect.any(String),
-              simulationId: simulation,
+              simulationId: simulation.id,
               user: {
                 id: userId,
                 name,

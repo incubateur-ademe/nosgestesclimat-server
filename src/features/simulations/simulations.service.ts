@@ -1,8 +1,8 @@
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
 import { EventBus } from '../../core/event-bus/event-bus'
 import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError'
-import type { UserParams } from '../groups/groups.validator'
 import type { OrganisationPollParams } from '../organisations/organisations.validator'
+import type { UserParams } from '../users/users.validator'
 import { SimulationUpsertedEvent } from './events/SimulationUpserted.event'
 import {
   createPollUserSimulation,
