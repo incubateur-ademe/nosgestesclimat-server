@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker'
 import { StatusCodes } from 'http-status-codes'
+import nock from 'nock'
 import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
@@ -232,6 +233,132 @@ describe('Given a NGC user', () => {
           date: expect.anything(),
           updatedAt: null,
           polls: [],
+        })
+      })
+
+      describe('And leaving his/her email', () => {
+        describe('And simulation finished', () => {
+          test(`Then it sends a SIMULATION_COMPLETED email`, async () => {
+            const id = faker.string.uuid()
+            const email = faker.internet.email().toLocaleLowerCase()
+            const payload: SimulationCreateInputDto = {
+              id,
+              situation,
+              computedResults,
+              progression: 1,
+              user: {
+                id: faker.string.uuid(),
+                email,
+              },
+            }
+
+            const scope = nock(process.env.BREVO_URL!, {
+              reqheaders: {
+                'api-key': process.env.BREVO_API_KEY!,
+              },
+            })
+              .post('/v3/smtp/email', {
+                to: [
+                  {
+                    name: email,
+                    email,
+                  },
+                ],
+                templateId: 55,
+                params: {
+                  SIMULATION_URL: `https://nosgestesclimat.fr/fin?sid=${id}&mtm_campaign=email-automatise&mtm_kwd=fin-retrouver-simulation`,
+                },
+              })
+              .reply(200)
+
+            await agent.post(url).send(payload).expect(StatusCodes.CREATED)
+
+            expect(scope.isDone()).toBeTruthy()
+          })
+
+          describe('And custom user origin (preprod)', () => {
+            test(`Then it sends a SIMULATION_COMPLETED email`, async () => {
+              const id = faker.string.uuid()
+              const email = faker.internet.email().toLocaleLowerCase()
+              const payload: SimulationCreateInputDto = {
+                id,
+                situation,
+                computedResults,
+                progression: 1,
+                user: {
+                  id: faker.string.uuid(),
+                  email,
+                },
+              }
+
+              const scope = nock(process.env.BREVO_URL!, {
+                reqheaders: {
+                  'api-key': process.env.BREVO_API_KEY!,
+                },
+              })
+                .post('/v3/smtp/email', {
+                  to: [
+                    {
+                      name: email,
+                      email,
+                    },
+                  ],
+                  templateId: 55,
+                  params: {
+                    SIMULATION_URL: `https://preprod.nosgestesclimat.fr/fin?sid=${id}&mtm_campaign=email-automatise&mtm_kwd=fin-retrouver-simulation`,
+                  },
+                })
+                .reply(200)
+
+              await agent
+                .post(url)
+                .send(payload)
+                .set('origin', 'https://preprod.nosgestesclimat.fr')
+                .expect(StatusCodes.CREATED)
+
+              expect(scope.isDone()).toBeTruthy()
+            })
+          })
+        })
+
+        describe('And simulation incomplete', () => {
+          test(`Then it sends a SIMULATION_IN_PROGRESS email`, async () => {
+            const id = faker.string.uuid()
+            const email = faker.internet.email().toLocaleLowerCase()
+            const payload: SimulationCreateInputDto = {
+              id,
+              situation,
+              computedResults,
+              progression: 0.5,
+              user: {
+                id: faker.string.uuid(),
+                email,
+              },
+            }
+
+            const scope = nock(process.env.BREVO_URL!, {
+              reqheaders: {
+                'api-key': process.env.BREVO_API_KEY!,
+              },
+            })
+              .post('/v3/smtp/email', {
+                to: [
+                  {
+                    name: email,
+                    email,
+                  },
+                ],
+                templateId: 102,
+                params: {
+                  SIMULATION_URL: `https://nosgestesclimat.fr/simulateur/bilan?sid=${id}&mtm_campaign=email-automatise&mtm_kwd=pause-test-en-cours`,
+                },
+              })
+              .reply(200)
+
+            await agent.post(url).send(payload).expect(StatusCodes.CREATED)
+
+            expect(scope.isDone()).toBeTruthy()
+          })
         })
       })
 

@@ -1,4 +1,4 @@
-import type { Organisation, VerifiedUser } from '@prisma/client'
+import type { Organisation, Simulation, VerifiedUser } from '@prisma/client'
 import axios from 'axios'
 import axiosRetry from 'axios-retry'
 import { config } from '../../config'
@@ -84,6 +84,36 @@ export const sendOrganisationCreatedEmail = ({
       ADMINISTRATOR_NAME: administratorName,
       ORGANISATION_NAME: organisationName,
       DASHBOARD_URL: dashBoardUrl.toString(),
+    },
+  })
+}
+
+export const sendSimulationUpsertedEmail = ({
+  email,
+  origin,
+  simulation,
+}: Readonly<{
+  email: string
+  origin: string
+  simulation: Pick<Simulation, 'id' | 'progression'>
+}>) => {
+  const isSimulationCompleted = simulation.progression === 1
+  const templateId = isSimulationCompleted
+    ? TemplateIds.SIMULATION_COMPLETED
+    : TemplateIds.SIMULATION_IN_PROGRESS
+
+  const simulationUrl = new URL(origin)
+  simulationUrl.pathname = isSimulationCompleted ? 'fin' : 'simulateur/bilan'
+  const { searchParams } = simulationUrl
+  searchParams.append('sid', simulation.id)
+  searchParams.append(MATOMO_CAMPAIGN_KEY, MATOMO_CAMPAIGN_EMAIL_AUTOMATISE)
+  searchParams.append(MATOMO_KEYWORD_KEY, MATOMO_KEYWORDS[templateId])
+
+  return sendEmail({
+    email,
+    templateId,
+    params: {
+      SIMULATION_URL: simulationUrl.toString(),
     },
   })
 }

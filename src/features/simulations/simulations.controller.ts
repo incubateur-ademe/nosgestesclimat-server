@@ -2,7 +2,10 @@ import express from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { validateRequest } from 'zod-express-middleware'
 import { config } from '../../config'
+import { EventBus } from '../../core/event-bus/event-bus'
 import logger from '../../logger'
+import { SimulationUpsertedEvent } from './events/SimulationUpserted.event'
+import { sendSimulationUpserted } from './handlers/send-simulation-upserted'
 import { createSimulation } from './simulations.service'
 import {
   SimulationCreateDto,
@@ -10,6 +13,8 @@ import {
 } from './simulations.validator'
 
 const router = express.Router()
+
+EventBus.on(SimulationUpsertedEvent, sendSimulationUpserted)
 
 /**
  * Upserts a simulation

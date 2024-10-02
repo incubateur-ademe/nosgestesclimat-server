@@ -13,7 +13,7 @@ export const createUserSimulation = async ({
   savedViaEmail,
   additionalQuestionsAnswers,
 }: SimulationCreateDto) => {
-  const user = await prisma.user.upsert({
+  await prisma.user.upsert({
     where: {
       id: userId,
     },
@@ -33,7 +33,7 @@ export const createUserSimulation = async ({
     },
   })
 
-  const simulation = await prisma.simulation.upsert({
+  return await prisma.simulation.upsert({
     where: {
       id,
     },
@@ -124,9 +124,4 @@ export const createUserSimulation = async ({
       updatedAt: true,
     },
   })
-
-  return {
-    simulation,
-    user,
-  }
 }
