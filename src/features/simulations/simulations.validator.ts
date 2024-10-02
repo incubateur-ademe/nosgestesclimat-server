@@ -1,6 +1,19 @@
 import z from 'zod'
 import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail'
+import { UserParams } from '../groups/groups.validator'
 import { PollDefaultAdditionalQuestionTypeEnum } from '../organisations/organisations.validator'
+
+const SimulationParams = z
+  .object({
+    simulationId: z.string().uuid(),
+  })
+  .strict()
+
+export type SimulationParams = z.infer<typeof SimulationParams>
+
+export const UserSimulationParams = SimulationParams.merge(UserParams)
+
+export type UserSimulationParams = z.infer<typeof UserSimulationParams>
 
 const ActionChoicesSchema = z.record(z.string(), z.boolean())
 
@@ -153,5 +166,17 @@ export type SimulationCreateInputDto = z.input<typeof SimulationCreateDto>
 export const SimulationCreateValidator = {
   body: SimulationCreateDto,
   params: z.object({}).strict().optional(),
+  query: z.object({}).strict().optional(),
+}
+
+export const SimulationsFetchValidator = {
+  body: z.object({}).strict().optional(),
+  params: UserParams,
+  query: z.object({}).strict().optional(),
+}
+
+export const SimulationFetchValidator = {
+  body: z.object({}).strict().optional(),
+  params: UserSimulationParams,
   query: z.object({}).strict().optional(),
 }

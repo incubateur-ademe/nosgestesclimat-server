@@ -3,12 +3,21 @@ import type { DottedName, NGCRuleNode } from '@incubateur-ademe/nosgestesclimat'
 import personas from '@incubateur-ademe/nosgestesclimat/public/personas-fr.json'
 import type { ParsedRules, PublicodesExpression } from 'publicodes'
 import { utils } from 'publicodes'
+import type supertest from 'supertest'
 import { carbonMetric, waterMetric } from '../../../../constants/ngc'
 import { engine } from '../../../../constants/publicode'
 import type { Metric } from '../../../../types/types'
-import type { SituationSchema } from '../../simulations.validator'
+import type { SimulationCreateInputDto } from '../../simulations.validator'
+import { SituationSchema } from '../../simulations.validator'
+
+type TestAgent = ReturnType<typeof supertest>
 
 export const CREATE_SIMULATION_ROUTE = '/simulations/v1'
+
+export const FETCH_USER_SIMULATIONS_ROUTE = '/simulations/v1/:userId'
+
+export const FETCH_USER_SIMULATION_ROUTE =
+  '/simulations/v1/:userId/:simulationId'
 
 const categories = [
   'transport',
@@ -135,4 +144,47 @@ export const getRandomTestCase = () => {
     situation,
     nom,
   }
+}
+
+export const createSimulation = async ({
+  simulation: {
+    id,
+    date,
+    user,
+    situation,
+    foldedSteps,
+    progression,
+    savedViaEmail,
+    actionChoices,
+    computedResults,
+    additionalQuestionsAnswers,
+  } = {},
+  agent,
+}: {
+  agent: TestAgent
+  simulation?: Partial<SimulationCreateInputDto>
+}) => {
+  situation = situation || getRandomPersonaSituation()
+  computedResults =
+    computedResults || getComputedResults(SituationSchema.parse(situation))
+
+  const payload: SimulationCreateInputDto = {
+    id: id || faker.string.uuid(),
+    date,
+    situation,
+    foldedSteps,
+    progression: progression || 1,
+    savedViaEmail,
+    actionChoices,
+    computedResults,
+    additionalQuestionsAnswers,
+    user: {
+      ...user,
+      id: user?.id || faker.string.uuid(),
+    },
+  }
+
+  const response = await agent.post(CREATE_SIMULATION_ROUTE).send(payload)
+
+  return response.body
 }

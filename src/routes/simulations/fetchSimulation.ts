@@ -36,4 +36,7 @@ router.route('/').post(async (req, res) => {
   }
 })
 
+/**
+ * @deprecated should use features/simulations instead
+ */
 export default router
