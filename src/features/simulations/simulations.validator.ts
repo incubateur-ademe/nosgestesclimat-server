@@ -1,7 +1,10 @@
 import z from 'zod'
 import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail'
 import { UserParams } from '../groups/groups.validator'
-import { PollDefaultAdditionalQuestionTypeEnum } from '../organisations/organisations.validator'
+import {
+  OrganisationPollParams,
+  PollDefaultAdditionalQuestionTypeEnum,
+} from '../organisations/organisations.validator'
 
 const SimulationParams = z
   .object({
@@ -178,5 +181,11 @@ export const SimulationsFetchValidator = {
 export const SimulationFetchValidator = {
   body: z.object({}).strict().optional(),
   params: UserSimulationParams,
+  query: z.object({}).strict().optional(),
+}
+
+export const OrganisationPollSimulationCreateValidator = {
+  body: SimulationCreateDto,
+  params: OrganisationPollParams,
   query: z.object({}).strict().optional(),
 }

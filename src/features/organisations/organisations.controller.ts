@@ -11,6 +11,11 @@ import {
   COOKIE_NAME,
   COOKIES_OPTIONS,
 } from '../authentication/authentication.service'
+import { createPollSimulation } from '../simulations/simulations.service'
+import {
+  OrganisationPollSimulationCreateValidator,
+  SimulationCreateDto,
+} from '../simulations/simulations.validator'
 import { OrganisationCreatedEvent } from './events/OrganisationCreated.event'
 import { OrganisationUpdatedEvent } from './events/OrganisationUpdated.event'
 import { addOrUpdateBrevoContact } from './handlers/add-or-update-brevo-contact'
@@ -297,6 +302,33 @@ router
         }
 
         logger.error('Poll fetch failed', err)
+
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
+      }
+    }
+  )
+
+/**
+ * Upserts simulation poll for an organisation and an id or a slug
+ */
+router
+  .route('/v1/:organisationIdOrSlug/polls/:pollIdOrSlug/simulations')
+  .post(
+    validateRequest(OrganisationPollSimulationCreateValidator),
+    async (req, res) => {
+      try {
+        const simulation = await createPollSimulation({
+          simulationDto: SimulationCreateDto.parse(req.body),
+          params: req.params,
+        })
+
+        return res.status(StatusCodes.CREATED).json(simulation)
+      } catch (err) {
+        if (err instanceof EntityNotFoundException) {
+          return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
+        }
+
+        logger.error('Poll simulation creation failed', err)
 
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
       }

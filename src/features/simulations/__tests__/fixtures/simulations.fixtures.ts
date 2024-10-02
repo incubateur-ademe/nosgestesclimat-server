@@ -19,6 +19,9 @@ export const FETCH_USER_SIMULATIONS_ROUTE = '/simulations/v1/:userId'
 export const FETCH_USER_SIMULATION_ROUTE =
   '/simulations/v1/:userId/:simulationId'
 
+export const CREATE_POLL_SIMULATION_ROUTE =
+  '/organisations/v1/:organisationIdOrSlug/polls/:pollIdOrSlug/simulations'
+
 const categories = [
   'transport',
   'alimentation',

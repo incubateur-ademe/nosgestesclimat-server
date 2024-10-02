@@ -2,8 +2,10 @@ import { EntityNotFoundException } from '../../core/errors/EntityNotFoundExcepti
 import { EventBus } from '../../core/event-bus/event-bus'
 import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError'
 import type { UserParams } from '../groups/groups.validator'
+import type { OrganisationPollParams } from '../organisations/organisations.validator'
 import { SimulationUpsertedEvent } from './events/SimulationUpserted.event'
 import {
+  createPollUserSimulation,
   createUserSimulation,
   fetchUserSimulation,
   fetchUserSimulations,
@@ -55,6 +57,25 @@ export const fetchSimulation = async (params: UserSimulationParams) => {
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('Simulation not found')
+    }
+    throw e
+  }
+}
+
+export const createPollSimulation = async ({
+  params,
+  simulationDto,
+}: {
+  params: OrganisationPollParams
+  simulationDto: SimulationCreateDto
+}) => {
+  try {
+    const simulation = await createPollUserSimulation(params, simulationDto)
+
+    return simulationToDto(simulation, simulationDto.user.id)
+  } catch (e) {
+    if (isPrismaErrorNotFound(e)) {
+      throw new EntityNotFoundException('Poll not found')
     }
     throw e
   }

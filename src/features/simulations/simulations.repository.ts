@@ -1,5 +1,6 @@
 import { prisma } from '../../adapters/prisma/client'
 import type { UserParams } from '../groups/groups.validator'
+import type { OrganisationPollParams } from '../organisations/organisations.validator'
 import type { UserSimulationParams } from './simulations.validator'
 import { type SimulationCreateDto } from './simulations.validator'
 
@@ -150,4 +151,43 @@ export const fetchUserSimulation = ({
     },
     select: defaultSimulationSelection,
   })
+}
+
+export const createPollUserSimulation = async (
+  { organisationIdOrSlug, pollIdOrSlug }: OrganisationPollParams,
+  simulationDto: SimulationCreateDto
+) => {
+  const { id: pollId } = await prisma.poll.findFirstOrThrow({
+    where: {
+      OR: [{ id: pollIdOrSlug }, { slug: pollIdOrSlug }],
+      organisation: {
+        OR: [{ id: organisationIdOrSlug }, { slug: organisationIdOrSlug }],
+      },
+    },
+    select: {
+      id: true,
+    },
+  })
+
+  const { id: simulationId } = await createUserSimulation(simulationDto)
+
+  const relation = {
+    pollId,
+    simulationId,
+  }
+
+  const { simulation } = await prisma.simulationPoll.upsert({
+    where: {
+      simulationId_pollId: relation,
+    },
+    create: relation,
+    update: {},
+    select: {
+      simulation: {
+        select: defaultSimulationSelection,
+      },
+    },
+  })
+
+  return simulation
 }
