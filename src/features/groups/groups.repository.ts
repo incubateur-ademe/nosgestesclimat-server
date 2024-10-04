@@ -31,7 +31,7 @@ const defaultParticipantSelection = {
   simulationId: true,
 }
 
-const defaultGroupSelection = {
+const groupSelectionWithoutParticipants = {
   id: true,
   name: true,
   emoji: true,
@@ -40,11 +40,15 @@ const defaultGroupSelection = {
       user: defaultUserSelection,
     },
   },
+  updatedAt: true,
+  createdAt: true,
+}
+
+const defaultGroupSelection = {
+  ...groupSelectionWithoutParticipants,
   participants: {
     select: defaultParticipantSelection,
   },
-  updatedAt: true,
-  createdAt: true,
 }
 
 const getParticipantsWithSimulations = <
@@ -191,7 +195,12 @@ export const createParticipantAndUser = async (
       update: {
         simulationId,
       },
-      select: defaultParticipantSelection,
+      select: {
+        ...defaultParticipantSelection,
+        group: {
+          select: defaultGroupSelection,
+        },
+      },
     }),
   ])
 

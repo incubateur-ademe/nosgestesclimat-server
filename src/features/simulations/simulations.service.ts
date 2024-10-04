@@ -30,10 +30,12 @@ export const createSimulation = async ({
   origin: string
 }) => {
   const simulation = await createUserSimulation(simulationDto)
+  const { user } = simulation
 
   const simulationUpsertedEvent = new SimulationUpsertedEvent({
-    origin,
     simulation,
+    origin,
+    user,
   })
 
   EventBus.emit(simulationUpsertedEvent)
@@ -76,11 +78,12 @@ export const createPollSimulation = async ({
       params,
       simulationDto
     )
+    const { user } = simulation
 
     const simulationUpsertedEvent = new SimulationUpsertedEvent({
       organisation,
-      simulation,
       origin,
+      user,
     })
 
     EventBus.emit(simulationUpsertedEvent)

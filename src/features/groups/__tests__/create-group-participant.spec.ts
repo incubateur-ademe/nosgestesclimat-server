@@ -2,6 +2,7 @@ import { faker } from '@faker-js/faker'
 import { version as clientVersion } from '@prisma/client/package.json'
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 import { StatusCodes } from 'http-status-codes'
+import nock from 'nock'
 import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
@@ -49,8 +50,12 @@ describe('Given a NGC user', () => {
 
     describe('And group does exist', () => {
       let groupId: string
+      let groupName: string
 
-      beforeEach(async () => ({ id: groupId } = await createGroup({ agent })))
+      beforeEach(
+        async () =>
+          ({ id: groupId, name: groupName } = await createGroup({ agent }))
+      )
 
       describe('And no data provided', () => {
         test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
@@ -175,7 +180,12 @@ describe('Given a NGC user', () => {
           simulation: getSimulationPayload(),
         }
 
-        await agent.post(url.replace(':groupId', groupId)).send(payload)
+        nock(process.env.BREVO_URL!).post('/v3/smtp/email').reply(200)
+
+        await agent
+          .post(url.replace(':groupId', groupId))
+          .send(payload)
+          .expect(StatusCodes.CREATED)
 
         const createdParticipant = await prisma.groupParticipant.findUnique({
           where: {
@@ -208,6 +218,93 @@ describe('Given a NGC user', () => {
           createdAt: expect.anything(),
           updatedAt: null,
           groupId,
+        })
+      })
+
+      describe('And leaving his/her email', () => {
+        test('Then it sends a join email', async () => {
+          const email = faker.internet.email().toLocaleLowerCase()
+          const userId = faker.string.uuid()
+          const payload: ParticipantInputCreateDto = {
+            email,
+            userId,
+            name: faker.person.fullName(),
+            simulation: getSimulationPayload(),
+          }
+
+          const scope = nock(process.env.BREVO_URL!, {
+            reqheaders: {
+              'api-key': process.env.BREVO_API_KEY!,
+            },
+          })
+            .post('/v3/smtp/email', {
+              to: [
+                {
+                  name: email,
+                  email,
+                },
+              ],
+              templateId: 58,
+              params: {
+                GROUP_URL: `https://nosgestesclimat.fr/amis/resultats?groupId=${groupId}&mtm_campaign=email-automatise&mtm_kwd=groupe-invite-voir-classement`,
+                SHARE_URL: `https://nosgestesclimat.fr/amis/invitation?groupId=${groupId}&mtm_campaign=email-automatise&mtm_kwd=groupe-invite-url-partage`,
+                DELETE_URL: `https://nosgestesclimat.fr/amis/supprimer?groupId=${groupId}&userId=${userId}&mtm_campaign=email-automatise&mtm_kwd=groupe-invite-delete`,
+                GROUP_NAME: groupName,
+                NAME: payload.name,
+              },
+            })
+            .reply(200)
+
+          await agent
+            .post(url.replace(':groupId', groupId))
+            .send(payload)
+            .expect(StatusCodes.CREATED)
+
+          expect(scope.isDone()).toBeTruthy()
+        })
+
+        describe('And custom user origin (preprod)', () => {
+          test('Then it sends a join email', async () => {
+            const email = faker.internet.email().toLocaleLowerCase()
+            const userId = faker.string.uuid()
+            const payload: ParticipantInputCreateDto = {
+              email,
+              userId,
+              name: faker.person.fullName(),
+              simulation: getSimulationPayload(),
+            }
+
+            const scope = nock(process.env.BREVO_URL!, {
+              reqheaders: {
+                'api-key': process.env.BREVO_API_KEY!,
+              },
+            })
+              .post('/v3/smtp/email', {
+                to: [
+                  {
+                    name: email,
+                    email,
+                  },
+                ],
+                templateId: 58,
+                params: {
+                  GROUP_URL: `https://preprod.nosgestesclimat.fr/amis/resultats?groupId=${groupId}&mtm_campaign=email-automatise&mtm_kwd=groupe-invite-voir-classement`,
+                  SHARE_URL: `https://preprod.nosgestesclimat.fr/amis/invitation?groupId=${groupId}&mtm_campaign=email-automatise&mtm_kwd=groupe-invite-url-partage`,
+                  DELETE_URL: `https://preprod.nosgestesclimat.fr/amis/supprimer?groupId=${groupId}&userId=${userId}&mtm_campaign=email-automatise&mtm_kwd=groupe-invite-delete`,
+                  GROUP_NAME: groupName,
+                  NAME: payload.name,
+                },
+              })
+              .reply(200)
+
+            await agent
+              .post(url.replace(':groupId', groupId))
+              .set('origin', 'https://preprod.nosgestesclimat.fr')
+              .send(payload)
+              .expect(StatusCodes.CREATED)
+
+            expect(scope.isDone()).toBeTruthy()
+          })
         })
       })
 
@@ -252,21 +349,19 @@ describe('Given a NGC user', () => {
   describe('When joining his own group', () => {
     let userId: string
     let userName: string
-    let userEmail: string
     let groupId: string
 
     beforeEach(
       async () =>
         ({
           id: groupId,
-          administrator: { id: userId, name: userName, email: userEmail },
+          administrator: { id: userId, name: userName },
         } = await createGroup({
           agent,
-          group: {},
         }))
     )
 
-    test(`Then it returns a ${StatusCodes.CREATED} response with updated participant`, async () => {
+    test(`Then it returns a ${StatusCodes.CREATED} response with created participant`, async () => {
       const payload: ParticipantInputCreateDto = {
         userId,
         name: userName,
@@ -292,10 +387,112 @@ describe('Given a NGC user', () => {
           savedViaEmail: false,
           additionalQuestionsAnswers: [],
         },
-        email: userEmail,
+        email: null,
         createdAt: expect.any(String),
         updatedAt: null,
       })
+    })
+  })
+
+  describe('When joining his own group And left his/her email', () => {
+    let groupId: string
+    let groupName: string
+    let administratorId: string
+    let administratorName: string
+    let administratorEmail: string
+
+    beforeEach(
+      async () =>
+        ({
+          id: groupId,
+          name: groupName,
+          administrator: {
+            id: administratorId,
+            name: administratorName,
+            email: administratorEmail,
+          },
+        } = await createGroup({
+          agent,
+          group: {
+            administrator: {
+              userId: faker.string.uuid(),
+              email: faker.internet.email(),
+              name: faker.person.fullName(),
+            },
+          },
+        }))
+    )
+
+    test(`Then it returns a ${StatusCodes.CREATED} response with created participant`, async () => {
+      const payload: ParticipantInputCreateDto = {
+        userId: administratorId,
+        name: administratorName,
+        simulation: getSimulationPayload(),
+      }
+
+      nock(process.env.BREVO_URL!).post('/v3/smtp/email').reply(200)
+
+      const response = await agent
+        .post(url.replace(':groupId', groupId))
+        .send(payload)
+        .expect(StatusCodes.CREATED)
+
+      expect(response.body).toEqual({
+        id: expect.any(String),
+        ...payload,
+        simulation: {
+          ...payload.simulation,
+          date: expect.any(String),
+          createdAt: expect.any(String),
+          updatedAt: null,
+          polls: [],
+          foldedSteps: [],
+          actionChoices: {},
+          savedViaEmail: false,
+          additionalQuestionsAnswers: [],
+        },
+        email: administratorEmail,
+        createdAt: expect.any(String),
+        updatedAt: null,
+      })
+    })
+
+    test('Then it sends a creation email', async () => {
+      const payload: ParticipantInputCreateDto = {
+        userId: administratorId,
+        name: administratorName,
+        simulation: getSimulationPayload(),
+      }
+
+      const scope = nock(process.env.BREVO_URL!, {
+        reqheaders: {
+          'api-key': process.env.BREVO_API_KEY!,
+        },
+      })
+        .post('/v3/smtp/email', {
+          to: [
+            {
+              name: administratorEmail,
+              email: administratorEmail,
+            },
+          ],
+          templateId: 57,
+          params: {
+            GROUP_URL: `https://nosgestesclimat.fr/amis/resultats?groupId=${groupId}&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-voir-classement`,
+            SHARE_URL: `https://nosgestesclimat.fr/amis/invitation?groupId=${groupId}&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-url-partage`,
+            DELETE_URL: `https://nosgestesclimat.fr/amis/supprimer?groupId=${groupId}&userId=${administratorId}&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-delete`,
+            GROUP_NAME: groupName,
+            NAME: administratorName,
+          },
+        })
+        .reply(200)
+
+      await agent
+        .post(url.replace(':groupId', groupId))
+        .send(payload)
+        .expect(StatusCodes.CREATED)
+
+      expect(scope.isDone()).toBeTruthy()
     })
   })
 })

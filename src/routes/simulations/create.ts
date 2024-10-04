@@ -149,4 +149,7 @@ router.route('/').post(async (req, res) => {
   }
 })
 
+/**
+ * @deprecated should use features/simulations/organisations/groups instead
+ */
 export default router

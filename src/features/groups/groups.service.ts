@@ -1,10 +1,13 @@
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
 import { ForbiddenException } from '../../core/errors/ForbiddenException'
+import { EventBus } from '../../core/event-bus/event-bus'
 import {
   isPrismaErrorForeignKeyConstraintFailed,
   isPrismaErrorNotFound,
 } from '../../core/typeguards/isPrismaError'
+import { SimulationUpsertedEvent } from '../simulations/events/SimulationUpserted.event'
 import type { UserParams } from '../users/users.validator'
+import { GroupCreatedEvent } from './events/GroupCreated.event'
 import {
   createGroupAndUser,
   createParticipantAndUser,
@@ -53,7 +56,7 @@ const participantToDto = (
     id,
     simulation,
     user: { id: userId, ...rest },
-  }: Awaited<ReturnType<typeof createParticipantAndUser>>,
+  }: Omit<Awaited<ReturnType<typeof createParticipantAndUser>>, 'group'>,
   connectedUser: string
 ) => ({
   ...(userId === connectedUser
@@ -92,8 +95,23 @@ const findGroupParticipant = async (groupId: string) => {
   }
 }
 
-export const createGroup = async (groupDto: GroupCreateDto) => {
+export const createGroup = async ({
+  groupDto,
+  origin,
+}: {
+  groupDto: GroupCreateDto
+  origin: string
+}) => {
   const group = await createGroupAndUser(groupDto)
+
+  const groupCreatedEvent = new GroupCreatedEvent({
+    group,
+    origin,
+  })
+
+  EventBus.emit(groupCreatedEvent)
+
+  await EventBus.once(groupCreatedEvent)
 
   return groupToDto(group, groupDto.administrator.userId)
 }
@@ -114,12 +132,30 @@ export const updateGroup = async (
   }
 }
 
-export const createParticipant = async (
-  params: GroupParams,
+export const createParticipant = async ({
+  origin,
+  params,
+  participantDto,
+}: {
+  origin: string
+  params: GroupParams
   participantDto: ParticipantCreateDto
-) => {
+}) => {
   try {
     const participant = await createParticipantAndUser(params, participantDto)
+    const { group, user } = participant
+    const administrator = group.administrator!.user
+
+    const simulationUpsertedEvent = new SimulationUpsertedEvent({
+      administrator,
+      origin,
+      group,
+      user,
+    })
+
+    EventBus.emit(simulationUpsertedEvent)
+
+    await EventBus.once(simulationUpsertedEvent)
 
     return participantToDto(participant, participantDto.userId)
   } catch (e) {
