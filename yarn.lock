@@ -8033,10 +8033,10 @@ prisma@^5.18.0:
   dependencies:
     "@prisma/engines" "5.18.0"
 
-prismock@^1.33.1:
-  version "1.33.1"
-  resolved "https://registry.yarnpkg.com/prismock/-/prismock-1.33.1.tgz#4ec237c71ae6fd27048546c55128f3e0bb7495c4"
-  integrity sha512-8kBpy44W96Q1gpViTCrVqqU54UCdrr7ywnJevHY1+p89ydUl5b2Zqr2ZXtfpwrvMsEFVjxyFNEgR9tq4XwwROg==
+prismock@^1.33.3:
+  version "1.33.3"
+  resolved "https://registry.yarnpkg.com/prismock/-/prismock-1.33.3.tgz#dc43bb775d279982a6a3c0e570fb8e26db563368"
+  integrity sha512-4CqanOvgCklpF7L107O9t17e0vKezwl+J8Woq3E7jA0H5v0PfhqPaQ5y0d31Y/YSRRmz5/B3VwFQHSlWJDEyCQ==
   dependencies:
     "@paralleldrive/cuid2" "2.2.2"
     "@prisma/generator-helper" "5.17.0"

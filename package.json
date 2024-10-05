@@ -84,7 +84,7 @@
     "nock": "^13.5.4",
     "prettier": "^3.3.3",
     "prisma": "^5.18.0",
-    "prismock": "^1.33.1",
+    "prismock": "^1.33.3",
     "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
