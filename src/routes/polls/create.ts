@@ -52,11 +52,11 @@ router
             ...(defaultAdditionalQuestions?.length
               ? {
                   defaultAdditionalQuestions: {
-                    createMany: defaultAdditionalQuestions.map(
-                      (type: string) => ({
+                    createMany: {
+                      data: defaultAdditionalQuestions.map((type: string) => ({
                         type,
-                      })
-                    ),
+                      })),
+                    },
                   },
                 }
               : {}),

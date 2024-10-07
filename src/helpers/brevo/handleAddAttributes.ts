@@ -104,11 +104,9 @@ export function handleAddAttributes({
     })
 
     // Add the water footprint
-    attributesUpdated[ATTRIBUTE_LAST_SIMULATION_WATER_FOOTPRINT] = (
+    attributesUpdated[ATTRIBUTE_LAST_SIMULATION_WATER_FOOTPRINT] = Math.round(
       water / NUMBER_OF_DAYS_IN_A_YEAR
-    )?.toLocaleString(undefined, {
-      maximumFractionDigits: 0,
-    })
+    ).toString()
   }
 
   return attributesUpdated
