@@ -7,7 +7,7 @@ import {
   isPrismaErrorNotFound,
   isPrismaErrorUniqueConstraintFailed,
 } from '../../core/typeguards/isPrismaError'
-import { login } from '../authentication/authentication.service'
+import { exchangeCredentialsForToken } from '../authentication/authentication.service'
 import { OrganisationCreatedEvent } from './events/OrganisationCreated.event'
 import { OrganisationUpdatedEvent } from './events/OrganisationUpdated.event'
 import {
@@ -133,11 +133,11 @@ export const updateOrganisation = async ({
     }
 
     try {
-      token = await login({
+      ;({ token } = await exchangeCredentialsForToken({
         ...user,
         code,
         email,
-      })
+      }))
     } catch (e) {
       if (e instanceof EntityNotFoundException) {
         throw new ForbiddenException('Forbidden ! Invalid verification code.')

@@ -3,6 +3,7 @@ import type { VerificationCode } from '@prisma/client'
 import dayjs from 'dayjs'
 import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
+import nock from 'nock'
 import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
@@ -87,6 +88,8 @@ describe('Given a NGC user', () => {
           code: verificationCode.code,
         }
 
+        nock(process.env.BREVO_URL!).post('/v3/contacts').reply(200)
+
         const response = await agent
           .post(url)
           .send(payload)
@@ -101,6 +104,34 @@ describe('Given a NGC user', () => {
           exp: expect.any(Number),
           iat: expect.any(Number),
         })
+      })
+
+      test(`Then it updates brevo contact`, async () => {
+        verificationCode = await createVerificationCode({ agent })
+
+        const payload = {
+          userId: verificationCode.userId,
+          email: verificationCode.email,
+          code: verificationCode.code,
+        }
+
+        const scope = nock(process.env.BREVO_URL!, {
+          reqheaders: {
+            'api-key': process.env.BREVO_API_KEY!,
+          },
+        })
+          .post('/v3/contacts', {
+            email: verificationCode.email,
+            attributes: {
+              USER_ID: verificationCode.userId,
+            },
+            updateEnabled: true,
+          })
+          .reply(200)
+
+        await agent.post(url).send(payload).expect(StatusCodes.OK)
+
+        expect(scope.isDone()).toBeTruthy()
       })
 
       describe('And is expired', () => {
