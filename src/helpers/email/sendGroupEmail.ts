@@ -2,13 +2,7 @@ import {
   sendGroupCreatedEmail,
   sendGroupParticipantSimulationUpsertedEmail,
 } from '../../adapters/brevo/client'
-import {
-  ATTRIBUTE_LAST_GROUP_CREATION_DATE,
-  ATTRIBUTE_NUMBER_CREATED_GROUPS,
-  ATTRIBUTE_NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT,
-  LIST_ID_GROUP_CREATED,
-  LIST_ID_GROUP_JOINED,
-} from '../../constants/brevo'
+import { Attributes, ListIds } from '../../adapters/brevo/constant'
 import type { GroupType } from '../../schemas/GroupSchema'
 import { Group } from '../../schemas/GroupSchema'
 import { createOrUpdateContact } from './createOrUpdateContact'
@@ -56,12 +50,12 @@ export async function sendGroupEmail({
       userId,
       email,
       name,
-      listIds: [isCreation ? LIST_ID_GROUP_CREATED : LIST_ID_GROUP_JOINED],
+      listIds: [isCreation ? ListIds.GROUP_CREATED : ListIds.GROUP_JOINED],
       otherAttributes: isCreation
         ? {
-            [ATTRIBUTE_NUMBER_CREATED_GROUPS]: numberCreatedGroups ?? 0,
-            [ATTRIBUTE_LAST_GROUP_CREATION_DATE]: new Date().toISOString(),
-            [ATTRIBUTE_NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT]:
+            [Attributes.NUMBER_CREATED_GROUPS]: numberCreatedGroups ?? 0,
+            [Attributes.LAST_GROUP_CREATION_DATE]: new Date().toISOString(),
+            [Attributes.NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT]:
               groupsCreatedWithOneParticipant?.length,
           }
         : {},

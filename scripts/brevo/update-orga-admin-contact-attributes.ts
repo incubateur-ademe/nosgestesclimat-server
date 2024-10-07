@@ -1,11 +1,6 @@
 import mongoose from 'mongoose'
+import { Attributes } from '../../src/adapters/brevo/constant'
 import { config } from '../../src/config'
-import {
-  ATTRIBUTE_IS_ORGANISATION_ADMIN,
-  ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER,
-  ATTRIBUTE_ORGANISATION_NAME,
-  ATTRIBUTE_ORGANISATION_SLUG,
-} from '../../src/constants/brevo'
 import { createOrUpdateContact } from '../../src/helpers/email/createOrUpdateContact'
 import type { OrganisationType } from '../../src/schemas/OrganisationSchema'
 import { Organisation } from '../../src/schemas/OrganisationSchema'
@@ -34,10 +29,10 @@ export async function updateOrgaAdminContactAttributes() {
           email: administrator.email,
           name: administrator.name,
           otherAttributes: {
-            [ATTRIBUTE_IS_ORGANISATION_ADMIN]: true,
-            [ATTRIBUTE_ORGANISATION_NAME]: organisation.name ?? undefined,
-            [ATTRIBUTE_ORGANISATION_SLUG]: organisation.slug ?? undefined,
-            [ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER]:
+            [Attributes.IS_ORGANISATION_ADMIN]: true,
+            [Attributes.ORGANISATION_NAME]: organisation.name ?? undefined,
+            [Attributes.ORGANISATION_SLUG]: organisation.slug ?? undefined,
+            [Attributes.LAST_POLL_PARTICIPANTS_NUMBER]:
               lastPollCreated?.simulations?.length ?? 0,
           },
         })
@@ -46,10 +41,10 @@ export async function updateOrgaAdminContactAttributes() {
           email: administrator.email,
           name: administrator.name,
           otherAttributes: {
-            [ATTRIBUTE_IS_ORGANISATION_ADMIN]: true,
-            [ATTRIBUTE_ORGANISATION_NAME]: organisation.name ?? '',
-            [ATTRIBUTE_ORGANISATION_SLUG]: organisation.slug ?? '',
-            [ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER]:
+            [Attributes.IS_ORGANISATION_ADMIN]: true,
+            [Attributes.ORGANISATION_NAME]: organisation.name ?? '',
+            [Attributes.ORGANISATION_SLUG]: organisation.slug ?? '',
+            [Attributes.LAST_POLL_PARTICIPANTS_NUMBER]:
               lastPollCreated?.simulations?.length ?? 0,
           },
         })

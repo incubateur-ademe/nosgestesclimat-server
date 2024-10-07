@@ -28,12 +28,6 @@ type OrganisationInfo = {
   slug?: string
 }
 
-export type Attributes = {
-  [ATTRIBUTE_USER_ID]?: string
-  [ATTRIBUTE_PRENOM]?: string
-  [ATTRIBUTE_OPT_IN]?: boolean
-} & Record<string, string | boolean | number | undefined>
-
 export type Situation = {
   [key: string]: NodeValue
 }

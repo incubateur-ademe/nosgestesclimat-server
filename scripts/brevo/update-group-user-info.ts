@@ -1,10 +1,6 @@
 import mongoose from 'mongoose'
+import { Attributes } from '../../src/adapters/brevo/constant'
 import { config } from '../../src/config'
-import {
-  ATTRIBUTE_LAST_GROUP_CREATION_DATE,
-  ATTRIBUTE_NUMBER_CREATED_GROUPS,
-  ATTRIBUTE_NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT,
-} from '../../src/constants/brevo'
 import { createOrUpdateContact } from '../../src/helpers/email/createOrUpdateContact'
 import type { GroupType } from '../../src/schemas/GroupSchema'
 import { Group } from '../../src/schemas/GroupSchema'
@@ -75,11 +71,11 @@ export async function updateGroupUserInfo() {
         await createOrUpdateContact({
           email: administratorEmail,
           otherAttributes: {
-            [ATTRIBUTE_NUMBER_CREATED_GROUPS]:
+            [Attributes.NUMBER_CREATED_GROUPS]:
               groupsByAdministrator[administratorEmail]?.length,
-            [ATTRIBUTE_LAST_GROUP_CREATION_DATE]:
+            [Attributes.LAST_GROUP_CREATION_DATE]:
               lastGroupCreated.createdAt.toISOString(),
-            [ATTRIBUTE_NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT]:
+            [Attributes.NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT]:
               numberGroupWithOneParticipant,
           },
         })
