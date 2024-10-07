@@ -3,6 +3,7 @@ import express from 'express'
 import type { VerifiedUser } from '@prisma/client'
 import type { HydratedDocument } from 'mongoose'
 import { sendOrganisationCreatedEmail } from '../../adapters/brevo/client'
+import { Attributes } from '../../adapters/brevo/constant'
 import { addOrUpdateContact } from '../../adapters/connect/client'
 import { handleAddAttributes } from '../../helpers/brevo/handleAddAttributes'
 import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
@@ -14,12 +15,6 @@ import type { PollType } from '../../schemas/PollSchema'
 import { Poll } from '../../schemas/PollSchema'
 import { formatEmail } from '../../utils/formatting/formatEmail'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import {
-  ATTRIBUTE_IS_ORGANISATION_ADMIN,
-  ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER,
-  ATTRIBUTE_ORGANISATION_NAME,
-  ATTRIBUTE_ORGANISATION_SLUG,
-} from './../../constants/brevo'
 
 const router = express.Router()
 
@@ -88,10 +83,10 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
         : undefined
 
     const otherAttributes = {
-      [ATTRIBUTE_IS_ORGANISATION_ADMIN]: true,
-      [ATTRIBUTE_ORGANISATION_NAME]: organisationUpdated?.name ?? '',
-      [ATTRIBUTE_ORGANISATION_SLUG]: organisationUpdated?.slug,
-      [ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER]:
+      [Attributes.IS_ORGANISATION_ADMIN]: true,
+      [Attributes.ORGANISATION_NAME]: organisationUpdated?.name ?? '',
+      [Attributes.ORGANISATION_SLUG]: organisationUpdated?.slug,
+      [Attributes.LAST_POLL_PARTICIPANTS_NUMBER]:
         lastPoll?.simulations?.length ?? 0,
     }
 

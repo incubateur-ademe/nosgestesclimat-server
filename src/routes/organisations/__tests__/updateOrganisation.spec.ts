@@ -1,16 +1,9 @@
 import { faker } from '@faker-js/faker'
 import nock from 'nock'
 import supertest from 'supertest'
+import { Attributes } from '../../../adapters/brevo/constant'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
-import {
-  ATTRIBUTE_IS_ORGANISATION_ADMIN,
-  ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER,
-  ATTRIBUTE_OPT_IN,
-  ATTRIBUTE_ORGANISATION_NAME,
-  ATTRIBUTE_ORGANISATION_SLUG,
-  ATTRIBUTE_PRENOM,
-} from '../../../constants/brevo'
 import { findUniqueOrgaSlug } from '../../../helpers/organisations/findUniqueOrgaSlug'
 import {
   UPDATE_ORGANISATION_ROUTE,
@@ -50,12 +43,12 @@ describe(`Given a validated NGC user organisation`, () => {
         .post('/v3/contacts', {
           email,
           attributes: {
-            [ATTRIBUTE_IS_ORGANISATION_ADMIN]: true,
-            [ATTRIBUTE_ORGANISATION_NAME]: name,
-            [ATTRIBUTE_ORGANISATION_SLUG]: slug,
-            [ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER]: 0,
-            [ATTRIBUTE_PRENOM]: administratorName,
-            [ATTRIBUTE_OPT_IN]: false,
+            [Attributes.IS_ORGANISATION_ADMIN]: true,
+            [Attributes.ORGANISATION_NAME]: name,
+            [Attributes.ORGANISATION_SLUG]: slug,
+            [Attributes.LAST_POLL_PARTICIPANTS_NUMBER]: 0,
+            [Attributes.PRENOM]: administratorName,
+            [Attributes.OPT_IN]: false,
           },
           updateEnabled: true,
         })
