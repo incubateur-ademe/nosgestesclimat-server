@@ -10,6 +10,7 @@ import axiosRetry from 'axios-retry'
 import { config } from '../../config'
 import { isNetworkOrTimeoutOrRetryableError } from '../../core/typeguards/isRetryableAxiosError'
 import {
+  Attributes,
   MATOMO_CAMPAIGN_EMAIL_AUTOMATISE,
   MATOMO_CAMPAIGN_KEY,
   MATOMO_KEYWORD_KEY,
@@ -243,5 +244,22 @@ export const addOrUpdateContact = ({
     listIds,
     attributes,
     updateEnabled: true,
+  })
+}
+
+export const addOrUpdateContactAfterLogin = ({
+  userId,
+  email,
+}: {
+  userId: string
+  email: string
+}) => {
+  const attributes = {
+    [Attributes.USER_ID]: userId,
+  }
+
+  return addOrUpdateContact({
+    email,
+    attributes,
   })
 }
