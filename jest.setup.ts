@@ -3,12 +3,14 @@ import mongoose from 'mongoose'
 import connect from './src/helpers/db/initDatabase'
 
 jest.mock('winston')
-jest.mock('@prisma/client', () => {
-  return {
-    ...jest.requireActual('@prisma/client'),
-    PrismaClient: jest.requireActual('prismock').PrismockClient,
-  }
-})
+jest.mock('@prisma/client', () => ({
+  ...jest.requireActual('@prisma/client'),
+  PrismaClient: jest.requireActual('prismock').PrismockClient,
+}))
+jest.mock('./src/features/authentication/authentication.service', () => ({
+  ...jest.requireActual('./src/features/authentication/authentication.service'),
+  generateVerificationCodeAndExpiration: jest.fn(),
+}))
 
 let mongod: MongoMemoryServer | undefined
 

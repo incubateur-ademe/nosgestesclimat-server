@@ -34,6 +34,7 @@
     "@types/uuid": "^10.0.0",
     "apicache": "^1.6.3",
     "axios": "^1.6.5",
+    "axios-retry": "^4.5.0",
     "cors": "^2.8.5",
     "dayjs": "^1.11.10",
     "dotenv": "^16.0.3",
