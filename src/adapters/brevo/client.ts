@@ -321,3 +321,53 @@ export const addOrUpdateContactAfterOrganisationChange = async ({
     })
   }
 }
+
+export const addOrUpdateContactAfterGroupChange = async ({
+  email,
+  userId,
+  administratorName,
+  createdGroupsCount,
+  lastGroupCreationDate,
+  createdGroupsWithOneParticipantCount,
+}: {
+  email: string
+  userId: string
+  createdGroupsCount: number
+  lastGroupCreationDate: Date | undefined
+  administratorName?: string | null
+  createdGroupsWithOneParticipantCount: number
+}) => {
+  const attributes = {
+    [Attributes.USER_ID]: userId,
+    [Attributes.NUMBER_CREATED_GROUPS]: createdGroupsCount,
+    [Attributes.LAST_GROUP_CREATION_DATE]: lastGroupCreationDate?.toISOString(),
+    [Attributes.NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT]:
+      createdGroupsWithOneParticipantCount,
+    ...(administratorName
+      ? {
+          [Attributes.PRENOM]: administratorName,
+        }
+      : {}),
+  }
+
+  await addOrUpdateContact({
+    email,
+    ...(createdGroupsCount > 0
+      ? {
+          /**
+           * This list is purely technical for groups
+           * TODO update CGUs or warn user that we will use his mail
+           */
+          listIds: [ListIds.GROUP_CREATED],
+        }
+      : {}),
+    attributes,
+  })
+
+  if (createdGroupsCount === 0) {
+    await unsubscribeContactFromList({
+      email,
+      listId: ListIds.GROUP_CREATED,
+    })
+  }
+}

@@ -54,7 +54,9 @@ describe('Given a NGC user', () => {
 
       beforeEach(
         async () =>
-          ({ id: groupId, name: groupName } = await createGroup({ agent }))
+          ({ id: groupId, name: groupName } = await createGroup({
+            agent,
+          }))
       )
 
       describe('And no data provided', () => {
@@ -385,6 +387,109 @@ describe('Given a NGC user', () => {
         })
       })
     })
+
+    describe('And group does exist And administrator left his/her email', () => {
+      let groupId: string
+      let groupCreatedAt: string
+      let administratorEmail: string
+      let administratorId: string
+      let administratorName: string
+
+      beforeEach(async () => {
+        const simulation = getSimulationPayload()
+        ;({
+          id: groupId,
+          createdAt: groupCreatedAt,
+          administrator: {
+            id: administratorId,
+            email: administratorEmail,
+            name: administratorName,
+          },
+        } = await createGroup({
+          agent,
+          group: {
+            administrator: {
+              userId: faker.string.uuid(),
+              email: faker.internet.email(),
+              name: faker.person.fullName(),
+            },
+            participants: [{ simulation }],
+          },
+        }))
+      })
+
+      test('Then it adds or update group administrator in brevo', async () => {
+        const payload: ParticipantInputCreateDto = {
+          name: faker.person.fullName(),
+          userId: faker.string.uuid(),
+          simulation: getSimulationPayload(),
+        }
+
+        const scope = nock(process.env.BREVO_URL!, {
+          reqheaders: {
+            'api-key': process.env.BREVO_API_KEY!,
+          },
+        })
+          .post('/v3/contacts', {
+            email: administratorEmail,
+            listIds: [29],
+            attributes: {
+              USER_ID: administratorId,
+              NUMBER_CREATED_GROUPS: 1,
+              LAST_GROUP_CREATION_DATE: groupCreatedAt,
+              NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT: 0,
+              PRENOM: administratorName,
+            },
+            updateEnabled: true,
+          })
+          .reply(200)
+
+        await agent
+          .post(url.replace(':groupId', groupId))
+          .send(payload)
+          .expect(StatusCodes.CREATED)
+
+        expect(scope.isDone()).toBeTruthy()
+      })
+    })
+
+    describe('And group does exist And administrator left his/her email but did not join', () => {
+      let groupId: string
+
+      beforeEach(
+        async () =>
+          ({ id: groupId } = await createGroup({
+            agent,
+            group: {
+              administrator: {
+                userId: faker.string.uuid(),
+                email: faker.internet.email(),
+                name: faker.person.fullName(),
+              },
+            },
+          }))
+      )
+
+      test('Then it adds or update group administrator in brevo', async () => {
+        const payload: ParticipantInputCreateDto = {
+          name: faker.person.fullName(),
+          userId: faker.string.uuid(),
+          simulation: getSimulationPayload(),
+        }
+
+        const scope = nock(process.env.BREVO_URL!)
+          .post('/v3/contacts')
+          .reply(200)
+
+        await agent
+          .post(url.replace(':groupId', groupId))
+          .send(payload)
+          .expect(StatusCodes.CREATED)
+
+        expect(scope.isDone()).toBeFalsy()
+        nock.cleanAll()
+      })
+    })
   })
 
   describe('When joining his own group', () => {
@@ -438,6 +543,7 @@ describe('Given a NGC user', () => {
   describe('When joining his own group And left his/her email', () => {
     let groupId: string
     let groupName: string
+    let groupCreatedAt: string
     let administratorId: string
     let administratorName: string
     let administratorEmail: string
@@ -447,6 +553,7 @@ describe('Given a NGC user', () => {
         ({
           id: groupId,
           name: groupName,
+          createdAt: groupCreatedAt,
           administrator: {
             id: administratorId,
             name: administratorName,
@@ -471,7 +578,11 @@ describe('Given a NGC user', () => {
         simulation: getSimulationPayload(),
       }
 
-      nock(process.env.BREVO_URL!).post('/v3/smtp/email').reply(200)
+      nock(process.env.BREVO_URL!)
+        .post('/v3/smtp/email')
+        .reply(200)
+        .post('/v3/contacts')
+        .reply(200)
 
       const response = await agent
         .post(url.replace(':groupId', groupId))
@@ -496,6 +607,42 @@ describe('Given a NGC user', () => {
         createdAt: expect.any(String),
         updatedAt: null,
       })
+    })
+
+    test('Then it adds or update group administrator in brevo', async () => {
+      const payload: ParticipantInputCreateDto = {
+        userId: administratorId,
+        name: administratorName,
+        simulation: getSimulationPayload(),
+      }
+
+      const scope = nock(process.env.BREVO_URL!, {
+        reqheaders: {
+          'api-key': process.env.BREVO_API_KEY!,
+        },
+      })
+        .post('/v3/contacts', {
+          email: administratorEmail,
+          listIds: [29],
+          attributes: {
+            USER_ID: administratorId,
+            NUMBER_CREATED_GROUPS: 1,
+            LAST_GROUP_CREATION_DATE: groupCreatedAt,
+            NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT: 1,
+            PRENOM: administratorName,
+          },
+          updateEnabled: true,
+        })
+        .reply(200)
+        .post('/v3/smtp/email')
+        .reply(200)
+
+      await agent
+        .post(url.replace(':groupId', groupId))
+        .send(payload)
+        .expect(StatusCodes.CREATED)
+
+      expect(scope.isDone()).toBeTruthy()
     })
 
     test('Then it sends a creation email', async () => {
@@ -526,6 +673,8 @@ describe('Given a NGC user', () => {
             NAME: administratorName,
           },
         })
+        .reply(200)
+        .post('/v3/contacts')
         .reply(200)
 
       await agent
