@@ -1,7 +1,8 @@
 import { faker } from '@faker-js/faker'
+import dayjs from 'dayjs'
 import nock from 'nock'
 import type supertest from 'supertest'
-import * as verificationCodeUtils from '../../../../utils/generateRandomNumberWithLength'
+import * as authenticationService from '../../../../features/authentication/authentication.service'
 
 type TestAgent = ReturnType<typeof supertest>
 
@@ -27,10 +28,11 @@ export const createOrganisation = async (agent: TestAgent) => {
     .toString()
 
   jest
-    .mocked(verificationCodeUtils)
-    .generateRandomNumberWithLength.mockImplementationOnce(
-      () => +verificationCode
-    )
+    .mocked(authenticationService)
+    .generateVerificationCodeAndExpiration.mockReturnValueOnce({
+      code: verificationCode,
+      expirationDate: dayjs().add(1, 'hour').toDate(),
+    })
 
   nock(process.env.BREVO_URL!)
     .post(`/v3/contacts`)

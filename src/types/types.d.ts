@@ -3,6 +3,14 @@ import type { NodeValue } from '@incubateur-ademe/nosgestesclimat'
 import type { Document, InferSchemaType, Types } from 'mongoose'
 import type { CustomAdditionalQuestionType } from '../schemas/PollSchema'
 
+declare global {
+  namespace Express {
+    export interface Request {
+      user?: { userId: string; email: string }
+    }
+  }
+}
+
 export type PollPublicInfo = {
   name?: string
   slug: string

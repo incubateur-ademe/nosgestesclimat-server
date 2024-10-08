@@ -1,5 +1,3 @@
-jest.mock('../../../utils/generateRandomNumberWithLength')
-
 import { faker } from '@faker-js/faker'
 import nock from 'nock'
 import supertest from 'supertest'
