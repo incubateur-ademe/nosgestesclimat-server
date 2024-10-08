@@ -176,10 +176,10 @@ export const createParticipant = async ({
   try {
     const participant = await createParticipantAndUser(params, participantDto)
     const {
-      group: { participants },
-      simulation,
-      group,
       user,
+      group,
+      simulation,
+      group: { participants },
     } = participant
     const administrator = group.administrator!.user
 

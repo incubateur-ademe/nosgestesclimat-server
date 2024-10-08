@@ -7,6 +7,7 @@ import { EventBus } from '../../core/event-bus/event-bus'
 import logger from '../../logger'
 import { SimulationUpsertedEvent } from './events/SimulationUpserted.event'
 import { sendSimulationUpserted } from './handlers/send-simulation-upserted'
+import { updateBrevoContact } from './handlers/update-brevo-contact'
 import {
   createSimulation,
   fetchSimulation,
@@ -22,6 +23,7 @@ import {
 const router = express.Router()
 
 EventBus.on(SimulationUpsertedEvent, sendSimulationUpserted)
+EventBus.on(SimulationUpsertedEvent, updateBrevoContact)
 
 /**
  * Upserts a simulation
