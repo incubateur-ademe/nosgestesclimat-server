@@ -77,7 +77,8 @@ const OrganisationUpdateAdministrator = OrganisationCreateAdministrator.merge(
       email: z
         .string()
         .regex(EMAIL_REGEX)
-        .transform((email) => email.toLocaleLowerCase()),
+        .transform((email) => email.toLocaleLowerCase())
+        .optional(),
     })
     .strict()
 )

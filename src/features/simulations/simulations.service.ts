@@ -1,6 +1,7 @@
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
 import { EventBus } from '../../core/event-bus/event-bus'
 import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError'
+import { PollUpdatedEvent } from '../organisations/events/PollUpdated.event'
 import type { OrganisationPollParams } from '../organisations/organisations.validator'
 import type { UserParams } from '../users/users.validator'
 import { SimulationUpsertedEvent } from './events/SimulationUpserted.event'
@@ -74,11 +75,17 @@ export const createPollSimulation = async ({
   simulationDto: SimulationCreateDto
 }) => {
   try {
-    const { organisation, simulation } = await createPollUserSimulation(
+    const { poll, simulation } = await createPollUserSimulation(
       params,
       simulationDto
     )
     const { user } = simulation
+    const { organisation } = poll
+
+    const pollUpdatedEvent = new PollUpdatedEvent({
+      poll,
+      organisation,
+    })
 
     const simulationUpsertedEvent = new SimulationUpsertedEvent({
       organisation,
@@ -87,9 +94,10 @@ export const createPollSimulation = async ({
       user,
     })
 
-    EventBus.emit(simulationUpsertedEvent)
+    EventBus.emit(simulationUpsertedEvent).emit(pollUpdatedEvent)
 
-    await EventBus.once(simulationUpsertedEvent)
+    // @ts-expect-error 2 events different types: TODO fix
+    await EventBus.once(simulationUpsertedEvent, pollUpdatedEvent)
 
     return simulationToDto(simulation, simulationDto.user.id)
   } catch (e) {

@@ -1,41 +1,47 @@
-import { addOrUpdateContact } from '../../../adapters/brevo/client'
-import { Attributes } from '../../../adapters/brevo/constant'
+import { addOrUpdateContactAfterOrganisationChange } from '../../../adapters/brevo/client'
 import type { Handler } from '../../../core/event-bus/handler'
 import type { OrganisationCreatedEvent } from '../events/OrganisationCreated.event'
 import type { OrganisationUpdatedEvent } from '../events/OrganisationUpdated.event'
+import type { PollCreatedEvent } from '../events/PollCreated.event'
+import type { PollDeletedEvent } from '../events/PollDeletedEvent'
+import type { PollUpdatedEvent } from '../events/PollUpdated.event'
+import { getLastPollParticipantsCount } from '../organisations.repository'
 
 export const addOrUpdateBrevoContact: Handler<
-  OrganisationCreatedEvent | OrganisationUpdatedEvent
-> = ({
-  attributes: {
-    organisation: {
-      name: organisationName,
-      slug,
-      administrators: [
-        {
-          user: {
-            email,
-            name: administratorName,
-            optedInForCommunications,
-            id,
+  | OrganisationCreatedEvent
+  | OrganisationUpdatedEvent
+  | PollCreatedEvent
+  | PollUpdatedEvent
+  | PollDeletedEvent
+> = async (event) => {
+  const {
+    attributes: {
+      organisation: {
+        id: organisationId,
+        name: organisationName,
+        slug,
+        administrators: [
+          {
+            user: {
+              email,
+              name: administratorName,
+              optedInForCommunications,
+              id: userId,
+            },
           },
-        },
-      ],
+        ],
+      },
     },
-  },
-}) => {
-  const attributes = {
-    [Attributes.LAST_POLL_PARTICIPANTS_NUMBER]: 0, // TODO lastPoll simulations.length
-    [Attributes.IS_ORGANISATION_ADMIN]: true,
-    [Attributes.ORGANISATION_NAME]: organisationName,
-    [Attributes.ORGANISATION_SLUG]: slug,
-    [Attributes.USER_ID]: id,
-    [Attributes.PRENOM]: administratorName,
-    [Attributes.OPT_IN]: optedInForCommunications,
-  }
+  } = event
 
-  return addOrUpdateContact({
+  return addOrUpdateContactAfterOrganisationChange({
+    slug,
     email,
-    attributes,
+    userId,
+    organisationName,
+    administratorName,
+    optedInForCommunications,
+    lastPollParticipantsCount:
+      await getLastPollParticipantsCount(organisationId),
   })
 }
