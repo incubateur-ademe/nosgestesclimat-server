@@ -8,6 +8,8 @@ import {
 import { SimulationUpsertedEvent } from '../simulations/events/SimulationUpserted.event'
 import type { UserParams } from '../users/users.validator'
 import { GroupCreatedEvent } from './events/GroupCreated.event'
+import { GroupDeletedEvent } from './events/GroupDeleted.event'
+import { GroupUpdatedEvent } from './events/GroupUpdated.event'
 import {
   createGroupAndUser,
   createParticipantAndUser,
@@ -33,7 +35,7 @@ import type {
  * Maps a database group to a dto for the UI
  */
 const groupToDto = (
-  group: Awaited<ReturnType<typeof createGroupAndUser>>,
+  group: Awaited<ReturnType<typeof createGroupAndUser>>['group'],
   connectedUser: string
 ) => ({
   ...group,
@@ -102,16 +104,36 @@ export const createGroup = async ({
   groupDto: GroupCreateDto
   origin: string
 }) => {
-  const group = await createGroupAndUser(groupDto)
+  const { group, administrator, simulation } =
+    await createGroupAndUser(groupDto)
+  const { participants } = group
+
+  const events = []
 
   const groupCreatedEvent = new GroupCreatedEvent({
-    group,
-    origin,
+    administrator,
+    participants,
   })
 
   EventBus.emit(groupCreatedEvent)
 
-  await EventBus.once(groupCreatedEvent)
+  events.push(groupCreatedEvent)
+
+  if (simulation) {
+    const simulationUpsertedEvent = new SimulationUpsertedEvent({
+      group,
+      origin,
+      simulation,
+      administrator,
+      user: administrator,
+    })
+
+    EventBus.emit(simulationUpsertedEvent)
+
+    events.push(simulationUpsertedEvent)
+  }
+
+  await EventBus.once(...events)
 
   return groupToDto(group, groupDto.administrator.userId)
 }
@@ -122,6 +144,16 @@ export const updateGroup = async (
 ) => {
   try {
     const group = await updateUserGroup(params, update)
+    const { participants } = group
+
+    const groupUpdatedEvent = new GroupUpdatedEvent({
+      administrator: group.administrator!.user,
+      participants,
+    })
+
+    EventBus.emit(groupUpdatedEvent)
+
+    await EventBus.once(groupUpdatedEvent)
 
     return groupToDto(group, params.userId)
   } catch (e) {
@@ -143,8 +175,19 @@ export const createParticipant = async ({
 }) => {
   try {
     const participant = await createParticipantAndUser(params, participantDto)
-    const { group, user, simulation } = participant
+    const {
+      group: { participants },
+      simulation,
+      group,
+      user,
+    } = participant
     const administrator = group.administrator!.user
+
+    const groupUpdatedEvent = new GroupUpdatedEvent({
+      participant: { userId: user.id },
+      administrator,
+      participants,
+    })
 
     const simulationUpsertedEvent = new SimulationUpsertedEvent({
       administrator,
@@ -154,9 +197,11 @@ export const createParticipant = async ({
       user,
     })
 
-    EventBus.emit(simulationUpsertedEvent)
+    EventBus.emit(groupUpdatedEvent).emit(simulationUpsertedEvent)
 
-    await EventBus.once(simulationUpsertedEvent)
+    const events = [groupUpdatedEvent, simulationUpsertedEvent]
+
+    await EventBus.once(...events)
 
     return participantToDto(participant, participantDto.userId)
   } catch (e) {
@@ -169,12 +214,12 @@ export const createParticipant = async ({
 
 export const removeParticipant = async (params: UserGroupParticipantParams) => {
   try {
-    const [group, participant] = await Promise.all([
+    const [{ administrator }, participant] = await Promise.all([
       findGroup(params.groupId),
       findGroupParticipant(params.participantId),
     ])
 
-    const administratorId = group.administrator?.userId
+    const administratorId = administrator?.userId
     const isConnectedUserGroupAdmin = params.userId === administratorId
 
     if (isConnectedUserGroupAdmin && administratorId === participant.userId) {
@@ -189,7 +234,20 @@ export const removeParticipant = async (params: UserGroupParticipantParams) => {
       )
     }
 
-    await deleteParticipantById(params.participantId)
+    const {
+      group,
+      group: { participants },
+    } = await deleteParticipantById(params.participantId)
+
+    const groupUpdatedEvent = new GroupUpdatedEvent({
+      administrator: group.administrator!.user,
+      participant: { userId: params.userId },
+      participants,
+    })
+
+    EventBus.emit(groupUpdatedEvent)
+
+    await EventBus.once(groupUpdatedEvent)
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       // Participant already deleted
@@ -226,7 +284,16 @@ export const deleteGroup = async (params: {
   groupId: string
 }) => {
   try {
-    return await deleteUserGroup(params)
+    const { administrator, participants } = await deleteUserGroup(params)
+
+    const groupDeletedEvent = new GroupDeletedEvent({
+      administrator: administrator!.user,
+      participants,
+    })
+
+    EventBus.emit(groupDeletedEvent)
+
+    await EventBus.once(groupDeletedEvent)
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('Group not found')

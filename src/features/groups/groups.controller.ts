@@ -7,6 +7,8 @@ import { ForbiddenException } from '../../core/errors/ForbiddenException'
 import { EventBus } from '../../core/event-bus/event-bus'
 import logger from '../../logger'
 import { GroupCreatedEvent } from './events/GroupCreated.event'
+import { GroupDeletedEvent } from './events/GroupDeleted.event'
+import { GroupUpdatedEvent } from './events/GroupUpdated.event'
 import {
   createGroup,
   createParticipant,
@@ -27,11 +29,11 @@ import {
   ParticipantCreateValidator,
   ParticipantDeleteValidator,
 } from './groups.validator'
-import { sendGroupCreated } from './handlers/send-group-created'
+import { addOrUpdateBrevoContact } from './handlers/add-or-update-brevo-contact'
 
 const router = express.Router()
 
-EventBus.on(GroupCreatedEvent, sendGroupCreated)
+EventBus.on(GroupCreatedEvent, addOrUpdateBrevoContact)
 
 /**
  * Creates a new group
@@ -52,6 +54,8 @@ router
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
     }
   })
+
+EventBus.on(GroupUpdatedEvent, addOrUpdateBrevoContact)
 
 /**
  * Updates a user group
@@ -164,6 +168,8 @@ router
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
     }
   })
+
+EventBus.on(GroupDeletedEvent, addOrUpdateBrevoContact)
 
 /**
  * Deletes group for a user and an id

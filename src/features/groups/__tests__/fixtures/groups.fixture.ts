@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker'
+import { StatusCodes } from 'http-status-codes'
 import nock from 'nock'
 import type supertest from 'supertest'
 import { prisma } from '../../../../adapters/prisma/client'
@@ -42,11 +43,16 @@ export const createGroup = async ({
     participants,
   }
 
+  const scope = nock(process.env.BREVO_URL!)
+
   if (payload.administrator.email && participants?.length) {
-    nock(process.env.BREVO_URL!).post('/v3/smtp/email').reply(200)
+    scope.post('/v3/contacts').reply(200).post('/v3/smtp/email').reply(200)
   }
 
-  const response = await agent.post(CREATE_GROUP_ROUTE).send(payload)
+  const response = await agent
+    .post(CREATE_GROUP_ROUTE)
+    .send(payload)
+    .expect(StatusCodes.CREATED)
 
   return response.body
 }
@@ -69,22 +75,61 @@ export const joinGroup = async ({
 
   const scope = nock(process.env.BREVO_URL!)
 
-  const existingUser = await prisma.user.findFirst({
-    where: {
-      id: payload.userId,
-    },
-    select: {
-      email: true,
-    },
-  })
+  const [existingUser, group] = await Promise.all([
+    prisma.user.findFirst({
+      where: {
+        id: payload.userId,
+      },
+      select: {
+        email: true,
+      },
+    }),
+    prisma.group.findUniqueOrThrow({
+      where: {
+        id: groupId,
+      },
+      select: {
+        administrator: {
+          select: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+              },
+            },
+          },
+        },
+        participants: {
+          select: {
+            user: {
+              select: {
+                id: true,
+              },
+            },
+          },
+        },
+      },
+    }),
+  ])
 
   if (email || existingUser?.email) {
     scope.post('/v3/smtp/email').reply(200)
   }
 
+  const administrator = group.administrator?.user
+  const participants = group.participants
+
+  if (
+    administrator?.email &&
+    participants.some(({ user }) => user.id === administrator.id)
+  ) {
+    scope.post('/v3/contacts').reply(200)
+  }
+
   const response = await agent
     .post(CREATE_PARTICIPANT_ROUTE.replace(':groupId', groupId))
     .send(payload)
+    .expect(StatusCodes.CREATED)
 
   return response.body
 }
