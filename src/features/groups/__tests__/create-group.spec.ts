@@ -404,6 +404,8 @@ describe('Given a NGC user', () => {
         nock(process.env.BREVO_URL!)
           .post('/v3/contacts')
           .reply(200)
+          .post('/v3/contacts')
+          .reply(200)
           .post('/v3/smtp/email')
           .reply(200)
 
@@ -521,6 +523,103 @@ describe('Given a NGC user', () => {
               updateEnabled: true,
             })
             .reply(200)
+            .post('/v3/contacts')
+            .reply(200)
+
+          await agent.post(url).send(payload).expect(StatusCodes.CREATED)
+
+          expect(scope.isDone()).toBeTruthy()
+        })
+
+        test('Then it updates group administrator simulation in brevo', async () => {
+          const date = new Date()
+          const email = faker.internet.email().toLocaleLowerCase()
+          const userId = faker.string.uuid()
+          const name = faker.person.fullName()
+          const simulation = getSimulationPayload({ date })
+          const { computedResults } = simulation
+          const payload: GroupCreateInputDto = {
+            name: faker.company.name(),
+            emoji: faker.internet.emoji(),
+            administrator: {
+              userId,
+              email,
+              name,
+            },
+            participants: [
+              {
+                simulation,
+              },
+            ],
+          }
+
+          // Need to be sure that the group gets created with a known createdAt date
+          const createdAt = new Date()
+
+          jest
+            .spyOn(prisma.group, 'create')
+            .mockImplementationOnce((params) => {
+              params.data.createdAt = createdAt
+
+              jest.spyOn(prisma.group, 'create').mockRestore()
+
+              return prisma.group.create(params)
+            })
+
+          const scope = nock(process.env.BREVO_URL!, {
+            reqheaders: {
+              'api-key': process.env.BREVO_API_KEY!,
+            },
+          })
+            .post('/v3/contacts', {
+              email,
+              attributes: {
+                USER_ID: userId,
+                LAST_SIMULATION_DATE: date.toISOString(),
+                ACTIONS_SELECTED_NUMBER: 0,
+                LAST_SIMULATION_BILAN_FOOTPRINT: (
+                  computedResults.carbone.bilan / 1000
+                ).toLocaleString('fr-FR', {
+                  maximumFractionDigits: 1,
+                }),
+                LAST_SIMULATION_TRANSPORTS_FOOTPRINT: (
+                  computedResults.carbone.categories.transport / 1000
+                ).toLocaleString('fr-FR', {
+                  maximumFractionDigits: 1,
+                }),
+                LAST_SIMULATION_ALIMENTATION_FOOTPRINT: (
+                  computedResults.carbone.categories.alimentation / 1000
+                ).toLocaleString('fr-FR', {
+                  maximumFractionDigits: 1,
+                }),
+                LAST_SIMULATION_LOGEMENT_FOOTPRINT: (
+                  computedResults.carbone.categories.logement / 1000
+                ).toLocaleString('fr-FR', {
+                  maximumFractionDigits: 1,
+                }),
+                LAST_SIMULATION_DIVERS_FOOTPRINT: (
+                  computedResults.carbone.categories.divers / 1000
+                ).toLocaleString('fr-FR', {
+                  maximumFractionDigits: 1,
+                }),
+                LAST_SIMULATION_SERVICES_FOOTPRINT: (
+                  computedResults.carbone.categories['services sociétaux'] /
+                  1000
+                ).toLocaleString('fr-FR', {
+                  maximumFractionDigits: 1,
+                }),
+                LAST_SIMULATION_BILAN_WATER: Math.round(
+                  computedResults.eau.bilan / 365
+                ).toString(),
+                PRENOM: name,
+              },
+              updateEnabled: true,
+            })
+            .reply(200)
+            .post('/v3/contacts')
+            .reply(200)
+            .post('/v3/smtp/email')
+            .reply(200)
 
           await agent.post(url).send(payload).expect(StatusCodes.CREATED)
 
@@ -581,6 +680,8 @@ describe('Given a NGC user', () => {
                 NAME: name,
               },
             })
+            .reply(200)
+            .post('/v3/contacts')
             .reply(200)
             .post('/v3/contacts')
             .reply(200)
@@ -645,6 +746,8 @@ describe('Given a NGC user', () => {
                   NAME: name,
                 },
               })
+              .reply(200)
+              .post('/v3/contacts')
               .reply(200)
               .post('/v3/contacts')
               .reply(200)

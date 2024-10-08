@@ -46,7 +46,13 @@ export const createGroup = async ({
   const scope = nock(process.env.BREVO_URL!)
 
   if (payload.administrator.email && participants?.length) {
-    scope.post('/v3/contacts').reply(200).post('/v3/smtp/email').reply(200)
+    scope
+      .post('/v3/smtp/email')
+      .reply(200)
+      .post('/v3/contacts')
+      .reply(200)
+      .post('/v3/contacts')
+      .reply(200)
   }
 
   const response = await agent
@@ -113,7 +119,7 @@ export const joinGroup = async ({
   ])
 
   if (email || existingUser?.email) {
-    scope.post('/v3/smtp/email').reply(200)
+    scope.post('/v3/smtp/email').reply(200).post('/v3/contacts').reply(200)
   }
 
   const administrator = group.administrator?.user

@@ -182,7 +182,11 @@ describe('Given a NGC user', () => {
           simulation: getSimulationPayload(),
         }
 
-        nock(process.env.BREVO_URL!).post('/v3/smtp/email').reply(200)
+        nock(process.env.BREVO_URL!)
+          .post('/v3/smtp/email')
+          .reply(200)
+          .post('/v3/contacts')
+          .reply(200)
 
         await agent
           .post(url.replace(':groupId', groupId))
@@ -224,6 +228,81 @@ describe('Given a NGC user', () => {
       })
 
       describe('And leaving his/her email', () => {
+        test('Then it adds or updates contact in brevo', async () => {
+          const date = new Date()
+          const userId = faker.string.uuid()
+          const name = faker.person.fullName()
+          const email = faker.internet.email().toLocaleLowerCase()
+          const simulationPayload = getSimulationPayload({ date })
+          const { computedResults } = simulationPayload
+          const payload: ParticipantInputCreateDto = {
+            name,
+            email,
+            userId,
+            simulation: simulationPayload,
+          }
+
+          const scope = nock(process.env.BREVO_URL!, {
+            reqheaders: {
+              'api-key': process.env.BREVO_API_KEY!,
+            },
+          })
+            .post('/v3/contacts', {
+              email,
+              attributes: {
+                USER_ID: userId,
+                LAST_SIMULATION_DATE: date.toISOString(),
+                ACTIONS_SELECTED_NUMBER: 0,
+                LAST_SIMULATION_BILAN_FOOTPRINT: (
+                  computedResults.carbone.bilan / 1000
+                ).toLocaleString('fr-FR', {
+                  maximumFractionDigits: 1,
+                }),
+                LAST_SIMULATION_TRANSPORTS_FOOTPRINT: (
+                  computedResults.carbone.categories.transport / 1000
+                ).toLocaleString('fr-FR', {
+                  maximumFractionDigits: 1,
+                }),
+                LAST_SIMULATION_ALIMENTATION_FOOTPRINT: (
+                  computedResults.carbone.categories.alimentation / 1000
+                ).toLocaleString('fr-FR', {
+                  maximumFractionDigits: 1,
+                }),
+                LAST_SIMULATION_LOGEMENT_FOOTPRINT: (
+                  computedResults.carbone.categories.logement / 1000
+                ).toLocaleString('fr-FR', {
+                  maximumFractionDigits: 1,
+                }),
+                LAST_SIMULATION_DIVERS_FOOTPRINT: (
+                  computedResults.carbone.categories.divers / 1000
+                ).toLocaleString('fr-FR', {
+                  maximumFractionDigits: 1,
+                }),
+                LAST_SIMULATION_SERVICES_FOOTPRINT: (
+                  computedResults.carbone.categories['services sociétaux'] /
+                  1000
+                ).toLocaleString('fr-FR', {
+                  maximumFractionDigits: 1,
+                }),
+                LAST_SIMULATION_BILAN_WATER: Math.round(
+                  computedResults.eau.bilan / 365
+                ).toString(),
+                PRENOM: name,
+              },
+              updateEnabled: true,
+            })
+            .reply(200)
+            .post('/v3/smtp/email')
+            .reply(200)
+
+          await agent
+            .post(url.replace(':groupId', groupId))
+            .send(payload)
+            .expect(StatusCodes.CREATED)
+
+          expect(scope.isDone()).toBeTruthy()
+        })
+
         test('Then it sends a join email', async () => {
           const email = faker.internet.email().toLocaleLowerCase()
           const userId = faker.string.uuid()
@@ -255,6 +334,8 @@ describe('Given a NGC user', () => {
                 NAME: payload.name,
               },
             })
+            .reply(200)
+            .post('/v3/contacts')
             .reply(200)
 
           await agent
@@ -339,6 +420,8 @@ describe('Given a NGC user', () => {
                 },
               })
               .reply(200)
+              .post('/v3/contacts')
+              .reply(200)
 
             await agent
               .post(url.replace(':groupId', groupId))
@@ -418,7 +501,7 @@ describe('Given a NGC user', () => {
         }))
       })
 
-      test('Then it adds or update group administrator in brevo', async () => {
+      test('Then it updates group administrator in brevo', async () => {
         const payload: ParticipantInputCreateDto = {
           name: faker.person.fullName(),
           userId: faker.string.uuid(),
@@ -470,7 +553,7 @@ describe('Given a NGC user', () => {
           }))
       )
 
-      test('Then it adds or update group administrator in brevo', async () => {
+      test('Then it does not update group administrator in brevo', async () => {
         const payload: ParticipantInputCreateDto = {
           name: faker.person.fullName(),
           userId: faker.string.uuid(),
@@ -583,6 +666,8 @@ describe('Given a NGC user', () => {
         .reply(200)
         .post('/v3/contacts')
         .reply(200)
+        .post('/v3/contacts')
+        .reply(200)
 
       const response = await agent
         .post(url.replace(':groupId', groupId))
@@ -609,7 +694,7 @@ describe('Given a NGC user', () => {
       })
     })
 
-    test('Then it adds or update group administrator in brevo', async () => {
+    test('Then it updates group administrator in brevo', async () => {
       const payload: ParticipantInputCreateDto = {
         userId: administratorId,
         name: administratorName,
@@ -635,6 +720,80 @@ describe('Given a NGC user', () => {
         })
         .reply(200)
         .post('/v3/smtp/email')
+        .reply(200)
+        .post('/v3/contacts')
+        .reply(200)
+
+      await agent
+        .post(url.replace(':groupId', groupId))
+        .send(payload)
+        .expect(StatusCodes.CREATED)
+
+      expect(scope.isDone()).toBeTruthy()
+    })
+
+    test('Then it updates group administrator simulation in brevo', async () => {
+      const date = new Date()
+      const simulation = getSimulationPayload({ date })
+      const { computedResults } = simulation
+      const payload: ParticipantInputCreateDto = {
+        userId: administratorId,
+        name: administratorName,
+        simulation,
+      }
+
+      const scope = nock(process.env.BREVO_URL!, {
+        reqheaders: {
+          'api-key': process.env.BREVO_API_KEY!,
+        },
+      })
+        .post('/v3/contacts', {
+          email: administratorEmail,
+          attributes: {
+            USER_ID: administratorId,
+            LAST_SIMULATION_DATE: date.toISOString(),
+            ACTIONS_SELECTED_NUMBER: 0,
+            LAST_SIMULATION_BILAN_FOOTPRINT: (
+              computedResults.carbone.bilan / 1000
+            ).toLocaleString('fr-FR', {
+              maximumFractionDigits: 1,
+            }),
+            LAST_SIMULATION_TRANSPORTS_FOOTPRINT: (
+              computedResults.carbone.categories.transport / 1000
+            ).toLocaleString('fr-FR', {
+              maximumFractionDigits: 1,
+            }),
+            LAST_SIMULATION_ALIMENTATION_FOOTPRINT: (
+              computedResults.carbone.categories.alimentation / 1000
+            ).toLocaleString('fr-FR', {
+              maximumFractionDigits: 1,
+            }),
+            LAST_SIMULATION_LOGEMENT_FOOTPRINT: (
+              computedResults.carbone.categories.logement / 1000
+            ).toLocaleString('fr-FR', {
+              maximumFractionDigits: 1,
+            }),
+            LAST_SIMULATION_DIVERS_FOOTPRINT: (
+              computedResults.carbone.categories.divers / 1000
+            ).toLocaleString('fr-FR', {
+              maximumFractionDigits: 1,
+            }),
+            LAST_SIMULATION_SERVICES_FOOTPRINT: (
+              computedResults.carbone.categories['services sociétaux'] / 1000
+            ).toLocaleString('fr-FR', {
+              maximumFractionDigits: 1,
+            }),
+            LAST_SIMULATION_BILAN_WATER: Math.round(
+              computedResults.eau.bilan / 365
+            ).toString(),
+            PRENOM: administratorName,
+          },
+          updateEnabled: true,
+        })
+        .reply(200)
+        .post('/v3/smtp/email')
+        .reply(200)
+        .post('/v3/contacts')
         .reply(200)
 
       await agent
@@ -673,6 +832,8 @@ describe('Given a NGC user', () => {
             NAME: administratorName,
           },
         })
+        .reply(200)
+        .post('/v3/contacts')
         .reply(200)
         .post('/v3/contacts')
         .reply(200)

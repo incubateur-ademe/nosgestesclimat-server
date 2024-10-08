@@ -9,6 +9,10 @@ import axios from 'axios'
 import axiosRetry from 'axios-retry'
 import { config } from '../../config'
 import { isNetworkOrTimeoutOrRetryableError } from '../../core/typeguards/isRetryableAxiosError'
+import type {
+  ActionChoicesSchema,
+  ComputedResultSchema,
+} from '../../features/simulations/simulations.validator'
 import {
   Attributes,
   ListIds,
@@ -231,7 +235,7 @@ export const sendPollSimulationUpsertedEmail = async ({
   })
 }
 
-export const addOrUpdateContact = ({
+const addOrUpdateContact = ({
   email,
   listIds,
   attributes,
@@ -370,4 +374,84 @@ export const addOrUpdateContactAfterGroupChange = async ({
       listId: ListIds.GROUP_CREATED,
     })
   }
+}
+const NUMBER_OF_DAYS_IN_A_YEAR = 365
+
+const NUMBER_OF_KG_IN_A_TON = 1000
+
+export const addOrUpdateContactAfterSimulationCreated = ({
+  name,
+  email,
+  userId,
+  actionChoices,
+  computedResults,
+  lastSimulationDate,
+}: {
+  name: string | null
+  email: string
+  userId: string
+  actionChoices?: ActionChoicesSchema
+  computedResults: ComputedResultSchema
+  lastSimulationDate: Date
+}) => {
+  const locale = 'fr-FR' // for now
+  const bilan = computedResults?.carbone?.bilan ?? 0
+  const transport = computedResults?.carbone?.categories?.transport ?? 0
+  const alimentation = computedResults?.carbone?.categories?.alimentation ?? 0
+  const logement = computedResults?.carbone?.categories?.logement ?? 0
+  const divers = computedResults?.carbone?.categories?.divers ?? 0
+  const services =
+    computedResults?.carbone?.categories?.['services sociétaux'] ?? 0
+  const eau = computedResults?.eau?.bilan ?? 0
+
+  const attributes = {
+    [Attributes.USER_ID]: userId,
+    [Attributes.LAST_SIMULATION_DATE]: lastSimulationDate.toISOString(),
+    [Attributes.ACTIONS_SELECTED_NUMBER]: Object.values(
+      actionChoices || {}
+    ).filter((v) => !!v).length,
+    [Attributes.LAST_SIMULATION_BILAN_FOOTPRINT]: (
+      bilan / NUMBER_OF_KG_IN_A_TON
+    ).toLocaleString(locale, {
+      maximumFractionDigits: 1,
+    }),
+    [Attributes.LAST_SIMULATION_TRANSPORTS_FOOTPRINT]: (
+      transport / NUMBER_OF_KG_IN_A_TON
+    ).toLocaleString(locale, {
+      maximumFractionDigits: 1,
+    }),
+    [Attributes.LAST_SIMULATION_ALIMENTATION_FOOTPRINT]: (
+      alimentation / NUMBER_OF_KG_IN_A_TON
+    ).toLocaleString(locale, {
+      maximumFractionDigits: 1,
+    }),
+    [Attributes.LAST_SIMULATION_LOGEMENT_FOOTPRINT]: (
+      logement / NUMBER_OF_KG_IN_A_TON
+    ).toLocaleString(locale, {
+      maximumFractionDigits: 1,
+    }),
+    [Attributes.LAST_SIMULATION_DIVERS_FOOTPRINT]: (
+      divers / NUMBER_OF_KG_IN_A_TON
+    ).toLocaleString(locale, {
+      maximumFractionDigits: 1,
+    }),
+    [Attributes.LAST_SIMULATION_SERVICES_FOOTPRINT]: (
+      services / NUMBER_OF_KG_IN_A_TON
+    ).toLocaleString(locale, {
+      maximumFractionDigits: 1,
+    }),
+    [Attributes.LAST_SIMULATION_BILAN_WATER]: Math.round(
+      eau / NUMBER_OF_DAYS_IN_A_YEAR
+    ).toString(),
+    ...(name
+      ? {
+          [Attributes.PRENOM]: name,
+        }
+      : {}),
+  }
+
+  return addOrUpdateContact({
+    email,
+    attributes,
+  })
 }
