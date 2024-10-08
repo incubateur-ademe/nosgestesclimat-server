@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker'
 import { StatusCodes } from 'http-status-codes'
+import nock from 'nock'
 import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
@@ -65,9 +66,11 @@ describe('Given a NGC user', () => {
 
   describe('And logged in', () => {
     let cookie: string
+    let email: string
+    let userId: string
 
     beforeEach(async () => {
-      ;({ cookie } = await login({ agent }))
+      ;({ cookie, email, userId } = await login({ agent }))
     })
 
     describe('When updating one of his organisation poll', () => {
@@ -199,17 +202,21 @@ describe('Given a NGC user', () => {
 
       describe('And poll does exist', () => {
         let organisationId: string
+        let organisationName: string
         let organisationSlug: string
         let pollId: string
         let pollSlug: string
         let poll: Awaited<ReturnType<typeof createOrganisationPoll>>
 
         beforeEach(async () => {
-          ;({ id: organisationId, slug: organisationSlug } =
-            await createOrganisation({
-              agent,
-              cookie,
-            }))
+          ;({
+            id: organisationId,
+            name: organisationName,
+            slug: organisationSlug,
+          } = await createOrganisation({
+            agent,
+            cookie,
+          }))
           poll = await createOrganisationPoll({
             agent,
             cookie,
@@ -222,6 +229,12 @@ describe('Given a NGC user', () => {
           const payload: OrganisationPollUpdateDto = {
             name: faker.company.buzzNoun(),
           }
+
+          nock(process.env.BREVO_URL!)
+            .post('/v3/contacts')
+            .reply(200)
+            .post('/v3/contacts/lists/27/contacts/remove')
+            .reply(200)
 
           const response = await agent
             .put(
@@ -238,6 +251,12 @@ describe('Given a NGC user', () => {
 
         describe('And no data in the update', () => {
           test(`Then it returns a ${StatusCodes.OK} response with the unchanged poll`, async () => {
+            nock(process.env.BREVO_URL!)
+              .post('/v3/contacts')
+              .reply(200)
+              .post('/v3/contacts/lists/27/contacts/remove')
+              .reply(200)
+
             const response = await agent
               .put(
                 url
@@ -252,11 +271,56 @@ describe('Given a NGC user', () => {
           })
         })
 
+        test('Then it updates organisation administrator in brevo', async () => {
+          const payload: OrganisationPollUpdateDto = {
+            name: faker.company.buzzNoun(),
+          }
+
+          const scope = nock(process.env.BREVO_URL!, {
+            reqheaders: {
+              'api-key': process.env.BREVO_API_KEY!,
+            },
+          })
+            .post('/v3/contacts', {
+              email,
+              attributes: {
+                USER_ID: userId,
+                IS_ORGANISATION_ADMIN: true,
+                ORGANISATION_NAME: organisationName,
+                ORGANISATION_SLUG: organisationSlug,
+                LAST_POLL_PARTICIPANTS_NUMBER: 0,
+                OPT_IN: false,
+              },
+              updateEnabled: true,
+            })
+            .reply(200)
+            .post('/v3/contacts/lists/27/contacts/remove')
+            .reply(200)
+
+          await agent
+            .put(
+              url
+                .replace(':organisationIdOrSlug', organisationId)
+                .replace(':pollIdOrSlug', pollId)
+            )
+            .set('cookie', cookie)
+            .send(payload)
+            .expect(StatusCodes.OK)
+
+          expect(scope.isDone()).toBeTruthy()
+        })
+
         describe('And using organisation and poll slugs', () => {
           test(`Then it returns a ${StatusCodes.OK} response with the updated poll`, async () => {
             const payload: OrganisationPollUpdateDto = {
               name: faker.company.buzzNoun(),
             }
+
+            nock(process.env.BREVO_URL!)
+              .post('/v3/contacts')
+              .reply(200)
+              .post('/v3/contacts/lists/27/contacts/remove')
+              .reply(200)
 
             const response = await agent
               .put(
@@ -281,6 +345,12 @@ describe('Given a NGC user', () => {
               ],
             }
 
+            nock(process.env.BREVO_URL!)
+              .post('/v3/contacts')
+              .reply(200)
+              .post('/v3/contacts/lists/27/contacts/remove')
+              .reply(200)
+
             let response = await agent
               .put(
                 url
@@ -297,6 +367,8 @@ describe('Given a NGC user', () => {
               'birthdate' as PollDefaultAdditionalQuestionTypeEnum,
             ]
 
+            nock(process.env.BREVO_URL!).post('/v3/contacts').reply(200)
+
             response = await agent
               .put(
                 url
@@ -309,6 +381,76 @@ describe('Given a NGC user', () => {
 
             expect(response.body).toEqual({ ...poll, ...payload })
           })
+        })
+      })
+
+      describe('And poll does exist And administrator opt in for communications', () => {
+        let organisationId: string
+        let organisationName: string
+        let organisationSlug: string
+        let pollId: string
+        let poll: Awaited<ReturnType<typeof createOrganisationPoll>>
+
+        beforeEach(async () => {
+          ;({
+            id: organisationId,
+            name: organisationName,
+            slug: organisationSlug,
+          } = await createOrganisation({
+            agent,
+            cookie,
+            organisation: {
+              administrators: [
+                {
+                  optedInForCommunications: true,
+                },
+              ],
+            },
+          }))
+          poll = await createOrganisationPoll({
+            agent,
+            cookie,
+            organisationId,
+          })
+          ;({ id: pollId } = poll)
+        })
+
+        test('Then it updates organisation administrator in brevo', async () => {
+          const payload: OrganisationPollUpdateDto = {
+            name: faker.company.buzzNoun(),
+          }
+
+          const scope = nock(process.env.BREVO_URL!, {
+            reqheaders: {
+              'api-key': process.env.BREVO_API_KEY!,
+            },
+          })
+            .post('/v3/contacts', {
+              email,
+              listIds: [27],
+              attributes: {
+                USER_ID: userId,
+                IS_ORGANISATION_ADMIN: true,
+                ORGANISATION_NAME: organisationName,
+                ORGANISATION_SLUG: organisationSlug,
+                LAST_POLL_PARTICIPANTS_NUMBER: 0,
+                OPT_IN: true,
+              },
+              updateEnabled: true,
+            })
+            .reply(200)
+
+          await agent
+            .put(
+              url
+                .replace(':organisationIdOrSlug', organisationId)
+                .replace(':pollIdOrSlug', pollId)
+            )
+            .set('cookie', cookie)
+            .send(payload)
+            .expect(StatusCodes.OK)
+
+          expect(scope.isDone()).toBeTruthy()
         })
       })
 

@@ -1,6 +1,7 @@
 import { faker } from '@faker-js/faker'
 import { StatusCodes } from 'http-status-codes'
 
+import nock from 'nock'
 import slugify from 'slugify'
 import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
@@ -62,9 +63,11 @@ describe('Given a NGC user', () => {
 
   describe('And logged in', () => {
     let cookie: string
+    let email: string
+    let userId: string
 
     beforeEach(async () => {
-      ;({ cookie } = await login({ agent }))
+      ;({ cookie, email, userId } = await login({ agent }))
     })
 
     describe('When creating a poll in his organisation', () => {
@@ -206,15 +209,19 @@ describe('Given a NGC user', () => {
 
       describe('And organisation does exist', () => {
         let organisationId: string
+        let organisationName: string
         let organisationSlug: string
 
         beforeEach(
           async () =>
-            ({ id: organisationId, slug: organisationSlug } =
-              await createOrganisation({
-                agent,
-                cookie,
-              }))
+            ({
+              id: organisationId,
+              name: organisationName,
+              slug: organisationSlug,
+            } = await createOrganisation({
+              agent,
+              cookie,
+            }))
         )
 
         beforeEach(() => {
@@ -232,6 +239,12 @@ describe('Given a NGC user', () => {
           const payload = {
             name: faker.company.buzzNoun(),
           }
+
+          nock(process.env.BREVO_URL!)
+            .post('/v3/contacts')
+            .reply(200)
+            .post('/v3/contacts/lists/27/contacts/remove')
+            .reply(200)
 
           const response = await agent
             .post(url.replace(':organisationIdOrSlug', organisationId))
@@ -265,6 +278,12 @@ describe('Given a NGC user', () => {
             ],
             expectedNumberOfParticipants: faker.number.int(),
           }
+
+          nock(process.env.BREVO_URL!)
+            .post('/v3/contacts')
+            .reply(200)
+            .post('/v3/contacts/lists/27/contacts/remove')
+            .reply(200)
 
           const {
             body: { id },
@@ -308,11 +327,62 @@ describe('Given a NGC user', () => {
           })
         })
 
+        test('Then it updates organisation administrator in brevo', async () => {
+          const payload: OrganisationPollCreateDto = {
+            name: faker.company.buzzNoun(),
+            defaultAdditionalQuestions: [
+              'postalCode' as PollDefaultAdditionalQuestionTypeEnum,
+            ],
+            customAdditionalQuestions: [
+              {
+                question: 'Est-ce que tu buildes ?',
+                isEnabled: true,
+              },
+            ],
+            expectedNumberOfParticipants: faker.number.int(),
+          }
+
+          const scope = nock(process.env.BREVO_URL!, {
+            reqheaders: {
+              'api-key': process.env.BREVO_API_KEY!,
+            },
+          })
+            .post('/v3/contacts', {
+              email,
+              attributes: {
+                USER_ID: userId,
+                IS_ORGANISATION_ADMIN: true,
+                ORGANISATION_NAME: organisationName,
+                ORGANISATION_SLUG: organisationSlug,
+                LAST_POLL_PARTICIPANTS_NUMBER: 0,
+                OPT_IN: false,
+              },
+              updateEnabled: true,
+            })
+            .reply(200)
+            .post('/v3/contacts/lists/27/contacts/remove')
+            .reply(200)
+
+          await agent
+            .post(url.replace(':organisationIdOrSlug', organisationId))
+            .set('cookie', cookie)
+            .send(payload)
+            .expect(StatusCodes.CREATED)
+
+          expect(scope.isDone()).toBeTruthy()
+        })
+
         describe('And using the organisation slug', () => {
           test(`Then it returns a ${StatusCodes.CREATED} response with the created poll`, async () => {
             const payload = {
               name: faker.company.buzzNoun(),
             }
+
+            nock(process.env.BREVO_URL!)
+              .post('/v3/contacts')
+              .reply(200)
+              .post('/v3/contacts/lists/27/contacts/remove')
+              .reply(200)
 
             const response = await agent
               .post(url.replace(':organisationIdOrSlug', organisationSlug))
@@ -331,6 +401,75 @@ describe('Given a NGC user', () => {
               updatedAt: null,
             })
           })
+        })
+      })
+
+      describe('And organisation does exist And administrator opt in for communications', () => {
+        let organisationId: string
+        let organisationName: string
+        let organisationSlug: string
+
+        beforeEach(
+          async () =>
+            ({
+              id: organisationId,
+              name: organisationName,
+              slug: organisationSlug,
+            } = await createOrganisation({
+              agent,
+              cookie,
+              organisation: {
+                administrators: [
+                  {
+                    optedInForCommunications: true,
+                  },
+                ],
+              },
+            }))
+        )
+
+        test('Then it updates organisation administrator in brevo', async () => {
+          const payload: OrganisationPollCreateDto = {
+            name: faker.company.buzzNoun(),
+            defaultAdditionalQuestions: [
+              'postalCode' as PollDefaultAdditionalQuestionTypeEnum,
+            ],
+            customAdditionalQuestions: [
+              {
+                question: 'Est-ce que tu buildes ?',
+                isEnabled: true,
+              },
+            ],
+            expectedNumberOfParticipants: faker.number.int(),
+          }
+
+          const scope = nock(process.env.BREVO_URL!, {
+            reqheaders: {
+              'api-key': process.env.BREVO_API_KEY!,
+            },
+          })
+            .post('/v3/contacts', {
+              email,
+              listIds: [27],
+              attributes: {
+                USER_ID: userId,
+                IS_ORGANISATION_ADMIN: true,
+                ORGANISATION_NAME: organisationName,
+                ORGANISATION_SLUG: organisationSlug,
+                LAST_POLL_PARTICIPANTS_NUMBER: 0,
+                OPT_IN: true,
+              },
+              updateEnabled: true,
+            })
+            .reply(200)
+
+          await agent
+            .post(url.replace(':organisationIdOrSlug', organisationId))
+            .set('cookie', cookie)
+            .send(payload)
+            .expect(StatusCodes.CREATED)
+
+          expect(scope.isDone()).toBeTruthy()
         })
       })
 
@@ -361,6 +500,12 @@ describe('Given a NGC user', () => {
           const payload = {
             name,
           }
+
+          nock(process.env.BREVO_URL!)
+            .post('/v3/contacts')
+            .reply(200)
+            .post('/v3/contacts/lists/27/contacts/remove')
+            .reply(200)
 
           const response = await agent
             .post(url.replace(':organisationIdOrSlug', organisationId))

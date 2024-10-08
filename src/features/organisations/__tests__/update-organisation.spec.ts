@@ -176,7 +176,11 @@ describe('Given a NGC user', () => {
             numberOfCollaborators: faker.number.int(),
           }
 
-          nock(process.env.BREVO_URL!).post('/v3/contacts').reply(200)
+          nock(process.env.BREVO_URL!)
+            .post('/v3/contacts')
+            .reply(200)
+            .post('/v3/contacts/lists/27/contacts/remove')
+            .reply(200)
 
           const response = await agent
             .put(url.replace(':organisationIdOrSlug', organisationId))
@@ -187,45 +191,102 @@ describe('Given a NGC user', () => {
           expect(response.body).toEqual({ ...organisation, ...payload })
         })
 
-        test('Then it updates brevo contact', async () => {
-          const payload: OrganisationUpdateDto = {
-            name: faker.company.name(),
-            type: randomOrganisationType(),
-            numberOfCollaborators: faker.number.int(),
-          }
+        describe('And update administrator opt in for communications', () => {
+          test('Then it updates organisation administrator in brevo', async () => {
+            const payload: OrganisationUpdateDto = {
+              name: faker.company.name(),
+              type: randomOrganisationType(),
+              numberOfCollaborators: faker.number.int(),
+              administrators: [
+                {
+                  optedInForCommunications: true,
+                },
+              ],
+            }
 
-          const scope = nock(process.env.BREVO_URL!, {
-            reqheaders: {
-              'api-key': process.env.BREVO_API_KEY!,
-            },
-          })
-            .post('/v3/contacts', {
-              email,
-              attributes: {
-                LAST_POLL_PARTICIPANTS_NUMBER: 0,
-                IS_ORGANISATION_ADMIN: true,
-                ORGANISATION_NAME: payload.name,
-                ORGANISATION_SLUG: organisation.slug,
-                USER_ID: userId,
-                PRENOM: null,
-                OPT_IN: false,
+            const scope = nock(process.env.BREVO_URL!, {
+              reqheaders: {
+                'api-key': process.env.BREVO_API_KEY!,
               },
-              updateEnabled: true,
             })
-            .reply(200)
+              .post('/v3/contacts', {
+                email,
+                listIds: [27],
+                attributes: {
+                  USER_ID: userId,
+                  IS_ORGANISATION_ADMIN: true,
+                  ORGANISATION_NAME: payload.name,
+                  ORGANISATION_SLUG: organisation.slug,
+                  LAST_POLL_PARTICIPANTS_NUMBER: 0,
+                  OPT_IN: true,
+                },
+                updateEnabled: true,
+              })
+              .reply(200)
 
-          await agent
-            .put(url.replace(':organisationIdOrSlug', organisationId))
-            .set('cookie', cookie)
-            .send(payload)
-            .expect(StatusCodes.OK)
+            await agent
+              .put(url.replace(':organisationIdOrSlug', organisationId))
+              .set('cookie', cookie)
+              .send(payload)
+              .expect(StatusCodes.OK)
 
-          expect(scope.isDone()).toBeTruthy()
+            expect(scope.isDone()).toBeTruthy()
+          })
+        })
+
+        describe('And update administrator opt out for communications', () => {
+          test('Then it updates organisation administrator in brevo', async () => {
+            const payload: OrganisationUpdateDto = {
+              name: faker.company.name(),
+              type: randomOrganisationType(),
+              numberOfCollaborators: faker.number.int(),
+              administrators: [
+                {
+                  optedInForCommunications: false,
+                },
+              ],
+            }
+
+            const scope = nock(process.env.BREVO_URL!, {
+              reqheaders: {
+                'api-key': process.env.BREVO_API_KEY!,
+              },
+            })
+              .post('/v3/contacts', {
+                email,
+                attributes: {
+                  USER_ID: userId,
+                  IS_ORGANISATION_ADMIN: true,
+                  ORGANISATION_NAME: payload.name,
+                  ORGANISATION_SLUG: organisation.slug,
+                  LAST_POLL_PARTICIPANTS_NUMBER: 0,
+                  OPT_IN: false,
+                },
+                updateEnabled: true,
+              })
+              .reply(200)
+              .post('/v3/contacts/lists/27/contacts/remove', {
+                emails: [email],
+              })
+              .reply(200)
+
+            await agent
+              .put(url.replace(':organisationIdOrSlug', organisationId))
+              .set('cookie', cookie)
+              .send(payload)
+              .expect(StatusCodes.OK)
+
+            expect(scope.isDone()).toBeTruthy()
+          })
         })
 
         describe('And no data in the update', () => {
           test(`Then it returns a ${StatusCodes.OK} response with the unchanged group`, async () => {
-            nock(process.env.BREVO_URL!).post('/v3/contacts').reply(200)
+            nock(process.env.BREVO_URL!)
+              .post('/v3/contacts')
+              .reply(200)
+              .post('/v3/contacts/lists/27/contacts/remove')
+              .reply(200)
 
             const response = await agent
               .put(url.replace(':organisationIdOrSlug', organisationId))
@@ -245,7 +306,11 @@ describe('Given a NGC user', () => {
               numberOfCollaborators: faker.number.int(),
             }
 
-            nock(process.env.BREVO_URL!).post('/v3/contacts').reply(200)
+            nock(process.env.BREVO_URL!)
+              .post('/v3/contacts')
+              .reply(200)
+              .post('/v3/contacts/lists/27/contacts/remove')
+              .reply(200)
 
             const response = await agent
               .put(url.replace(':organisationIdOrSlug', organisationSlug))

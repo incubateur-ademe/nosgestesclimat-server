@@ -114,6 +114,8 @@ describe('Given a NGC user', () => {
           .reply(200)
           .post('/v3/contacts')
           .reply(200)
+          .post('/v3/contacts/lists/27/contacts/remove')
+          .reply(200)
         nock(baseURL).post('/api/v1/personnes').reply(200)
 
         const response = await agent
@@ -231,57 +233,13 @@ describe('Given a NGC user', () => {
         })
       })
 
-      test('Then it adds or updates the contact in brevo', async () => {
-        const administratorPayload = {
-          name: faker.person.fullName(),
-          position: 'Manager',
-        }
-        const payload = {
-          name: faker.company.name(),
-          type: randomOrganisationType(),
-          administrators: [administratorPayload],
-        }
-
-        const scope = nock(process.env.BREVO_URL!, {
-          reqheaders: {
-            'api-key': process.env.BREVO_API_KEY!,
-          },
-        })
-          .post('/v3/smtp/email')
-          .reply(200)
-          .post('/v3/contacts', {
-            email,
-            attributes: {
-              LAST_POLL_PARTICIPANTS_NUMBER: 0,
-              IS_ORGANISATION_ADMIN: true,
-              ORGANISATION_NAME: payload.name,
-              ORGANISATION_SLUG: slugify(payload.name.toLowerCase(), {
-                strict: true,
-              }),
-              USER_ID: userId,
-              PRENOM: administratorPayload.name,
-              OPT_IN: false,
-            },
-            updateEnabled: true,
-          })
-          .reply(200)
-        nock(baseURL).post('/api/v1/personnes').reply(200)
-
-        await agent
-          .post(url)
-          .set('cookie', cookie)
-          .send(payload)
-          .expect(StatusCodes.CREATED)
-
-        expect(scope.isDone()).toBeTruthy()
-      })
-
       test('Then it adds or updates the contact in connect', async () => {
         const administratorPayload = {
+          optedInForCommunications: true,
           name: faker.person.fullName(),
           position: 'Manager',
         }
-        const payload = {
+        const payload: OrganisationCreateDto = {
           name: faker.company.name(),
           type: randomOrganisationType(),
           administrators: [administratorPayload],
@@ -317,6 +275,7 @@ describe('Given a NGC user', () => {
 
       test('Then it sends a creation email', async () => {
         const administratorPayload = {
+          optedInForCommunications: true,
           name: faker.person.fullName(),
         }
         const payload = {
@@ -358,12 +317,114 @@ describe('Given a NGC user', () => {
         expect(scope.isDone()).toBeTruthy()
       })
 
+      describe('And opt in for communications', () => {
+        test('Then it adds or updates organisation administrator in brevo', async () => {
+          const administratorPayload = {
+            optedInForCommunications: true,
+            name: faker.person.fullName(),
+            position: 'Manager',
+          }
+          const payload: OrganisationCreateDto = {
+            name: faker.company.name(),
+            type: randomOrganisationType(),
+            administrators: [administratorPayload],
+          }
+
+          const scope = nock(process.env.BREVO_URL!, {
+            reqheaders: {
+              'api-key': process.env.BREVO_API_KEY!,
+            },
+          })
+            .post('/v3/smtp/email')
+            .reply(200)
+            .post('/v3/contacts', {
+              email,
+              listIds: [27],
+              attributes: {
+                USER_ID: userId,
+                IS_ORGANISATION_ADMIN: true,
+                ORGANISATION_NAME: payload.name,
+                ORGANISATION_SLUG: slugify(payload.name.toLowerCase(), {
+                  strict: true,
+                }),
+                LAST_POLL_PARTICIPANTS_NUMBER: 0,
+                OPT_IN: true,
+                PRENOM: administratorPayload.name,
+              },
+              updateEnabled: true,
+            })
+            .reply(200)
+          nock(baseURL).post('/api/v1/personnes').reply(200)
+
+          await agent
+            .post(url)
+            .set('cookie', cookie)
+            .send(payload)
+            .expect(StatusCodes.CREATED)
+
+          expect(scope.isDone()).toBeTruthy()
+        })
+      })
+
+      describe('And opt out for communications', () => {
+        test('Then it adds or updates organisation administrator in brevo', async () => {
+          const administratorPayload = {
+            optedInForCommunications: false,
+            name: faker.person.fullName(),
+            position: 'Manager',
+          }
+          const payload: OrganisationCreateDto = {
+            name: faker.company.name(),
+            type: randomOrganisationType(),
+            administrators: [administratorPayload],
+          }
+
+          const scope = nock(process.env.BREVO_URL!, {
+            reqheaders: {
+              'api-key': process.env.BREVO_API_KEY!,
+            },
+          })
+            .post('/v3/smtp/email')
+            .reply(200)
+            .post('/v3/contacts', {
+              email,
+              attributes: {
+                USER_ID: userId,
+                IS_ORGANISATION_ADMIN: true,
+                ORGANISATION_NAME: payload.name,
+                ORGANISATION_SLUG: slugify(payload.name.toLowerCase(), {
+                  strict: true,
+                }),
+                LAST_POLL_PARTICIPANTS_NUMBER: 0,
+                OPT_IN: false,
+                PRENOM: administratorPayload.name,
+              },
+              updateEnabled: true,
+            })
+            .reply(200)
+            .post('/v3/contacts/lists/27/contacts/remove', {
+              emails: [email],
+            })
+            .reply(200)
+          nock(baseURL).post('/api/v1/personnes').reply(200)
+
+          await agent
+            .post(url)
+            .set('cookie', cookie)
+            .send(payload)
+            .expect(StatusCodes.CREATED)
+
+          expect(scope.isDone()).toBeTruthy()
+        })
+      })
+
       describe('And custom user origin (preprod)', () => {
         test('Then it sends a creation email', async () => {
           const administratorPayload = {
+            optedInForCommunications: true,
             name: faker.person.fullName(),
           }
-          const payload = {
+          const payload: OrganisationCreateDto = {
             name: faker.company.name(),
             type: randomOrganisationType(),
             administrators: [administratorPayload],
@@ -450,13 +511,21 @@ describe('Given a NGC user', () => {
         })
 
         test(`Then it returns a ${StatusCodes.CREATED} response with the created organisation and an incremented slug`, async () => {
-          const payload = {
+          const payload: OrganisationCreateDto = {
             name,
             type: randomOrganisationType(),
+            administrators: [
+              {
+                optedInForCommunications: true,
+              },
+            ],
           }
 
-          nock(process.env.BREVO_URL!).post('/v3/smtp/email').reply(200)
-          nock(process.env.BREVO_URL!).post('/v3/contacts').reply(200)
+          nock(process.env.BREVO_URL!)
+            .post('/v3/smtp/email')
+            .reply(200)
+            .post('/v3/contacts')
+            .reply(200)
           nock(baseURL).post('/api/v1/personnes').reply(200)
 
           const response = await agent
@@ -482,7 +551,7 @@ describe('Given a NGC user', () => {
                 name: null,
                 position: null,
                 telephone: null,
-                optedInForCommunications: false,
+                optedInForCommunications: true,
                 createdAt: expect.any(String),
                 updatedAt: null,
               },

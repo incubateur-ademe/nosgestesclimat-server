@@ -11,6 +11,7 @@ import { config } from '../../config'
 import { isNetworkOrTimeoutOrRetryableError } from '../../core/typeguards/isRetryableAxiosError'
 import {
   Attributes,
+  ListIds,
   MATOMO_CAMPAIGN_EMAIL_AUTOMATISE,
   MATOMO_CAMPAIGN_KEY,
   MATOMO_KEYWORD_KEY,
@@ -247,6 +248,18 @@ export const addOrUpdateContact = ({
   })
 }
 
+const unsubscribeContactFromList = ({
+  email,
+  listId,
+}: Readonly<{
+  email: string
+  listId: ListIds
+}>) => {
+  return brevo.post(`/v3/contacts/lists/${listId}/contacts/remove`, {
+    emails: [email],
+  })
+}
+
 export const addOrUpdateContactAfterLogin = ({
   userId,
   email,
@@ -262,4 +275,49 @@ export const addOrUpdateContactAfterLogin = ({
     email,
     attributes,
   })
+}
+
+export const addOrUpdateContactAfterOrganisationChange = async ({
+  slug,
+  email,
+  userId,
+  organisationName,
+  administratorName,
+  optedInForCommunications,
+  lastPollParticipantsCount,
+}: {
+  slug: string
+  email: string
+  userId: string
+  organisationName: string
+  lastPollParticipantsCount: number
+  administratorName?: string | null
+  optedInForCommunications?: boolean
+}) => {
+  const attributes = {
+    [Attributes.USER_ID]: userId,
+    [Attributes.IS_ORGANISATION_ADMIN]: true,
+    [Attributes.ORGANISATION_NAME]: organisationName,
+    [Attributes.ORGANISATION_SLUG]: slug,
+    [Attributes.LAST_POLL_PARTICIPANTS_NUMBER]: lastPollParticipantsCount,
+    [Attributes.OPT_IN]: !!optedInForCommunications,
+    ...(administratorName
+      ? {
+          [Attributes.PRENOM]: administratorName,
+        }
+      : {}),
+  }
+
+  await addOrUpdateContact({
+    email,
+    attributes,
+    ...(optedInForCommunications ? { listIds: [ListIds.ORGANISATIONS] } : {}),
+  })
+
+  if (!optedInForCommunications) {
+    await unsubscribeContactFromList({
+      email,
+      listId: ListIds.ORGANISATIONS,
+    })
+  }
 }
