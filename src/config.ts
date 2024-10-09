@@ -27,6 +27,10 @@ export const config = {
     },
   },
   thirdParty: {
+    agir: {
+      url: ensureEnvVar(process.env.AGIR_URL, ''),
+      apiKey: ensureEnvVar(process.env.AGIR_API_KEY, ''),
+    },
     brevo: {
       url: ensureEnvVar(process.env.BREVO_URL, 'https://api.brevo.com'),
       apiKey: ensureEnvVar(process.env.BREVO_API_KEY, ''),
