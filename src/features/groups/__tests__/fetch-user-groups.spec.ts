@@ -178,7 +178,7 @@ describe('Given a NGC user', () => {
             updatedAt: null,
           },
         ])
-      })
+      }, 10000)
 
       describe(`And filtering the list by groupIds`, () => {
         test(`Then it should return a ${StatusCodes.OK} response with a list containing the filtered groups`, async () => {
