@@ -23,6 +23,9 @@ import updateGroupRoute from './routes/groups/updateGroup'
 import fetchGroupsRoute from './routes/groups/fetchGroups'
 import removeParticipantRoute from './routes/groups/removeParticipant'
 
+// Integrations routes
+import integrationsController from './features/integrations/integrations.controller'
+
 // Organisation routes
 import createOrganisationRoute from './routes/organisations/create'
 import fetchOrganisationRoute from './routes/organisations/fetchOrganisation'
@@ -116,6 +119,9 @@ app.use('/groups', groupsController)
 // Group participants routes
 app.use('/group/fetch-groups', fetchGroupsRoute)
 app.use('/group/remove-participant', removeParticipantRoute)
+
+//Integrations routes
+app.use('/integrations', integrationsController)
 
 // Organisation routes
 app.use('/organisations/create', createOrganisationRoute)
