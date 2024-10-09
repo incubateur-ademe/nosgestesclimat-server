@@ -3,6 +3,7 @@ import { version as clientVersion } from '@prisma/client/package.json'
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 import mongoose from 'mongoose'
+import nock from 'nock'
 import type { Delegate } from 'prismock/build/main/lib/delegate'
 import { prisma } from './src/adapters/prisma/client'
 import connect from './src/helpers/db/initDatabase'
@@ -120,4 +121,9 @@ beforeAll(async () => {
 afterAll(async () => {
   await mongoose.disconnect()
   await mongod?.stop()
+})
+
+afterEach(() => {
+  expect(nock.isDone()).toBeTruthy()
+  nock.cleanAll()
 })
