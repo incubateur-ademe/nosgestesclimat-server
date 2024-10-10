@@ -14,7 +14,6 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = FETCH_USER_GROUPS_ROUTE
 
-  // Fixes a bug in prismock
   afterEach(() => prisma.group.deleteMany())
 
   describe('When fetching his groups', () => {

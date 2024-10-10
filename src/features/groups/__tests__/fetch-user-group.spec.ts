@@ -1,6 +1,4 @@
 import { faker } from '@faker-js/faker'
-import { version as clientVersion } from '@prisma/client/package.json'
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
@@ -31,15 +29,6 @@ describe('Given a NGC user', () => {
 
     describe('And no data', () => {
       test(`Then it should return a ${StatusCodes.NOT_FOUND} error`, async () => {
-        // This is not ideal but prismock does not handle this correctly
-        jest.spyOn(prisma.group, 'findUniqueOrThrow').mockRejectedValueOnce(
-          new PrismaClientKnownRequestError('NotFoundError', {
-            code: 'P2025',
-            clientVersion,
-          })
-        )
-
-        // In case of correct error
         await agent
           .get(
             url
@@ -47,15 +36,6 @@ describe('Given a NGC user', () => {
               .replace(':groupId', faker.database.mongodbObjectId())
           )
           .expect(StatusCodes.NOT_FOUND)
-
-        // This expectation covers the prismock raise
-        await agent
-          .get(
-            url
-              .replace(':groupId', faker.database.mongodbObjectId())
-              .replace(':userId', faker.string.uuid())
-          )
-          .expect(StatusCodes.INTERNAL_SERVER_ERROR)
       })
     })
 

@@ -1,6 +1,4 @@
 import { faker } from '@faker-js/faker'
-import { version as clientVersion } from '@prisma/client/package.json'
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
@@ -19,14 +17,6 @@ describe('Given a NGC user', () => {
   describe("When trying to leave another administrator's group", () => {
     describe('And group does not exist', () => {
       test(`Then it should return a ${StatusCodes.NOT_FOUND} error`, async () => {
-        // This is not ideal but prismock does not handle this correctly
-        jest.spyOn(prisma.group, 'findUniqueOrThrow').mockRejectedValueOnce(
-          new PrismaClientKnownRequestError('NotFoundError', {
-            code: 'P2025',
-            clientVersion,
-          })
-        )
-
         await agent
           .delete(
             url
@@ -35,18 +25,6 @@ describe('Given a NGC user', () => {
               .replace(':userId', faker.string.uuid())
           )
           .expect(StatusCodes.NOT_FOUND)
-
-        jest.spyOn(prisma.group, 'findUniqueOrThrow').mockRestore()
-
-        // This expectation covers the prismock raise
-        await agent
-          .delete(
-            url
-              .replace(':groupId', faker.database.mongodbObjectId())
-              .replace(':participantId', faker.string.uuid())
-              .replace(':userId', faker.string.uuid())
-          )
-          .expect(StatusCodes.INTERNAL_SERVER_ERROR)
       })
     })
 
@@ -83,16 +61,6 @@ describe('Given a NGC user', () => {
 
       describe('And he did not join', () => {
         test(`Then it should return a ${StatusCodes.NOT_FOUND} error`, async () => {
-          // This is not ideal but prismock does not handle this correctly
-          jest
-            .spyOn(prisma.groupParticipant, 'findUniqueOrThrow')
-            .mockRejectedValueOnce(
-              new PrismaClientKnownRequestError('NotFoundError', {
-                code: 'P2025',
-                clientVersion,
-              })
-            )
-
           await agent
             .delete(
               url
@@ -101,18 +69,6 @@ describe('Given a NGC user', () => {
                 .replace(':userId', faker.string.uuid())
             )
             .expect(StatusCodes.NOT_FOUND)
-
-          jest.spyOn(prisma.groupParticipant, 'findUniqueOrThrow').mockRestore()
-
-          // This expectation covers the prismock raise
-          await agent
-            .delete(
-              url
-                .replace(':groupId', groupId)
-                .replace(':participantId', faker.string.uuid())
-                .replace(':userId', faker.string.uuid())
-            )
-            .expect(StatusCodes.INTERNAL_SERVER_ERROR)
         })
       })
 
