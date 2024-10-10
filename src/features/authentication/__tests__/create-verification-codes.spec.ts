@@ -14,6 +14,8 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = CREATE_VERIFICATION_CODE_ROUTE
 
+  afterEach(() => prisma.verificationCode.deleteMany())
+
   describe('When creating a verification-code', () => {
     let code: string
     let expirationDate: Date

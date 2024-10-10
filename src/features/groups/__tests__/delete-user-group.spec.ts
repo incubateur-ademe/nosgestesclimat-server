@@ -10,6 +10,10 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = DELETE_USER_GROUP_ROUTE
 
+  afterEach(() =>
+    Promise.all([prisma.group.deleteMany(), prisma.user.deleteMany()])
+  )
+
   describe('When deleting his group', () => {
     describe('And invalid userId', () => {
       test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {

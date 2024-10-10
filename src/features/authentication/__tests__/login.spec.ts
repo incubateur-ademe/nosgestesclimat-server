@@ -13,6 +13,8 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = '/authentication/v1/login'
 
+  afterEach(() => prisma.verificationCode.deleteMany())
+
   describe('When logging in', () => {
     describe('And no data provided', () => {
       test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {

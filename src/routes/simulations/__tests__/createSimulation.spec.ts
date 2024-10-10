@@ -1,4 +1,5 @@
 import supertest from 'supertest'
+import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
 import {
   Simulation,
@@ -14,6 +15,8 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = FETCH_SIMULATION_ROUTE
   let simulationId: string
+
+  afterEach(() => prisma.user.deleteMany())
 
   describe('When he creates a simulation without computedResults', () => {
     beforeEach(async () => {

@@ -11,6 +11,8 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = '/quizz-answers/v1/'
 
+  afterEach(() => prisma.quizzAnswer.deleteMany())
+
   describe('When creating a quizz answer', () => {
     describe('And no data provided', () => {
       test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {

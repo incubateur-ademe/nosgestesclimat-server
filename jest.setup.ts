@@ -18,6 +18,18 @@ jest.mock('./src/features/authentication/authentication.service', () => ({
   generateVerificationCodeAndExpiration: jest.fn(),
 }))
 
+const models = Prisma.dmmf.datamodel.models
+  .map(({ name }) => ({
+    name,
+    delegateKey: name.replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) =>
+      index === 0 ? word.toLowerCase() : word.toUpperCase()
+    ),
+  }))
+  .map(({ name, delegateKey }) => ({
+    name,
+    delegate: prisma[delegateKey as keyof typeof prisma] as unknown as Delegate,
+  }))
+
 let mongod: MongoMemoryServer | undefined
 
 beforeAll(async () => {
@@ -27,84 +39,73 @@ beforeAll(async () => {
    * This patches prismock delegates to raise corresponding error
    * in case of entity not found exception
    */
-  Prisma.dmmf.datamodel.models
-    .map(({ name }) => ({
-      name,
-      delegateKey: name.replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) =>
-        index === 0 ? word.toLowerCase() : word.toUpperCase()
-      ),
-    }))
-    .forEach(({ name, delegateKey }) => {
-      const delegate = prisma[
-        delegateKey as keyof typeof prisma
-      ] as unknown as Delegate
+  models.forEach(({ name, delegate }) => {
+    const originalFindUniqueOrThrow = delegate.findUniqueOrThrow
 
-      const originalFindUniqueOrThrow = delegate.findUniqueOrThrow
+    delegate.findUniqueOrThrow = async (
+      ...args: Parameters<Delegate['findUniqueOrThrow']>
+    ) => {
+      try {
+        return await originalFindUniqueOrThrow.apply(delegate, args)
+      } catch {
+        throw new PrismaClientKnownRequestError(`No ${name} found`, {
+          code: 'P2025',
+          clientVersion,
+        })
+      }
+    }
 
-      delegate.findUniqueOrThrow = async (
-        ...args: Parameters<Delegate['findUniqueOrThrow']>
-      ) => {
-        try {
-          return await originalFindUniqueOrThrow.apply(delegate, args)
-        } catch {
-          throw new PrismaClientKnownRequestError(`No ${name} found`, {
-            code: 'P2025',
-            clientVersion,
-          })
-        }
+    const originalFindFirstOrThrow = delegate.findFirstOrThrow
+
+    delegate.findFirstOrThrow = async (
+      ...args: Parameters<Delegate['findFirstOrThrow']>
+    ) => {
+      try {
+        return await originalFindFirstOrThrow.apply(delegate, args)
+      } catch {
+        throw new PrismaClientKnownRequestError(`No ${name} found`, {
+          code: 'P2025',
+          clientVersion,
+        })
+      }
+    }
+
+    const originalUpdate = delegate.update
+
+    delegate.update = async (...args: Parameters<Delegate['update']>) => {
+      const updated = await originalUpdate.apply(delegate, args)
+
+      if (!updated) {
+        throw new PrismaClientKnownRequestError(`No ${name} found`, {
+          code: 'P2025',
+          clientVersion,
+          meta: {
+            cause: 'Record to update not found.',
+            modelName: name,
+          },
+        })
       }
 
-      const originalFindFirstOrThrow = delegate.findFirstOrThrow
+      return updated
+    }
 
-      delegate.findFirstOrThrow = async (
-        ...args: Parameters<Delegate['findFirstOrThrow']>
-      ) => {
-        try {
-          return await originalFindFirstOrThrow.apply(delegate, args)
-        } catch {
-          throw new PrismaClientKnownRequestError(`No ${name} found`, {
-            code: 'P2025',
-            clientVersion,
-          })
-        }
+    const originalDelete = delegate.delete
+
+    delegate.delete = async (...args: Parameters<Delegate['delete']>) => {
+      try {
+        return await originalDelete.apply(delegate, args)
+      } catch {
+        throw new PrismaClientKnownRequestError(`No ${name} found`, {
+          code: 'P2025',
+          clientVersion,
+          meta: {
+            cause: 'Record to delete does not exist.',
+            modelName: name,
+          },
+        })
       }
-
-      const originalUpdate = delegate.update
-
-      delegate.update = async (...args: Parameters<Delegate['update']>) => {
-        const updated = await originalUpdate.apply(delegate, args)
-
-        if (!updated) {
-          throw new PrismaClientKnownRequestError(`No ${name} found`, {
-            code: 'P2025',
-            clientVersion,
-            meta: {
-              cause: 'Record to update not found.',
-              modelName: name,
-            },
-          })
-        }
-
-        return updated
-      }
-
-      const originalDelete = delegate.delete
-
-      delegate.delete = async (...args: Parameters<Delegate['delete']>) => {
-        try {
-          return await originalDelete.apply(delegate, args)
-        } catch {
-          throw new PrismaClientKnownRequestError(`No ${name} found`, {
-            code: 'P2025',
-            clientVersion,
-            meta: {
-              cause: 'Record to delete does not exist.',
-              modelName: name,
-            },
-          })
-        }
-      }
-    })
+    }
+  })
 
   mongod = await MongoMemoryServer.create({
     instance: {
@@ -123,7 +124,19 @@ afterAll(async () => {
   await mongod?.stop()
 })
 
-afterEach(() => {
+afterEach(async () => {
   expect(nock.isDone()).toBeTruthy()
   nock.cleanAll()
+
+  await Promise.all(
+    models.map(async ({ delegate, name }) => {
+      try {
+        expect(await delegate.count({})).toBe(0)
+      } catch {
+        console.warn(
+          `${name} resources found after the test, please clean database after each test to avoid flaky tests`
+        )
+      }
+    })
+  )
 })

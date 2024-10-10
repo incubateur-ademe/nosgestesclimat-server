@@ -14,7 +14,9 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = FETCH_USER_GROUPS_ROUTE
 
-  afterEach(() => prisma.group.deleteMany())
+  afterEach(() =>
+    Promise.all([prisma.group.deleteMany(), prisma.user.deleteMany()])
+  )
 
   describe('When fetching his groups', () => {
     describe('And invalid userId', () => {

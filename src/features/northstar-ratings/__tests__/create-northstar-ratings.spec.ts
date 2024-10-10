@@ -13,6 +13,8 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = '/northstar-ratings/v1'
 
+  afterEach(() => prisma.northstarRating.deleteMany())
+
   describe('When creating a northstar rating', () => {
     describe('And no data provided', () => {
       test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {

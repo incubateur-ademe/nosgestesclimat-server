@@ -16,6 +16,10 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = CREATE_PARTICIPANT_ROUTE
 
+  afterEach(() =>
+    Promise.all([prisma.group.deleteMany(), prisma.user.deleteMany()])
+  )
+
   describe("When trying to join another administrator's group", () => {
     describe('And group does not exist', () => {
       test(`Then it returns a ${StatusCodes.NOT_FOUND} error`, async () => {

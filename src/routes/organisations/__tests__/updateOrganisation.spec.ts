@@ -1,6 +1,7 @@
 import { faker } from '@faker-js/faker'
 import nock from 'nock'
 import supertest from 'supertest'
+import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
 import {
   ATTRIBUTE_IS_ORGANISATION_ADMIN,
@@ -26,6 +27,13 @@ describe(`Given a validated NGC user organisation`, () => {
   beforeEach(async () => {
     validatedOrganisationFixture = await validateOrganisation(request)
   })
+
+  afterEach(() =>
+    Promise.all([
+      prisma.organisation.deleteMany(),
+      prisma.verifiedUser.deleteMany(),
+    ])
+  )
 
   describe(`When the administator enters the last infos`, () => {
     let scope: nock.Scope
