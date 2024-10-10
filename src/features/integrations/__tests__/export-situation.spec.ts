@@ -51,7 +51,7 @@ describe('Given a NGC user', () => {
             apikey: process.env.AGIR_API_KEY!,
           },
         })
-          .post(`/bilan/importFromNGC`, JSON.stringify({ situation }))
+          .post(`/bilan/importFromNGC`, { situation })
           .reply(200, {
             redirect_url: 'http://app.agir.com',
           })

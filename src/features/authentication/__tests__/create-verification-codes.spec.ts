@@ -123,21 +123,18 @@ describe('Given a NGC user', () => {
           'api-key': process.env.BREVO_API_KEY!,
         },
       })
-        .post(
-          '/v3/smtp/email',
-          JSON.stringify({
-            to: [
-              {
-                name: email,
-                email,
-              },
-            ],
-            templateId: 66,
-            params: {
-              VERIFICATION_CODE: code,
+        .post('/v3/smtp/email', {
+          to: [
+            {
+              name: email,
+              email,
             },
-          })
-        )
+          ],
+          templateId: 66,
+          params: {
+            VERIFICATION_CODE: code,
+          },
+        })
         .reply(200)
 
       await agent.post(url).send({

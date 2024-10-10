@@ -39,7 +39,6 @@ describe(`Given a validated NGC user organisation`, () => {
       scope = nock(process.env.BREVO_URL!)
         .post(`/v3/contacts`, {
           email,
-          updateEnabled: true,
           attributes: {
             [ATTRIBUTE_IS_ORGANISATION_ADMIN]: true,
             [ATTRIBUTE_ORGANISATION_NAME]: name,
@@ -48,6 +47,7 @@ describe(`Given a validated NGC user organisation`, () => {
             [ATTRIBUTE_PRENOM]: administratorName,
             [ATTRIBUTE_OPT_IN]: false,
           },
+          updateEnabled: true,
         })
         .reply(200)
         .post(`/v3/smtp/email`, {
