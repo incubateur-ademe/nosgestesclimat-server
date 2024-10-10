@@ -36,13 +36,13 @@ describe('Given a NGC user', () => {
     })
 
     describe('And no data provided', () => {
-      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent.post(url).expect(StatusCodes.BAD_REQUEST)
       })
     })
 
     describe('And invalid userId', () => {
-      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent
           .post(url)
           .send({
@@ -54,7 +54,7 @@ describe('Given a NGC user', () => {
     })
 
     describe('And invalid email', () => {
-      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent
           .post(url)
           .send({
@@ -65,7 +65,7 @@ describe('Given a NGC user', () => {
       })
     })
 
-    test(`It should return a ${StatusCodes.CREATED} response with the created verification code`, async () => {
+    test(`Then it returns a ${StatusCodes.CREATED} response with the created verification code`, async () => {
       const payload = {
         userId: faker.string.uuid(),
         email: faker.internet.email(),
@@ -87,7 +87,7 @@ describe('Given a NGC user', () => {
       })
     })
 
-    test('It should store a verification code in database', async () => {
+    test('Then it stores a verification code in database', async () => {
       const payload: VerificationCodeCreateDto = {
         userId: faker.string.uuid(),
         email: faker.internet.email(),
@@ -115,7 +115,7 @@ describe('Given a NGC user', () => {
       })
     })
 
-    test('It should send an email with the code', async () => {
+    test('Then it sends an email with the code', async () => {
       const email = faker.internet.email()
 
       const scope = nock(process.env.BREVO_URL!, {
@@ -158,7 +158,7 @@ describe('Given a NGC user', () => {
         jest.spyOn(prisma.verificationCode, 'create').mockRestore()
       })
 
-      test(`Then it should return a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
+      test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
         await agent
           .post(url)
           .send({
@@ -168,7 +168,7 @@ describe('Given a NGC user', () => {
           .expect(StatusCodes.INTERNAL_SERVER_ERROR)
       })
 
-      test(`Then it should log the exception`, async () => {
+      test(`Then it logs the exception`, async () => {
         await agent.post(url).send({
           userId: faker.string.uuid(),
           email: faker.internet.email(),

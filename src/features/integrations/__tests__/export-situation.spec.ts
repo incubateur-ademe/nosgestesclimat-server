@@ -16,13 +16,13 @@ describe('Given a NGC user', () => {
     beforeEach(() => (situation = getRandomPersonaSituation()))
 
     describe('And no data provided', () => {
-      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent.post(url).expect(StatusCodes.BAD_REQUEST)
       })
     })
 
     describe('And invalid external Service', () => {
-      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent.post(url).send(situation).expect(StatusCodes.BAD_REQUEST)
       })
     })
@@ -30,7 +30,7 @@ describe('Given a NGC user', () => {
     describe('And agir external service', () => {
       const serviceName = 'agir'
 
-      test(`Then it should return a ${StatusCodes.OK} with a redirectionUrl`, async () => {
+      test(`Then it returns a ${StatusCodes.OK} with a redirectionUrl`, async () => {
         nock(process.env.AGIR_URL!).post('/bilan/importFromNGC').reply(200, {
           redirect_url: 'http://app.agir.com',
         })
@@ -45,7 +45,7 @@ describe('Given a NGC user', () => {
         })
       })
 
-      it(`Then it should send situation on agir service`, async () => {
+      test(`Then it sends situation on agir service`, async () => {
         const scope = nock(process.env.AGIR_URL!, {
           reqheaders: {
             apikey: process.env.AGIR_API_KEY!,
@@ -65,7 +65,7 @@ describe('Given a NGC user', () => {
       })
 
       describe(`And service is down`, () => {
-        it(`Should retry several times and then raise the exception`, async () => {
+        test(`Then it retries several times and then raises the exception`, async () => {
           nock(process.env.AGIR_URL!)
             .post('/bilan/importFromNGC')
             .reply(500)
@@ -82,7 +82,7 @@ describe('Given a NGC user', () => {
             .expect(StatusCodes.INTERNAL_SERVER_ERROR)
         })
 
-        it(`Should log the exception`, async () => {
+        test(`Then it logs the exception`, async () => {
           nock(process.env.AGIR_URL!)
             .post('/bilan/importFromNGC')
             .reply(500)

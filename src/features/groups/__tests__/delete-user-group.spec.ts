@@ -12,7 +12,7 @@ describe('Given a NGC user', () => {
 
   describe('When deleting his group', () => {
     describe('And invalid userId', () => {
-      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent
           .delete(
             url
@@ -24,7 +24,7 @@ describe('Given a NGC user', () => {
     })
 
     describe('And no data', () => {
-      test(`Then it should return a ${StatusCodes.NOT_FOUND} error`, async () => {
+      test(`Then it returns a ${StatusCodes.NOT_FOUND} error`, async () => {
         await agent
           .delete(
             url
@@ -47,7 +47,7 @@ describe('Given a NGC user', () => {
           } = await createGroup({ agent }))
       )
 
-      test(`Then it should return a ${StatusCodes.NO_CONTENT} response`, async () => {
+      test(`Then it returns a ${StatusCodes.NO_CONTENT} response`, async () => {
         await agent
           .delete(url.replace(':groupId', groupId).replace(':userId', userId))
           .expect(StatusCodes.NO_CONTENT)
@@ -65,7 +65,7 @@ describe('Given a NGC user', () => {
         }))
       })
 
-      test(`Then it should return a ${StatusCodes.NOT_FOUND} response`, async () => {
+      test(`Then it returns a ${StatusCodes.NOT_FOUND} response`, async () => {
         await agent
           .delete(url.replace(':userId', userId!).replace(':groupId', groupId!))
           .expect(StatusCodes.NOT_FOUND)
@@ -83,7 +83,7 @@ describe('Given a NGC user', () => {
         jest.spyOn(prisma.group, 'delete').mockRestore()
       })
 
-      test(`Then it should return a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
+      test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
         await agent
           .delete(
             url
@@ -93,7 +93,7 @@ describe('Given a NGC user', () => {
           .expect(StatusCodes.INTERNAL_SERVER_ERROR)
       })
 
-      test(`Then it should log the exception`, async () => {
+      test(`Then it logs the exception`, async () => {
         await agent
           .delete(
             url

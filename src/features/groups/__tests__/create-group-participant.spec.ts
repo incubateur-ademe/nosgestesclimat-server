@@ -18,7 +18,7 @@ describe('Given a NGC user', () => {
 
   describe("When trying to join another administrator's group", () => {
     describe('And group does not exist', () => {
-      test(`Then it should return a ${StatusCodes.NOT_FOUND} error`, async () => {
+      test(`Then it returns a ${StatusCodes.NOT_FOUND} error`, async () => {
         // This is not ideal but prismock does not handle this correctly
         jest.spyOn(prisma.groupParticipant, 'upsert').mockRejectedValueOnce(
           new PrismaClientKnownRequestError('ForeignKeyConstraintFailedError', {
@@ -48,7 +48,7 @@ describe('Given a NGC user', () => {
       beforeEach(async () => ({ id: groupId } = await createGroup({ agent })))
 
       describe('And no data provided', () => {
-        test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
+        test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
           await agent
             .post(url.replace(':groupId', groupId))
             .expect(StatusCodes.BAD_REQUEST)
@@ -56,7 +56,7 @@ describe('Given a NGC user', () => {
       })
 
       describe('And invalid email', () => {
-        test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
+        test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
           await agent
             .post(url.replace(':groupId', groupId))
             .send({
@@ -70,7 +70,7 @@ describe('Given a NGC user', () => {
       })
 
       describe('And invalid user id', () => {
-        test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
+        test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
           await agent
             .post(url.replace(':groupId', groupId))
             .send({
@@ -83,7 +83,7 @@ describe('Given a NGC user', () => {
       })
 
       describe('And invalid participant simulation', () => {
-        test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
+        test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
           await agent
             .post(url.replace(':groupId', groupId))
             .send({
@@ -95,7 +95,7 @@ describe('Given a NGC user', () => {
         })
       })
 
-      test(`Then it should return a ${StatusCodes.CREATED} response with created participant`, async () => {
+      test(`Then it returns a ${StatusCodes.CREATED} response with created participant`, async () => {
         const payload: ParticipantCreateDto = {
           name: faker.person.fullName(),
           userId: faker.string.uuid(),
@@ -116,7 +116,7 @@ describe('Given a NGC user', () => {
         })
       })
 
-      test(`Then it should store a participant in database`, async () => {
+      test(`Then it stores a participant in database`, async () => {
         const payload: ParticipantCreateDto = {
           userId: faker.string.uuid(),
           name: faker.person.fullName(),
@@ -171,7 +171,7 @@ describe('Given a NGC user', () => {
           jest.spyOn(prisma.user, 'upsert').mockRestore()
         })
 
-        test(`Then it should return a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
+        test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
           await agent
             .post(url.replace(':groupId', groupId))
             .send({
@@ -182,7 +182,7 @@ describe('Given a NGC user', () => {
             .expect(StatusCodes.INTERNAL_SERVER_ERROR)
         })
 
-        test(`Then it should log the exception`, async () => {
+        test(`Then it logs the exception`, async () => {
           await agent.post(url.replace(':groupId', groupId)).send({
             name: faker.person.fullName(),
             userId: faker.string.uuid(),
@@ -199,7 +199,6 @@ describe('Given a NGC user', () => {
   })
 
   describe('When joining his own group', () => {
-    let id: string
     let userId: string
     let userName: string
     let userEmail: string
@@ -209,20 +208,14 @@ describe('Given a NGC user', () => {
       async () =>
         ({
           id: groupId,
-          participants: [{ id, userId, name: userName, email: userEmail }],
+          administrator: { id: userId, name: userName, email: userEmail },
         } = await createGroup({
           agent,
-          group: {
-            participants: [
-              {
-                simulation: faker.string.uuid(),
-              },
-            ],
-          },
+          group: {},
         }))
     )
 
-    test(`Then it should return a ${StatusCodes.CREATED} response with updated participant`, async () => {
+    test(`Then it returns a ${StatusCodes.CREATED} response with updated participant`, async () => {
       const payload: ParticipantCreateDto = {
         userId,
         name: userName,
@@ -235,7 +228,7 @@ describe('Given a NGC user', () => {
         .expect(StatusCodes.CREATED)
 
       expect(response.body).toEqual({
-        id,
+        id: expect.any(String),
         ...payload,
         email: userEmail,
         createdAt: expect.any(String),

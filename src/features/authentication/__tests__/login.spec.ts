@@ -15,13 +15,13 @@ describe('Given a NGC user', () => {
 
   describe('When logging in', () => {
     describe('And no data provided', () => {
-      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent.post(url).expect(StatusCodes.BAD_REQUEST)
       })
     })
 
     describe('And invalid userId', () => {
-      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent
           .post(url)
           .send({
@@ -34,7 +34,7 @@ describe('Given a NGC user', () => {
     })
 
     describe('And invalid email', () => {
-      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent
           .post(url)
           .send({
@@ -47,7 +47,7 @@ describe('Given a NGC user', () => {
     })
 
     describe('And invalid code', () => {
-      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent
           .post(url)
           .send({
@@ -60,7 +60,7 @@ describe('Given a NGC user', () => {
     })
 
     describe('And verification code does not exist', () => {
-      test(`Then it should return a ${StatusCodes.UNAUTHORIZED} error`, async () => {
+      test(`Then it returns a ${StatusCodes.UNAUTHORIZED} error`, async () => {
         await agent
           .post(url)
           .send({
@@ -75,7 +75,7 @@ describe('Given a NGC user', () => {
     describe('And verification code does exist', () => {
       let verificationCode: VerificationCode
 
-      test(`It should return a ${StatusCodes.OK} response with a cookie`, async () => {
+      test(`Then it returns a ${StatusCodes.OK} response with a cookie`, async () => {
         verificationCode = await createVerificationCode({ agent })
 
         const payload = {
@@ -101,7 +101,7 @@ describe('Given a NGC user', () => {
       })
 
       describe('And is expired', () => {
-        test(`Then it should return a ${StatusCodes.UNAUTHORIZED} error`, async () => {
+        test(`Then it returns a ${StatusCodes.UNAUTHORIZED} error`, async () => {
           verificationCode = await createVerificationCode({
             agent,
             expirationDate: dayjs().subtract(1, 'second').toDate(),
@@ -132,7 +132,7 @@ describe('Given a NGC user', () => {
         jest.spyOn(prisma.verificationCode, 'findFirstOrThrow').mockRestore()
       })
 
-      test(`Then it should return a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
+      test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
         await agent
           .post(url)
           .send({
@@ -143,7 +143,7 @@ describe('Given a NGC user', () => {
           .expect(StatusCodes.INTERNAL_SERVER_ERROR)
       })
 
-      test(`Then it should log the exception`, async () => {
+      test(`Then it logs the exception`, async () => {
         await agent.post(url).send({
           userId: faker.string.uuid(),
           email: faker.internet.email(),
