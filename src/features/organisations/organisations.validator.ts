@@ -1,4 +1,13 @@
 import z from 'zod'
+import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail'
+
+const OrganisationParams = z
+  .object({
+    organisationIdOrSlug: z.string(),
+  })
+  .strict()
+
+export type OrganisationParams = z.infer<typeof OrganisationParams>
 
 export enum OrganisationTypeEnum {
   association = 'association',
@@ -33,7 +42,7 @@ export type OrganisationCreateAdministrator = z.infer<
   typeof OrganisationCreateAdministrator
 >
 
-export const OrganisationCreateDto = z
+const OrganisationCreateDto = z
   .object({
     name: z.string().min(1).max(100),
     type: OrganisationType,
@@ -48,4 +57,48 @@ export const OrganisationCreateValidator = {
   body: OrganisationCreateDto,
   params: z.object({}).strict().optional(),
   query: z.object({}).strict().optional(),
+}
+
+const OrganisationUpdateAdministrator = OrganisationCreateAdministrator.merge(
+  z
+    .object({
+      email: z
+        .string()
+        .regex(EMAIL_REGEX)
+        .transform((email) => email.toLocaleLowerCase()),
+    })
+    .strict()
+)
+
+export type OrganisationUpdateAdministrator = z.infer<
+  typeof OrganisationUpdateAdministrator
+>
+
+const OrganisationUpdateDto = OrganisationCreateDto.merge(
+  z
+    .object({
+      administrators: z.tuple([OrganisationUpdateAdministrator]).optional(),
+    })
+    .strict()
+)
+  .partial()
+  .strict()
+
+export type OrganisationUpdateDto = z.infer<typeof OrganisationUpdateDto>
+
+const OrganisationUpdateQuery = z
+  .object({
+    code: z
+      .string()
+      .regex(/^\d{6}$/)
+      .optional(),
+  })
+  .strict()
+
+export type OrganisationUpdateQuery = z.infer<typeof OrganisationUpdateQuery>
+
+export const OrganisationUpdateValidator = {
+  body: OrganisationUpdateDto,
+  params: OrganisationParams,
+  query: OrganisationUpdateQuery,
 }

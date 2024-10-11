@@ -2,16 +2,26 @@ import { addOrUpdateContact } from '../../../adapters/brevo/client'
 import { Attributes } from '../../../adapters/brevo/constant'
 import type { Handler } from '../../../core/event-bus/handler'
 import type { OrganisationCreatedEvent } from '../events/OrganisationCreated.event'
+import type { OrganisationUpdatedEvent } from '../events/OrganisationUpdated.event'
 
-export const addOrUpdateBrevoContact: Handler<OrganisationCreatedEvent> = ({
+export const addOrUpdateBrevoContact: Handler<
+  OrganisationCreatedEvent | OrganisationUpdatedEvent
+> = ({
   attributes: {
-    administrator: {
-      email,
-      name: administratorName,
-      optedInForCommunications,
-      id,
+    organisation: {
+      name: organisationName,
+      slug,
+      administrators: [
+        {
+          user: {
+            email,
+            name: administratorName,
+            optedInForCommunications,
+            id,
+          },
+        },
+      ],
     },
-    organisation: { name: organisationName, slug },
   },
 }) => {
   const attributes = {

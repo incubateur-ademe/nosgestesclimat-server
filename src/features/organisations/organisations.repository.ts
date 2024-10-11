@@ -1,7 +1,11 @@
 import type { Request } from 'express'
 import slugify from 'slugify'
 import { prisma } from '../../adapters/prisma/client'
-import type { OrganisationCreateDto } from './organisations.validator'
+import type {
+  OrganisationCreateDto,
+  OrganisationParams,
+  OrganisationUpdateDto,
+} from './organisations.validator'
 
 const defaultUserSelection = {
   select: {
@@ -14,6 +18,31 @@ const defaultUserSelection = {
     createdAt: true,
     updatedAt: true,
   },
+}
+
+const defaultOrganisationSelection = {
+  id: true,
+  name: true,
+  slug: true,
+  type: true,
+  numberOfCollaborators: true,
+  administrators: {
+    select: {
+      id: true,
+      user: defaultUserSelection,
+    },
+  },
+  polls: {
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  },
+  createdAt: true,
+  updatedAt: true,
 }
 
 const findUniqueOrganisationSlug = async (
@@ -41,6 +70,25 @@ const findUniqueOrganisationSlug = async (
   }
 
   return counter === 0 ? slug : `${slug}-${counter}`
+}
+
+const findOrganisationBySlugOrId = (
+  { organisationIdOrSlug }: OrganisationParams,
+  { email: userEmail }: NonNullable<Request['user']>
+) => {
+  return prisma.organisation.findFirstOrThrow({
+    where: {
+      OR: [{ id: organisationIdOrSlug }, { slug: organisationIdOrSlug }],
+      administrators: {
+        some: {
+          userEmail,
+        },
+      },
+    },
+    select: {
+      id: true,
+    },
+  })
 }
 
 export const createOrganisationAndAdministrator = async (
@@ -97,30 +145,77 @@ export const createOrganisationAndAdministrator = async (
         },
       },
     },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      type: true,
-      numberOfCollaborators: true,
-      administrators: {
-        select: {
-          id: true,
-          user: defaultUserSelection,
+    select: defaultOrganisationSelection,
+  })
+
+  return {
+    organisation,
+    administrator,
+  }
+}
+
+export const updateAdministratorOrganisation = async (
+  params: OrganisationParams,
+  {
+    name: organisationName,
+    type,
+    numberOfCollaborators,
+    administrators,
+  }: OrganisationUpdateDto,
+  user: NonNullable<Request['user']>
+) => {
+  const { email: userEmail } = user
+  const organisationUpdate = {
+    type,
+    name: organisationName,
+    numberOfCollaborators,
+    administrators: {
+      update: {
+        where: {
+          userEmail,
+        },
+        data: {
+          userEmail,
         },
       },
-      polls: {
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      },
-      createdAt: true,
-      updatedAt: true,
     },
+  }
+
+  let administrator
+  if (administrators) {
+    const [
+      {
+        email,
+        name: administratorName,
+        optedInForCommunications,
+        position,
+        telephone,
+      },
+    ] = administrators
+
+    // update administrator
+    administrator = await prisma.verifiedUser.update({
+      where: {
+        email: userEmail,
+      },
+      data: {
+        name: administratorName,
+        email,
+        position,
+        telephone,
+        optedInForCommunications,
+      },
+      ...defaultUserSelection,
+    })
+
+    organisationUpdate.administrators.update.data.userEmail = email
+  }
+
+  // update organisation
+  const organisation = await prisma.organisation.update({
+    where: await findOrganisationBySlugOrId(params, user),
+    data: organisationUpdate,
+    select: defaultOrganisationSelection,
   })
 
   return {

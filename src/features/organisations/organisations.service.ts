@@ -1,10 +1,67 @@
 import type { Request } from 'express'
+import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
 import { ForbiddenException } from '../../core/errors/ForbiddenException'
 import { EventBus } from '../../core/event-bus/event-bus'
-import { isPrismaErrorUniqueConstraintFailed } from '../../core/typeguards/isPrismaError'
+import {
+  isPrismaErrorNotFound,
+  isPrismaErrorUniqueConstraintFailed,
+} from '../../core/typeguards/isPrismaError'
+import { login } from '../authentication/authentication.service'
 import { OrganisationCreatedEvent } from './events/OrganisationCreated.event'
-import { createOrganisationAndAdministrator } from './organisations.repository'
-import type { OrganisationCreateDto } from './organisations.validator'
+import { OrganisationUpdatedEvent } from './events/OrganisationUpdated.event'
+import {
+  createOrganisationAndAdministrator,
+  updateAdministratorOrganisation,
+} from './organisations.repository'
+import type {
+  OrganisationCreateDto,
+  OrganisationParams,
+  OrganisationUpdateDto,
+} from './organisations.validator'
+
+const organisationToDto = (
+  organisation: Awaited<
+    ReturnType<typeof createOrganisationAndAdministrator>
+  >['organisation'],
+  connectedUser: string
+) => ({
+  ...organisation,
+  administrators: organisation.administrators.map(
+    ({
+      id,
+      user: {
+        id: userId,
+        name,
+        email,
+        createdAt,
+        optedInForCommunications,
+        position,
+        telephone,
+        updatedAt,
+      },
+    }) => ({
+      ...(userId === connectedUser
+        ? {
+            id,
+            userId,
+            name,
+            email,
+            position,
+            telephone,
+            optedInForCommunications,
+            createdAt,
+            updatedAt,
+          }
+        : {
+            id,
+            name,
+            position,
+            createdAt,
+            updatedAt,
+          }),
+    })
+  ),
+})
 
 export const createOrganisation = async ({
   organisationDto,
@@ -29,41 +86,77 @@ export const createOrganisation = async ({
 
     await EventBus.once(organisationCreatedEvent)
 
-    return {
-      ...organisation,
-      administrators: organisation.administrators.map(
-        ({
-          id,
-          user: {
-            id: userId,
-            name,
-            email,
-            createdAt,
-            optedInForCommunications,
-            position,
-            telephone,
-            updatedAt,
-          },
-        }) => ({
-          id,
-          userId,
-          name,
-          email,
-          position,
-          telephone,
-          optedInForCommunications,
-          createdAt,
-          updatedAt,
-        })
-      ),
-    }
+    return organisationToDto(organisation, user.userId)
   } catch (e) {
     if (isPrismaErrorUniqueConstraintFailed(e)) {
       throw new ForbiddenException(
         "Forbidden ! An organisation with this administrator's email already exists."
       )
     }
+    throw e
+  }
+}
 
+export const updateOrganisation = async ({
+  params,
+  organisationDto,
+  code,
+  user,
+}: {
+  params: OrganisationParams
+  organisationDto: OrganisationUpdateDto
+  code?: string
+  user: NonNullable<Request['user']>
+}) => {
+  let token: string | undefined
+  const { administrators: [{ email }] = [{}] } = organisationDto
+  if (email && email !== user.email) {
+    if (!code) {
+      throw new ForbiddenException(
+        'Forbidden ! Cannot update administrator email without a verification code.'
+      )
+    }
+
+    try {
+      token = await login({
+        ...user,
+        code,
+        email,
+      })
+    } catch (e) {
+      if (e instanceof EntityNotFoundException) {
+        throw new ForbiddenException('Forbidden ! Invalid verification code.')
+      }
+      throw e
+    }
+  }
+
+  try {
+    const { organisation, administrator } =
+      await updateAdministratorOrganisation(params, organisationDto, user)
+
+    const organisationUpdatedEvent = new OrganisationUpdatedEvent({
+      administrator,
+      organisation,
+    })
+
+    EventBus.emit(organisationUpdatedEvent)
+
+    await EventBus.once(organisationUpdatedEvent)
+
+    return {
+      token,
+      organisation: organisationToDto(organisation, user.userId),
+    }
+  } catch (e) {
+    if (isPrismaErrorNotFound(e)) {
+      throw new EntityNotFoundException('Organisation not found')
+    }
+    if (isPrismaErrorUniqueConstraintFailed(e)) {
+      throw new ForbiddenException(
+        'Forbidden ! This email already belongs to another organisation.'
+      )
+    }
     throw e
   }
 }

@@ -142,4 +142,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
   }
 })
 
+/**
+ * @deprecated should use features/organisations instead
+ */
 export default router

@@ -10,6 +10,9 @@ import {
 
 export const CREATE_ORGANISATION_ROUTE = '/organisations/v1'
 
+export const UPDATE_ORGANISATION_ROUTE =
+  '/organisations/v1/:organisationIdOrSlug'
+
 type TestAgent = ReturnType<typeof supertest>
 
 const organisationTypes = [

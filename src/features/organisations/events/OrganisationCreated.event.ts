@@ -1,8 +1,12 @@
-import type { Organisation, VerifiedUser } from '@prisma/client'
 import { EventBusEvent } from '../../../core/event-bus/event'
+import type { createOrganisationAndAdministrator } from '../organisations.repository'
 
 export class OrganisationCreatedEvent extends EventBusEvent<{
-  organisation: Organisation
-  administrator: VerifiedUser
+  organisation: Awaited<
+    ReturnType<typeof createOrganisationAndAdministrator>
+  >['organisation']
+  administrator: Awaited<
+    ReturnType<typeof createOrganisationAndAdministrator>
+  >['administrator']
   origin: string
 }> {}
