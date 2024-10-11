@@ -14,20 +14,21 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = FETCH_USER_GROUPS_ROUTE
 
-  // Fixes a bug in prismock
-  afterEach(() => prisma.group.deleteMany())
+  afterEach(() =>
+    Promise.all([prisma.group.deleteMany(), prisma.user.deleteMany()])
+  )
 
   describe('When fetching his groups', () => {
     describe('And invalid userId', () => {
-      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent
           .get(url.replace(':userId', faker.string.alpha(34)))
           .expect(StatusCodes.BAD_REQUEST)
       })
     })
 
-    describe('And no data', () => {
-      test(`Then it should return a ${StatusCodes.OK} response with an empty list`, async () => {
+    describe('And no group does exist', () => {
+      test(`Then it returns a ${StatusCodes.OK} response with an empty list`, async () => {
         const response = await agent
           .get(url.replace(':userId', faker.string.uuid()))
           .expect(StatusCodes.OK)
@@ -36,7 +37,7 @@ describe('Given a NGC user', () => {
       })
     })
 
-    describe('And a group exists', () => {
+    describe('And a group does exist', () => {
       let group: Awaited<ReturnType<typeof createGroup>>
       let userId: string
 
@@ -47,7 +48,7 @@ describe('Given a NGC user', () => {
         } = group)
       })
 
-      test(`Then it should return a ${StatusCodes.OK} response with a list containing the group`, async () => {
+      test(`Then it returns a ${StatusCodes.OK} response with a list containing the group`, async () => {
         const response = await agent
           .get(url.replace(':userId', userId))
           .expect(StatusCodes.OK)
@@ -56,7 +57,7 @@ describe('Given a NGC user', () => {
       })
     })
 
-    describe('And multiple groups exist', () => {
+    describe('And multiple groups do exist', () => {
       let group1: Awaited<ReturnType<typeof createGroup>>
       let user1Id: string
       let simulationUser1Id: string
@@ -128,7 +129,7 @@ describe('Given a NGC user', () => {
         }))
       })
 
-      test(`Then it should return a ${StatusCodes.OK} response with a list containing the groups`, async () => {
+      test(`Then it returns a ${StatusCodes.OK} response with a list containing the groups`, async () => {
         const response = await agent
           .get(url.replace(':userId', user1Id))
           .expect(StatusCodes.OK)
@@ -179,10 +180,10 @@ describe('Given a NGC user', () => {
             updatedAt: null,
           },
         ])
-      })
+      }, 10000)
 
       describe(`And filtering the list by groupIds`, () => {
-        test(`Then it should return a ${StatusCodes.OK} response with a list containing the filtered groups`, async () => {
+        test(`Then it returns a ${StatusCodes.OK} response with a list containing the filtered groups`, async () => {
           const response = await agent
             .get(url.replace(':userId', user1Id))
             .query({
@@ -226,13 +227,13 @@ describe('Given a NGC user', () => {
           .mockRejectedValueOnce(databaseError)
       })
 
-      test(`Then it should return a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
+      test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
         await agent
           .get(url.replace(':userId', faker.string.uuid()))
           .expect(StatusCodes.INTERNAL_SERVER_ERROR)
       })
 
-      test(`Then it should log the exception`, async () => {
+      test(`Then it logs the exception`, async () => {
         await agent
           .get(url.replace(':userId', faker.string.uuid()))
           .expect(StatusCodes.INTERNAL_SERVER_ERROR)

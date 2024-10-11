@@ -1,4 +1,3 @@
-import { randomUUID } from 'crypto'
 import { prisma } from '../../adapters/prisma/client'
 import type {
   GroupParams,
@@ -80,7 +79,6 @@ export const createGroupAndUser = async ({
             participants: {
               createMany: {
                 data: participants.map(({ simulation }) => ({
-                  id: randomUUID(),
                   userId,
                   simulationId: simulation,
                 })),
@@ -137,7 +135,6 @@ export const createParticipantAndUser = async (
       },
     },
     create: {
-      id: randomUUID(),
       groupId,
       userId,
       simulationId,
