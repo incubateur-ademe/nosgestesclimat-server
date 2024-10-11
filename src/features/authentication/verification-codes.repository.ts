@@ -1,5 +1,4 @@
 import type { Prisma } from '@prisma/client'
-import { randomUUID } from 'crypto'
 import { prisma } from '../../adapters/prisma/client'
 import type { LoginDto } from './authentication.validator'
 
@@ -8,7 +7,6 @@ export const createUserVerificationCode = (
 ) => {
   return prisma.verificationCode.create({
     data: {
-      id: randomUUID(),
       ...data,
     },
     select: {

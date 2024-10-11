@@ -2,6 +2,7 @@ import { faker } from '@faker-js/faker'
 import dayjs from 'dayjs'
 import nock from 'nock'
 import supertest from 'supertest'
+import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
 import * as authenticationService from '../../../features/authentication/authentication.service'
 import {
@@ -19,6 +20,13 @@ describe(`Given an existing NGC user organisation`, () => {
   beforeEach(async () => {
     createFullOrganisationFixture = await createFullOrganisation(request)
   })
+
+  afterEach(() =>
+    Promise.all([
+      prisma.organisation.deleteMany(),
+      prisma.verifiedUser.deleteMany(),
+    ])
+  )
 
   describe(`When the administator changes its email`, () => {
     let email: string

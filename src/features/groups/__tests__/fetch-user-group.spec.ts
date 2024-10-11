@@ -1,6 +1,4 @@
 import { faker } from '@faker-js/faker'
-import { version as clientVersion } from '@prisma/client/package.json'
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
@@ -16,9 +14,13 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = FETCH_USER_GROUP_ROUTE
 
+  afterEach(() =>
+    Promise.all([prisma.group.deleteMany(), prisma.user.deleteMany()])
+  )
+
   describe('When fetching one of his groups', () => {
     describe('And invalid userId', () => {
-      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent
           .get(
             url
@@ -29,17 +31,8 @@ describe('Given a NGC user', () => {
       })
     })
 
-    describe('And no data', () => {
-      test(`Then it should return a ${StatusCodes.NOT_FOUND} error`, async () => {
-        // This is not ideal but prismock does not handle this correctly
-        jest.spyOn(prisma.group, 'findUniqueOrThrow').mockRejectedValueOnce(
-          new PrismaClientKnownRequestError('NotFoundError', {
-            code: 'P2025',
-            clientVersion,
-          })
-        )
-
-        // In case of correct error
+    describe('And no group does exist', () => {
+      test(`Then it returns a ${StatusCodes.NOT_FOUND} error`, async () => {
         await agent
           .get(
             url
@@ -47,19 +40,10 @@ describe('Given a NGC user', () => {
               .replace(':groupId', faker.database.mongodbObjectId())
           )
           .expect(StatusCodes.NOT_FOUND)
-
-        // This expectation covers the prismock raise
-        await agent
-          .get(
-            url
-              .replace(':groupId', faker.database.mongodbObjectId())
-              .replace(':userId', faker.string.uuid())
-          )
-          .expect(StatusCodes.INTERNAL_SERVER_ERROR)
       })
     })
 
-    describe('And a group exists', () => {
+    describe('And a group does exist', () => {
       let group: Awaited<ReturnType<typeof createGroup>>
       let groupId: string
       let userId: string
@@ -72,7 +56,7 @@ describe('Given a NGC user', () => {
         } = group)
       })
 
-      test(`Then it should return a ${StatusCodes.OK} response with the group`, async () => {
+      test(`Then it returns a ${StatusCodes.OK} response with the group`, async () => {
         const response = await agent
           .get(url.replace(':userId', userId).replace(':groupId', groupId))
           .expect(StatusCodes.OK)
@@ -88,7 +72,7 @@ describe('Given a NGC user', () => {
           userId = user.userId
         })
 
-        test(`Then it should return a ${StatusCodes.OK} response with the group`, async () => {
+        test(`Then it returns a ${StatusCodes.OK} response with the group`, async () => {
           const response = await agent
             .get(url.replace(':userId', userId).replace(':groupId', groupId))
             .expect(StatusCodes.OK)
@@ -117,7 +101,7 @@ describe('Given a NGC user', () => {
           .mockRejectedValueOnce(databaseError)
       })
 
-      test(`Then it should return a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
+      test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
         await agent
           .get(
             url
@@ -127,7 +111,7 @@ describe('Given a NGC user', () => {
           .expect(StatusCodes.INTERNAL_SERVER_ERROR)
       })
 
-      test(`Then it should log the exception`, async () => {
+      test(`Then it logs the exception`, async () => {
         await agent
           .get(
             url

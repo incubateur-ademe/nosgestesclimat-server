@@ -8,7 +8,7 @@ describe(`Given a non authenticated ngc user`, () => {
   const url = FETCH_ORGANISATION_ROUTE
 
   describe(`When listing organisations`, () => {
-    it(`Should return an ${StatusCodes.UNAUTHORIZED} error`, async () => {
+    it(`Then it returns an ${StatusCodes.UNAUTHORIZED} error`, async () => {
       await request.post(url).send({}).expect(StatusCodes.UNAUTHORIZED)
     })
   })

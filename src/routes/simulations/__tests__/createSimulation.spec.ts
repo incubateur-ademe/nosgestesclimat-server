@@ -1,4 +1,5 @@
 import supertest from 'supertest'
+import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
 import {
   Simulation,
@@ -15,12 +16,14 @@ describe('Given a NGC user', () => {
   const url = FETCH_SIMULATION_ROUTE
   let simulationId: string
 
+  afterEach(() => prisma.user.deleteMany())
+
   describe('When he creates a simulation without computedResults', () => {
     beforeEach(async () => {
       ;({ simulationId } = await createSimulation({ agent }))
     })
 
-    it('Then it should not store computedResults', async () => {
+    it('Then it does not store computedResults', async () => {
       const simulation = await Simulation.findOne(
         {
           id: simulationId,
@@ -32,7 +35,7 @@ describe('Given a NGC user', () => {
     })
 
     describe(`And he recovers it`, () => {
-      it('Then it should evaluate and store computedResults', async () => {
+      it('Then it evaluates and stores computedResults', async () => {
         const { body: simulationDto } = await agent.post(url).send({
           simulationId,
         })
@@ -79,7 +82,7 @@ describe('Given a NGC user', () => {
       }))
     })
 
-    it('Then it should store computedResults in carbone metric', async () => {
+    it('Then it stores computedResults in carbone metric', async () => {
       const { body: simulation } = await agent.post(url).send({
         simulationId,
       })
@@ -121,7 +124,7 @@ describe('Given a NGC user', () => {
       }))
     })
 
-    it('Then it should store computedResults untouched', async () => {
+    it('Then it stores computedResults untouched', async () => {
       const { body: simulation } = await agent.post(url).send({
         simulationId,
       })

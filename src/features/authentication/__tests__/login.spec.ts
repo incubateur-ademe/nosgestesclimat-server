@@ -1,7 +1,5 @@
 import { faker } from '@faker-js/faker'
 import type { VerificationCode } from '@prisma/client'
-import { version as clientVersion } from '@prisma/client/package.json'
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 import dayjs from 'dayjs'
 import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
@@ -15,15 +13,17 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = '/authentication/v1/login'
 
+  afterEach(() => prisma.verificationCode.deleteMany())
+
   describe('When logging in', () => {
     describe('And no data provided', () => {
-      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent.post(url).expect(StatusCodes.BAD_REQUEST)
       })
     })
 
     describe('And invalid userId', () => {
-      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent
           .post(url)
           .send({
@@ -36,7 +36,7 @@ describe('Given a NGC user', () => {
     })
 
     describe('And invalid email', () => {
-      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent
           .post(url)
           .send({
@@ -49,7 +49,7 @@ describe('Given a NGC user', () => {
     })
 
     describe('And invalid code', () => {
-      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent
           .post(url)
           .send({
@@ -62,18 +62,7 @@ describe('Given a NGC user', () => {
     })
 
     describe('And verification code does not exist', () => {
-      test(`Then it should return a ${StatusCodes.UNAUTHORIZED} error`, async () => {
-        // This is not ideal but prismock does not handle this correctly
-        jest
-          .spyOn(prisma.verificationCode, 'findFirstOrThrow')
-          .mockRejectedValueOnce(
-            new PrismaClientKnownRequestError('NotFoundError', {
-              code: 'P2025',
-              clientVersion,
-            })
-          )
-
-        // In case of correct error
+      test(`Then it returns a ${StatusCodes.UNAUTHORIZED} error`, async () => {
         await agent
           .post(url)
           .send({
@@ -82,25 +71,13 @@ describe('Given a NGC user', () => {
             code: faker.number.int({ min: 100000, max: 999999 }).toString(),
           })
           .expect(StatusCodes.UNAUTHORIZED)
-
-        jest.spyOn(prisma.verificationCode, 'findFirstOrThrow').mockRestore()
-
-        // This expectation covers the prismock raise
-        await agent
-          .post(url)
-          .send({
-            userId: faker.string.uuid(),
-            email: faker.internet.email(),
-            code: faker.number.int({ min: 100000, max: 999999 }).toString(),
-          })
-          .expect(StatusCodes.INTERNAL_SERVER_ERROR)
       })
     })
 
     describe('And verification code does exist', () => {
       let verificationCode: VerificationCode
 
-      test(`It should return a ${StatusCodes.OK} response with a cookie`, async () => {
+      test(`Then it returns a ${StatusCodes.OK} response with a cookie`, async () => {
         verificationCode = await createVerificationCode({ agent })
 
         const payload = {
@@ -126,21 +103,11 @@ describe('Given a NGC user', () => {
       })
 
       describe('And is expired', () => {
-        test(`Then it should return a ${StatusCodes.UNAUTHORIZED} error`, async () => {
+        test(`Then it returns a ${StatusCodes.UNAUTHORIZED} error`, async () => {
           verificationCode = await createVerificationCode({
             agent,
             expirationDate: dayjs().subtract(1, 'second').toDate(),
           })
-
-          // This is not ideal but prismock does not handle this correctly
-          jest
-            .spyOn(prisma.verificationCode, 'findFirstOrThrow')
-            .mockRejectedValueOnce(
-              new PrismaClientKnownRequestError('NotFoundError', {
-                code: 'P2025',
-                clientVersion,
-              })
-            )
 
           await agent
             .post(url)
@@ -150,18 +117,6 @@ describe('Given a NGC user', () => {
               code: verificationCode.code,
             })
             .expect(StatusCodes.UNAUTHORIZED)
-
-          jest.spyOn(prisma.verificationCode, 'findFirstOrThrow').mockRestore()
-
-          // This expectation covers the prismock raise
-          await agent
-            .post(url)
-            .send({
-              userId: verificationCode.userId,
-              email: verificationCode.email,
-              code: verificationCode.code,
-            })
-            .expect(StatusCodes.INTERNAL_SERVER_ERROR)
         })
       })
     })
@@ -179,7 +134,7 @@ describe('Given a NGC user', () => {
         jest.spyOn(prisma.verificationCode, 'findFirstOrThrow').mockRestore()
       })
 
-      test(`Then it should return a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
+      test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
         await agent
           .post(url)
           .send({
@@ -190,7 +145,7 @@ describe('Given a NGC user', () => {
           .expect(StatusCodes.INTERNAL_SERVER_ERROR)
       })
 
-      test(`Then it should log the exception`, async () => {
+      test(`Then it logs the exception`, async () => {
         await agent.post(url).send({
           userId: faker.string.uuid(),
           email: faker.internet.email(),

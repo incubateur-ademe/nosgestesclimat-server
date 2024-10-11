@@ -11,15 +11,19 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = CREATE_GROUP_ROUTE
 
+  afterEach(() =>
+    Promise.all([prisma.group.deleteMany(), prisma.user.deleteMany()])
+  )
+
   describe('When creating his group', () => {
     describe('And no data provided', () => {
-      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent.post(url).expect(StatusCodes.BAD_REQUEST)
       })
     })
 
     describe('And invalid email', () => {
-      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent
           .post(url)
           .send({
@@ -36,7 +40,7 @@ describe('Given a NGC user', () => {
     })
 
     describe('And invalid administrator id', () => {
-      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent
           .post(url)
           .send({
@@ -52,7 +56,7 @@ describe('Given a NGC user', () => {
     })
 
     describe('And invalid participant simulation', () => {
-      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent
           .post(url)
           .send({
@@ -73,7 +77,7 @@ describe('Given a NGC user', () => {
     })
 
     describe('And trying to add another participant than himself', () => {
-      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent
           .post(url)
           .send({
@@ -96,7 +100,7 @@ describe('Given a NGC user', () => {
     })
 
     describe('And trying to add another simulation for himself', () => {
-      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent
           .post(url)
           .send({
@@ -120,7 +124,7 @@ describe('Given a NGC user', () => {
     })
 
     describe('And he does not have a simulation', () => {
-      test(`It should return a ${StatusCodes.CREATED} response with the created group`, async () => {
+      test(`Then it returns a ${StatusCodes.CREATED} response with the created group`, async () => {
         const userId = faker.string.uuid()
         const name = faker.person.fullName()
         const payload: GroupCreateDto = {
@@ -153,7 +157,7 @@ describe('Given a NGC user', () => {
         })
       })
 
-      test('It should store a group in database', async () => {
+      test('Then it stores a group in database', async () => {
         const userId = faker.string.uuid()
         const email = faker.internet.email()
         const name = faker.person.fullName()
@@ -215,7 +219,7 @@ describe('Given a NGC user', () => {
     })
 
     describe('And he does have a simulation', () => {
-      test(`It should return a ${StatusCodes.CREATED} response with the created group`, async () => {
+      test(`Then it returns a ${StatusCodes.CREATED} response with the created group`, async () => {
         const userId = faker.string.uuid()
         const name = faker.person.fullName()
         const simulation = faker.string.uuid()
@@ -263,7 +267,7 @@ describe('Given a NGC user', () => {
         })
       })
 
-      test('It should store a group in database', async () => {
+      test('Then it stores a group in database', async () => {
         const userId = faker.string.uuid()
         const email = faker.internet.email()
         const name = faker.person.fullName()
@@ -355,7 +359,7 @@ describe('Given a NGC user', () => {
         jest.spyOn(prisma.user, 'upsert').mockRestore()
       })
 
-      test(`Then it should return a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
+      test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
         await agent
           .post(url)
           .send({
@@ -369,7 +373,7 @@ describe('Given a NGC user', () => {
           .expect(StatusCodes.INTERNAL_SERVER_ERROR)
       })
 
-      test(`Then it should log the exception`, async () => {
+      test(`Then it logs the exception`, async () => {
         await agent.post(url).send({
           name: faker.company.name(),
           emoji: faker.internet.emoji(),

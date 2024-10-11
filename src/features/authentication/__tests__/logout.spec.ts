@@ -7,7 +7,7 @@ describe('Given a NGC user', () => {
   const url = '/authentication/v1/logout'
 
   describe('When logging out', () => {
-    test(`It should return a ${StatusCodes.OK} response with a cookie`, async () => {
+    test(`Then it returns a ${StatusCodes.OK} response with a cookie`, async () => {
       const response = await agent.post(url).expect(StatusCodes.OK)
 
       const [cookie] = response.headers['set-cookie']
