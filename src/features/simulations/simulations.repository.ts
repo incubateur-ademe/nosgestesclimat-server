@@ -242,3 +242,17 @@ export const createPollUserSimulation = async (
 
   return { simulation, poll }
 }
+
+export const getIncompleteSimulationsCount = (user: {
+  userId: string
+  userEmail: string
+}) => {
+  return prisma.simulation.count({
+    where: {
+      ...user,
+      progression: {
+        lt: 1,
+      },
+    },
+  })
+}

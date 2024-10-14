@@ -308,6 +308,10 @@ describe('Given a NGC user', () => {
                 updateEnabled: true,
               })
               .reply(200)
+              .post('/v3/contacts/lists/35/contacts/remove', {
+                emails: [email],
+              })
+              .reply(200)
 
             await agent.post(url).send(payload).expect(StatusCodes.CREATED)
 
@@ -347,6 +351,8 @@ describe('Given a NGC user', () => {
               })
               .reply(200)
               .post('/v3/contacts')
+              .reply(200)
+              .post('/v3/contacts/lists/35/contacts/remove')
               .reply(200)
 
             await agent.post(url).send(payload).expect(StatusCodes.CREATED)
@@ -389,6 +395,8 @@ describe('Given a NGC user', () => {
                 .reply(200)
                 .post('/v3/contacts')
                 .reply(200)
+                .post('/v3/contacts/lists/35/contacts/remove')
+                .reply(200)
 
               await agent
                 .post(url)
@@ -402,6 +410,42 @@ describe('Given a NGC user', () => {
         })
 
         describe('And simulation incomplete', () => {
+          test(`Then it adds or updates contact in brevo`, async () => {
+            const id = faker.string.uuid()
+            const email = faker.internet.email().toLocaleLowerCase()
+            const payload: SimulationCreateInputDto = {
+              id,
+              situation,
+              computedResults,
+              progression: 0.5,
+              user: {
+                id: faker.string.uuid(),
+                email,
+              },
+            }
+
+            const scope = nock(process.env.BREVO_URL!, {
+              reqheaders: {
+                'api-key': process.env.BREVO_API_KEY!,
+              },
+            })
+              .post('/v3/smtp/email')
+              .reply(200)
+              .post('/v3/contacts', {
+                email,
+                listIds: [35],
+                attributes: {
+                  USER_ID: payload.user.id,
+                },
+                updateEnabled: true,
+              })
+              .reply(200)
+
+            await agent.post(url).send(payload).expect(StatusCodes.CREATED)
+
+            expect(scope.isDone()).toBeTruthy()
+          })
+
           test(`Then it sends a SIMULATION_IN_PROGRESS email`, async () => {
             const id = faker.string.uuid()
             const email = faker.internet.email().toLocaleLowerCase()
@@ -433,6 +477,8 @@ describe('Given a NGC user', () => {
                   SIMULATION_URL: `https://nosgestesclimat.fr/simulateur/bilan?sid=${id}&mtm_campaign=email-automatise&mtm_kwd=pause-test-en-cours`,
                 },
               })
+              .reply(200)
+              .post('/v3/contacts')
               .reply(200)
 
             await agent.post(url).send(payload).expect(StatusCodes.CREATED)

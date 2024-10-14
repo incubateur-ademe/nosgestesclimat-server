@@ -395,13 +395,14 @@ const NUMBER_OF_DAYS_IN_A_YEAR = 365
 
 const NUMBER_OF_KG_IN_A_TON = 1000
 
-export const addOrUpdateContactAfterSimulationCreated = ({
+export const addOrUpdateContactAfterSimulationCreated = async ({
   name,
   email,
   userId,
   actionChoices,
   computedResults,
   lastSimulationDate,
+  incompleteSumulations,
   subscribeToGroupNewsletter,
 }: {
   name: string | null
@@ -410,6 +411,7 @@ export const addOrUpdateContactAfterSimulationCreated = ({
   actionChoices?: ActionChoicesSchema
   computedResults: ComputedResultSchema
   lastSimulationDate: Date
+  incompleteSumulations: number
   subscribeToGroupNewsletter: boolean
 }) => {
   const locale = 'fr-FR' // for now
@@ -468,9 +470,41 @@ export const addOrUpdateContactAfterSimulationCreated = ({
       : {}),
   }
 
-  return addOrUpdateContact({
+  await addOrUpdateContact({
     email,
     attributes,
     ...(subscribeToGroupNewsletter ? { listIds: [ListIds.GROUP_JOINED] } : {}),
+  })
+
+  if (incompleteSumulations === 0) {
+    await unsubscribeContactFromList({
+      email,
+      listId: ListIds.UNFINISHED_SIMULATION,
+    })
+  }
+}
+
+export const addOrUpdateContactAfterIncompleteSimulationCreated = ({
+  name,
+  email,
+  userId,
+}: {
+  name: string | null
+  email: string
+  userId: string
+}) => {
+  const attributes = {
+    [Attributes.USER_ID]: userId,
+    ...(name
+      ? {
+          [Attributes.PRENOM]: name,
+        }
+      : {}),
+  }
+
+  return addOrUpdateContact({
+    email,
+    attributes,
+    listIds: [ListIds.UNFINISHED_SIMULATION],
   })
 }
