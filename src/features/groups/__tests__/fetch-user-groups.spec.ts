@@ -127,7 +127,7 @@ describe('Given a NGC user', () => {
             simulation: simulationUser1Id,
           },
         }))
-      })
+      }, 10000)
 
       test(`Then it returns a ${StatusCodes.OK} response with a list containing the groups`, async () => {
         const response = await agent
@@ -180,7 +180,7 @@ describe('Given a NGC user', () => {
             updatedAt: null,
           },
         ])
-      }, 10000)
+      })
 
       describe(`And filtering the list by groupIds`, () => {
         test(`Then it returns a ${StatusCodes.OK} response with a list containing the filtered groups`, async () => {

@@ -124,9 +124,10 @@ afterAll(async () => {
   await mongod?.stop()
 })
 
+beforeEach(() => nock.cleanAll())
+
 afterEach(async () => {
   expect(nock.isDone()).toBeTruthy()
-  nock.cleanAll()
 
   await Promise.all(
     models.map(async ({ delegate, name }) => {

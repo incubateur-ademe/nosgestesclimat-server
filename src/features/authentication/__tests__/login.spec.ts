@@ -7,11 +7,12 @@ import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
 import logger from '../../../logger'
+import { LOGIN_ROUTE } from './fixtures/login.fixture'
 import { createVerificationCode } from './fixtures/verification-codes.fixture'
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)
-  const url = '/authentication/v1/login'
+  const url = LOGIN_ROUTE
 
   afterEach(() => prisma.verificationCode.deleteMany())
 
