@@ -1,4 +1,5 @@
 import z from 'zod'
+import { ListIds } from '../../adapters/brevo/constant'
 import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail'
 import {
   OrganisationPollParams,
@@ -189,10 +190,33 @@ export type SimulationCreateDto = z.infer<typeof SimulationCreateDto>
 
 export type SimulationCreateInputDto = z.input<typeof SimulationCreateDto>
 
+export const SimulationCreateNewsletterList = z
+  .array(
+    z.coerce
+      .number()
+      .pipe(
+        z.union([
+          z.literal(ListIds.MAIN_NEWSLETTER),
+          z.literal(ListIds.LOGEMENT_NEWSLETTER),
+          z.literal(ListIds.TRANSPORT_NEWSLETTER),
+        ])
+      )
+  )
+  .optional()
+
+export type SimulationCreateNewsletterList = z.infer<
+  typeof SimulationCreateNewsletterList
+>
+
 export const SimulationCreateValidator = {
   body: SimulationCreateDto,
   params: z.object({}).strict().optional(),
-  query: z.object({}).strict().optional(),
+  query: z
+    .object({
+      newsletters: SimulationCreateNewsletterList,
+    })
+    .strict()
+    .optional(),
 }
 
 export const SimulationsFetchValidator = {

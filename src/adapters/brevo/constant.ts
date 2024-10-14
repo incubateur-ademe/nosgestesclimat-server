@@ -31,12 +31,20 @@ export enum Attributes {
 }
 
 export enum ListIds {
-  END_SIMULATION = 22,
+  MAIN_NEWSLETTER = 22,
   ORGANISATIONS = 27,
   GROUP_CREATED = 29,
   GROUP_JOINED = 30,
+  TRANSPORT_NEWSLETTER = 32,
+  LOGEMENT_NEWSLETTER = 36,
   UNFINISHED_SIMULATION = 35,
 }
+
+export const AllNewsletters = [
+  ListIds.MAIN_NEWSLETTER,
+  ListIds.LOGEMENT_NEWSLETTER,
+  ListIds.TRANSPORT_NEWSLETTER,
+] as const
 
 // Matomo campaigns & keywords
 export const MATOMO_CAMPAIGN_KEY = 'mtm_campaign'

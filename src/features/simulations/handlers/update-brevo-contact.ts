@@ -20,6 +20,7 @@ export const updateBrevoContact: Handler<SimulationUpsertedEvent> = async ({
       date: lastSimulationDate,
     },
     user: { id: userId, email, name },
+    newsletters,
   },
 }) => {
   if (!email) {
@@ -37,6 +38,7 @@ export const updateBrevoContact: Handler<SimulationUpsertedEvent> = async ({
       name,
       email,
       userId,
+      newsletters,
       actionChoices: actionChoices as ActionChoicesSchema,
       computedResults: computedResults as ComputedResultSchema,
       lastSimulationDate,
