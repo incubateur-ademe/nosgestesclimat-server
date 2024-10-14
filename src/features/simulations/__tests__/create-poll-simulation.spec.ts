@@ -531,6 +531,10 @@ describe('Given a NGC user', () => {
                 updateEnabled: true,
               })
               .reply(200)
+              .post('/v3/contacts/lists/35/contacts/remove', {
+                emails: [email],
+              })
+              .reply(200)
               .post('/v3/smtp/email')
               .reply(200)
               .post('/v3/contacts')
@@ -587,6 +591,8 @@ describe('Given a NGC user', () => {
               .post('/v3/contacts/lists/27/contacts/remove')
               .reply(200)
               .post('/v3/contacts')
+              .reply(200)
+              .post('/v3/contacts/lists/35/contacts/remove')
               .reply(200)
 
             await agent
@@ -689,6 +695,8 @@ describe('Given a NGC user', () => {
                 .post('/v3/contacts/lists/27/contacts/remove')
                 .reply(200)
                 .post('/v3/contacts')
+                .reply(200)
+                .post('/v3/contacts/lists/35/contacts/remove')
                 .reply(200)
 
               await agent

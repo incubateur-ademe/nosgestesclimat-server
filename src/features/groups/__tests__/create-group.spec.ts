@@ -408,6 +408,8 @@ describe('Given a NGC user', () => {
           .reply(200)
           .post('/v3/smtp/email')
           .reply(200)
+          .post('/v3/contacts/lists/35/contacts/remove')
+          .reply(200)
 
         const {
           body: { id },
@@ -523,6 +525,8 @@ describe('Given a NGC user', () => {
               updateEnabled: true,
             })
             .reply(200)
+            .post('/v3/contacts/lists/35/contacts/remove')
+            .reply(200)
             .post('/v3/contacts')
             .reply(200)
 
@@ -616,6 +620,10 @@ describe('Given a NGC user', () => {
               updateEnabled: true,
             })
             .reply(200)
+            .post('/v3/contacts/lists/35/contacts/remove', {
+              emails: [email],
+            })
+            .reply(200)
             .post('/v3/contacts')
             .reply(200)
             .post('/v3/smtp/email')
@@ -680,6 +688,8 @@ describe('Given a NGC user', () => {
                 NAME: name,
               },
             })
+            .reply(200)
+            .post('/v3/contacts/lists/35/contacts/remove')
             .reply(200)
             .post('/v3/contacts')
             .reply(200)
@@ -746,6 +756,8 @@ describe('Given a NGC user', () => {
                   NAME: name,
                 },
               })
+              .reply(200)
+              .post('/v3/contacts/lists/35/contacts/remove')
               .reply(200)
               .post('/v3/contacts')
               .reply(200)
