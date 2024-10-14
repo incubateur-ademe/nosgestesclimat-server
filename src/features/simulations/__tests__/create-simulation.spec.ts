@@ -312,6 +312,18 @@ describe('Given a NGC user', () => {
                 emails: [email],
               })
               .reply(200)
+              .post('/v3/contacts/lists/22/contacts/remove', {
+                emails: [email],
+              })
+              .reply(200)
+              .post('/v3/contacts/lists/32/contacts/remove', {
+                emails: [email],
+              })
+              .reply(200)
+              .post('/v3/contacts/lists/36/contacts/remove', {
+                emails: [email],
+              })
+              .reply(200)
 
             await agent.post(url).send(payload).expect(StatusCodes.CREATED)
 
@@ -353,6 +365,18 @@ describe('Given a NGC user', () => {
               .post('/v3/contacts')
               .reply(200)
               .post('/v3/contacts/lists/35/contacts/remove')
+              .reply(200)
+              .post('/v3/contacts/lists/22/contacts/remove', {
+                emails: [email],
+              })
+              .reply(200)
+              .post('/v3/contacts/lists/32/contacts/remove', {
+                emails: [email],
+              })
+              .reply(200)
+              .post('/v3/contacts/lists/36/contacts/remove', {
+                emails: [email],
+              })
               .reply(200)
 
             await agent.post(url).send(payload).expect(StatusCodes.CREATED)
@@ -397,11 +421,112 @@ describe('Given a NGC user', () => {
                 .reply(200)
                 .post('/v3/contacts/lists/35/contacts/remove')
                 .reply(200)
+                .post('/v3/contacts/lists/22/contacts/remove', {
+                  emails: [email],
+                })
+                .reply(200)
+                .post('/v3/contacts/lists/32/contacts/remove', {
+                  emails: [email],
+                })
+                .reply(200)
+                .post('/v3/contacts/lists/36/contacts/remove', {
+                  emails: [email],
+                })
+                .reply(200)
 
               await agent
                 .post(url)
                 .send(payload)
                 .set('origin', 'https://preprod.nosgestesclimat.fr')
+                .expect(StatusCodes.CREATED)
+
+              expect(scope.isDone()).toBeTruthy()
+            })
+          })
+
+          describe('And he subsribed to newsletters', () => {
+            test('Then it adds or updates contact in brevo', async () => {
+              const date = new Date()
+              const email = faker.internet.email().toLocaleLowerCase()
+              const userId = faker.string.uuid()
+              const payload: SimulationCreateInputDto = {
+                id: faker.string.uuid(),
+                date,
+                situation,
+                computedResults,
+                progression: 1,
+                savedViaEmail: true,
+                user: {
+                  id: userId,
+                  name: nom,
+                  email,
+                },
+              }
+
+              const scope = nock(process.env.BREVO_URL!, {
+                reqheaders: {
+                  'api-key': process.env.BREVO_API_KEY!,
+                },
+              })
+                .post('/v3/smtp/email')
+                .reply(200)
+                .post('/v3/contacts', {
+                  email,
+                  listIds: [22, 32, 36],
+                  attributes: {
+                    USER_ID: userId,
+                    LAST_SIMULATION_DATE: date.toISOString(),
+                    ACTIONS_SELECTED_NUMBER: 0,
+                    LAST_SIMULATION_BILAN_FOOTPRINT: (
+                      computedResults.carbone.bilan / 1000
+                    ).toLocaleString('fr-FR', {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_TRANSPORTS_FOOTPRINT: (
+                      computedResults.carbone.categories.transport / 1000
+                    ).toLocaleString('fr-FR', {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_ALIMENTATION_FOOTPRINT: (
+                      computedResults.carbone.categories.alimentation / 1000
+                    ).toLocaleString('fr-FR', {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_LOGEMENT_FOOTPRINT: (
+                      computedResults.carbone.categories.logement / 1000
+                    ).toLocaleString('fr-FR', {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_DIVERS_FOOTPRINT: (
+                      computedResults.carbone.categories.divers / 1000
+                    ).toLocaleString('fr-FR', {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_SERVICES_FOOTPRINT: (
+                      computedResults.carbone.categories['services sociétaux'] /
+                      1000
+                    ).toLocaleString('fr-FR', {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_BILAN_WATER: Math.round(
+                      computedResults.eau.bilan / 365
+                    ).toString(),
+                    PRENOM: nom,
+                  },
+                  updateEnabled: true,
+                })
+                .reply(200)
+                .post('/v3/contacts/lists/35/contacts/remove', {
+                  emails: [email],
+                })
+                .reply(200)
+
+              await agent
+                .post(url)
+                .query({
+                  'newsletters[]': [22, 32, 36],
+                })
+                .send(payload)
                 .expect(StatusCodes.CREATED)
 
               expect(scope.isDone()).toBeTruthy()

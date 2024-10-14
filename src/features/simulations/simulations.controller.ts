@@ -15,6 +15,7 @@ import {
 } from './simulations.service'
 import {
   SimulationCreateDto,
+  SimulationCreateNewsletterList,
   SimulationCreateValidator,
   SimulationFetchValidator,
   SimulationsFetchValidator,
@@ -34,6 +35,9 @@ router
     try {
       const simulation = await createSimulation({
         simulationDto: SimulationCreateDto.parse(req.body), // default values are not set in middleware
+        newsletters: SimulationCreateNewsletterList.parse(
+          req.query?.newsletters || []
+        ),
         origin: req.get('origin') || config.origin,
       })
 

@@ -41,7 +41,7 @@ export async function sendSimulationEmail({
     userId,
     listIds: [
       isSimulationCompleted
-        ? ListIds.END_SIMULATION
+        ? ListIds.MAIN_NEWSLETTER
         : ListIds.UNFINISHED_SIMULATION,
     ],
     optin: true,

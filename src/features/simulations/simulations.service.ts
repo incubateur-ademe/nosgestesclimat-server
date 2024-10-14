@@ -11,7 +11,10 @@ import {
   fetchUserSimulation,
   fetchUserSimulations,
 } from './simulations.repository'
-import type { UserSimulationParams } from './simulations.validator'
+import type {
+  SimulationCreateNewsletterList,
+  UserSimulationParams,
+} from './simulations.validator'
 import { type SimulationCreateDto } from './simulations.validator'
 
 const simulationToDto = (
@@ -25,15 +28,18 @@ const simulationToDto = (
 
 export const createSimulation = async ({
   simulationDto,
+  newsletters,
   origin,
 }: {
   simulationDto: SimulationCreateDto
+  newsletters: SimulationCreateNewsletterList
   origin: string
 }) => {
   const simulation = await createUserSimulation(simulationDto)
   const { user } = simulation
 
   const simulationUpsertedEvent = new SimulationUpsertedEvent({
+    newsletters,
     simulation,
     origin,
     user,

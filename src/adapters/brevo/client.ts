@@ -14,6 +14,7 @@ import type {
   ComputedResultSchema,
 } from '../../features/simulations/simulations.validator'
 import {
+  AllNewsletters,
   Attributes,
   ListIds,
   MATOMO_CAMPAIGN_EMAIL_AUTOMATISE,
@@ -399,6 +400,7 @@ export const addOrUpdateContactAfterSimulationCreated = async ({
   name,
   email,
   userId,
+  newsletters,
   actionChoices,
   computedResults,
   lastSimulationDate,
@@ -408,6 +410,11 @@ export const addOrUpdateContactAfterSimulationCreated = async ({
   name: string | null
   email: string
   userId: string
+  newsletters?: Array<
+    | ListIds.MAIN_NEWSLETTER
+    | ListIds.TRANSPORT_NEWSLETTER
+    | ListIds.LOGEMENT_NEWSLETTER
+  >
   actionChoices?: ActionChoicesSchema
   computedResults: ComputedResultSchema
   lastSimulationDate: Date
@@ -474,6 +481,7 @@ export const addOrUpdateContactAfterSimulationCreated = async ({
     email,
     attributes,
     ...(subscribeToGroupNewsletter ? { listIds: [ListIds.GROUP_JOINED] } : {}),
+    ...(newsletters?.length ? { listIds: newsletters } : {}),
   })
 
   if (incompleteSumulations === 0) {
@@ -481,6 +489,18 @@ export const addOrUpdateContactAfterSimulationCreated = async ({
       email,
       listId: ListIds.UNFINISHED_SIMULATION,
     })
+  }
+
+  if (newsletters) {
+    const userNewsletters = new Set(newsletters)
+    for (const newsletter of AllNewsletters) {
+      if (!userNewsletters.has(newsletter)) {
+        await unsubscribeContactFromList({
+          email,
+          listId: newsletter,
+        })
+      }
+    }
   }
 }
 
