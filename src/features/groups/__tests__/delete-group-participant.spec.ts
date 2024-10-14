@@ -142,6 +142,50 @@ describe('Given a NGC user', () => {
           })
         })
       })
+
+      describe('And he did join leaving his/her email', () => {
+        let participantId: string
+        let userId: string
+        let participantUserEmail: string
+
+        beforeEach(
+          async () =>
+            ({
+              id: participantId,
+              userId,
+              email: participantUserEmail,
+            } = await joinGroup({
+              agent,
+              groupId,
+              participant: {
+                email: faker.internet.email(),
+              },
+            }))
+        )
+
+        test('Then it updates group participant in brevo', async () => {
+          const scope = nock(process.env.BREVO_URL!, {
+            reqheaders: {
+              'api-key': process.env.BREVO_API_KEY!,
+            },
+          })
+            .post('/v3/contacts/lists/30/contacts/remove', {
+              emails: [participantUserEmail],
+            })
+            .reply(200)
+
+          await agent
+            .delete(
+              url
+                .replace(':groupId', groupId)
+                .replace(':participantId', participantId)
+                .replace(':userId', userId)
+            )
+            .expect(StatusCodes.NO_CONTENT)
+
+          expect(scope.isDone()).toBeTruthy()
+        })
+      })
     })
 
     describe('And group does exist And administrator left his/her email', () => {

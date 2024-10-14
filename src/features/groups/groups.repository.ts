@@ -244,7 +244,7 @@ export const findGroupParticipantById = (id: string) => {
   })
 }
 
-export const deleteParticipantById = (id: string) => {
+export const deleteParticipantById = async (id: string) => {
   return prisma.groupParticipant.delete({
     where: {
       id,
@@ -253,6 +253,7 @@ export const deleteParticipantById = (id: string) => {
       group: {
         select: defaultGroupSelection,
       },
+      user: defaultUserSelection,
     },
   })
 }
@@ -388,4 +389,12 @@ export const getAdministratorGroupsStats = async (administratorId: string) => {
     createdGroupsWithOneParticipantCount: createdGroupsWithOneParticipantCount,
     lastGroupCreationDate: group?.createdAt,
   }
+}
+
+export const getGroupsJoinedCount = (userId: string) => {
+  return prisma.groupParticipant.count({
+    where: {
+      userId,
+    },
+  })
 }

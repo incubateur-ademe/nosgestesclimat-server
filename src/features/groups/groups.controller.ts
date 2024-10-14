@@ -29,11 +29,14 @@ import {
   ParticipantCreateValidator,
   ParticipantDeleteValidator,
 } from './groups.validator'
-import { addOrUpdateBrevoContact } from './handlers/add-or-update-brevo-contact'
+import {
+  addOrUpdateBrevoAdministratorContact,
+  addOrUpdateBrevoParticipantContact,
+} from './handlers/add-or-update-brevo-contact'
 
 const router = express.Router()
 
-EventBus.on(GroupCreatedEvent, addOrUpdateBrevoContact)
+EventBus.on(GroupCreatedEvent, addOrUpdateBrevoAdministratorContact)
 
 /**
  * Creates a new group
@@ -55,7 +58,8 @@ router
     }
   })
 
-EventBus.on(GroupUpdatedEvent, addOrUpdateBrevoContact)
+EventBus.on(GroupUpdatedEvent, addOrUpdateBrevoAdministratorContact)
+EventBus.on(GroupUpdatedEvent, addOrUpdateBrevoParticipantContact)
 
 /**
  * Updates a user group
@@ -171,7 +175,8 @@ router
     }
   })
 
-EventBus.on(GroupDeletedEvent, addOrUpdateBrevoContact)
+EventBus.on(GroupDeletedEvent, addOrUpdateBrevoAdministratorContact)
+EventBus.on(GroupDeletedEvent, addOrUpdateBrevoParticipantContact)
 
 /**
  * Deletes group for a user and an id

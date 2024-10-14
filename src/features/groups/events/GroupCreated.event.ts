@@ -3,6 +3,6 @@ import { EventBusEvent } from '../../../core/event-bus/event'
 
 export class GroupCreatedEvent extends EventBusEvent<{
   administrator: Pick<User, 'id' | 'name' | 'email'>
-  participants: Array<{ user: Pick<User, 'id'> }>
-  participant?: undefined
+  participants: Array<{ user: Pick<User, 'id' | 'email'> }>
+  participantUser?: undefined
 }> {}

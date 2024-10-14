@@ -326,7 +326,7 @@ export const addOrUpdateContactAfterOrganisationChange = async ({
   }
 }
 
-export const addOrUpdateContactAfterGroupChange = async ({
+export const addOrUpdateAdministratorContactAfterGroupChange = async ({
   email,
   userId,
   administratorName,
@@ -375,6 +375,22 @@ export const addOrUpdateContactAfterGroupChange = async ({
     })
   }
 }
+
+export const addOrUpdateParticipantContactAfterGroupChange = async ({
+  email,
+  joinedGroupsCount,
+}: {
+  email: string
+  joinedGroupsCount: number
+}) => {
+  if (joinedGroupsCount === 0) {
+    await unsubscribeContactFromList({
+      email,
+      listId: ListIds.GROUP_JOINED,
+    })
+  }
+}
+
 const NUMBER_OF_DAYS_IN_A_YEAR = 365
 
 const NUMBER_OF_KG_IN_A_TON = 1000
@@ -386,6 +402,7 @@ export const addOrUpdateContactAfterSimulationCreated = ({
   actionChoices,
   computedResults,
   lastSimulationDate,
+  subscribeToGroupNewsletter,
 }: {
   name: string | null
   email: string
@@ -393,6 +410,7 @@ export const addOrUpdateContactAfterSimulationCreated = ({
   actionChoices?: ActionChoicesSchema
   computedResults: ComputedResultSchema
   lastSimulationDate: Date
+  subscribeToGroupNewsletter: boolean
 }) => {
   const locale = 'fr-FR' // for now
   const bilan = computedResults?.carbone?.bilan ?? 0
@@ -453,5 +471,6 @@ export const addOrUpdateContactAfterSimulationCreated = ({
   return addOrUpdateContact({
     email,
     attributes,
+    ...(subscribeToGroupNewsletter ? { listIds: [ListIds.GROUP_JOINED] } : {}),
   })
 }

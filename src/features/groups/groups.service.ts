@@ -184,7 +184,7 @@ export const createParticipant = async ({
     const administrator = group.administrator!.user
 
     const groupUpdatedEvent = new GroupUpdatedEvent({
-      participant: { userId: user.id },
+      participantUser: user,
       administrator,
       participants,
     })
@@ -214,12 +214,12 @@ export const createParticipant = async ({
 
 export const removeParticipant = async (params: UserGroupParticipantParams) => {
   try {
-    const [{ administrator }, participant] = await Promise.all([
+    const [{ administrator: admin }, participant] = await Promise.all([
       findGroup(params.groupId),
       findGroupParticipant(params.participantId),
     ])
 
-    const administratorId = administrator?.userId
+    const administratorId = admin?.userId
     const isConnectedUserGroupAdmin = params.userId === administratorId
 
     if (isConnectedUserGroupAdmin && administratorId === participant.userId) {
@@ -235,13 +235,13 @@ export const removeParticipant = async (params: UserGroupParticipantParams) => {
     }
 
     const {
-      group,
-      group: { participants },
+      group: { participants, administrator },
+      user: participantUser,
     } = await deleteParticipantById(params.participantId)
 
     const groupUpdatedEvent = new GroupUpdatedEvent({
-      administrator: group.administrator!.user,
-      participant: { userId: params.userId },
+      administrator: administrator!.user,
+      participantUser,
       participants,
     })
 
