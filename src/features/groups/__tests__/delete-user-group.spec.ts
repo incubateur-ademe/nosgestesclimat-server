@@ -6,7 +6,11 @@ import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
 import logger from '../../../logger'
 import { getSimulationPayload } from '../../simulations/__tests__/fixtures/simulations.fixtures'
-import { createGroup, DELETE_USER_GROUP_ROUTE } from './fixtures/groups.fixture'
+import {
+  createGroup,
+  DELETE_USER_GROUP_ROUTE,
+  joinGroup,
+} from './fixtures/groups.fixture'
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)
@@ -59,6 +63,43 @@ describe('Given a NGC user', () => {
             url.replace(':groupId', groupId).replace(':userId', administratorId)
           )
           .expect(StatusCodes.NO_CONTENT)
+      })
+
+      describe('And another participant joined leaving his email', () => {
+        let participantUserEmail: string
+
+        beforeEach(
+          async () =>
+            ({ email: participantUserEmail } = await joinGroup({
+              agent,
+              groupId,
+              participant: {
+                email: faker.internet.email(),
+              },
+            }))
+        )
+
+        test('Then it updates group participant in brevo', async () => {
+          const scope = nock(process.env.BREVO_URL!, {
+            reqheaders: {
+              'api-key': process.env.BREVO_API_KEY!,
+            },
+          })
+            .post(`/v3/contacts/lists/30/contacts/remove`, {
+              emails: [participantUserEmail],
+            })
+            .reply(200)
+
+          await agent
+            .delete(
+              url
+                .replace(':groupId', groupId)
+                .replace(':userId', administratorId)
+            )
+            .expect(StatusCodes.NO_CONTENT)
+
+          expect(scope.isDone()).toBeTruthy()
+        })
       })
     })
 

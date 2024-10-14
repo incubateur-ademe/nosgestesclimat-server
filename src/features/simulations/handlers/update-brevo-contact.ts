@@ -7,6 +7,7 @@ import type {
 } from '../simulations.validator'
 
 export const updateBrevoContact: Handler<SimulationUpsertedEvent> = ({
+  attributes,
   attributes: {
     simulation: {
       progression,
@@ -21,6 +22,12 @@ export const updateBrevoContact: Handler<SimulationUpsertedEvent> = ({
     return
   }
 
+  let subscribeToGroupNewsletter = false
+  if (attributes.group) {
+    const { administrator } = attributes
+    subscribeToGroupNewsletter = userId !== administrator.id
+  }
+
   return addOrUpdateContactAfterSimulationCreated({
     name,
     email,
@@ -28,5 +35,6 @@ export const updateBrevoContact: Handler<SimulationUpsertedEvent> = ({
     actionChoices: actionChoices as ActionChoicesSchema,
     computedResults: computedResults as ComputedResultSchema,
     lastSimulationDate,
+    subscribeToGroupNewsletter,
   })
 }

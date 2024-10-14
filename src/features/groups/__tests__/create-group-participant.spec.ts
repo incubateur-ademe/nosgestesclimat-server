@@ -249,6 +249,7 @@ describe('Given a NGC user', () => {
           })
             .post('/v3/contacts', {
               email,
+              listIds: [30],
               attributes: {
                 USER_ID: userId,
                 LAST_SIMULATION_DATE: date.toISOString(),
