@@ -27,6 +27,7 @@ import removeParticipantRoute from './routes/groups/removeParticipant'
 import integrationsController from './features/integrations/integrations.controller'
 
 // Organisation routes
+import organisationController from './features/organisations/organisations.controller'
 import createOrganisationRoute from './routes/organisations/create'
 import fetchOrganisationRoute from './routes/organisations/fetchOrganisation'
 import getOrgaPollSlugsRoute from './routes/organisations/getOrgaPollSlugs'
@@ -124,6 +125,7 @@ app.use('/group/remove-participant', removeParticipantRoute)
 app.use('/integrations', integrationsController)
 
 // Organisation routes
+app.use('/organisations', organisationController)
 app.use('/organisations/create', createOrganisationRoute)
 app.use('/organisations/login', loginOrganisationRoute)
 app.use('/organisations/fetch-organisation', fetchOrganisationRoute)

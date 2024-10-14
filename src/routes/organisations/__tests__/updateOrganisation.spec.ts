@@ -45,7 +45,7 @@ describe(`Given a validated NGC user organisation`, () => {
       const administratorName = faker.person.fullName()
 
       scope = nock(process.env.BREVO_URL!)
-        .post(`/v3/contacts`, {
+        .post('/v3/contacts', {
           email,
           attributes: {
             [ATTRIBUTE_IS_ORGANISATION_ADMIN]: true,
@@ -58,7 +58,7 @@ describe(`Given a validated NGC user organisation`, () => {
           updateEnabled: true,
         })
         .reply(200)
-        .post(`/v3/smtp/email`, {
+        .post('/v3/smtp/email', {
           to: [
             {
               name: email,
@@ -74,7 +74,7 @@ describe(`Given a validated NGC user organisation`, () => {
         })
         .reply(200)
 
-      nock(process.env.CONNECT_URL!).post(`/`).reply(200)
+      nock(process.env.CONNECT_URL!).post(`/api/v1/personnes`).reply(200)
 
       await request
         .post(url)

@@ -1,3 +1,5 @@
+import { TemplateIds } from '../adapters/brevo/constant'
+
 export const ATTRIBUTE_IS_ORGANISATION_ADMIN = 'IS_ORGANISATION_ADMIN'
 export const ATTRIBUTE_ORGANISATION_NAME = 'ORGANISATION_NAME'
 export const ATTRIBUTE_ORGANISATION_SLUG = 'ORGANISATION_SLUG'
@@ -41,7 +43,6 @@ export const LIST_NOS_GESTES_TRANSPORT_NEWSLETTER = 32
 export const TEMPLATE_ID_SIMULATION_COMPLETED = 55
 export const TEMPLATE_ID_GROUP_CREATED = 57
 export const TEMPLATE_ID_GROUP_JOINED = 58
-export const TEMPLATE_ID_ORGANISATION_CREATED = 70
 export const TEMPLATE_ID_ORGANISATION_JOINED = 71
 export const TEMPLATE_ID_SIMULATION_IN_PROGRESS = 102
 
@@ -63,6 +64,6 @@ export const MATOMO_KEYWORDS = {
     SHARE_URL: 'groupe-invite-url-partage',
     DELETE_URL: 'groupe-invite-delete',
   },
-  [TEMPLATE_ID_ORGANISATION_CREATED]: 'orga-admin-creation',
+  [TemplateIds.ORGANISATION_CREATED]: 'orga-admin-creation',
   [TEMPLATE_ID_ORGANISATION_JOINED]: 'orga-invite-campagne',
 } as const

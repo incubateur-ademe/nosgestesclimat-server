@@ -10,6 +10,7 @@ export const config = {
     process.env.NODE_ENV,
     'development' as 'development' | 'production' | 'test'
   ),
+  origin: ensureEnvVar(process.env.ORIGIN, 'https://nosgestesclimat.fr'),
   get app() {
     return {
       get port() {
@@ -51,10 +52,12 @@ export const config = {
     clientId: ensureEnvVar(process.env.CONNECT_CLIENT_ID, ''),
     clientSecret: ensureEnvVar(process.env.CONNECT_CLIENT_SECRET, ''),
   },
-  organisationIdsWithCustomQuestionsEnabled: ensureEnvVar(
-    process.env.ORGANISATION_IDS_WITH_CUSTOM_QUESTIONS_ENABLED,
-    ''
-  ).split(','),
+  organisationIdsWithCustomQuestionsEnabled: new Set(
+    ensureEnvVar(
+      process.env.ORGANISATION_IDS_WITH_CUSTOM_QUESTIONS_ENABLED,
+      ''
+    ).split(',')
+  ),
 }
 
 export const origin =

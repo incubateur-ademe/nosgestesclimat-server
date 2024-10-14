@@ -15,3 +15,9 @@ export const isPrismaErrorForeignKeyConstraintFailed = (
   code: PrismaErrorCodes.ForeignKeyConstraintFailed
 } =>
   isPrismaError(err) && err.code === PrismaErrorCodes.ForeignKeyConstraintFailed
+
+export const isPrismaErrorUniqueConstraintFailed = (
+  err: unknown
+): err is PrismaClientKnownRequestError & {
+  code: PrismaErrorCodes.UniqueConstraintFailed
+} => isPrismaError(err) && err.code === PrismaErrorCodes.UniqueConstraintFailed
