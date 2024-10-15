@@ -293,6 +293,36 @@ describe('Given a NGC user', () => {
 
     afterEach(() => Promise.all([Organisation.deleteMany(), Poll.deleteMany()]))
 
+    it(`Then it returns a ${StatusCodes.OK} with the created simulation`, async () => {
+      const payload = {
+        simulation: {
+          id: faker.string.uuid(),
+          polls: [poll.slug],
+        },
+        userId: faker.string.uuid(),
+      }
+
+      nock(process.env.BREVO_URL!).post('/v3/contacts').reply(200)
+
+      const { body } = await agent
+        .post(url)
+        .send(payload)
+        .expect(StatusCodes.OK)
+
+      expect(body).toEqual({
+        __v: 0,
+        _id: expect.any(String),
+        createdAt: expect.any(String),
+        date: expect.any(String),
+        foldedSteps: [],
+        groups: [],
+        id: payload.simulation.id,
+        polls: [poll.slug],
+        updatedAt: expect.any(String),
+        user: expect.any(String),
+      })
+    })
+
     describe('And finished simulation', () => {
       it(`Then it does send a poll participation email`, async () => {
         const payload = {

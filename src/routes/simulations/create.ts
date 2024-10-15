@@ -140,7 +140,10 @@ router.route('/').post(async (req, res) => {
 
     setSuccessfulJSONResponse(res)
 
-    res.json(simulationSaved)
+    res.json({
+      ...simulationSaved.toObject(),
+      polls: polls.map(({ slug }) => slug),
+    })
 
     console.log(`Simulation created: ${simulationSaved._id}`)
   } catch (error) {
