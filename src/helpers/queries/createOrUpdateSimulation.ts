@@ -229,7 +229,6 @@ export async function createOrUpdateSimulation(
       })),
     })
   } catch (error) {
-    console.error(error)
     logger.error('postgre Simulations replication failed', error)
   }
 

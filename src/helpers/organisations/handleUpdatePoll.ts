@@ -43,7 +43,7 @@ export async function handleUpdatePoll({
   }
 
   // Send confirmation email
-  if (email) {
+  if (email && simulationSaved.progression === 1) {
     const organisationFound = await Organisation.findOne({
       polls: poll._id,
     })

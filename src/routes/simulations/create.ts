@@ -126,7 +126,7 @@ router.route('/').post(async (req, res) => {
       })
     }
 
-    sendSimulationEmail({
+    await sendSimulationEmail({
       userDocument,
       simulationSaved,
       shouldSendSimulationEmail,

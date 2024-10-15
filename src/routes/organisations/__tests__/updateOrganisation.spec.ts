@@ -25,15 +25,17 @@ describe(`Given a validated NGC user organisation`, () => {
   >
 
   beforeEach(async () => {
+    jest.spyOn(console, 'log').mockImplementation()
     validatedOrganisationFixture = await validateOrganisation(request)
   })
 
-  afterEach(() =>
-    Promise.all([
+  afterEach(async () => {
+    await Promise.all([
       prisma.organisation.deleteMany(),
       prisma.verifiedUser.deleteMany(),
     ])
-  )
+    jest.restoreAllMocks()
+  })
 
   describe(`When the administator enters the last infos`, () => {
     let scope: nock.Scope
