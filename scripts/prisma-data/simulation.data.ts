@@ -15,9 +15,7 @@ import '../../src/schemas/UserSchema'
 
 const categories = [
   'services sociétaux',
-  'services publics',
   'alimentation',
-  'numérique',
   'transport',
   'logement',
   'divers',
@@ -372,7 +370,7 @@ const migrateSimulationToPg = async () => {
 
         if (!!poll || !!polls.length || !!group || !!groups.length) {
           logger.warn(
-            `Could not find userId for simulation ${simulation._id} but simulation belogs to a poll or a group participant !`
+            `Could not find userId for simulation ${simulation._id} but simulation belongs to a poll or a group participant !`
           )
         }
 

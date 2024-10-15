@@ -18,7 +18,7 @@ const simulationToDto = (
   connectedUser: string
 ) => ({
   ...rest,
-  polls: polls.map(({ pollId }) => ({ id: pollId })),
+  polls: polls.map(({ pollId, poll: { slug } }) => ({ id: pollId, slug })),
   user: user.id === connectedUser ? user : { name: user.name },
 })
 

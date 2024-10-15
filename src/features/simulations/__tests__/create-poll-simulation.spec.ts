@@ -312,6 +312,11 @@ describe('Given a NGC user', () => {
               polls: {
                 select: {
                   pollId: true,
+                  poll: {
+                    select: {
+                      slug: true,
+                    },
+                  },
                 },
               },
               user: {
@@ -335,6 +340,9 @@ describe('Given a NGC user', () => {
             polls: [
               {
                 pollId,
+                poll: {
+                  slug: pollSlug,
+                },
               },
             ],
           })

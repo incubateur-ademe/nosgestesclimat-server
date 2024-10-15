@@ -27,6 +27,11 @@ const defaultGroupParticipantSimulationSelection = {
   polls: {
     select: {
       pollId: true,
+      poll: {
+        select: {
+          slug: true,
+        },
+      },
     },
   },
   createdAt: true,
