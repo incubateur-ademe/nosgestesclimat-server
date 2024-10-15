@@ -13,7 +13,7 @@ export class SimulationUpsertedEvent extends EventBusEvent<
   | {
       origin: string
       user: Pick<User, 'id' | 'name' | 'email'>
-      simulation?: Pick<Simulation, 'id' | 'progression'>
+      simulation: Pick<Simulation, 'id' | 'progression'>
       group: Pick<Group, 'id' | 'name'>
       administrator: Pick<User, 'id'>
       organisation?: undefined
@@ -21,7 +21,7 @@ export class SimulationUpsertedEvent extends EventBusEvent<
   | {
       origin: string
       user: Pick<User, 'id' | 'email'>
-      simulation?: undefined
+      simulation: Pick<Simulation, 'id' | 'progression'>
       group?: undefined
       administrator?: undefined
       organisation: Pick<Organisation, 'name' | 'slug'>

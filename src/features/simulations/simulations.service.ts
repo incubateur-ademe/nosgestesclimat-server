@@ -82,6 +82,7 @@ export const createPollSimulation = async ({
 
     const simulationUpsertedEvent = new SimulationUpsertedEvent({
       organisation,
+      simulation,
       origin,
       user,
     })
