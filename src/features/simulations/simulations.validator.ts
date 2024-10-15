@@ -20,6 +20,8 @@ export type UserSimulationParams = z.infer<typeof UserSimulationParams>
 
 const ActionChoicesSchema = z.record(z.string(), z.boolean())
 
+export type ActionChoicesSchema = z.infer<typeof ActionChoicesSchema>
+
 const CategoriesSchema = z
   .object({
     alimentation: z.number(),
@@ -45,6 +47,8 @@ const ComputedResultSchema = z
   })
   .strict()
 
+export type ComputedResultSchema = z.infer<typeof ComputedResultSchema>
+
 export enum SimulationAdditionalQuestionAnswerType {
   custom = 'custom',
   default = 'default',
@@ -67,6 +71,10 @@ const AdditionalQuestionsAnswersSchema = z.array(
     }),
   ])
 )
+
+export type AdditionalQuestionsAnswersSchema = z.infer<
+  typeof AdditionalQuestionsAnswersSchema
+>
 
 const FoldedStepsSchema = z.array(z.string())
 
@@ -148,6 +156,8 @@ const SimulationCreateUser = z
     name: z.string().optional(),
   })
   .strict()
+
+export type SimulationCreateUser = z.infer<typeof SimulationCreateUser>
 
 export const SimulationParticipantCreateDto = z.object({
   id: z.string().uuid(),

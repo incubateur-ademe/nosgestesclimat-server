@@ -1,5 +1,9 @@
 import type { Types } from 'mongoose'
 import { prisma } from '../../adapters/prisma/client'
+import {
+  SimulationAdditionalQuestionAnswerType,
+  type AdditionalQuestionsAnswersSchema,
+} from '../../features/simulations/simulations.validator'
 import logger from '../../logger'
 import type { LeanSimulationType } from '../../schemas/SimulationSchema'
 import { Simulation } from '../../schemas/SimulationSchema'
@@ -97,7 +101,7 @@ export const getSimulationAdditionalQuestionsAnswers = ({
     ...Object.entries(defaultAdditionalQuestionsAnswers).reduce(
       (acc: AditionalQuestionAnswer[], [key, value]) => {
         acc.push({
-          type: 'default',
+          type: SimulationAdditionalQuestionAnswerType.default,
           key,
           answer: value?.toString() || '',
         })
@@ -109,7 +113,7 @@ export const getSimulationAdditionalQuestionsAnswers = ({
     ...Object.entries(customAdditionalQuestionsAnswers).reduce(
       (acc: AditionalQuestionAnswer[], [key, value]) => {
         acc.push({
-          type: 'custom',
+          type: SimulationAdditionalQuestionAnswerType.custom,
           key,
           answer: value?.toString() || '',
         })
@@ -118,7 +122,7 @@ export const getSimulationAdditionalQuestionsAnswers = ({
       },
       []
     ),
-  ]
+  ] as AdditionalQuestionsAnswersSchema
 }
 
 export async function createOrUpdateSimulation(
