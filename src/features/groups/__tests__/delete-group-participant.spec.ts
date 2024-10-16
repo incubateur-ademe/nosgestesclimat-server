@@ -4,6 +4,7 @@ import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
 import logger from '../../../logger'
+import { getSimulationPayload } from '../../simulations/__tests__/fixtures/simulations.fixtures'
 import {
   createGroup,
   DELETE_PARTICIPANT_ROUTE,
@@ -157,7 +158,7 @@ describe('Given a NGC user', () => {
         group: {
           participants: [
             {
-              simulation: faker.string.uuid(),
+              simulation: getSimulationPayload(),
             },
           ],
         },
@@ -196,7 +197,7 @@ describe('Given a NGC user', () => {
           group: {
             participants: [
               {
-                simulation: faker.string.uuid(),
+                simulation: getSimulationPayload(),
               },
             ],
           },
@@ -233,7 +234,7 @@ describe('Given a NGC user', () => {
         group: {
           participants: [
             {
-              simulation: faker.string.uuid(),
+              simulation: getSimulationPayload(),
             },
           ],
         },

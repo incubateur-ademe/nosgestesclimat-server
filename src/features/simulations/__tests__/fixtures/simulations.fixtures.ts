@@ -3,10 +3,27 @@ import type { DottedName, NGCRuleNode } from '@incubateur-ademe/nosgestesclimat'
 import personas from '@incubateur-ademe/nosgestesclimat/public/personas-fr.json'
 import type { ParsedRules, PublicodesExpression } from 'publicodes'
 import { utils } from 'publicodes'
+import type supertest from 'supertest'
 import { carbonMetric, waterMetric } from '../../../../constants/ngc'
 import { engine } from '../../../../constants/publicode'
 import type { Metric } from '../../../../types/types'
-import type { SituationSchema } from '../../simulations.validator'
+import type {
+  SimulationCreateInputDto,
+  SimulationParticipantCreateInputDto,
+} from '../../simulations.validator'
+import { SituationSchema } from '../../simulations.validator'
+
+type TestAgent = ReturnType<typeof supertest>
+
+export const CREATE_SIMULATION_ROUTE = '/simulations/v1'
+
+export const FETCH_USER_SIMULATIONS_ROUTE = '/simulations/v1/:userId'
+
+export const FETCH_USER_SIMULATION_ROUTE =
+  '/simulations/v1/:userId/:simulationId'
+
+export const CREATE_POLL_SIMULATION_ROUTE =
+  '/organisations/v1/:organisationIdOrSlug/polls/:pollIdOrSlug/simulations'
 
 const categories = [
   'transport',
@@ -118,14 +135,68 @@ const getComputedResults = (situation: SituationSchema) => {
   }
 }
 
-export const getRandomPersonaSituation = () =>
+const getRandomPersona = () =>
   personas[
     faker.helpers.arrayElement(Object.keys(personas)) as keyof typeof personas
-  ].situation
+  ]
 
-export const getTestCases = () =>
-  Object.values(personas).map(({ situation, nom }) => ({
+export const getRandomPersonaSituation = () => getRandomPersona().situation
+
+export const getRandomTestCase = () => {
+  const { nom, situation } = getRandomPersona()
+
+  return {
     computedResults: getComputedResults(situation),
     situation,
     nom,
-  }))
+  }
+}
+
+export const getSimulationPayload = ({
+  id,
+  date,
+  situation,
+  foldedSteps,
+  progression,
+  savedViaEmail,
+  actionChoices,
+  computedResults,
+  additionalQuestionsAnswers,
+}: Partial<SimulationParticipantCreateInputDto> = {}): SimulationParticipantCreateInputDto => {
+  situation = situation || getRandomPersonaSituation()
+  computedResults =
+    computedResults || getComputedResults(SituationSchema.parse(situation))
+
+  return {
+    id: id || faker.string.uuid(),
+    date,
+    situation,
+    foldedSteps,
+    progression: progression || 1,
+    savedViaEmail,
+    actionChoices,
+    computedResults,
+    additionalQuestionsAnswers,
+  }
+}
+
+export const createSimulation = async ({
+  agent,
+  simulation = {},
+}: {
+  agent: TestAgent
+  simulation?: Partial<SimulationCreateInputDto>
+}) => {
+  const { user } = simulation
+  const payload: SimulationCreateInputDto = {
+    ...getSimulationPayload(simulation),
+    user: {
+      ...user,
+      id: user?.id || faker.string.uuid(),
+    },
+  }
+
+  const response = await agent.post(CREATE_SIMULATION_ROUTE).send(payload)
+
+  return response.body
+}

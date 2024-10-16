@@ -1,11 +1,12 @@
 import express from 'express'
-import type { Document, Types } from 'mongoose'
+import type { Document } from 'mongoose'
 import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
 import { sendSimulationEmail } from '../../helpers/email/sendSimulationEmail'
 import { findGroupsById } from '../../helpers/groups/findGroupsById'
 import { handleUpdateGroup } from '../../helpers/groups/handleUpdateGroup'
 import { findPollsBySlug } from '../../helpers/organisations/findPollsBySlug'
 import { handleUpdatePoll } from '../../helpers/organisations/handleUpdatePoll'
+import type { SimulationCreateObject } from '../../helpers/queries/createOrUpdateSimulation'
 import { createOrUpdateSimulation } from '../../helpers/queries/createOrUpdateSimulation'
 import { createOrUpdateUser } from '../../helpers/queries/createOrUpdateUser'
 import type { SimulationType } from '../../schemas/SimulationSchema'
@@ -79,32 +80,29 @@ router.route('/').post(async (req, res) => {
       ? { carbone: simulation.computedResults }
       : simulation.computedResults
 
-    const simulationObject = {
+    const simulationObject: SimulationCreateObject = {
       id: simulation.id,
       user: userDocument._id,
-      actionChoices: {
-        ...(simulation?.actionChoices ?? {}),
-      },
+      actionChoices: simulation?.actionChoices ?? {},
       date: simulation.date ? new Date(simulation.date) : new Date(),
-      foldedSteps: [...(simulation.foldedSteps ?? [])],
-      situation: {
-        ...(simulation.situation ?? {}),
-      },
+      foldedSteps: simulation.foldedSteps ?? [],
+      situation: simulation.situation ?? {},
       computedResults,
       progression: simulation.progression,
       savedViaEmail: simulation.savedViaEmail,
-      polls: polls?.map((poll) => poll._id as Types.ObjectId),
-      groups: [...(simulation.groups ?? [])],
-      defaultAdditionalQuestionsAnswers: {
-        ...(simulation.defaultAdditionalQuestionsAnswers ?? {}),
-      },
-      customAdditionalQuestionsAnswers: {
-        ...(simulation.customAdditionalQuestionsAnswers ?? {}),
-      },
-    } as SimulationType
+      polls: (polls ?? []).map((poll) => poll._id),
+      groups: simulation.groups ?? [],
+      defaultAdditionalQuestionsAnswers:
+        simulation.defaultAdditionalQuestionsAnswers ?? {},
+      customAdditionalQuestionsAnswers:
+        simulation.customAdditionalQuestionsAnswers ?? {},
+    }
 
     // We create or update the simulation
-    const simulationSaved = await createOrUpdateSimulation(simulationObject)
+    const simulationSaved = await createOrUpdateSimulation(
+      simulationObject,
+      userDocument
+    )
 
     // If on or multiple polls are associated with the simulation and the simulation is not already in it
     // we add or update the simulation to the poll
@@ -151,4 +149,7 @@ router.route('/').post(async (req, res) => {
   }
 })
 
+/**
+ * @deprecated should use features/simulations/organisations/groups instead
+ */
 export default router
