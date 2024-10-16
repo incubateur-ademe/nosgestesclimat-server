@@ -1,10 +1,10 @@
-jest.mock('../../../utils/generateRandomNumberWithLength')
-
 import { faker } from '@faker-js/faker'
+import dayjs from 'dayjs'
 import nock from 'nock'
 import supertest from 'supertest'
+import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
-import * as verificationCodeUtils from '../../../utils/generateRandomNumberWithLength'
+import * as authenticationService from '../../../features/authentication/authentication.service'
 import {
   SEND_ORGANISATION_VERIFICATION_CODE_WHEN_MODIFYING_EMAIL_ROUTE,
   createFullOrganisation,
@@ -21,21 +21,29 @@ describe(`Given an existing NGC user organisation`, () => {
     createFullOrganisationFixture = await createFullOrganisation(request)
   })
 
+  afterEach(() =>
+    Promise.all([
+      prisma.organisation.deleteMany(),
+      prisma.verifiedUser.deleteMany(),
+    ])
+  )
+
   describe(`When the administator changes its email`, () => {
     let email: string
     let scope: nock.Scope
 
     beforeEach(async () => {
       jest
-        .mocked(verificationCodeUtils)
-        .generateRandomNumberWithLength.mockImplementationOnce(
-          () => +createFullOrganisationFixture.verificationCode
-        )
+        .mocked(authenticationService)
+        .generateVerificationCodeAndExpiration.mockReturnValueOnce({
+          code: createFullOrganisationFixture.verificationCode,
+          expirationDate: dayjs().add(1, 'hour').toDate(),
+        })
 
       scope = nock(process.env.BREVO_URL!)
-        .post(`/v3/contacts`)
+        .post('/v3/contacts')
         .reply(200)
-        .post(`/v3/smtp/email`)
+        .post('/v3/smtp/email')
         .reply(200)
 
       email = faker.internet.email().toLocaleLowerCase()

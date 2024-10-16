@@ -1,7 +1,10 @@
 import type { Request, Response } from 'express'
 import express from 'express'
+import {
+  COOKIE_NAME,
+  COOKIES_OPTIONS,
+} from '../../features/authentication/authentication.service'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import { COOKIES_OPTIONS } from '../../constants/cookies'
 
 const router = express.Router()
 
@@ -11,9 +14,9 @@ router
     // -1 setting up request as expired and re-requesting before display again.
     res.header('Expires', '-1')
 
-    res.clearCookie('ngcjwt', COOKIES_OPTIONS)
+    res.clearCookie(COOKIE_NAME, COOKIES_OPTIONS)
 
-    res.cookie('ngcjwt', '', COOKIES_OPTIONS)
+    res.cookie(COOKIE_NAME, '', COOKIES_OPTIONS)
 
     next()
   })
@@ -27,4 +30,7 @@ router
     }
   })
 
+/**
+ * @deprecated should use features/authentication instead
+ */
 export default router
