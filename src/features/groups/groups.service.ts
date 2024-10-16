@@ -143,11 +143,12 @@ export const createParticipant = async ({
 }) => {
   try {
     const participant = await createParticipantAndUser(params, participantDto)
-    const { group, user } = participant
+    const { group, user, simulation } = participant
     const administrator = group.administrator!.user
 
     const simulationUpsertedEvent = new SimulationUpsertedEvent({
       administrator,
+      simulation,
       origin,
       group,
       user,

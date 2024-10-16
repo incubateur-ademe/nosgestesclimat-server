@@ -123,12 +123,14 @@ export async function handleUpdateGroup({
   )
 
   // Send creation confirmation email to the participant (if an email is provided)
-  sendGroupEmail({
-    group,
-    userId: userDocument.userId,
-    name: userDocument.name,
-    email: userDocument.email,
-    isCreation: false,
-    origin,
-  })
+  if (simulationSaved.progression === 1) {
+    await sendGroupEmail({
+      group,
+      userId: userDocument.userId,
+      name: userDocument.name,
+      email: userDocument.email,
+      isCreation: false,
+      origin,
+    })
+  }
 }

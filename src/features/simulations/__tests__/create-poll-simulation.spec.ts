@@ -440,6 +440,52 @@ describe('Given a NGC user', () => {
             expect(scope.isDone()).toBeTruthy()
           })
 
+          describe(`And incomplete simulation`, () => {
+            test('Then it sends a continuation email', async () => {
+              const email = faker.internet.email().toLocaleLowerCase()
+              const payload: SimulationCreateInputDto = {
+                id: faker.string.uuid(),
+                situation,
+                computedResults,
+                progression: 0.5,
+                user: {
+                  id: faker.string.uuid(),
+                  email,
+                },
+              }
+
+              const scope = nock(process.env.BREVO_URL!, {
+                reqheaders: {
+                  'api-key': process.env.BREVO_API_KEY!,
+                },
+              })
+                .post('/v3/smtp/email', {
+                  to: [
+                    {
+                      name: email,
+                      email,
+                    },
+                  ],
+                  templateId: 102,
+                  params: {
+                    SIMULATION_URL: `https://nosgestesclimat.fr/simulateur/bilan?sid=${payload.id}&mtm_campaign=email-automatise&mtm_kwd=pause-test-en-cours`,
+                  },
+                })
+                .reply(200)
+
+              await agent
+                .post(
+                  url
+                    .replace(':organisationIdOrSlug', organisationId)
+                    .replace(':pollIdOrSlug', pollId)
+                )
+                .send(payload)
+                .expect(StatusCodes.CREATED)
+
+              expect(scope.isDone()).toBeTruthy()
+            })
+          })
+
           describe('And custom user origin (preprod)', () => {
             test('Then it sends a creation email', async () => {
               const email = faker.internet.email().toLocaleLowerCase()

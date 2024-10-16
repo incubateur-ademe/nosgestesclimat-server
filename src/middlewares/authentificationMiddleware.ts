@@ -4,6 +4,7 @@ import type { JwtPayload } from 'jsonwebtoken'
 import jwt from 'jsonwebtoken'
 import { prisma } from '../adapters/prisma/client'
 import { config } from '../config'
+import { COOKIE_NAME } from '../features/authentication/authentication.service'
 import { generateAndSetNewToken } from '../helpers/authentification/generateAndSetNewToken'
 import logger from '../logger'
 
@@ -20,7 +21,12 @@ export const authentificationMiddleware: RequestHandler = (
   const cookiesHeader = req.headers.cookie
 
   const token =
-    cookiesHeader && cookiesHeader.split(';').shift()?.replace('ngcjwt=', '')
+    cookiesHeader &&
+    cookiesHeader
+      .split(';')
+      .map((c) => c.trim())
+      .find((cookie) => cookie.startsWith(COOKIE_NAME))
+      ?.replace(`${COOKIE_NAME}=`, '')
 
   if (!token) {
     return res.status(StatusCodes.UNAUTHORIZED).end()
