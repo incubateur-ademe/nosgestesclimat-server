@@ -1,15 +1,21 @@
-import type { Organisation, VerifiedUser } from '@prisma/client'
+import type {
+  Group,
+  Organisation,
+  Simulation,
+  User,
+  VerifiedUser,
+} from '@prisma/client'
 import axios from 'axios'
 import axiosRetry from 'axios-retry'
 import { config } from '../../config'
+import { isNetworkOrTimeoutOrRetryableError } from '../../core/typeguards/isRetryableAxiosError'
 import {
   MATOMO_CAMPAIGN_EMAIL_AUTOMATISE,
   MATOMO_CAMPAIGN_KEY,
   MATOMO_KEYWORD_KEY,
   MATOMO_KEYWORDS,
-} from '../../constants/brevo'
-import { isNetworkOrTimeoutOrRetryableError } from '../../core/typeguards/isRetryableAxiosError'
-import { TemplateIds } from './constant'
+  TemplateIds,
+} from './constant'
 
 const brevo = axios.create({
   baseURL: config.thirdParty.brevo.url,
@@ -62,6 +68,66 @@ export const sendVerificationCodeEmail = ({
   })
 }
 
+const sendGroupEmail = ({
+  origin,
+  templateId,
+  group: { id: groupId, name: groupName },
+  user: { id: userId, email, name: userName },
+}: Readonly<{
+  origin: string
+  group: Pick<Group, 'id' | 'name'>
+  user: Pick<User, 'id' | 'name'> & { email: string }
+  templateId: TemplateIds.GROUP_CREATED | TemplateIds.GROUP_JOINED
+}>) => {
+  const groupUrl = new URL(`${origin}/amis/resultats`)
+  const { searchParams: groupSp } = groupUrl
+  groupSp.append('groupId', groupId)
+  groupSp.append(MATOMO_CAMPAIGN_KEY, MATOMO_CAMPAIGN_EMAIL_AUTOMATISE)
+  groupSp.append(MATOMO_KEYWORD_KEY, MATOMO_KEYWORDS[templateId].GROUP_URL)
+
+  const shareUrl = new URL(`${origin}/amis/invitation`)
+  const { searchParams: shareSp } = shareUrl
+  shareSp.append('groupId', groupId)
+  shareSp.append(MATOMO_CAMPAIGN_KEY, MATOMO_CAMPAIGN_EMAIL_AUTOMATISE)
+  shareSp.append(MATOMO_KEYWORD_KEY, MATOMO_KEYWORDS[templateId].SHARE_URL)
+
+  const deleteUrl = new URL(`${origin}/amis/supprimer`)
+  const { searchParams: deleteSp } = deleteUrl
+  deleteSp.append('groupId', groupId)
+  deleteSp.append('userId', userId)
+  deleteSp.append(MATOMO_CAMPAIGN_KEY, MATOMO_CAMPAIGN_EMAIL_AUTOMATISE)
+  deleteSp.append(MATOMO_KEYWORD_KEY, MATOMO_KEYWORDS[templateId].DELETE_URL)
+
+  return sendEmail({
+    email,
+    templateId,
+    params: {
+      GROUP_URL: groupUrl.toString(),
+      SHARE_URL: shareUrl.toString(),
+      DELETE_URL: deleteUrl.toString(),
+      GROUP_NAME: groupName,
+      NAME: userName,
+    },
+  })
+}
+
+export const sendGroupCreatedEmail = ({
+  origin,
+  group,
+  user,
+}: Readonly<{
+  origin: string
+  group: Pick<Group, 'id' | 'name'>
+  user: Pick<User, 'id' | 'name'> & { email: string }
+}>) => {
+  return sendGroupEmail({
+    templateId: TemplateIds.GROUP_CREATED,
+    origin,
+    group,
+    user,
+  })
+}
+
 export const sendOrganisationCreatedEmail = ({
   origin,
   organisation: { name: organisationName, slug },
@@ -84,6 +150,81 @@ export const sendOrganisationCreatedEmail = ({
       ADMINISTRATOR_NAME: administratorName,
       ORGANISATION_NAME: organisationName,
       DASHBOARD_URL: dashBoardUrl.toString(),
+    },
+  })
+}
+
+export const sendSimulationUpsertedEmail = ({
+  email,
+  origin,
+  simulation,
+}: Readonly<{
+  email: string
+  origin: string
+  simulation: Pick<Simulation, 'id' | 'progression'>
+}>) => {
+  const isSimulationCompleted = simulation.progression === 1
+  const templateId = isSimulationCompleted
+    ? TemplateIds.SIMULATION_COMPLETED
+    : TemplateIds.SIMULATION_IN_PROGRESS
+
+  const simulationUrl = new URL(origin)
+  simulationUrl.pathname = isSimulationCompleted ? 'fin' : 'simulateur/bilan'
+  const { searchParams } = simulationUrl
+  searchParams.append('sid', simulation.id)
+  searchParams.append(MATOMO_CAMPAIGN_KEY, MATOMO_CAMPAIGN_EMAIL_AUTOMATISE)
+  searchParams.append(MATOMO_KEYWORD_KEY, MATOMO_KEYWORDS[templateId])
+
+  return sendEmail({
+    email,
+    templateId,
+    params: {
+      SIMULATION_URL: simulationUrl.toString(),
+    },
+  })
+}
+
+export const sendGroupParticipantSimulationUpsertedEmail = ({
+  origin,
+  group,
+  user,
+}: Readonly<{
+  origin: string
+  group: Pick<Group, 'id' | 'name'>
+  user: Pick<User, 'id' | 'name'> & { email: string }
+}>) => {
+  return sendGroupEmail({
+    templateId: TemplateIds.GROUP_JOINED,
+    origin,
+    group,
+    user,
+  })
+}
+
+export const sendPollSimulationUpsertedEmail = async ({
+  email,
+  origin,
+  organisation: { name, slug },
+}: Readonly<{
+  email: string
+  origin: string
+  organisation: Pick<Organisation, 'name' | 'slug'>
+}>) => {
+  const templateId = TemplateIds.ORGANISATION_JOINED
+
+  const detailedViewUrl = new URL(
+    `${origin}/organisations/${slug}/resultats-detailles`
+  )
+  const { searchParams } = detailedViewUrl
+  searchParams.append(MATOMO_CAMPAIGN_KEY, MATOMO_CAMPAIGN_EMAIL_AUTOMATISE)
+  searchParams.append(MATOMO_KEYWORD_KEY, MATOMO_KEYWORDS[templateId])
+
+  await sendEmail({
+    email,
+    templateId,
+    params: {
+      ORGANISATION_NAME: name,
+      DETAILED_VIEW_URL: detailedViewUrl.toString(),
     },
   })
 }

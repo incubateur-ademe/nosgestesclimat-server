@@ -17,7 +17,7 @@ const PollParams = z
 
 export type PollParams = z.infer<typeof PollParams>
 
-const OrganisationPollParams = OrganisationParams.merge(PollParams)
+export const OrganisationPollParams = OrganisationParams.merge(PollParams)
 
 export type OrganisationPollParams = z.infer<typeof OrganisationPollParams>
 

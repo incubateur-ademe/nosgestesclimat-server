@@ -1,10 +1,13 @@
 import { faker } from '@faker-js/faker'
+import { randomUUID } from 'crypto'
 import { StatusCodes } from 'http-status-codes'
+import nock from 'nock'
 import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
 import logger from '../../../logger'
-import type { GroupCreateDto } from '../groups.validator'
+import { getSimulationPayload } from '../../simulations/__tests__/fixtures/simulations.fixtures'
+import type { GroupCreateInputDto } from '../groups.validator'
 import { CREATE_GROUP_ROUTE } from './fixtures/groups.fixture'
 
 describe('Given a NGC user', () => {
@@ -55,7 +58,7 @@ describe('Given a NGC user', () => {
       })
     })
 
-    describe('And invalid participant simulation', () => {
+    describe('And invalid participant simulation id', () => {
       test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent
           .post(url)
@@ -68,7 +71,58 @@ describe('Given a NGC user', () => {
             },
             participants: [
               {
-                simulation: faker.string.alpha(34),
+                simulation: {
+                  ...getSimulationPayload(),
+                  id: faker.string.alpha(34),
+                },
+              },
+            ],
+          })
+          .expect(StatusCodes.BAD_REQUEST)
+      })
+    })
+
+    describe('And invalid participant simulation situation', () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
+        await agent
+          .post(url)
+          .send({
+            name: faker.company.name(),
+            emoji: faker.internet.emoji(),
+            administrator: {
+              userId: faker.string.uuid(),
+              name: faker.person.fullName(),
+            },
+            participants: [
+              {
+                simulation: {
+                  ...getSimulationPayload(),
+                  situation: null,
+                },
+              },
+            ],
+          })
+          .expect(StatusCodes.BAD_REQUEST)
+      })
+    })
+
+    describe('And invalid participant simulation computedResults', () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
+        await agent
+          .post(url)
+          .send({
+            name: faker.company.name(),
+            emoji: faker.internet.emoji(),
+            administrator: {
+              userId: faker.string.uuid(),
+              name: faker.person.fullName(),
+            },
+            participants: [
+              {
+                simulation: {
+                  ...getSimulationPayload(),
+                  computedResults: null,
+                },
               },
             ],
           })
@@ -91,7 +145,7 @@ describe('Given a NGC user', () => {
               {
                 userId: faker.string.uuid(),
                 name: faker.person.fullName(),
-                simulation: faker.string.alpha(34),
+                simulation: getSimulationPayload(),
               },
             ],
           })
@@ -112,10 +166,10 @@ describe('Given a NGC user', () => {
             },
             participants: [
               {
-                simulation: faker.string.uuid(),
+                simulation: getSimulationPayload(),
               },
               {
-                simulation: faker.string.uuid(),
+                simulation: getSimulationPayload(),
               },
             ],
           })
@@ -127,7 +181,7 @@ describe('Given a NGC user', () => {
       test(`Then it returns a ${StatusCodes.CREATED} response with the created group`, async () => {
         const userId = faker.string.uuid()
         const name = faker.person.fullName()
-        const payload: GroupCreateDto = {
+        const payload: GroupCreateInputDto = {
           name: faker.company.name(),
           emoji: faker.internet.emoji(),
           administrator: {
@@ -159,9 +213,9 @@ describe('Given a NGC user', () => {
 
       test('Then it stores a group in database', async () => {
         const userId = faker.string.uuid()
-        const email = faker.internet.email()
+        const email = faker.internet.email().toLocaleLowerCase()
         const name = faker.person.fullName()
-        const payload: GroupCreateDto = {
+        const payload: GroupCreateInputDto = {
           name: faker.company.name(),
           emoji: faker.internet.emoji(),
           administrator: {
@@ -216,14 +270,39 @@ describe('Given a NGC user', () => {
           participants: [],
         })
       })
+      describe('And leaving his/her email', () => {
+        test('Then it does not send a creation email', async () => {
+          const email = faker.internet.email().toLocaleLowerCase()
+          const userId = faker.string.uuid()
+          const name = faker.person.fullName()
+          const payload: GroupCreateInputDto = {
+            name: faker.company.name(),
+            emoji: faker.internet.emoji(),
+            administrator: {
+              userId,
+              email,
+              name,
+            },
+          }
+
+          const scope = nock(process.env.BREVO_URL!)
+            .post('/v3/smtp/email')
+            .reply(200)
+
+          await agent.post(url).send(payload).expect(StatusCodes.CREATED)
+
+          expect(scope.isDone()).toBeFalsy()
+          nock.cleanAll()
+        })
+      })
     })
 
     describe('And he does have a simulation', () => {
       test(`Then it returns a ${StatusCodes.CREATED} response with the created group`, async () => {
         const userId = faker.string.uuid()
         const name = faker.person.fullName()
-        const simulation = faker.string.uuid()
-        const payload: GroupCreateDto = {
+        const simulation = getSimulationPayload()
+        const payload: GroupCreateInputDto = {
           name: faker.company.name(),
           emoji: faker.internet.emoji(),
           administrator: {
@@ -257,7 +336,17 @@ describe('Given a NGC user', () => {
               id: expect.any(String),
               ...payload.administrator,
               email: null,
-              simulation,
+              simulation: {
+                ...simulation,
+                date: expect.any(String),
+                createdAt: expect.any(String),
+                updatedAt: null,
+                polls: [],
+                foldedSteps: [],
+                actionChoices: {},
+                savedViaEmail: false,
+                additionalQuestionsAnswers: [],
+              },
               createdAt: expect.any(String),
               updatedAt: null,
             },
@@ -269,10 +358,10 @@ describe('Given a NGC user', () => {
 
       test('Then it stores a group in database', async () => {
         const userId = faker.string.uuid()
-        const email = faker.internet.email()
+        const email = faker.internet.email().toLocaleLowerCase()
         const name = faker.person.fullName()
-        const simulation = faker.string.uuid()
-        const payload: GroupCreateDto = {
+        const simulation = getSimulationPayload()
+        const payload: GroupCreateInputDto = {
           name: faker.company.name(),
           emoji: faker.internet.emoji(),
           administrator: {
@@ -286,6 +375,8 @@ describe('Given a NGC user', () => {
             },
           ],
         }
+
+        nock(process.env.BREVO_URL!).post('/v3/smtp/email').reply(200)
 
         const {
           body: { id },
@@ -334,7 +425,7 @@ describe('Given a NGC user', () => {
           participants: [
             {
               id: expect.any(String),
-              simulationId: simulation,
+              simulationId: simulation.id,
               user: {
                 id: userId,
                 name,
@@ -344,6 +435,136 @@ describe('Given a NGC user', () => {
               },
             },
           ],
+        })
+      })
+
+      describe('And leaving his/her email', () => {
+        test('Then it sends a creation email', async () => {
+          const email = faker.internet.email().toLocaleLowerCase()
+          const userId = faker.string.uuid()
+          const name = faker.person.fullName()
+          const simulation = getSimulationPayload()
+          const payload: GroupCreateInputDto = {
+            name: faker.company.name(),
+            emoji: faker.internet.emoji(),
+            administrator: {
+              userId,
+              email,
+              name,
+            },
+            participants: [
+              {
+                simulation,
+              },
+            ],
+          }
+
+          // Need to be sure that the group gets created with a known id
+          const groupId = randomUUID()
+
+          jest
+            .spyOn(prisma.group, 'create')
+            .mockImplementationOnce((params) => {
+              params.data.id = groupId
+
+              jest.spyOn(prisma.group, 'create').mockRestore()
+
+              return prisma.group.create(params)
+            })
+
+          const scope = nock(process.env.BREVO_URL!, {
+            reqheaders: {
+              'api-key': process.env.BREVO_API_KEY!,
+            },
+          })
+            .post('/v3/smtp/email', {
+              to: [
+                {
+                  name: email,
+                  email,
+                },
+              ],
+              templateId: 57,
+              params: {
+                GROUP_URL: `https://nosgestesclimat.fr/amis/resultats?groupId=${groupId}&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-voir-classement`,
+                SHARE_URL: `https://nosgestesclimat.fr/amis/invitation?groupId=${groupId}&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-url-partage`,
+                DELETE_URL: `https://nosgestesclimat.fr/amis/supprimer?groupId=${groupId}&userId=${userId}&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-delete`,
+                GROUP_NAME: payload.name,
+                NAME: name,
+              },
+            })
+            .reply(200)
+
+          await agent.post(url).send(payload).expect(StatusCodes.CREATED)
+
+          expect(scope.isDone()).toBeTruthy()
+        })
+
+        describe('And custom user origin (preprod)', () => {
+          test('Then it sends a creation email', async () => {
+            const email = faker.internet.email().toLocaleLowerCase()
+            const userId = faker.string.uuid()
+            const name = faker.person.fullName()
+            const simulation = getSimulationPayload()
+            const payload: GroupCreateInputDto = {
+              name: faker.company.name(),
+              emoji: faker.internet.emoji(),
+              administrator: {
+                userId,
+                email,
+                name,
+              },
+              participants: [
+                {
+                  simulation,
+                },
+              ],
+            }
+
+            // Need to be sure that the group gets created with a known id
+            const groupId = randomUUID()
+
+            jest
+              .spyOn(prisma.group, 'create')
+              .mockImplementationOnce((params) => {
+                params.data.id = groupId
+
+                jest.spyOn(prisma.group, 'create').mockRestore()
+
+                return prisma.group.create(params)
+              })
+
+            const scope = nock(process.env.BREVO_URL!, {
+              reqheaders: {
+                'api-key': process.env.BREVO_API_KEY!,
+              },
+            })
+              .post('/v3/smtp/email', {
+                to: [
+                  {
+                    name: email,
+                    email,
+                  },
+                ],
+                templateId: 57,
+                params: {
+                  GROUP_URL: `https://preprod.nosgestesclimat.fr/amis/resultats?groupId=${groupId}&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-voir-classement`,
+                  SHARE_URL: `https://preprod.nosgestesclimat.fr/amis/invitation?groupId=${groupId}&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-url-partage`,
+                  DELETE_URL: `https://preprod.nosgestesclimat.fr/amis/supprimer?groupId=${groupId}&userId=${userId}&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-delete`,
+                  GROUP_NAME: payload.name,
+                  NAME: name,
+                },
+              })
+              .reply(200)
+
+            await agent
+              .post(url)
+              .set('origin', 'https://preprod.nosgestesclimat.fr')
+              .send(payload)
+              .expect(StatusCodes.CREATED)
+
+            expect(scope.isDone()).toBeTruthy()
+          })
         })
       })
     })
