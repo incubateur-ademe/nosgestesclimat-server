@@ -18,15 +18,17 @@ describe(`Given an existing NGC user organisation`, () => {
   >
 
   beforeEach(async () => {
+    jest.spyOn(console, 'log').mockImplementation()
     createFullOrganisationFixture = await createFullOrganisation(request)
   })
 
-  afterEach(() =>
-    Promise.all([
+  afterEach(async () => {
+    await Promise.all([
       prisma.organisation.deleteMany(),
       prisma.verifiedUser.deleteMany(),
     ])
-  )
+    jest.restoreAllMocks()
+  })
 
   describe(`When the administator changes its email`, () => {
     let email: string

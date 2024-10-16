@@ -40,18 +40,24 @@ router.route('/').post(async (req, res) => {
       .send('Error. A valid email address must be provided.')
   }
 
-  // We create or search for the user
-  const userDocument = await createOrUpdateUser({
-    email,
-    name,
-    userId,
-  })
+  let userDocument
+  try {
+    // We create or search for the user
+    userDocument = await createOrUpdateUser({
+      email,
+      name,
+      userId,
+    })
 
-  // If there is no user found or created, we return an error
-  if (!userDocument) {
-    return res
-      .status(500)
-      .send('Error while creating or searching for the user.')
+    // If there is no user found or created, we return an error
+    if (!userDocument) {
+      return res
+        .status(500)
+        .send('Error while creating or searching for the user.')
+    }
+  } catch (error) {
+    console.warn(error)
+    return res.status(500).send('Error while creating simulation.')
   }
 
   // Non-blocking call to create or update the contact
@@ -126,7 +132,7 @@ router.route('/').post(async (req, res) => {
       })
     }
 
-    sendSimulationEmail({
+    await sendSimulationEmail({
       userDocument,
       simulationSaved,
       shouldSendSimulationEmail,
@@ -140,7 +146,10 @@ router.route('/').post(async (req, res) => {
 
     setSuccessfulJSONResponse(res)
 
-    res.json(simulationSaved)
+    res.json({
+      ...simulationSaved.toObject(),
+      polls: polls.map(({ slug }) => slug),
+    })
 
     console.log(`Simulation created: ${simulationSaved._id}`)
   } catch (error) {
