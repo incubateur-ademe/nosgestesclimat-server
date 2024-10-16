@@ -35,7 +35,7 @@ router
       }
 
       if (
-        !config.organisationIdsWithCustomQuestionsEnabled.includes(
+        !config.organisationIdsWithCustomQuestionsEnabled.has(
           organisationFound._id.toString()
         )
       ) {
@@ -79,4 +79,7 @@ router
     }
   })
 
+/**
+ * @deprecated should use features/organisations instead
+ */
 export default router

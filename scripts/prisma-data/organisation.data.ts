@@ -109,21 +109,22 @@ const OrganisationSchema = z
   .strict()
 
 const getSlug = (slug: string, set: Set<string>, count = 0): string => {
+  let availableSlug: string
   if (count === 0) {
-    slug = slugify(slug.toLocaleLowerCase(), {
+    availableSlug = slug = slugify(slug.toLocaleLowerCase(), {
       strict: true,
     })
   } else {
-    slug = `${slug}-${count}`
+    availableSlug = `${slug}-${count}`
   }
 
-  if (set.has(slug)) {
+  if (set.has(availableSlug)) {
     return getSlug(slug, set, count + 1)
   }
 
-  set.add(slug)
+  set.add(availableSlug)
 
-  return slug
+  return availableSlug
 }
 
 const migrateOrganisationToPg = async () => {

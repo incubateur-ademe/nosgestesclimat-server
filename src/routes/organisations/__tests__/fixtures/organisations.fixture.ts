@@ -1,7 +1,8 @@
 import { faker } from '@faker-js/faker'
+import dayjs from 'dayjs'
 import nock from 'nock'
 import type supertest from 'supertest'
-import * as verificationCodeUtils from '../../../../utils/generateRandomNumberWithLength'
+import * as authenticationService from '../../../../features/authentication/authentication.service'
 
 type TestAgent = ReturnType<typeof supertest>
 
@@ -27,15 +28,16 @@ export const createOrganisation = async (agent: TestAgent) => {
     .toString()
 
   jest
-    .mocked(verificationCodeUtils)
-    .generateRandomNumberWithLength.mockImplementationOnce(
-      () => +verificationCode
-    )
+    .mocked(authenticationService)
+    .generateVerificationCodeAndExpiration.mockReturnValueOnce({
+      code: verificationCode,
+      expirationDate: dayjs().add(1, 'hour').toDate(),
+    })
 
   nock(process.env.BREVO_URL!)
-    .post(`/v3/contacts`)
+    .post('/v3/contacts')
     .reply(200)
-    .post(`/v3/smtp/email`)
+    .post('/v3/smtp/email')
     .reply(200)
 
   await agent.post(CREATE_ORGANISATION_ROUTE).send({
@@ -78,8 +80,8 @@ export const createFullOrganisation = async (agent: TestAgent) => {
   const name = faker.company.name()
   const administratorName = faker.person.fullName()
 
-  nock(process.env.BREVO_URL!).post(`/v3/contacts`).reply(200)
-  nock(process.env.CONNECT_URL!).post(`/`).reply(200)
+  nock(process.env.BREVO_URL!).post('/v3/contacts').reply(200)
+  nock(process.env.CONNECT_URL!).post('/api/v1/personnes').reply(200)
 
   const updateOrganisationResponse = await agent
     .post(UPDATE_ORGANISATION_ROUTE)

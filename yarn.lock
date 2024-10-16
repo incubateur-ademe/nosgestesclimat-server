@@ -3710,6 +3710,13 @@ aws-sdk@^2.1271.0, aws-sdk@^2.1338.0:
     uuid "8.0.0"
     xml2js "0.6.2"
 
+axios-retry@^4.5.0:
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/axios-retry/-/axios-retry-4.5.0.tgz#441fdc32cedf63d6abd5de5d53db3667afd4c39b"
+  integrity sha512-aR99oXhpEDGo0UuAlYcn2iGRds30k366Zfa05XWScR9QaQD4JYiP3/1Qt1u7YlefUOK+cn0CcwoL1oefavQUlQ==
+  dependencies:
+    is-retry-allowed "^2.2.0"
+
 axios@^0.27.0:
   version "0.27.2"
   resolved "https://registry.yarnpkg.com/axios/-/axios-0.27.2.tgz#207658cc8621606e586c85db4b41a750e756d972"
@@ -6221,6 +6228,11 @@ is-relative-path@^1.0.2:
   resolved "https://registry.yarnpkg.com/is-relative-path/-/is-relative-path-1.0.2.tgz#091b46a0d67c1ed0fe85f1f8cfdde006bb251d46"
   integrity sha512-i1h+y50g+0hRbBD+dbnInl3JlJ702aar58snAeX+MxBAPvzXGej7sYoPMhlnykabt0ZzCJNBEyzMlekuQZN7fA==
 
+is-retry-allowed@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/is-retry-allowed/-/is-retry-allowed-2.2.0.tgz#88f34cbd236e043e71b6932d09b0c65fb7b4d71d"
+  integrity sha512-XVm7LOeLpTW4jV19QSH38vkswxoLud8sQ57YwJVTPWdiaI9I8keEhGFpBlslyVsgdQy4Opg8QOLb8YRgsyZiQg==
+
 is-shared-array-buffer@^1.0.2, is-shared-array-buffer@^1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/is-shared-array-buffer/-/is-shared-array-buffer-1.0.3.tgz#1237f1cba059cdb62431d378dcc37d9680181688"
@@ -8021,10 +8033,10 @@ prisma@^5.18.0:
   dependencies:
     "@prisma/engines" "5.18.0"
 
-prismock@^1.33.1:
-  version "1.33.1"
-  resolved "https://registry.yarnpkg.com/prismock/-/prismock-1.33.1.tgz#4ec237c71ae6fd27048546c55128f3e0bb7495c4"
-  integrity sha512-8kBpy44W96Q1gpViTCrVqqU54UCdrr7ywnJevHY1+p89ydUl5b2Zqr2ZXtfpwrvMsEFVjxyFNEgR9tq4XwwROg==
+prismock@^1.33.3:
+  version "1.33.3"
+  resolved "https://registry.yarnpkg.com/prismock/-/prismock-1.33.3.tgz#dc43bb775d279982a6a3c0e570fb8e26db563368"
+  integrity sha512-4CqanOvgCklpF7L107O9t17e0vKezwl+J8Woq3E7jA0H5v0PfhqPaQ5y0d31Y/YSRRmz5/B3VwFQHSlWJDEyCQ==
   dependencies:
     "@paralleldrive/cuid2" "2.2.2"
     "@prisma/generator-helper" "5.17.0"
