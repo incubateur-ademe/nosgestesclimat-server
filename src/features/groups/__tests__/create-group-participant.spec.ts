@@ -264,7 +264,7 @@ describe('Given a NGC user', () => {
         })
 
         describe(`And incomplete simulation`, () => {
-          test('Then it sends a join email', async () => {
+          test('Then it sends a continuation email', async () => {
             const email = faker.internet.email().toLocaleLowerCase()
             const userId = faker.string.uuid()
             const payload: ParticipantInputCreateDto = {

@@ -134,7 +134,7 @@ describe('Given a NGC user', () => {
       })
     })
 
-    describe('And leaving his email And asking to sendEmail', () => {
+    describe('And leaving his/her email And asking to sendEmail', () => {
       describe('And finished simulation', () => {
         it(`Then it does send a creation email`, async () => {
           const payload = {
@@ -349,117 +349,119 @@ describe('Given a NGC user', () => {
       })
     })
 
-    describe('And finished simulation', () => {
-      it(`Then it does send a poll participation email`, async () => {
-        const payload = {
-          simulation: {
-            id: faker.string.uuid(),
-            progression: 1,
-            date: new Date(),
-            polls: [poll.slug],
-          },
-          email: faker.internet.email().toLocaleLowerCase(),
-          userId: faker.string.uuid(),
-        }
+    describe('And leaving his/her email', () => {
+      describe('And finished simulation', () => {
+        it(`Then it does send a poll participation email`, async () => {
+          const payload = {
+            simulation: {
+              id: faker.string.uuid(),
+              progression: 1,
+              date: new Date(),
+              polls: [poll.slug],
+            },
+            email: faker.internet.email().toLocaleLowerCase(),
+            userId: faker.string.uuid(),
+          }
 
-        const scope = nock(process.env.BREVO_URL!, {
-          reqheaders: {
-            'api-key': process.env.BREVO_API_KEY!,
-          },
-        })
-          .post('/v3/contacts', {
-            email: payload.email,
-            attributes: {
-              USER_ID: payload.userId,
-              LAST_SIMULATION_DATE: isoStringRegex,
-              ACTIONS_SELECTED_NUMBER: 0,
-              LAST_SIMULATION_BILAN_FOOTPRINT: '0',
-              LAST_SIMULATION_TRANSPORTS_FOOTPRINT: '0',
-              LAST_SIMULATION_ALIMENTATION_FOOTPRINT: '0',
-              LAST_SIMULATION_LOGEMENT_FOOTPRINT: '0',
-              LAST_SIMULATION_DIVERS_FOOTPRINT: '0',
-              LAST_SIMULATION_SERVICES_FOOTPRINT: '0',
-              LAST_SIMULATION_BILAN_WATER: '0',
+          const scope = nock(process.env.BREVO_URL!, {
+            reqheaders: {
+              'api-key': process.env.BREVO_API_KEY!,
             },
-            updateEnabled: true,
           })
-          .reply(200)
-          .post('/v3/contacts', {
-            email: organisationAdministrator.email,
-            attributes: {
-              LAST_POLL_PARTICIPANTS_NUMBER: 1,
-            },
-            updateEnabled: true,
-          })
-          .reply(200)
-          .post('/v3/smtp/email', {
-            to: [
-              {
-                name: payload.email,
-                email: payload.email,
+            .post('/v3/contacts', {
+              email: payload.email,
+              attributes: {
+                USER_ID: payload.userId,
+                LAST_SIMULATION_DATE: isoStringRegex,
+                ACTIONS_SELECTED_NUMBER: 0,
+                LAST_SIMULATION_BILAN_FOOTPRINT: '0',
+                LAST_SIMULATION_TRANSPORTS_FOOTPRINT: '0',
+                LAST_SIMULATION_ALIMENTATION_FOOTPRINT: '0',
+                LAST_SIMULATION_LOGEMENT_FOOTPRINT: '0',
+                LAST_SIMULATION_DIVERS_FOOTPRINT: '0',
+                LAST_SIMULATION_SERVICES_FOOTPRINT: '0',
+                LAST_SIMULATION_BILAN_WATER: '0',
               },
-            ],
-            templateId: 71,
-            params: {
-              ORGANISATION_NAME: organisation.name,
-              DETAILED_VIEW_URL: `https://nosgestesclimat.fr/organisations/${organisation.slug}/resultats-detailles?mtm_campaign=email-automatise&mtm_kwd=orga-invite-campagne`,
-            },
-          })
-          .reply(200)
+              updateEnabled: true,
+            })
+            .reply(200)
+            .post('/v3/contacts', {
+              email: organisationAdministrator.email,
+              attributes: {
+                LAST_POLL_PARTICIPANTS_NUMBER: 1,
+              },
+              updateEnabled: true,
+            })
+            .reply(200)
+            .post('/v3/smtp/email', {
+              to: [
+                {
+                  name: payload.email,
+                  email: payload.email,
+                },
+              ],
+              templateId: 71,
+              params: {
+                ORGANISATION_NAME: organisation.name,
+                DETAILED_VIEW_URL: `https://nosgestesclimat.fr/organisations/${organisation.slug}/resultats-detailles?mtm_campaign=email-automatise&mtm_kwd=orga-invite-campagne`,
+              },
+            })
+            .reply(200)
 
-        await agent.post(url).send(payload).expect(StatusCodes.OK)
+          await agent.post(url).send(payload).expect(StatusCodes.OK)
 
-        expect(scope.isDone()).toBeTruthy()
-      })
-    })
-
-    describe('And unfinished simulation', () => {
-      it(`Then it does not send a poll participation email`, async () => {
-        const payload = {
-          simulation: {
-            id: faker.string.uuid(),
-            progression: 0.5,
-            date: new Date(),
-            polls: [poll.slug],
-          },
-          email: faker.internet.email().toLocaleLowerCase(),
-          userId: faker.string.uuid(),
-        }
-
-        const scope = nock(process.env.BREVO_URL!, {
-          reqheaders: {
-            'api-key': process.env.BREVO_API_KEY!,
-          },
+          expect(scope.isDone()).toBeTruthy()
         })
-          .post('/v3/contacts', {
-            email: payload.email,
-            attributes: {
-              USER_ID: payload.userId,
-              LAST_SIMULATION_DATE: isoStringRegex,
-              ACTIONS_SELECTED_NUMBER: 0,
-              LAST_SIMULATION_BILAN_FOOTPRINT: '0',
-              LAST_SIMULATION_TRANSPORTS_FOOTPRINT: '0',
-              LAST_SIMULATION_ALIMENTATION_FOOTPRINT: '0',
-              LAST_SIMULATION_LOGEMENT_FOOTPRINT: '0',
-              LAST_SIMULATION_DIVERS_FOOTPRINT: '0',
-              LAST_SIMULATION_SERVICES_FOOTPRINT: '0',
-              LAST_SIMULATION_BILAN_WATER: '0',
-            },
-            updateEnabled: true,
-          })
-          .reply(200)
-          .post('/v3/contacts', {
-            email: organisationAdministrator.email,
-            attributes: {
-              LAST_POLL_PARTICIPANTS_NUMBER: 1,
-            },
-            updateEnabled: true,
-          })
-          .reply(200)
+      })
 
-        await agent.post(url).send(payload).expect(StatusCodes.OK)
+      describe('And unfinished simulation', () => {
+        it(`Then it does not send a poll participation email`, async () => {
+          const payload = {
+            simulation: {
+              id: faker.string.uuid(),
+              progression: 0.5,
+              date: new Date(),
+              polls: [poll.slug],
+            },
+            email: faker.internet.email().toLocaleLowerCase(),
+            userId: faker.string.uuid(),
+          }
 
-        expect(scope.isDone()).toBeTruthy()
+          const scope = nock(process.env.BREVO_URL!, {
+            reqheaders: {
+              'api-key': process.env.BREVO_API_KEY!,
+            },
+          })
+            .post('/v3/contacts', {
+              email: payload.email,
+              attributes: {
+                USER_ID: payload.userId,
+                LAST_SIMULATION_DATE: isoStringRegex,
+                ACTIONS_SELECTED_NUMBER: 0,
+                LAST_SIMULATION_BILAN_FOOTPRINT: '0',
+                LAST_SIMULATION_TRANSPORTS_FOOTPRINT: '0',
+                LAST_SIMULATION_ALIMENTATION_FOOTPRINT: '0',
+                LAST_SIMULATION_LOGEMENT_FOOTPRINT: '0',
+                LAST_SIMULATION_DIVERS_FOOTPRINT: '0',
+                LAST_SIMULATION_SERVICES_FOOTPRINT: '0',
+                LAST_SIMULATION_BILAN_WATER: '0',
+              },
+              updateEnabled: true,
+            })
+            .reply(200)
+            .post('/v3/contacts', {
+              email: organisationAdministrator.email,
+              attributes: {
+                LAST_POLL_PARTICIPANTS_NUMBER: 1,
+              },
+              updateEnabled: true,
+            })
+            .reply(200)
+
+          await agent.post(url).send(payload).expect(StatusCodes.OK)
+
+          expect(scope.isDone()).toBeTruthy()
+        })
       })
     })
   })
@@ -503,134 +505,136 @@ describe('Given a NGC user', () => {
 
     afterEach(() => Group.deleteMany())
 
-    describe('And finished simulation', () => {
-      it(`Then it does send a group participation email`, async () => {
-        const payload = {
-          simulation: {
-            id: faker.string.uuid(),
-            progression: 1,
-            date: new Date(),
-            groups: [group._id.toString()],
-          },
-          email: faker.internet.email().toLocaleLowerCase(),
-          name: faker.person.fullName(),
-          userId: faker.string.uuid(),
-        }
+    describe('And leaving his/her email', () => {
+      describe('And finished simulation', () => {
+        it(`Then it does send a group participation email`, async () => {
+          const payload = {
+            simulation: {
+              id: faker.string.uuid(),
+              progression: 1,
+              date: new Date(),
+              groups: [group._id.toString()],
+            },
+            email: faker.internet.email().toLocaleLowerCase(),
+            name: faker.person.fullName(),
+            userId: faker.string.uuid(),
+          }
 
-        const scope = nock(process.env.BREVO_URL!, {
-          reqheaders: {
-            'api-key': process.env.BREVO_API_KEY!,
-          },
-        })
-          .post('/v3/contacts', {
-            email: payload.email,
-            attributes: {
-              USER_ID: payload.userId,
-              LAST_SIMULATION_DATE: isoStringRegex,
-              ACTIONS_SELECTED_NUMBER: 0,
-              LAST_SIMULATION_BILAN_FOOTPRINT: '0',
-              LAST_SIMULATION_TRANSPORTS_FOOTPRINT: '0',
-              LAST_SIMULATION_ALIMENTATION_FOOTPRINT: '0',
-              LAST_SIMULATION_LOGEMENT_FOOTPRINT: '0',
-              LAST_SIMULATION_DIVERS_FOOTPRINT: '0',
-              LAST_SIMULATION_SERVICES_FOOTPRINT: '0',
-              LAST_SIMULATION_BILAN_WATER: '0',
+          const scope = nock(process.env.BREVO_URL!, {
+            reqheaders: {
+              'api-key': process.env.BREVO_API_KEY!,
             },
-            updateEnabled: true,
           })
-          .reply(200)
-          .post('/v3/contacts', {
-            email: groupAdministrator.email,
-            attributes: {
-              NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT: 1,
-              USER_ID: groupAdministrator.userId,
-            },
-            updateEnabled: true,
-          })
-          .reply(200)
-          .post('/v3/contacts', {
-            email: payload.email,
-            listIds: [30],
-            attributes: {
-              PRENOM: payload.name,
-              USER_ID: payload.userId,
-            },
-            updateEnabled: true,
-          })
-          .reply(200)
-          .post('/v3/smtp/email', {
-            to: [
-              {
-                name: payload.email,
-                email: payload.email,
+            .post('/v3/contacts', {
+              email: payload.email,
+              attributes: {
+                USER_ID: payload.userId,
+                LAST_SIMULATION_DATE: isoStringRegex,
+                ACTIONS_SELECTED_NUMBER: 0,
+                LAST_SIMULATION_BILAN_FOOTPRINT: '0',
+                LAST_SIMULATION_TRANSPORTS_FOOTPRINT: '0',
+                LAST_SIMULATION_ALIMENTATION_FOOTPRINT: '0',
+                LAST_SIMULATION_LOGEMENT_FOOTPRINT: '0',
+                LAST_SIMULATION_DIVERS_FOOTPRINT: '0',
+                LAST_SIMULATION_SERVICES_FOOTPRINT: '0',
+                LAST_SIMULATION_BILAN_WATER: '0',
               },
-            ],
-            templateId: 58,
-            params: {
-              GROUP_URL: `https://nosgestesclimat.fr/amis/resultats?groupId=${group._id}&mtm_campaign=email-automatise&mtm_kwd=groupe-invite-voir-classement`,
-              SHARE_URL: `https://nosgestesclimat.fr/amis/invitation?groupId=${group._id}&mtm_campaign=email-automatise&mtm_kwd=groupe-invite-url-partage`,
-              DELETE_URL: `https://nosgestesclimat.fr/amis/supprimer?groupId=${group._id}&userId=${payload.userId}&mtm_campaign=email-automatise&mtm_kwd=groupe-invite-delete`,
-              GROUP_NAME: group.name,
-              NAME: payload.name,
-            },
-          })
-          .reply(200)
+              updateEnabled: true,
+            })
+            .reply(200)
+            .post('/v3/contacts', {
+              email: groupAdministrator.email,
+              attributes: {
+                NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT: 1,
+                USER_ID: groupAdministrator.userId,
+              },
+              updateEnabled: true,
+            })
+            .reply(200)
+            .post('/v3/contacts', {
+              email: payload.email,
+              listIds: [30],
+              attributes: {
+                PRENOM: payload.name,
+                USER_ID: payload.userId,
+              },
+              updateEnabled: true,
+            })
+            .reply(200)
+            .post('/v3/smtp/email', {
+              to: [
+                {
+                  name: payload.email,
+                  email: payload.email,
+                },
+              ],
+              templateId: 58,
+              params: {
+                GROUP_URL: `https://nosgestesclimat.fr/amis/resultats?groupId=${group._id}&mtm_campaign=email-automatise&mtm_kwd=groupe-invite-voir-classement`,
+                SHARE_URL: `https://nosgestesclimat.fr/amis/invitation?groupId=${group._id}&mtm_campaign=email-automatise&mtm_kwd=groupe-invite-url-partage`,
+                DELETE_URL: `https://nosgestesclimat.fr/amis/supprimer?groupId=${group._id}&userId=${payload.userId}&mtm_campaign=email-automatise&mtm_kwd=groupe-invite-delete`,
+                GROUP_NAME: group.name,
+                NAME: payload.name,
+              },
+            })
+            .reply(200)
 
-        await agent.post(url).send(payload).expect(StatusCodes.OK)
+          await agent.post(url).send(payload).expect(StatusCodes.OK)
 
-        expect(scope.isDone()).toBeTruthy()
-      })
-    })
-
-    describe('And unfinished simulation', () => {
-      it(`Then it does not send a group participation email`, async () => {
-        const payload = {
-          simulation: {
-            id: faker.string.uuid(),
-            progression: 0.5,
-            date: new Date(),
-            groups: [group._id.toString()],
-          },
-          email: faker.internet.email().toLocaleLowerCase(),
-          name: faker.person.fullName(),
-          userId: faker.string.uuid(),
-        }
-
-        const scope = nock(process.env.BREVO_URL!, {
-          reqheaders: {
-            'api-key': process.env.BREVO_API_KEY!,
-          },
+          expect(scope.isDone()).toBeTruthy()
         })
-          .post('/v3/contacts', {
-            email: payload.email,
-            attributes: {
-              USER_ID: payload.userId,
-              LAST_SIMULATION_DATE: isoStringRegex,
-              ACTIONS_SELECTED_NUMBER: 0,
-              LAST_SIMULATION_BILAN_FOOTPRINT: '0',
-              LAST_SIMULATION_TRANSPORTS_FOOTPRINT: '0',
-              LAST_SIMULATION_ALIMENTATION_FOOTPRINT: '0',
-              LAST_SIMULATION_LOGEMENT_FOOTPRINT: '0',
-              LAST_SIMULATION_DIVERS_FOOTPRINT: '0',
-              LAST_SIMULATION_SERVICES_FOOTPRINT: '0',
-              LAST_SIMULATION_BILAN_WATER: '0',
-            },
-            updateEnabled: true,
-          })
-          .reply(200)
-          .post('/v3/contacts', {
-            email: groupAdministrator.email,
-            attributes: {
-              NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT: 1,
-              USER_ID: groupAdministrator.userId,
-            },
-            updateEnabled: true,
-          })
-          .reply(200)
+      })
 
-        await agent.post(url).send(payload).expect(StatusCodes.OK)
+      describe('And unfinished simulation', () => {
+        it(`Then it does not send a group participation email`, async () => {
+          const payload = {
+            simulation: {
+              id: faker.string.uuid(),
+              progression: 0.5,
+              date: new Date(),
+              groups: [group._id.toString()],
+            },
+            email: faker.internet.email().toLocaleLowerCase(),
+            name: faker.person.fullName(),
+            userId: faker.string.uuid(),
+          }
 
-        expect(scope.isDone()).toBeTruthy()
+          const scope = nock(process.env.BREVO_URL!, {
+            reqheaders: {
+              'api-key': process.env.BREVO_API_KEY!,
+            },
+          })
+            .post('/v3/contacts', {
+              email: payload.email,
+              attributes: {
+                USER_ID: payload.userId,
+                LAST_SIMULATION_DATE: isoStringRegex,
+                ACTIONS_SELECTED_NUMBER: 0,
+                LAST_SIMULATION_BILAN_FOOTPRINT: '0',
+                LAST_SIMULATION_TRANSPORTS_FOOTPRINT: '0',
+                LAST_SIMULATION_ALIMENTATION_FOOTPRINT: '0',
+                LAST_SIMULATION_LOGEMENT_FOOTPRINT: '0',
+                LAST_SIMULATION_DIVERS_FOOTPRINT: '0',
+                LAST_SIMULATION_SERVICES_FOOTPRINT: '0',
+                LAST_SIMULATION_BILAN_WATER: '0',
+              },
+              updateEnabled: true,
+            })
+            .reply(200)
+            .post('/v3/contacts', {
+              email: groupAdministrator.email,
+              attributes: {
+                NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT: 1,
+                USER_ID: groupAdministrator.userId,
+              },
+              updateEnabled: true,
+            })
+            .reply(200)
+
+          await agent.post(url).send(payload).expect(StatusCodes.OK)
+
+          expect(scope.isDone()).toBeTruthy()
+        })
       })
     })
   })
