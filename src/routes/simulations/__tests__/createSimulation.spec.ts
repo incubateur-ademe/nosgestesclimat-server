@@ -265,6 +265,32 @@ describe('Given a NGC user', () => {
         })
       })
     })
+
+    describe('And several requests are fired at the same time', () => {
+      it('Should work', async () => {
+        const payload = {
+          simulation: {
+            id: faker.string.uuid(),
+            date: new Date(),
+          },
+          userId: faker.string.uuid(),
+        }
+
+        const [
+          {
+            body: { updatedAt: _updatedAt1, ...body1 },
+          },
+          {
+            body: { updatedAt: _updatedAt2, ...body2 },
+          },
+        ] = await Promise.all([
+          agent.post(url).send(payload).expect(StatusCodes.OK),
+          agent.post(url).send(payload).expect(StatusCodes.OK),
+        ])
+
+        expect(body1).toEqual(body2)
+      })
+    })
   })
 
   describe('When he creates a simulation in a poll', () => {
