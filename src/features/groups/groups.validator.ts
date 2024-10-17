@@ -1,9 +1,7 @@
 import z from 'zod'
 import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail'
-import { SimulationParticipantCreateDto } from '../simulations/simulations.validator'
-import { UserParams } from '../users/users.validator'
 
-const GroupParams = z
+export const GroupParams = z
   .object({
     groupId: z.string(),
   })
@@ -11,11 +9,19 @@ const GroupParams = z
 
 export type GroupParams = z.infer<typeof GroupParams>
 
-const UserGroupParams = GroupParams.merge(UserParams)
+export const UserParams = z
+  .object({
+    userId: z.string().uuid(),
+  })
+  .strict()
+
+export type UserParams = z.infer<typeof UserParams>
+
+export const UserGroupParams = GroupParams.merge(UserParams)
 
 export type UserGroupParams = z.infer<typeof UserGroupParams>
 
-const UserGroupParticipantParams = UserGroupParams.merge(
+export const UserGroupParticipantParams = UserGroupParams.merge(
   z
     .object({
       participantId: z.string().uuid(),
@@ -29,7 +35,7 @@ export type UserGroupParticipantParams = z.infer<
 
 const GroupCreateParticipant = z
   .object({
-    simulation: SimulationParticipantCreateDto,
+    simulation: z.string().uuid(),
   })
   .strict()
 
@@ -49,7 +55,7 @@ const GroupCreateUser = z
 
 export type GroupCreateAdministrator = z.infer<typeof GroupCreateUser>
 
-export const GroupCreateDto = z
+const GroupCreateDto = z
   .object({
     name: z.string(),
     emoji: z.string(),
@@ -60,15 +66,13 @@ export const GroupCreateDto = z
 
 export type GroupCreateDto = z.infer<typeof GroupCreateDto>
 
-export type GroupCreateInputDto = z.input<typeof GroupCreateDto>
-
 export const GroupCreateValidator = {
   body: GroupCreateDto,
   params: z.object({}).strict().optional(),
   query: z.object({}).strict().optional(),
 }
 
-const GroupUpdateDto = GroupCreateDto.omit({
+export const GroupUpdateDto = GroupCreateDto.omit({
   administrator: true,
   participants: true,
 })
@@ -89,8 +93,6 @@ export const ParticipantCreateDto = GroupCreateUser.merge(
 
 export type ParticipantCreateDto = z.infer<typeof ParticipantCreateDto>
 
-export type ParticipantInputCreateDto = z.input<typeof ParticipantCreateDto>
-
 export const ParticipantCreateValidator = {
   body: ParticipantCreateDto,
   params: GroupParams,
@@ -103,7 +105,7 @@ export const ParticipantDeleteValidator = {
   query: z.object({}).strict().optional(),
 }
 
-const GroupsFetchQuery = z.object({
+export const GroupsFetchQuery = z.object({
   groupIds: z.array(z.string()).optional(),
 })
 

@@ -1,6 +1,6 @@
 {
   "name": "nosgestesclimat-server",
-  "version": "1.2.0",
+  "version": "1.1.3",
   "description": "The server part of the website nosgestesclimat.fr",
   "main": "./dist/index.js",
   "engines": {
@@ -34,7 +34,6 @@
     "@types/uuid": "^10.0.0",
     "apicache": "^1.6.3",
     "axios": "^1.6.5",
-    "axios-retry": "^4.5.0",
     "cors": "^2.8.5",
     "dayjs": "^1.11.10",
     "dotenv": "^16.0.3",
@@ -84,7 +83,7 @@
     "nock": "^13.5.4",
     "prettier": "^3.3.3",
     "prisma": "^5.18.0",
-    "prismock": "^1.33.3",
+    "prismock": "^1.33.1",
     "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"

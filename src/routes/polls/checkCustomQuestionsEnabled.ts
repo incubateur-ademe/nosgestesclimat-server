@@ -1,8 +1,8 @@
 import type { Request, Response } from 'express'
 import express from 'express'
-import { config } from '../../config'
 import { Organisation } from '../../schemas/OrganisationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
+import { config } from '../../config'
 
 const router = express.Router()
 
@@ -30,7 +30,7 @@ router
 
       // Verify if the organisation is authorised to use custom questions
       if (
-        config.organisationIdsWithCustomQuestionsEnabled.has(
+        config.organisationIdsWithCustomQuestionsEnabled?.includes(
           organisationFound._id.toString()
         )
       ) {
@@ -43,7 +43,4 @@ router
     }
   })
 
-/**
- * @deprecated should use features/organisations instead
- */
 export default router

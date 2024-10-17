@@ -22,7 +22,11 @@ export const createSimulation = async ({
   const name = faker.person.fullName()
   const userId = faker.string.uuid()
 
-  nock(process.env.BREVO_URL!).post('/v3/contacts').reply(200)
+  nock(process.env.BREVO_URL!)
+    .post(`/v3/contacts`)
+    .reply(200)
+    .post(`/v3/smtp/email`)
+    .reply(200)
 
   await agent.post(CREATE_SIMULATION_ROUTE).send({
     simulation: {

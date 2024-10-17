@@ -10,7 +10,6 @@ export const config = {
     process.env.NODE_ENV,
     'development' as 'development' | 'production' | 'test'
   ),
-  origin: ensureEnvVar(process.env.ORIGIN, 'https://nosgestesclimat.fr'),
   get app() {
     return {
       get port() {
@@ -28,10 +27,6 @@ export const config = {
     },
   },
   thirdParty: {
-    agir: {
-      url: ensureEnvVar(process.env.AGIR_URL, ''),
-      apiKey: ensureEnvVar(process.env.AGIR_API_KEY, ''),
-    },
     brevo: {
       url: ensureEnvVar(process.env.BREVO_URL, 'https://api.brevo.com'),
       apiKey: ensureEnvVar(process.env.BREVO_API_KEY, ''),
@@ -52,12 +47,10 @@ export const config = {
     clientId: ensureEnvVar(process.env.CONNECT_CLIENT_ID, ''),
     clientSecret: ensureEnvVar(process.env.CONNECT_CLIENT_SECRET, ''),
   },
-  organisationIdsWithCustomQuestionsEnabled: new Set(
-    ensureEnvVar(
-      process.env.ORGANISATION_IDS_WITH_CUSTOM_QUESTIONS_ENABLED,
-      ''
-    ).split(',')
-  ),
+  organisationIdsWithCustomQuestionsEnabled: ensureEnvVar(
+    process.env.ORGANISATION_IDS_WITH_CUSTOM_QUESTIONS_ENABLED,
+    ''
+  ).split(','),
 }
 
 export const origin =

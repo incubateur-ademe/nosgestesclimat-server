@@ -121,7 +121,6 @@ model Poll {
   defaultAdditionalQuestions   PollDefaultAdditionalQuestion[]
   organisationId               String
   organisation                 Organisation                    @relation(fields: [organisationId], onDelete: Cascade, references: [id])
-  simulations                  SimulationPoll[]
   createdAt                    DateTime                        @default(now())
   updatedAt                    DateTime                        @updatedAt
 }
@@ -159,53 +158,6 @@ model QuizzAnswer {
   @@unique([simulationId, answer])
 }
 
-model Simulation {
-  id                         String                               @id @default(uuid()) @db.Uuid
-  date                       DateTime
-  progression                Float                                @db.Real
-  savedViaEmail              Boolean
-  computedResults            Json
-  actionChoices              Json
-  situation                  Json
-  foldedSteps                Json[]
-  additionalQuestionsAnswers SimulationAdditionalQuestionAnswer[]
-  polls                      SimulationPoll[]
-  userId                     String                               @db.Uuid
-  user                       User                                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userEmail                  String?
-  verifiedUser               VerifiedUser?                        @relation(fields: [userEmail], references: [email], onDelete: Cascade)
-  createdAt                  DateTime                             @default(now())
-  updatedAt                  DateTime                             @updatedAt
-}
-
-enum SimulationAdditionalQuestionAnswerType {
-  custom
-  default
-}
-
-model SimulationAdditionalQuestionAnswer {
-  id           String                                 @id @default(uuid()) @db.Uuid
-  type         SimulationAdditionalQuestionAnswerType
-  simulationId String                                 @db.Uuid
-  simulation   Simulation                             @relation(fields: [simulationId], references: [id], onDelete: Cascade)
-  key          String
-  answer       String
-  createdAt    DateTime                               @default(now())
-  updatedAt    DateTime                               @updatedAt
-}
-
-model SimulationPoll {
-  id           String     @id @default(uuid()) @db.Uuid
-  pollId       String
-  poll         Poll       @relation(fields: [pollId], onDelete: Cascade, references: [id])
-  simulationId String     @db.Uuid
-  simulation   Simulation @relation(fields: [simulationId], onDelete: Cascade, references: [id])
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-
-  @@unique([simulationId, pollId])
-}
-
 model Survey {
   id          String   @id @default(cuid())
   name        String   @unique
@@ -220,7 +172,6 @@ model User {
   email         String?
   administrator GroupAdministrator[]
   member        GroupParticipant[]
-  simulations   Simulation[]
   createdAt     DateTime             @default(now())
   updatedAt     DateTime             @updatedAt
 }
@@ -243,7 +194,6 @@ model VerifiedUser {
   position                 String?
   optedInForCommunications Boolean                     @default(false)
   administrator            OrganisationAdministrator[]
-  simulations              Simulation[]
   createdAt                DateTime                    @default(now())
   updatedAt                DateTime                    @updatedAt
 }

@@ -1,11 +1,10 @@
 import express from 'express'
 
-import type { VerifiedUser } from '@prisma/client'
 import type { HydratedDocument } from 'mongoose'
-import { sendOrganisationCreatedEmail } from '../../adapters/brevo/client'
-import { addOrUpdateContact } from '../../adapters/connect/client'
 import { handleAddAttributes } from '../../helpers/brevo/handleAddAttributes'
+import { addOrUpdateContactToConnect } from '../../helpers/connect/addOrUpdateContactToConnect'
 import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
+import { sendEmail } from '../../helpers/email/sendEmail'
 import { findUniqueOrgaSlug } from '../../helpers/organisations/findUniqueOrgaSlug'
 import { handleUpdateOrganisation } from '../../helpers/organisations/handleUpdateOrganisation'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
@@ -19,6 +18,11 @@ import {
   ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER,
   ATTRIBUTE_ORGANISATION_NAME,
   ATTRIBUTE_ORGANISATION_SLUG,
+  MATOMO_CAMPAIGN_EMAIL_AUTOMATISE,
+  MATOMO_CAMPAIGN_KEY,
+  MATOMO_KEYWORD_KEY,
+  MATOMO_KEYWORDS,
+  TEMPLATE_ID_ORGANISATION_CREATED,
 } from './../../constants/brevo'
 
 const router = express.Router()
@@ -96,27 +100,30 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
     }
 
     if (sendCreationEmail) {
+      const templateId = TEMPLATE_ID_ORGANISATION_CREATED
+
+      const dashBoardUrl = new URL(
+        `${origin}/organisations/${organisationUpdated?.slug}`
+      )
+      const { searchParams } = dashBoardUrl
+      searchParams.append(MATOMO_CAMPAIGN_KEY, MATOMO_CAMPAIGN_EMAIL_AUTOMATISE)
+      searchParams.append(MATOMO_KEYWORD_KEY, MATOMO_KEYWORDS[templateId])
+
       const attributes = handleAddAttributes({
         name: administratorName,
         optin: hasOptedInForCommunications,
         otherAttributes,
       })
 
-      await createOrUpdateContact({
+      await sendEmail({
         email,
-        otherAttributes: attributes,
-      })
-
-      await sendOrganisationCreatedEmail({
-        origin,
-        administrator: {
-          name: administratorName,
-          email,
+        params: {
+          ADMINISTRATOR_NAME: administratorName,
+          ORGANISATION_NAME: organisationUpdated?.name ?? '',
+          DASHBOARD_URL: dashBoardUrl.toString(),
         },
-        organisation: {
-          name: organisationUpdated?.name ?? '',
-          slug: organisationUpdated!.slug!,
-        },
+        templateId,
+        attributes,
       })
     } else if (administratorName || hasOptedInForCommunications !== undefined) {
       await createOrUpdateContact({
@@ -127,11 +134,11 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
       })
     }
 
-    addOrUpdateContact({
+    addOrUpdateContactToConnect({
       email,
       name: administratorName,
       position,
-    } as VerifiedUser)
+    })
 
     setSuccessfulJSONResponse(res)
 
@@ -142,7 +149,4 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
   }
 })
 
-/**
- * @deprecated should use features/organisations instead
- */
 export default router

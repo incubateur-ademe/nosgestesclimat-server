@@ -1,5 +1,6 @@
-import { generateVerificationCodeAndExpiration } from '../../features/authentication/authentication.service'
+import dayjs from 'dayjs'
 import { VerificationCode } from '../../schemas/VerificationCodeSchema'
+import { generateRandomNumberWithLength } from '../../utils/generateRandomNumberWithLength'
 import { sendVerificationCodeEmail } from '../email/sendVerificationCodeEmail'
 
 type Props = {
@@ -10,11 +11,13 @@ export async function handleSendVerificationCodeAndReturnExpirationDate({
   email,
 }: Props) {
   // Generate a random code
-  const { code, expirationDate } = generateVerificationCodeAndExpiration()
+  const verificationCode = generateRandomNumberWithLength(6)
+
+  const expirationDate = dayjs().add(1, 'hour').toDate()
 
   // Create a new verification code
   const verificationCodeCreated = new VerificationCode({
-    code,
+    code: verificationCode,
     expirationDate,
     email,
   })
@@ -24,7 +27,7 @@ export async function handleSendVerificationCodeAndReturnExpirationDate({
   // Send the code by email
   await sendVerificationCodeEmail({
     email,
-    verificationCode: code,
+    verificationCode,
   })
 
   return verificationCodeSaved

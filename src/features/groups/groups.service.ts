@@ -1,13 +1,9 @@
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
 import { ForbiddenException } from '../../core/errors/ForbiddenException'
-import { EventBus } from '../../core/event-bus/event-bus'
 import {
   isPrismaErrorForeignKeyConstraintFailed,
   isPrismaErrorNotFound,
 } from '../../core/typeguards/isPrismaError'
-import { SimulationUpsertedEvent } from '../simulations/events/SimulationUpserted.event'
-import type { UserParams } from '../users/users.validator'
-import { GroupCreatedEvent } from './events/GroupCreated.event'
 import {
   createGroupAndUser,
   createParticipantAndUser,
@@ -27,6 +23,7 @@ import type {
   ParticipantCreateDto,
   UserGroupParams,
   UserGroupParticipantParams,
+  UserParams,
 } from './groups.validator'
 
 /**
@@ -54,22 +51,22 @@ const groupToDto = (
 const participantToDto = (
   {
     id,
-    simulation,
+    simulationId,
     user: { id: userId, ...rest },
-  }: Omit<Awaited<ReturnType<typeof createParticipantAndUser>>, 'group'>,
+  }: Awaited<ReturnType<typeof createParticipantAndUser>>,
   connectedUser: string
 ) => ({
   ...(userId === connectedUser
     ? {
         id,
-        simulation,
+        simulation: simulationId,
         userId,
         ...rest,
       }
     : {
         id,
         name: rest.name,
-        simulation,
+        simulation: simulationId,
       }),
 })
 
@@ -95,23 +92,8 @@ const findGroupParticipant = async (groupId: string) => {
   }
 }
 
-export const createGroup = async ({
-  groupDto,
-  origin,
-}: {
-  groupDto: GroupCreateDto
-  origin: string
-}) => {
+export const createGroup = async (groupDto: GroupCreateDto) => {
   const group = await createGroupAndUser(groupDto)
-
-  const groupCreatedEvent = new GroupCreatedEvent({
-    group,
-    origin,
-  })
-
-  EventBus.emit(groupCreatedEvent)
-
-  await EventBus.once(groupCreatedEvent)
 
   return groupToDto(group, groupDto.administrator.userId)
 }
@@ -132,30 +114,12 @@ export const updateGroup = async (
   }
 }
 
-export const createParticipant = async ({
-  origin,
-  params,
-  participantDto,
-}: {
-  origin: string
-  params: GroupParams
+export const createParticipant = async (
+  params: GroupParams,
   participantDto: ParticipantCreateDto
-}) => {
+) => {
   try {
     const participant = await createParticipantAndUser(params, participantDto)
-    const { group, user } = participant
-    const administrator = group.administrator!.user
-
-    const simulationUpsertedEvent = new SimulationUpsertedEvent({
-      administrator,
-      origin,
-      group,
-      user,
-    })
-
-    EventBus.emit(simulationUpsertedEvent)
-
-    await EventBus.once(simulationUpsertedEvent)
 
     return participantToDto(participant, participantDto.userId)
   } catch (e) {

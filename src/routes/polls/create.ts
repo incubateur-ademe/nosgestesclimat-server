@@ -81,7 +81,4 @@ router
     }
   })
 
-/**
- * @deprecated should use features/organisations instead
- */
 export default router
