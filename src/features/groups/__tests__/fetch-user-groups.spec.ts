@@ -4,7 +4,6 @@ import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
 import logger from '../../../logger'
-import { getSimulationPayload } from '../../simulations/__tests__/fixtures/simulations.fixtures'
 import {
   createGroup,
   FETCH_USER_GROUPS_ROUTE,
@@ -15,21 +14,20 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = FETCH_USER_GROUPS_ROUTE
 
-  afterEach(() =>
-    Promise.all([prisma.group.deleteMany(), prisma.user.deleteMany()])
-  )
+  // Fixes a bug in prismock
+  afterEach(() => prisma.group.deleteMany())
 
   describe('When fetching his groups', () => {
     describe('And invalid userId', () => {
-      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent
           .get(url.replace(':userId', faker.string.alpha(34)))
           .expect(StatusCodes.BAD_REQUEST)
       })
     })
 
-    describe('And no group does exist', () => {
-      test(`Then it returns a ${StatusCodes.OK} response with an empty list`, async () => {
+    describe('And no data', () => {
+      test(`Then it should return a ${StatusCodes.OK} response with an empty list`, async () => {
         const response = await agent
           .get(url.replace(':userId', faker.string.uuid()))
           .expect(StatusCodes.OK)
@@ -38,7 +36,7 @@ describe('Given a NGC user', () => {
       })
     })
 
-    describe('And a group does exist', () => {
+    describe('And a group exists', () => {
       let group: Awaited<ReturnType<typeof createGroup>>
       let userId: string
 
@@ -49,7 +47,7 @@ describe('Given a NGC user', () => {
         } = group)
       })
 
-      test(`Then it returns a ${StatusCodes.OK} response with a list containing the group`, async () => {
+      test(`Then it should return a ${StatusCodes.OK} response with a list containing the group`, async () => {
         const response = await agent
           .get(url.replace(':userId', userId))
           .expect(StatusCodes.OK)
@@ -58,22 +56,22 @@ describe('Given a NGC user', () => {
       })
     })
 
-    describe('And multiple groups do exist', () => {
+    describe('And multiple groups exist', () => {
       let group1: Awaited<ReturnType<typeof createGroup>>
       let user1Id: string
-      let simulationUser1: ReturnType<typeof getSimulationPayload>
+      let simulationUser1Id: string
       let participant1Group1Id: string
       let participant2Group1Id: string
       let group2: Awaited<ReturnType<typeof createGroup>>
       let user2Id: string
-      let simulationUser2: ReturnType<typeof getSimulationPayload>
+      let simulationUser2Id: string
       let participant1Group2Id: string
       let participant2Group2Id: string
 
       beforeEach(async () => {
         // User 1 group
         user1Id = faker.string.uuid()
-        simulationUser1 = getSimulationPayload()
+        simulationUser1Id = faker.string.uuid()
         group1 = await createGroup({
           agent,
           group: {
@@ -82,7 +80,7 @@ describe('Given a NGC user', () => {
               name: faker.person.fullName(),
               email: faker.internet.email(),
             },
-            participants: [{ simulation: simulationUser1 }],
+            participants: [{ simulation: simulationUser1Id }],
           },
         })
         ;({
@@ -92,13 +90,13 @@ describe('Given a NGC user', () => {
         user2Id = faker.string.uuid()
 
         // User 2 joins user 1 group
-        simulationUser2 = getSimulationPayload()
+        simulationUser2Id = faker.string.uuid()
         ;({ id: participant2Group1Id } = await joinGroup({
           agent,
           groupId: group1.id,
           participant: {
             userId: user2Id,
-            simulation: simulationUser2,
+            simulation: simulationUser2Id,
           },
         }))
 
@@ -111,7 +109,7 @@ describe('Given a NGC user', () => {
               name: faker.person.fullName(),
               email: faker.internet.email(),
             },
-            participants: [{ simulation: simulationUser2 }],
+            participants: [{ simulation: simulationUser2Id }],
           },
         })
         ;({
@@ -125,12 +123,12 @@ describe('Given a NGC user', () => {
           participant: {
             userId: user1Id,
             name: group1.administrator.name,
-            simulation: simulationUser1,
+            simulation: simulationUser1Id,
           },
         }))
-      }, 10000)
+      })
 
-      test(`Then it returns a ${StatusCodes.OK} response with a list containing the groups`, async () => {
+      test(`Then it should return a ${StatusCodes.OK} response with a list containing the groups`, async () => {
         const response = await agent
           .get(url.replace(':userId', user1Id))
           .expect(StatusCodes.OK)
@@ -146,32 +144,12 @@ describe('Given a NGC user', () => {
                 ...group1.administrator,
                 id: participant1Group1Id,
                 userId: group1.administrator.id,
-                simulation: {
-                  ...simulationUser1,
-                  date: expect.any(String),
-                  createdAt: expect.any(String),
-                  updatedAt: null,
-                  polls: [],
-                  foldedSteps: [],
-                  actionChoices: {},
-                  savedViaEmail: false,
-                  additionalQuestionsAnswers: [],
-                },
+                simulation: simulationUser1Id,
               },
               {
                 id: participant2Group1Id,
                 name: group2.administrator.name,
-                simulation: {
-                  ...simulationUser2,
-                  date: expect.any(String),
-                  createdAt: expect.any(String),
-                  updatedAt: null,
-                  polls: [],
-                  foldedSteps: [],
-                  actionChoices: {},
-                  savedViaEmail: false,
-                  additionalQuestionsAnswers: [],
-                },
+                simulation: simulationUser2Id,
               },
             ],
             createdAt: expect.any(String),
@@ -188,33 +166,13 @@ describe('Given a NGC user', () => {
               {
                 id: participant2Group2Id,
                 name: group2.administrator.name,
-                simulation: {
-                  ...simulationUser2,
-                  date: expect.any(String),
-                  createdAt: expect.any(String),
-                  updatedAt: null,
-                  polls: [],
-                  foldedSteps: [],
-                  actionChoices: {},
-                  savedViaEmail: false,
-                  additionalQuestionsAnswers: [],
-                },
+                simulation: simulationUser2Id,
               },
               {
                 ...group1.administrator,
                 id: participant1Group2Id,
                 userId: group1.administrator.id,
-                simulation: {
-                  ...simulationUser1,
-                  date: expect.any(String),
-                  createdAt: expect.any(String),
-                  updatedAt: null,
-                  polls: [],
-                  foldedSteps: [],
-                  actionChoices: {},
-                  savedViaEmail: false,
-                  additionalQuestionsAnswers: [],
-                },
+                simulation: simulationUser1Id,
               },
             ],
             createdAt: expect.any(String),
@@ -224,7 +182,7 @@ describe('Given a NGC user', () => {
       })
 
       describe(`And filtering the list by groupIds`, () => {
-        test(`Then it returns a ${StatusCodes.OK} response with a list containing the filtered groups`, async () => {
+        test(`Then it should return a ${StatusCodes.OK} response with a list containing the filtered groups`, async () => {
           const response = await agent
             .get(url.replace(':userId', user1Id))
             .query({
@@ -243,32 +201,12 @@ describe('Given a NGC user', () => {
                   ...group1.administrator,
                   id: participant1Group1Id,
                   userId: group1.administrator.id,
-                  simulation: {
-                    ...simulationUser1,
-                    date: expect.any(String),
-                    createdAt: expect.any(String),
-                    updatedAt: null,
-                    polls: [],
-                    foldedSteps: [],
-                    actionChoices: {},
-                    savedViaEmail: false,
-                    additionalQuestionsAnswers: [],
-                  },
+                  simulation: simulationUser1Id,
                 },
                 {
                   id: participant2Group1Id,
                   name: group2.administrator.name,
-                  simulation: {
-                    ...simulationUser2,
-                    date: expect.any(String),
-                    createdAt: expect.any(String),
-                    updatedAt: null,
-                    polls: [],
-                    foldedSteps: [],
-                    actionChoices: {},
-                    savedViaEmail: false,
-                    additionalQuestionsAnswers: [],
-                  },
+                  simulation: simulationUser2Id,
                 },
               ],
               createdAt: expect.any(String),
@@ -288,13 +226,13 @@ describe('Given a NGC user', () => {
           .mockRejectedValueOnce(databaseError)
       })
 
-      test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
+      test(`Then it should return a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
         await agent
           .get(url.replace(':userId', faker.string.uuid()))
           .expect(StatusCodes.INTERNAL_SERVER_ERROR)
       })
 
-      test(`Then it logs the exception`, async () => {
+      test(`Then it should log the exception`, async () => {
         await agent
           .get(url.replace(':userId', faker.string.uuid()))
           .expect(StatusCodes.INTERNAL_SERVER_ERROR)

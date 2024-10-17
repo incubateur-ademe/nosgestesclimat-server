@@ -1,7 +1,8 @@
+jest.mock('../../../utils/generateRandomNumberWithLength')
+
 import { faker } from '@faker-js/faker'
 import nock from 'nock'
 import supertest from 'supertest'
-import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
 import {
   ATTRIBUTE_IS_ORGANISATION_ADMIN,
@@ -28,13 +29,6 @@ describe(`Given a validated NGC user organisation`, () => {
     validatedOrganisationFixture = await validateOrganisation(request)
   })
 
-  afterEach(() =>
-    Promise.all([
-      prisma.organisation.deleteMany(),
-      prisma.verifiedUser.deleteMany(),
-    ])
-  )
-
   describe(`When the administator enters the last infos`, () => {
     let scope: nock.Scope
 
@@ -45,8 +39,9 @@ describe(`Given a validated NGC user organisation`, () => {
       const administratorName = faker.person.fullName()
 
       scope = nock(process.env.BREVO_URL!)
-        .post('/v3/contacts', {
+        .post(`/v3/contacts`, {
           email,
+          updateEnabled: true,
           attributes: {
             [ATTRIBUTE_IS_ORGANISATION_ADMIN]: true,
             [ATTRIBUTE_ORGANISATION_NAME]: name,
@@ -55,10 +50,9 @@ describe(`Given a validated NGC user organisation`, () => {
             [ATTRIBUTE_PRENOM]: administratorName,
             [ATTRIBUTE_OPT_IN]: false,
           },
-          updateEnabled: true,
         })
         .reply(200)
-        .post('/v3/smtp/email', {
+        .post(`/v3/smtp/email`, {
           to: [
             {
               name: email,
@@ -74,7 +68,7 @@ describe(`Given a validated NGC user organisation`, () => {
         })
         .reply(200)
 
-      nock(process.env.CONNECT_URL!).post(`/api/v1/personnes`).reply(200)
+      nock(process.env.CONNECT_URL!).post(`/`).reply(200)
 
       await request
         .post(url)

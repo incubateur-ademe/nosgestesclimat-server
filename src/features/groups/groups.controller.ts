@@ -1,12 +1,9 @@
 import express from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { validateRequest } from 'zod-express-middleware'
-import { config } from '../../config'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
 import { ForbiddenException } from '../../core/errors/ForbiddenException'
-import { EventBus } from '../../core/event-bus/event-bus'
 import logger from '../../logger'
-import { GroupCreatedEvent } from './events/GroupCreated.event'
 import {
   createGroup,
   createParticipant,
@@ -17,21 +14,16 @@ import {
   updateGroup,
 } from './groups.service'
 import {
-  GroupCreateDto,
   GroupCreateValidator,
   GroupDeleteValidator,
   GroupFetchValidator,
   GroupsFetchValidator,
   GroupUpdateValidator,
-  ParticipantCreateDto,
   ParticipantCreateValidator,
   ParticipantDeleteValidator,
 } from './groups.validator'
-import { sendGroupCreated } from './handlers/send-group-created'
 
 const router = express.Router()
-
-EventBus.on(GroupCreatedEvent, sendGroupCreated)
 
 /**
  * Creates a new group
@@ -40,10 +32,7 @@ router
   .route('/v1/')
   .post(validateRequest(GroupCreateValidator), async (req, res) => {
     try {
-      const group = await createGroup({
-        groupDto: GroupCreateDto.parse(req.body), // default values are not set in middleware
-        origin: req.get('origin') || config.origin,
-      })
+      const group = await createGroup(req.body)
 
       return res.status(StatusCodes.CREATED).json(group)
     } catch (err) {
@@ -81,11 +70,7 @@ router
   .route('/v1/:groupId/participants')
   .post(validateRequest(ParticipantCreateValidator), async (req, res) => {
     try {
-      const participant = await createParticipant({
-        params: req.params,
-        origin: req.get('origin') || config.origin,
-        participantDto: ParticipantCreateDto.parse(req.body), // default values are not set in middleware
-      })
+      const participant = await createParticipant(req.params, req.body)
 
       return res.status(StatusCodes.CREATED).json(participant)
     } catch (err) {

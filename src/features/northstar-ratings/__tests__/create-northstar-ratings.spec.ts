@@ -13,17 +13,15 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = '/northstar-ratings/v1'
 
-  afterEach(() => prisma.northstarRating.deleteMany())
-
   describe('When creating a northstar rating', () => {
     describe('And no data provided', () => {
-      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent.post(url).expect(StatusCodes.BAD_REQUEST)
       })
     })
 
     describe('And invalid simulationId', () => {
-      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent
           .post(url)
           .send({
@@ -36,7 +34,7 @@ describe('Given a NGC user', () => {
     })
 
     describe('And invalid value', () => {
-      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent
           .post(url)
           .send({
@@ -49,7 +47,7 @@ describe('Given a NGC user', () => {
     })
 
     describe('And invalid type', () => {
-      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent
           .post(url)
           .send({
@@ -61,7 +59,7 @@ describe('Given a NGC user', () => {
       })
     })
 
-    test(`Then it returns a ${StatusCodes.CREATED} response`, async () => {
+    test(`It should return a ${StatusCodes.CREATED} response`, async () => {
       const payload = {
         simulationId: faker.string.uuid(),
         value: 5,
@@ -81,7 +79,7 @@ describe('Given a NGC user', () => {
       })
     })
 
-    test('Then it stores a northstar rating in database', async () => {
+    test('It should store a northstar rating in database', async () => {
       const payload: NorthstarRatingCreateDto = {
         simulationId: faker.string.uuid(),
         value: 5,
@@ -113,7 +111,7 @@ describe('Given a NGC user', () => {
           .mockRejectedValueOnce(databaseError)
       })
 
-      test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
+      test(`Then it should return a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
         await agent
           .post(url)
           .send({
@@ -124,7 +122,7 @@ describe('Given a NGC user', () => {
           .expect(StatusCodes.INTERNAL_SERVER_ERROR)
       })
 
-      test(`Then it logs the exception`, async () => {
+      test(`Then it should log the exception`, async () => {
         await agent.post(url).send({
           simulationId: faker.string.uuid(),
           value: 5,

@@ -1,8 +1,10 @@
-import mongoose from 'mongoose'
 import supertest from 'supertest'
-import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
-import { Simulation } from '../../../schemas/SimulationSchema'
+import {
+  Simulation,
+  type LeanSimulationType,
+} from '../../../schemas/SimulationSchema'
+import type { ModelToDto } from '../../../types/types'
 import {
   createSimulation,
   FETCH_SIMULATION_ROUTE,
@@ -13,61 +15,71 @@ describe('Given a NGC user', () => {
   const url = FETCH_SIMULATION_ROUTE
   let simulationId: string
 
-  afterEach(() => prisma.user.deleteMany())
-
-  describe('When he creates a simulation', () => {
+  describe('When he creates a simulation without computedResults', () => {
     beforeEach(async () => {
       ;({ simulationId } = await createSimulation({ agent }))
     })
 
-    it('Then it stores a simulation in mongo', async () => {
-      const simulation = await Simulation.findOne({
-        id: simulationId,
-      }).lean()
-
-      expect(simulation).toEqual({
-        __v: expect.any(Number),
-        _id: expect.any(mongoose.Types.ObjectId),
-        actionChoices: {},
-        createdAt: expect.any(Date),
-        customAdditionalQuestionsAnswers: {},
-        date: expect.any(Date),
-        defaultAdditionalQuestionsAnswers: {},
-        foldedSteps: [],
-        groups: [],
-        id: simulationId,
-        polls: [],
-        situation: {},
-        updatedAt: expect.any(Date),
-        user: expect.any(mongoose.Types.ObjectId),
-      })
-    })
-
-    it('Then it stores a simulation in postgres', async () => {
-      const simulation = await prisma.simulation.findUnique({
-        where: {
+    it('Then it should not store computedResults', async () => {
+      const simulation = await Simulation.findOne(
+        {
           id: simulationId,
         },
-      })
+        { computedResults: true }
+      )
 
-      // dates are not instance of Date due to jest
-      expect(simulation).toEqual({
-        actionChoices: {},
-        computedResults: null,
-        createdAt: expect.anything(),
-        date: expect.anything(),
-        foldedSteps: [],
-        id: simulationId,
-        progression: null,
-        savedViaEmail: false,
-        situation: {},
-        updatedAt: null,
-        userEmail: null,
-        userId: expect.any(String),
-      })
+      expect(simulation!.computedResults).toBeUndefined()
     })
 
-    it('Then he is able to get it again', async () => {
+    describe(`And he recovers it`, () => {
+      it('Then it should evaluate and store computedResults', async () => {
+        const { body: simulationDto } = await agent.post(url).send({
+          simulationId,
+        })
+
+        const simulation = await Simulation.findOne(
+          {
+            id: simulationId,
+          },
+          { computedResults: true }
+        )
+
+        expect(simulation!.computedResults).not.toBeUndefined()
+        expect(simulationDto).toEqual({
+          __v: expect.any(Number),
+          _id: expect.any(String),
+          id: simulationId,
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+          computedResults: {
+            carbone: {
+              bilan: expect.any(Number),
+              categories: expect.any(Object),
+            },
+          },
+          date: expect.any(String),
+          foldedSteps: [],
+          groups: [],
+          polls: [],
+          user: expect.any(String),
+        })
+      })
+    })
+  })
+
+  describe('When he creates a simulation without carbone or eau metric in computedResults', () => {
+    beforeEach(async () => {
+      ;({ simulationId } = await createSimulation({
+        agent,
+        simulation: {
+          computedResults: {
+            bilan: 3,
+          } as unknown as ModelToDto<LeanSimulationType['computedResults']>,
+        },
+      }))
+    })
+
+    it('Then it should store computedResults in carbone metric', async () => {
       const { body: simulation } = await agent.post(url).send({
         simulationId,
       })
@@ -83,6 +95,56 @@ describe('Given a NGC user', () => {
         groups: [],
         polls: [],
         user: expect.any(String),
+        computedResults: {
+          carbone: {
+            bilan: 3,
+          },
+        },
+      })
+    })
+  })
+
+  describe('When he creates a simulation with carbone and eau metric in computedResults', () => {
+    beforeEach(async () => {
+      ;({ simulationId } = await createSimulation({
+        agent,
+        simulation: {
+          computedResults: {
+            carbone: {
+              bilan: 5,
+            },
+            eau: {
+              bilan: 3,
+            },
+          },
+        },
+      }))
+    })
+
+    it('Then it should store computedResults untouched', async () => {
+      const { body: simulation } = await agent.post(url).send({
+        simulationId,
+      })
+
+      expect(simulation).toEqual({
+        __v: expect.any(Number),
+        _id: expect.any(String),
+        id: simulationId,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        date: expect.any(String),
+        foldedSteps: [],
+        groups: [],
+        polls: [],
+        user: expect.any(String),
+        computedResults: {
+          carbone: {
+            bilan: 5,
+          },
+          eau: {
+            bilan: 3,
+          },
+        },
       })
     })
   })

@@ -1,13 +1,10 @@
+import { randomUUID } from 'crypto'
 import { prisma } from '../../adapters/prisma/client'
-import {
-  createParticipantSimulation,
-  fetchParticipantSimulation,
-} from '../simulations/simulations.repository'
-import type { UserParams } from '../users/users.validator'
 import type {
   GroupParams,
   GroupsFetchQuery,
   ParticipantCreateDto,
+  UserParams,
 } from './groups.validator'
 import {
   type GroupCreateDto,
@@ -31,7 +28,7 @@ const defaultParticipantSelection = {
   simulationId: true,
 }
 
-const groupSelectionWithoutParticipants = {
+const defaultGroupSelection = {
   id: true,
   name: true,
   emoji: true,
@@ -40,36 +37,12 @@ const groupSelectionWithoutParticipants = {
       user: defaultUserSelection,
     },
   },
-  updatedAt: true,
-  createdAt: true,
-}
-
-const defaultGroupSelection = {
-  ...groupSelectionWithoutParticipants,
   participants: {
     select: defaultParticipantSelection,
   },
+  updatedAt: true,
+  createdAt: true,
 }
-
-const getParticipantsWithSimulations = <
-  T extends { simulationId: string },
->(group: {
-  participants: T[]
-}): Promise<
-  Array<
-    T & {
-      simulation: NonNullable<
-        Awaited<ReturnType<typeof fetchParticipantSimulation>>
-      >
-    }
-  >
-> =>
-  Promise.all(
-    group.participants.map(async (p) => ({
-      ...p,
-      simulation: (await fetchParticipantSimulation(p.simulationId))!,
-    }))
-  )
 
 export const createGroupAndUser = async ({
   name: groupName,
@@ -92,54 +65,39 @@ export const createGroupAndUser = async ({
       email,
     },
   })
-
-  // For now no relation
-  const [group, ...simulations] = await Promise.all([
-    // create group
-    prisma.group.create({
-      data: {
-        name: groupName,
-        emoji,
-        administrator: {
-          create: {
-            userId,
-          },
+  // create group
+  return prisma.group.create({
+    data: {
+      name: groupName,
+      emoji,
+      administrator: {
+        create: {
+          userId,
         },
-        ...(participants?.length
-          ? {
-              participants: {
-                createMany: {
-                  data: participants.map(({ simulation: { id } }) => ({
-                    userId,
-                    simulationId: id,
-                  })),
-                },
-              },
-            }
-          : {}),
       },
-      select: defaultGroupSelection,
-    }),
-    // create simulation if any
-    ...(participants || []).map((p) =>
-      createParticipantSimulation(userId, p.simulation)
-    ),
-  ])
-
-  return {
-    ...group,
-    participants: group.participants.map((p, i) => ({
-      ...p,
-      simulation: simulations[i],
-    })),
-  }
+      ...(participants?.length
+        ? {
+            participants: {
+              createMany: {
+                data: participants.map(({ simulation }) => ({
+                  id: randomUUID(),
+                  userId,
+                  simulationId: simulation,
+                })),
+              },
+            },
+          }
+        : {}),
+    },
+    select: defaultGroupSelection,
+  })
 }
 
-export const updateUserGroup = async (
+export const updateUserGroup = (
   { groupId, userId }: UserGroupParams,
   update: GroupUpdateDto
 ) => {
-  const group = await prisma.group.update({
+  return prisma.group.update({
     where: {
       id: groupId,
       administrator: {
@@ -149,16 +107,11 @@ export const updateUserGroup = async (
     data: update,
     select: defaultGroupSelection,
   })
-
-  return {
-    ...group,
-    participants: await getParticipantsWithSimulations(group),
-  }
 }
 
 export const createParticipantAndUser = async (
   { groupId }: GroupParams,
-  { userId, name, email, simulation: simulationDto }: ParticipantCreateDto
+  { userId, name, email, simulation: simulationId }: ParticipantCreateDto
 ) => {
   // upsert user
   await prisma.user.upsert({
@@ -176,38 +129,24 @@ export const createParticipantAndUser = async (
     },
   })
 
-  // For now no relation
-  const { id: simulationId } = simulationDto
-  const [simulation, participant] = await Promise.all([
-    createParticipantSimulation(userId, simulationDto),
-    prisma.groupParticipant.upsert({
-      where: {
-        groupId_userId: {
-          groupId,
-          userId,
-        },
-      },
-      create: {
+  return prisma.groupParticipant.upsert({
+    where: {
+      groupId_userId: {
         groupId,
         userId,
-        simulationId,
       },
-      update: {
-        simulationId,
-      },
-      select: {
-        ...defaultParticipantSelection,
-        group: {
-          select: defaultGroupSelection,
-        },
-      },
-    }),
-  ])
-
-  return {
-    ...participant,
-    simulation,
-  }
+    },
+    create: {
+      id: randomUUID(),
+      groupId,
+      userId,
+      simulationId,
+    },
+    update: {
+      simulationId,
+    },
+    select: defaultParticipantSelection,
+  })
 }
 
 export const findGroupById = (id: string) => {
@@ -246,11 +185,11 @@ export const deleteParticipantById = (id: string) => {
   })
 }
 
-export const fetchUserGroups = async (
+export const fetchUserGroups = (
   { userId }: UserParams,
   { groupIds }: GroupsFetchQuery
 ) => {
-  const groups = await prisma.group.findMany({
+  return prisma.group.findMany({
     where: {
       OR: [
         {
@@ -278,17 +217,10 @@ export const fetchUserGroups = async (
     },
     select: defaultGroupSelection,
   })
-
-  return Promise.all(
-    groups.map(async (group) => ({
-      ...group,
-      participants: await getParticipantsWithSimulations(group),
-    }))
-  )
 }
 
-export const fetchUserGroup = async ({ userId, groupId }: UserGroupParams) => {
-  const group = await prisma.group.findUniqueOrThrow({
+export const fetchUserGroup = ({ userId, groupId }: UserGroupParams) => {
+  return prisma.group.findUniqueOrThrow({
     where: {
       id: groupId,
       OR: [
@@ -310,11 +242,6 @@ export const fetchUserGroup = async ({ userId, groupId }: UserGroupParams) => {
     },
     select: defaultGroupSelection,
   })
-
-  return {
-    ...group,
-    participants: await getParticipantsWithSimulations(group),
-  }
 }
 
 export const deleteUserGroup = async ({

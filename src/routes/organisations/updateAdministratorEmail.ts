@@ -74,7 +74,7 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
         console.log('Error updating Brevo contact', error)
       })
 
-      generateAndSetNewToken(res, { email: emailModified })
+      generateAndSetNewToken(res, emailModified)
     }
 
     setSuccessfulJSONResponse(res)
@@ -86,7 +86,4 @@ router.use(authentificationMiddleware).post('/', async (req, res) => {
   }
 })
 
-/**
- * @deprecated should use features/organisations instead
- */
 export default router

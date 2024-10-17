@@ -1,18 +1,11 @@
 import { prisma } from '../../adapters/prisma/client'
 import { isValidEmail } from '../../core/typeguards/isValidEmail'
 import { createParticipantAndUser } from '../../features/groups/groups.repository'
-import type {
-  ActionChoicesSchema,
-  ComputedResultSchema,
-  SimulationCreateDto,
-  SimulationCreateUser,
-} from '../../features/simulations/simulations.validator'
 import logger from '../../logger'
 import type { GroupType } from '../../schemas/GroupSchema'
 import type { SimulationType } from '../../schemas/SimulationSchema'
 import type { UserType } from '../../schemas/UserSchema'
 import { sendGroupEmail } from '../email/sendGroupEmail'
-import { getSimulationAdditionalQuestionsAnswers } from '../queries/createOrUpdateSimulation'
 import { handleUpdateGroupNumberOneParticipant } from './handleUpdateNumberGroupOneParticipant'
 
 type Props = {
@@ -21,24 +14,6 @@ type Props = {
   simulationSaved: SimulationType
   origin: string
 }
-
-const mapSimulation = (
-  simulation: SimulationType,
-  user: SimulationCreateUser
-): SimulationCreateDto => ({
-  id: simulation.id,
-  actionChoices: (simulation.actionChoices as ActionChoicesSchema) || {},
-  computedResults: simulation.computedResults as ComputedResultSchema,
-  date: simulation.date || new Date(),
-  foldedSteps: simulation.foldedSteps,
-  progression: simulation.progression || 0,
-  savedViaEmail: !!simulation.savedViaEmail,
-  situation: simulation.situation,
-  additionalQuestionsAnswers:
-    getSimulationAdditionalQuestionsAnswers(simulation),
-  user,
-})
-
 export async function handleUpdateGroup({
   group,
   userDocument,
@@ -96,11 +71,7 @@ export async function handleUpdateGroup({
       {
         name: userDocument.name || '🦊',
         userId: userDocument.userId,
-        simulation: mapSimulation(simulationSaved, {
-          id: userDocument.userId,
-          email: userDocument.email,
-          name: userDocument.name,
-        }),
+        simulation: simulationSaved.id,
         ...(userDocument.email && isValidEmail(userDocument.email)
           ? { email: userDocument.email }
           : {}),

@@ -36,3 +36,34 @@ export const LIST_SUBSCRIBED_END_SIMULATION = 22
 export const LIST_SUBSCRIBED_UNFINISHED_SIMULATION = 35
 
 export const LIST_NOS_GESTES_TRANSPORT_NEWSLETTER = 32
+
+// Template IDs
+export const TEMPLATE_ID_SIMULATION_COMPLETED = 55
+export const TEMPLATE_ID_GROUP_CREATED = 57
+export const TEMPLATE_ID_GROUP_JOINED = 58
+export const TEMPLATE_ID_VERIFICATION_CODE = 66
+export const TEMPLATE_ID_ORGANISATION_CREATED = 70
+export const TEMPLATE_ID_ORGANISATION_JOINED = 71
+export const TEMPLATE_ID_SIMULATION_IN_PROGRESS = 102
+
+// Matomo campaigns & keywords
+export const MATOMO_CAMPAIGN_KEY = 'mtm_campaign'
+export const MATOMO_CAMPAIGN_EMAIL_AUTOMATISE = 'email-automatise'
+
+export const MATOMO_KEYWORD_KEY = 'mtm_kwd'
+export const MATOMO_KEYWORDS = {
+  [TEMPLATE_ID_SIMULATION_COMPLETED]: 'fin-retrouver-simulation',
+  [TEMPLATE_ID_SIMULATION_IN_PROGRESS]: 'pause-test-en-cours',
+  [TEMPLATE_ID_GROUP_CREATED]: {
+    GROUP_URL: 'groupe-admin-voir-classement',
+    SHARE_URL: 'groupe-admin-url-partage',
+    DELETE_URL: 'groupe-admin-delete',
+  },
+  [TEMPLATE_ID_GROUP_JOINED]: {
+    GROUP_URL: 'groupe-invite-voir-classement',
+    SHARE_URL: 'groupe-invite-url-partage',
+    DELETE_URL: 'groupe-invite-delete',
+  },
+  [TEMPLATE_ID_ORGANISATION_CREATED]: 'orga-admin-creation',
+  [TEMPLATE_ID_ORGANISATION_JOINED]: 'orga-invite-campagne',
+} as const

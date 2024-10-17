@@ -11,17 +11,15 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = '/quizz-answers/v1/'
 
-  afterEach(() => prisma.quizzAnswer.deleteMany())
-
   describe('When creating a quizz answer', () => {
     describe('And no data provided', () => {
-      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent.post(url).expect(StatusCodes.BAD_REQUEST)
       })
     })
 
     describe('And invalid simulationId', () => {
-      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent
           .post(url)
           .send({
@@ -34,7 +32,7 @@ describe('Given a NGC user', () => {
     })
 
     describe('And missing answer', () => {
-      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent
           .post(url)
           .send({
@@ -46,7 +44,7 @@ describe('Given a NGC user', () => {
     })
 
     describe('And invalid isAnswerCorrect', () => {
-      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it should return a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent
           .post(url)
           .send({
@@ -58,7 +56,7 @@ describe('Given a NGC user', () => {
       })
     })
 
-    test(`Then it returns a ${StatusCodes.CREATED} response`, async () => {
+    test(`It should return a ${StatusCodes.CREATED} response`, async () => {
       const payload = {
         simulationId: faker.string.uuid(),
         answer: 'transport . voiture',
@@ -78,7 +76,7 @@ describe('Given a NGC user', () => {
       })
     })
 
-    test('Then it stores a quizz answer in database', async () => {
+    test('It should store a quizz answer in database', async () => {
       const payload: QuizzAnswerCreateDto = {
         simulationId: faker.string.uuid(),
         answer: 'transport . voiture',
@@ -111,7 +109,7 @@ describe('Given a NGC user', () => {
           .mockRejectedValueOnce(databaseError)
       })
 
-      test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
+      test(`Then it should return a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
         await agent
           .post(url)
           .send({
@@ -122,7 +120,7 @@ describe('Given a NGC user', () => {
           .expect(StatusCodes.INTERNAL_SERVER_ERROR)
       })
 
-      test(`Then it logs the exception`, async () => {
+      test(`Then it should log the exception`, async () => {
         await agent.post(url).send({
           simulationId: faker.string.uuid(),
           answer: 'transport . voiture',

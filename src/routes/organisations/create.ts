@@ -82,7 +82,4 @@ router.route('/').post(async (req: Request, res: Response) => {
   }
 })
 
-/**
- * @deprecated should use features/organisations instead
- */
 export default router
