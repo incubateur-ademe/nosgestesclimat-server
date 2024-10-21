@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken'
 import { prisma } from '../adapters/prisma/client'
 import { config } from '../config'
 import { COOKIE_NAME } from '../features/authentication/authentication.service'
+import { syncUserData } from '../features/users/users.service'
 import { generateAndSetNewToken } from '../helpers/authentification/generateAndSetNewToken'
 import logger from '../logger'
 
@@ -59,6 +60,8 @@ export const authentificationMiddleware =
         } catch (e) {
           logger.warn(`Could not find verified user for ${result.email}`, e)
         }
+      } else if (passIfUnauthorized && userId === req.params.userId) {
+        await syncUserData({ userId, email })
       }
 
       req.user = {

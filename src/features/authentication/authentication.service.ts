@@ -49,7 +49,6 @@ export const exchangeCredentialsForToken = async (loginDto: LoginDto) => {
 export const login = async (loginDto: LoginDto) => {
   const { email, token, userId } = await exchangeCredentialsForToken(loginDto)
 
-  // TODO migrate all users, groups and simulations for given email
   const loginEvent = new LoginEvent({ email, userId })
 
   EventBus.emit(loginEvent)
