@@ -43,7 +43,7 @@ describe('Given a NGC user', () => {
         ;({
           user: { id: userId },
         } = simulation)
-      })
+      }, 5000)
 
       test(`Then it returns a ${StatusCodes.OK} response with a list containing the simulation`, async () => {
         const response = await agent

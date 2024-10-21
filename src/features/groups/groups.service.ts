@@ -58,6 +58,8 @@ const participantToDto = (
     id,
     simulation,
     user: { id: userId, ...rest },
+    createdAt,
+    updatedAt,
   }: Omit<Awaited<ReturnType<typeof createParticipantAndUser>>, 'group'>,
   connectedUser: string
 ) => ({
@@ -67,6 +69,8 @@ const participantToDto = (
         simulation,
         userId,
         ...rest,
+        createdAt,
+        updatedAt,
       }
     : {
         id,

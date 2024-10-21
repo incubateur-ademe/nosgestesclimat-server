@@ -5,6 +5,7 @@ import {
   organisationSelectionWithoutPolls,
 } from '../organisations/organisations.repository'
 import type { OrganisationPollParams } from '../organisations/organisations.validator'
+import { transferOwnershipToUser } from '../users/users.repository'
 import type { UserParams } from '../users/users.validator'
 import type {
   SimulationParticipantCreateDto,
@@ -200,6 +201,8 @@ export const createPollUserSimulation = async (
   { organisationIdOrSlug, pollIdOrSlug }: OrganisationPollParams,
   simulationDto: SimulationCreateDto
 ) => {
+  const { id: userId, email } = simulationDto.user
+
   const { id: pollId } = await prisma.poll.findFirstOrThrow({
     where: {
       OR: [{ id: pollIdOrSlug }, { slug: pollIdOrSlug }],
@@ -239,6 +242,13 @@ export const createPollUserSimulation = async (
       },
     },
   })
+
+  if (email) {
+    await transferOwnershipToUser({
+      email,
+      userId,
+    })
+  }
 
   return { simulation, poll }
 }
