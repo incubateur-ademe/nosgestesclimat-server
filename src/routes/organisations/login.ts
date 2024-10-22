@@ -39,4 +39,7 @@ router.route('/').post(async (req, res) => {
   }
 })
 
+/**
+ * @deprecated should use features/authentication instead
+ */
 export default router

@@ -1,15 +1,8 @@
-import axios from 'axios'
 import type { Document } from 'mongoose'
-import { axiosConf } from '../../constants/axios'
+import { sendSimulationUpsertedEmail } from '../../adapters/brevo/client'
 import {
   LIST_SUBSCRIBED_END_SIMULATION,
   LIST_SUBSCRIBED_UNFINISHED_SIMULATION,
-  MATOMO_CAMPAIGN_EMAIL_AUTOMATISE,
-  MATOMO_CAMPAIGN_KEY,
-  MATOMO_KEYWORD_KEY,
-  MATOMO_KEYWORDS,
-  TEMPLATE_ID_SIMULATION_COMPLETED,
-  TEMPLATE_ID_SIMULATION_IN_PROGRESS,
 } from '../../constants/brevo'
 import type { SimulationType } from '../../schemas/SimulationSchema'
 import type { UserType } from '../../schemas/UserSchema'
@@ -45,51 +38,26 @@ export async function sendSimulationEmail({
 
   const isSimulationCompleted = simulationSaved.progression === 1
 
-  try {
-    // Create or update the contact
-    await createOrUpdateContact({
-      email,
-      userId,
-      listIds: [
-        isSimulationCompleted
-          ? LIST_SUBSCRIBED_END_SIMULATION
-          : LIST_SUBSCRIBED_UNFINISHED_SIMULATION,
-      ],
-      optin: true,
-    })
+  // Create or update the contact
+  await createOrUpdateContact({
+    email,
+    userId,
+    listIds: [
+      isSimulationCompleted
+        ? LIST_SUBSCRIBED_END_SIMULATION
+        : LIST_SUBSCRIBED_UNFINISHED_SIMULATION,
+    ],
+    optin: true,
+  })
 
-    const templateId = isSimulationCompleted
-      ? TEMPLATE_ID_SIMULATION_COMPLETED
-      : TEMPLATE_ID_SIMULATION_IN_PROGRESS
-
-    const simulationUrl = new URL(origin)
-    simulationUrl.pathname = isSimulationCompleted ? 'fin' : 'simulateur/bilan'
-    const { searchParams } = simulationUrl
-    if (simulationSaved.id) {
-      searchParams.append('sid', simulationSaved.id)
-    }
-    searchParams.append(MATOMO_CAMPAIGN_KEY, MATOMO_CAMPAIGN_EMAIL_AUTOMATISE)
-    searchParams.append(MATOMO_KEYWORD_KEY, MATOMO_KEYWORDS[templateId])
-
-    await axios.post(
-      '/v3/smtp/email',
-      {
-        to: [
-          {
-            name: email,
-            email,
-          },
-        ],
-        templateId,
-        params: {
-          SIMULATION_URL: simulationUrl.toString(),
-        },
-      },
-      axiosConf
-    )
-  } catch (error) {
-    throw new Error(error)
-  }
+  await sendSimulationUpsertedEmail({
+    email,
+    origin,
+    simulation: {
+      id: simulationSaved.id,
+      progression: simulationSaved.progression!,
+    },
+  })
 
   console.log(`Simulation email sent to ${email}`)
 }

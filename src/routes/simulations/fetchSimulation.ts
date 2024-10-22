@@ -1,9 +1,7 @@
-import migrationInstructionsJSON from '@incubateur-ademe/nosgestesclimat/public/migration.json'
-// @ts-expect-error Typing error in the library
-import { migrateSituation } from '@publicodes/tools/migration'
 import express from 'express'
 import mongoose from 'mongoose'
-import { computeResults } from '../../helpers/simulation/computeResults'
+import type { PollType } from '../../schemas/PollSchema'
+import type { SimulationType } from '../../schemas/SimulationSchema'
 import { Simulation } from '../../schemas/SimulationSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 
@@ -25,41 +23,27 @@ router.route('/').post(async (req, res) => {
     : { id: simulationId }
 
   try {
-    let simulationFound = await Simulation.findOne(searchQuery)
+    const simulationFound = await Simulation.findOne<
+      Omit<SimulationType, 'polls'> & { polls: PollType[] }
+    >(searchQuery).populate('polls')
 
     if (!simulationFound) {
       return res.status(404).send('No matching simulation found.')
     }
 
-    if (
-      !simulationFound.computedResults ||
-      !simulationFound.computedResults.carbone
-    ) {
-      const situationMigrated = migrateSituation(
-        simulationFound.situation,
-        migrationInstructionsJSON
-      )
-
-      const computedResults = computeResults(situationMigrated)
-
-      simulationFound = await Simulation.findByIdAndUpdate(
-        simulationFound._id,
-        {
-          computedResults: {
-            carbone: computedResults,
-          },
-        },
-        { new: true }
-      )
-    }
-
     setSuccessfulJSONResponse(res)
 
-    res.json(simulationFound)
+    res.json({
+      ...simulationFound.toObject(),
+      polls: simulationFound.polls.map(({ slug }) => slug),
+    })
   } catch (error) {
     console.error(error)
     return res.status(500).send('Error while fetching simulation.')
   }
 })
 
+/**
+ * @deprecated should use features/simulations instead
+ */
 export default router
