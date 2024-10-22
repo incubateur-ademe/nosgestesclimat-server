@@ -8,6 +8,10 @@ import simulationRoute from './routes/_legacy/simulationRoute'
 import surveysRoute from './routes/_legacy/surveysRoute'
 import statsRoute from './routes/stats/statsRoute'
 
+// Authentication route
+import authenticationController from './features/authentication/authentication.controller'
+import verificationCodeController from './features/authentication/verification-codes.controller'
+
 // Groups routes
 import groupsController from './features/groups/groups.controller'
 import createGroupRoute from './routes/groups/createGroup'
@@ -19,7 +23,11 @@ import updateGroupRoute from './routes/groups/updateGroup'
 import fetchGroupsRoute from './routes/groups/fetchGroups'
 import removeParticipantRoute from './routes/groups/removeParticipant'
 
+// Integrations routes
+import integrationsController from './features/integrations/integrations.controller'
+
 // Organisation routes
+import organisationController from './features/organisations/organisations.controller'
 import createOrganisationRoute from './routes/organisations/create'
 import fetchOrganisationRoute from './routes/organisations/fetchOrganisation'
 import getOrgaPollSlugsRoute from './routes/organisations/getOrgaPollSlugs'
@@ -44,6 +52,7 @@ import updatePollRoute from './routes/polls/updatePoll'
 import verifyUserParticipationRoute from './routes/polls/verifyUserParticipation'
 
 // Simulation routes
+import simulationController from './features/simulations/simulations.controller'
 import createSimulationRoute from './routes/simulations/create'
 import fetchSimulationRoute from './routes/simulations/fetchSimulation'
 
@@ -54,9 +63,6 @@ import createQuizAnswerRoute from './routes/quiz/create'
 // Northstar routes
 import northstarRatingsController from './features/northstar-ratings/northstar-ratings.controller'
 import createNorthstarRatingRoute from './routes/northstar/create'
-
-// Email route
-import sendEmailRoute from './routes/email/sendEmail'
 
 // Settings route
 import getNewsletterSubscriptions from './routes/settings/getNewsletterSubscriptions'
@@ -94,7 +100,12 @@ app.use('/get-stats', statsRoute)
 app.use('/simulation', simulationRoute)
 app.use('/ratings', ratingsRoute)
 
+// Authentication routes
+app.use('/authentication', authenticationController)
+app.use('/verification-codes', verificationCodeController)
+
 // Simulations route
+app.use('/simulations', simulationController)
 app.use('/simulations/create', createSimulationRoute)
 app.use('/simulations/fetch-simulation', fetchSimulationRoute)
 
@@ -109,7 +120,11 @@ app.use('/groups', groupsController)
 app.use('/group/fetch-groups', fetchGroupsRoute)
 app.use('/group/remove-participant', removeParticipantRoute)
 
+//Integrations routes
+app.use('/integrations', integrationsController)
+
 // Organisation routes
+app.use('/organisations', organisationController)
 app.use('/organisations/create', createOrganisationRoute)
 app.use('/organisations/login', loginOrganisationRoute)
 app.use('/organisations/fetch-organisation', fetchOrganisationRoute)
@@ -153,9 +168,6 @@ app.use('/quiz/answers/create', createQuizAnswerRoute)
 // northstar-ratings routes
 app.use('/northstar-ratings', northstarRatingsController)
 app.use('/northstar/ratings/create', createNorthstarRatingRoute)
-
-// Email route
-app.use('/send-email', sendEmailRoute)
 
 // Settings route
 app.use('/update-settings', updateSettingsRoute)

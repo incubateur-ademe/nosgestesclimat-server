@@ -1,9 +1,9 @@
 import type { Request, Response } from 'express'
 import express from 'express'
-import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import { Poll } from '../../schemas/PollSchema'
 import { Organisation } from '../../schemas/OrganisationSchema'
+import { Poll } from '../../schemas/PollSchema'
 import { formatEmail } from '../../utils/formatting/formatEmail'
+import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 
 const router = express.Router()
 
@@ -54,4 +54,7 @@ router
     }
   )
 
+/**
+ * @deprecated should use features/organisations instead
+ */
 export default router

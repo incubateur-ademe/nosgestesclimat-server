@@ -1,8 +1,11 @@
 import { faker } from '@faker-js/faker'
+import nock from 'nock'
 import type supertest from 'supertest'
+import { prisma } from '../../../../adapters/prisma/client'
+import { getSimulationPayload } from '../../../simulations/__tests__/fixtures/simulations.fixtures'
 import type {
-  GroupCreateDto,
-  ParticipantCreateDto,
+  GroupCreateInputDto,
+  ParticipantInputCreateDto,
 } from '../../groups.validator'
 
 type TestAgent = ReturnType<typeof supertest>
@@ -27,17 +30,20 @@ export const createGroup = async ({
   group: { administrator, participants, emoji, name } = {},
 }: {
   agent: TestAgent
-  group?: Partial<GroupCreateDto>
+  group?: Partial<GroupCreateInputDto>
 }) => {
-  const payload: GroupCreateDto = {
+  const payload: GroupCreateInputDto = {
     emoji: emoji || faker.internet.emoji(),
     name: name || faker.company.name(),
     administrator: administrator || {
       userId: faker.string.uuid(),
-      email: faker.internet.email(),
       name: faker.person.fullName(),
     },
     participants,
+  }
+
+  if (payload.administrator.email && participants?.length) {
+    nock(process.env.BREVO_URL!).post('/v3/smtp/email').reply(200)
   }
 
   const response = await agent.post(CREATE_GROUP_ROUTE).send(payload)
@@ -51,14 +57,29 @@ export const joinGroup = async ({
   groupId,
 }: {
   agent: TestAgent
-  participant?: Partial<ParticipantCreateDto>
+  participant?: Partial<ParticipantInputCreateDto>
   groupId: string
 }) => {
-  const payload: ParticipantCreateDto = {
+  const payload: ParticipantInputCreateDto = {
     userId: userId || faker.string.uuid(),
     name: name || faker.person.fullName(),
-    simulation: simulation || faker.string.uuid(),
+    simulation: simulation || getSimulationPayload(),
     email,
+  }
+
+  const scope = nock(process.env.BREVO_URL!)
+
+  const existingUser = await prisma.user.findFirst({
+    where: {
+      id: payload.userId,
+    },
+    select: {
+      email: true,
+    },
+  })
+
+  if (email || existingUser?.email) {
+    scope.post('/v3/smtp/email').reply(200)
   }
 
   const response = await agent
