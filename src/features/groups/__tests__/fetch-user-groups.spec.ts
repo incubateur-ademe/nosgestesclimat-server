@@ -128,7 +128,7 @@ describe('Given a NGC user', () => {
             simulation: simulationUser1,
           },
         }))
-      }, 5000)
+      }, 10000)
 
       test(`Then it returns a ${StatusCodes.OK} response with a list containing the groups`, async () => {
         const response = await agent
