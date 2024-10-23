@@ -93,4 +93,48 @@ describe(`Given a validated NGC user organisation`, () => {
       expect(scope.isDone()).toBe(true)
     })
   })
+
+  describe('When number of collaborators is a string', () => {
+    beforeEach(async () => {
+      jest.spyOn(prisma.organisation, 'upsert')
+
+      const { email } = validatedOrganisationFixture
+      const name = faker.company.name()
+      const administratorName = faker.person.fullName()
+
+      nock(process.env.BREVO_URL!)
+        .post('/v3/contacts')
+        .reply(200)
+        .post('/v3/smtp/email')
+        .reply(200)
+
+      nock(process.env.CONNECT_URL!).post(`/api/v1/personnes`).reply(200)
+      await request
+        .post(url)
+        .set({ cookie: `ngcjwt=${validatedOrganisationFixture.cookie}` })
+        .send({
+          email,
+          name,
+          administratorName,
+          sendCreationEmail: true,
+          numberOfCollaborators: '18',
+        })
+    })
+
+    afterEach(() => jest.spyOn(prisma.organisation, 'upsert').mockRestore())
+
+    it(`Then it stores a number`, async () => {
+      // both mongoose and prismock coerce a number
+      expect(prisma.organisation.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          create: expect.objectContaining({
+            numberOfCollaborators: 18,
+          }),
+          update: expect.objectContaining({
+            numberOfCollaborators: 18,
+          }),
+        })
+      )
+    })
+  })
 })
