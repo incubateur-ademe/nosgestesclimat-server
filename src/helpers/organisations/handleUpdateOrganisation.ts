@@ -15,7 +15,7 @@ type Props = {
     administratorTelephone: string
     hasOptedInForCommunications: boolean
     organisationType: string
-    numberOfCollaborators: number
+    numberOfCollaborators?: number | string
   }
 }
 
@@ -146,7 +146,10 @@ export async function handleUpdateOrganisation({
         name: organisationName,
         slug: uniqueSlug,
         type: getOrganisationType(organisationType),
-        numberOfCollaborators,
+        numberOfCollaborators:
+          typeof numberOfCollaborators === 'string'
+            ? +numberOfCollaborators || null
+            : numberOfCollaborators,
         administrators: {
           update: {
             where: {
