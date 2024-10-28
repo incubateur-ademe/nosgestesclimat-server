@@ -9,7 +9,7 @@ type Props = {
     [key: string]: string
   }
   attributes?: {
-    [key: string]: string
+    [key: string]: string | boolean | number | undefined
   }
 }
 
@@ -26,7 +26,7 @@ export async function sendEmail({
     })
 
     await axios.post(
-      'https://api.brevo.com/v3/smtp/email',
+      '/v3/smtp/email',
       {
         to: [
           {

@@ -1,8 +1,8 @@
-import { ATTRIBUTE_IS_ORGANISATION_ADMIN } from './../../constants/brevo'
 import axios from 'axios'
 import { axiosConf } from '../../constants/axios'
-import { createOrUpdateContact } from './createOrUpdateContact'
 import { LIST_ID_ORGANISATIONS } from '../../constants/brevo'
+import { TEMPLATE_ID_VERIFICATION_CODE } from './../../constants/brevo'
+import { createOrUpdateContact } from './createOrUpdateContact'
 
 type Props = {
   email: string
@@ -25,7 +25,7 @@ export async function sendVerificationCodeEmail({
     })
 
     await axios.post(
-      'https://api.brevo.com/v3/smtp/email',
+      '/v3/smtp/email',
       {
         to: [
           {
@@ -33,7 +33,7 @@ export async function sendVerificationCodeEmail({
             email,
           },
         ],
-        templateId: 66,
+        templateId: TEMPLATE_ID_VERIFICATION_CODE,
         params: {
           VERIFICATION_CODE: verificationCode,
         },

@@ -1,15 +1,19 @@
 import axios from 'axios'
-import { axiosConf } from '../../constants/axios'
-import { UserType } from '../../schemas/UserSchema'
-import { SimulationType } from '../../schemas/SimulationSchema'
 import { Document } from 'mongoose'
-import { createOrUpdateContact } from './createOrUpdateContact'
+import { axiosConf } from '../../constants/axios'
 import {
   LIST_SUBSCRIBED_END_SIMULATION,
   LIST_SUBSCRIBED_UNFINISHED_SIMULATION,
-  TEMPLATE_SIMULATION_COMPLETED,
-  TEMPLATE_SIMULATION_IN_PROGRESS,
+  MATOMO_CAMPAIGN_EMAIL_AUTOMATISE,
+  MATOMO_CAMPAIGN_KEY,
+  MATOMO_KEYWORD_KEY,
+  MATOMO_KEYWORDS,
+  TEMPLATE_ID_SIMULATION_COMPLETED,
+  TEMPLATE_ID_SIMULATION_IN_PROGRESS,
 } from '../../constants/brevo'
+import { SimulationType } from '../../schemas/SimulationSchema'
+import { UserType } from '../../schemas/UserSchema'
+import { createOrUpdateContact } from './createOrUpdateContact'
 
 /**
  * Send an email to a user when they save a simulation at the end
@@ -54,14 +58,21 @@ export async function sendSimulationEmail({
       optin: true,
     })
 
-    const SIMULATION_URL = `${origin}/${
-      isSimulationCompleted ? 'fin' : 'simulateur/bilan'
-    }?sid=${encodeURIComponent(
-      simulationSaved.id ?? ''
-    )}&mtm_campaign=retrouver-ma-simulation`
+    const templateId = isSimulationCompleted
+      ? TEMPLATE_ID_SIMULATION_COMPLETED
+      : TEMPLATE_ID_SIMULATION_IN_PROGRESS
+
+    const simulationUrl = new URL(origin)
+    simulationUrl.pathname = isSimulationCompleted ? 'fin' : 'simulateur/bilan'
+    const { searchParams } = simulationUrl
+if (simulationSaved.id) {
+    searchParams.append('sid', simulationSaved.id)
+}
+    searchParams.append(MATOMO_CAMPAIGN_KEY, MATOMO_CAMPAIGN_EMAIL_AUTOMATISE)
+    searchParams.append(MATOMO_KEYWORD_KEY, MATOMO_KEYWORDS[templateId])
 
     await axios.post(
-      'https://api.brevo.com/v3/smtp/email',
+      '/v3/smtp/email',
       {
         to: [
           {
@@ -69,13 +80,9 @@ export async function sendSimulationEmail({
             email,
           },
         ],
-        templateId:
-          simulationSaved.progression === 1
-            ? TEMPLATE_SIMULATION_COMPLETED
-            : TEMPLATE_SIMULATION_IN_PROGRESS,
+        templateId,
         params: {
-          SHARE_URL: `${origin}?mtm_campaign=partage-email`,
-          SIMULATION_URL,
+          SIMULATION_URL: simulationUrl.toString(),
         },
       },
       axiosConf
