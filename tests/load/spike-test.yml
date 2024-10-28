@@ -1,0 +1,37 @@
+config:
+  target: 'https://server.preprod.nosgestesclimat.fr'
+  phases:
+    - duration: 5
+      arrivalRate: 1
+      rampTo: 5
+      name: Warm up phase
+    - duration: 5
+      arrivalRate: 5
+      rampTo: 100
+      name: Ramp up load
+    - duration: 10
+      arrivalRate: 100
+      rampTo: 400
+      name: Spike phase
+  processor: './scripts/generate-mock-data.mjs'
+scenarios:
+  - beforeRequest: 'generateSignupData'
+    name: 'Spike test'
+    flow:
+      - post:
+          url: '/simulations/create'
+          json:
+            simulation:
+              id: '{{simulationId}}'
+              date: '2024-04-12T12:50:17.533Z'
+              situation: '{{situation}}'
+              computedResults: '{{computedResults}}'
+              foldedSteps: '{{foldedSteps}}'
+              actionChoices: '{{actionChoices}}'
+              polls: '{{polls}}'
+            userId: '{{userId}}'
+      - think: 2
+      - post:
+          url: '/organisations/fetch-poll-processed-data'
+          json: { orgaSlug: '{{orgaSlug}}', userId: '{{orgaAdminUserId}}' }
+      - think: 2

@@ -1,0 +1,127 @@
+# Rule name has to be the same as the file name.
+contexte défi carbone:
+  titre: Défi Carbone
+  icônes: 📝
+  non applicable si:
+    une de ces conditions:
+      - genre = '"non"'
+      - organisation = '"non"'
+      - statut = '"non"'
+      - région = '"non"'
+      - age = '"non"'
+  formule: 0
+
+contexte défi carbone . genre:
+  titre: Genre
+  question: Vous êtes ?
+  avec:
+    une femme:
+    un homme:
+    autre:
+    je ne souhaite pas répondre:
+  formule:
+    une possibilité:
+      choix obligatoire: oui
+      possibilités:
+        - une femme
+        - un homme
+        - autre
+        - je ne souhaite pas répondre
+
+contexte défi carbone . organisation:
+  titre: Organisation
+  question: A quel type d’organisation appartenez-vous ?
+  avec:
+    grande entreprise privée:
+    grande entreprise publique:
+    TPE-PME:
+    ETI:
+    Association-ONG:
+    ESUS-coopérative:
+    collectivité ou administration:
+    autre:
+  formule:
+    une possibilité:
+      choix obligatoire: oui
+      possibilités:
+        - grande entreprise privée
+        - grande entreprise publique
+        - TPE-PME
+        - ETI
+        - Association-ONG
+        - ESUS-coopérative
+        - collectivité ou administration
+        - autre
+
+contexte défi carbone . statut:
+  titre: Statut
+  question: Vous êtes ?
+  avec:
+    salariée:
+    cadre:
+    cadre dirigeant:
+    fondateur-chef d'entreprise:
+    stagiaire-alternant:
+    autre:
+  formule:
+    une possibilité:
+      choix obligatoire: oui
+      possibilités:
+        - salariée
+        - cadre
+        - cadre dirigeant
+        - fondateur-chef d'entreprise
+        - stagiaire-alternant
+        - autre
+
+contexte défi carbone . age:
+  titre: Age
+  question: Dans quelle tranche d'âge vous situez-vous ?
+  avec:
+    Moins de 30 ans:
+    Entre 30 et 39 ans:
+    Entre 40 et 49 ans:
+    Plus de 50 ans:
+  formule:
+    une possibilité:
+      choix obligatoire: oui
+      possibilités:
+        - Moins de 30 ans
+        - Entre 30 et 39 ans
+        - Entre 40 et 49 ans
+        - Plus de 50 ans
+
+contexte défi carbone . région:
+  titre: Région
+  question: Dans quelle région travaillez-vous ?
+  avec:
+    Auvergne-Rhône-Alpes:
+    Bourgogne-Franche-Comté:
+    Bretagne:
+    Centre-Val de Loire:
+    Corse:
+    Grand Est:
+    Hauts-de-France:
+    Île-de-France:
+    Normandie:
+    Nouvelle-Aquitaine:
+    Occitanie:
+    Pays de la Loire:
+    Provence-Alpes-Côte d'Azur:
+  formule:
+    une possibilité:
+      choix obligatoire: oui
+      possibilités:
+        - Auvergne-Rhône-Alpes
+        - Bourgogne-Franche-Comté
+        - Bretagne
+        - Centre-Val de Loire
+        - Corse
+        - Grand Est
+        - Hauts-de-France
+        - Île-de-France
+        - Normandie
+        - Nouvelle-Aquitaine
+        - Occitanie
+        - Pays de la Loire
+        - Provence-Alpes-Côte d'Azur

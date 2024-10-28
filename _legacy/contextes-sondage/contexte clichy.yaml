@@ -1,0 +1,29 @@
+# Rule name has to be the same as the file name.
+contexte clichy:
+  titre: Festival Clichy
+  icônes: 📝
+  non applicable si:
+    une de ces conditions:
+      - localisation = '"non"'
+  formule: 0
+
+contexte clichy . localisation:
+  titre: Localisation
+  question: Où habitez-vous ?
+  formule:
+    une possibilité:
+      choix obligatoire: oui
+      possibilités:
+        - huitième arrondissement
+        - neuvième arrondissement
+        - dix-septième arrondissement
+        - dix-huitième arrondissement
+        - autre arrondissement de Paris
+        - autre ville
+
+contexte clichy . localisation . huitième arrondissement:
+contexte clichy . localisation . neuvième arrondissement:
+contexte clichy . localisation . dix-septième arrondissement:
+contexte clichy . localisation . dix-huitième arrondissement:
+contexte clichy . localisation . autre arrondissement de Paris:
+contexte clichy . localisation . autre ville:

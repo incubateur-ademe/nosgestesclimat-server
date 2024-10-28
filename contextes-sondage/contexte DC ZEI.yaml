@@ -1,0 +1,35 @@
+# Rule name has to be the same as the file name.
+contexte DC ZEI:
+  non applicable si:
+    une de ces conditions:
+      - enjeux rse = '"non"'
+  formule: 0
+
+contexte DC ZEI . enjeux rse:
+  avec:
+    aucun:
+    le climat:
+    le numérique responsable:
+    les transports doux:
+    la biodiversité:
+    le mécénat:
+    la solidarité:
+    la grande précarité:
+    la lutte contre les discriminations:
+    la formation:
+  titre: Enjeux RSE
+  question: Quels enjeux RSE souhaitez-vous que votre entreprise priorise ?
+  formule:
+    une possibilité:
+      choix obligatoire: oui
+      possibilités:
+        - aucun
+        - le climat
+        - le numérique responsable
+        - les transports doux
+        - la biodiversité
+        - le mécénat
+        - la solidarité
+        - la grande précarité
+        - la lutte contre les discriminations
+        - la formation

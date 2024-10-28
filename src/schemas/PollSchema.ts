@@ -1,0 +1,55 @@
+import mongoose, { RefType } from 'mongoose'
+import { nanoid } from 'nanoid'
+
+const Schema = mongoose.Schema
+
+export type CustomAdditionalQuestionType = {
+  question: string
+  isEnabled: boolean
+}
+
+export type PollType = {
+  simulations: RefType[]
+  startDate: Date
+  endDate: Date
+  createdAt: Date
+  name: string
+  slug: string
+  defaultAdditionalQuestions: string[]
+  customAdditionalQuestions?: CustomAdditionalQuestionType[]
+  expectedNumberOfParticipants: number
+  _id: string
+}
+
+const CustomAdditionalQuestionSchema = new Schema({
+  question: String,
+  isEnabled: Boolean,
+})
+
+// Should this include a reference to the parent organisation?
+export const PollSchema = new Schema<PollType>(
+  {
+    name: String,
+    slug: {
+      type: String,
+      default: () => nanoid(6),
+      unique: true,
+    },
+    simulations: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Simulation',
+      },
+    ],
+    startDate: Date,
+    endDate: Date,
+    defaultAdditionalQuestions: [String],
+    expectedNumberOfParticipants: Number,
+    customAdditionalQuestions: [CustomAdditionalQuestionSchema],
+  },
+  {
+    timestamps: true,
+  }
+)
+
+export const Poll = mongoose.model('Poll', PollSchema)
