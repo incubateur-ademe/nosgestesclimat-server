@@ -102,7 +102,7 @@ export function processPollData({
 
   // We format the simulation recaps (and why the fuck is it not the simulations object directly?)
   const simulationRecaps = simulations.map((simulation) => ({
-    ...simulation.computedResults,
+    computedResults: simulation.computedResults,
     defaultAdditionalQuestionsAnswers: {
       ...(simulation.defaultAdditionalQuestionsAnswers ?? {}),
     },
