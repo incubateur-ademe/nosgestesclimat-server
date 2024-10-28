@@ -73,18 +73,24 @@ router.route('/').post(async (req, res) => {
     // We check if a group is associated with the simulation
     const groups = await findGroupsById(simulation.groups)
 
+    // TODO: Should delete when we launch empreinte eau
+    // We format the computed results if it does not contain metrics
+    const computedResults = simulation.computedResults?.bilan
+      ? { carbone: simulation.computedResults }
+      : simulation.computedResults
+
     const simulationObject = {
       id: simulation.id,
       user: userDocument._id,
       actionChoices: {
         ...(simulation?.actionChoices ?? {}),
       },
-      date: new Date(simulation.date),
-      foldedSteps: [...(simulation.foldedSteps ?? {})],
+      date: simulation.date ? new Date(simulation.date) : new Date(),
+      foldedSteps: [...(simulation.foldedSteps ?? [])],
       situation: {
         ...(simulation.situation ?? {}),
       },
-      computedResults: { ...(simulation.computedResults ?? {}) },
+      computedResults,
       progression: simulation.progression,
       savedViaEmail: simulation.savedViaEmail,
       polls: polls?.map((poll) => poll._id as Types.ObjectId),
