@@ -5,7 +5,7 @@ import fs from 'fs'
 const dateFileExtension = (date: Date) =>
   date.toLocaleDateString('fr-FR').replace(/\//g, '-')
 // @ts-ignore
-connectdb.then((db) => {
+connectdb().then((db) => {
   let request = Simulation.find()
   // @ts-ignore
   request.then((simulations) => {
