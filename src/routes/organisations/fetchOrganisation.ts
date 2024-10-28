@@ -1,9 +1,10 @@
-import express, { Request, Response } from 'express'
+import type { Request, Response } from 'express'
+import express from 'express'
 
-import { Organisation } from '../../schemas/OrganisationSchema'
-import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
+import { Organisation } from '../../schemas/OrganisationSchema'
 import { formatEmail } from '../../utils/formatting/formatEmail'
+import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 
 const router = express.Router()
 
@@ -37,6 +38,7 @@ router
 
       res.json(organisationFound)
     } catch (error) {
+      console.warn(error)
       res.status(403).json('No organisation found.')
     }
   })

@@ -1,4 +1,5 @@
-import express, { Request, Response } from 'express'
+import type { Request, Response } from 'express'
+import express from 'express'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { Poll } from '../../schemas/PollSchema'
 import { Organisation } from '../../schemas/OrganisationSchema'
@@ -47,6 +48,7 @@ router
 
         res.json(poll)
       } catch (error) {
+        console.warn(error)
         return res.status(500).send('Error while fetching poll')
       }
     }

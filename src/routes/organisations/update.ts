@@ -1,4 +1,18 @@
 import express from 'express'
+
+import type { HydratedDocument } from 'mongoose'
+import { handleAddAttributes } from '../../helpers/brevo/handleAddAttributes'
+import { addOrUpdateContactToConnect } from '../../helpers/connect/addOrUpdateContactToConnect'
+import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
+import { sendEmail } from '../../helpers/email/sendEmail'
+import { findUniqueOrgaSlug } from '../../helpers/organisations/findUniqueOrgaSlug'
+import { handleUpdateOrganisation } from '../../helpers/organisations/handleUpdateOrganisation'
+import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
+import { Organisation } from '../../schemas/OrganisationSchema'
+import type { PollType } from '../../schemas/PollSchema'
+import { Poll } from '../../schemas/PollSchema'
+import { formatEmail } from '../../utils/formatting/formatEmail'
+import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import {
   ATTRIBUTE_IS_ORGANISATION_ADMIN,
   ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER,
@@ -10,19 +24,6 @@ import {
   MATOMO_KEYWORDS,
   TEMPLATE_ID_ORGANISATION_CREATED,
 } from './../../constants/brevo'
-
-import { HydratedDocument } from 'mongoose'
-import { handleAddAttributes } from '../../helpers/brevo/handleAddAttributes'
-import { addOrUpdateContactToConnect } from '../../helpers/connect/addOrUpdateContactToConnect'
-import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
-import { sendEmail } from '../../helpers/email/sendEmail'
-import { findUniqueOrgaSlug } from '../../helpers/organisations/findUniqueOrgaSlug'
-import { handleUpdateOrganisation } from '../../helpers/organisations/handleUpdateOrganisation'
-import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
-import { Organisation } from '../../schemas/OrganisationSchema'
-import { Poll, PollType } from '../../schemas/PollSchema'
-import { formatEmail } from '../../utils/formatting/formatEmail'
-import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 
 const router = express.Router()
 

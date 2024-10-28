@@ -1,5 +1,5 @@
-import { Situation } from '../../../types/types'
-import { DottedName, NGCRule } from '@incubateur-ademe/nosgestesclimat'
+import type { DottedName, NGCRule } from '@incubateur-ademe/nosgestesclimat'
+import type { Situation } from '../../../types/types'
 import { checkIfConditionIsTrue } from './getFunFactAssociatedDottedNameValue/checkIfConditionIsTrue'
 
 export function getFunFactAssociatedDottedNameValue({
@@ -8,7 +8,7 @@ export function getFunFactAssociatedDottedNameValue({
 }: {
   situation: Situation
   rule: NGCRule
-}): Boolean | number | string {
+}): boolean | number | string {
   // Shouldn't happen but you never know
   if (!situation) {
     return false
@@ -23,7 +23,7 @@ export function getFunFactAssociatedDottedNameValue({
   // if `somme` attribute is used in ui rule, we want to return the sum of values of dottedNames
   if (rule?.formule?.somme) {
     return rule.formule.somme.reduce((acc: number, dottedName: DottedName) => {
-      let itemValue = parseFloat(situation[dottedName] as string)
+      const itemValue = parseFloat(situation[dottedName] as string)
       return acc + (!isNaN(itemValue) ? itemValue : 0)
     }, 0)
   }

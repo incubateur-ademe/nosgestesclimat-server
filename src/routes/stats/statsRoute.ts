@@ -1,5 +1,6 @@
-import express, { NextFunction, Request, Response } from 'express'
 import apicache from 'apicache'
+import type { NextFunction, Request, Response } from 'express'
+import express from 'express'
 import { config } from '../../config'
 
 const router = express.Router()
@@ -101,6 +102,7 @@ router
         res.statusCode = 200
         return res.json(json)
       } catch (e) {
+        console.warn(e)
         return res.status(500).send('Error fetching or parsing stats ')
       }
     }

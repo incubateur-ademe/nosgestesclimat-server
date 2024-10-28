@@ -1,12 +1,10 @@
-import express, { Request, Response } from 'express'
-import { Organisation } from '../../schemas/OrganisationSchema'
-import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
-import { Poll } from '../../schemas/PollSchema'
+import type { Request, Response } from 'express'
+import express from 'express'
 import { findUniquePollSlug } from '../../helpers/organisations/findUniquePollSlug'
-import slugify from 'slugify'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
-import { getSlug } from '../../utils/getSlug'
-import mongoose from 'mongoose'
+import { Organisation } from '../../schemas/OrganisationSchema'
+import { Poll } from '../../schemas/PollSchema'
+import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 
 const router = express.Router()
 
@@ -51,7 +49,7 @@ router
 
       console.log('New poll created')
     } catch (error) {
-      console.log(error)
+      console.warn(error)
       return res.status(403).json(error)
     }
   })

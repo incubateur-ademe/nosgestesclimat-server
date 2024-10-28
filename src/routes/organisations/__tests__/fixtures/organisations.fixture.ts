@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker'
 import nock from 'nock'
-import supertest from 'supertest'
+import type supertest from 'supertest'
 import * as verificationCodeUtils from '../../../../utils/generateRandomNumberWithLength'
 
 type TestAgent = ReturnType<typeof supertest>

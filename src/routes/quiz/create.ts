@@ -1,6 +1,6 @@
 import express from 'express'
-import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { QuizAnswer } from '../../schemas/QuizAnswerSchema'
+import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 
 const router = express.Router()
 
@@ -42,6 +42,7 @@ router.route('/').post(async (req, res) => {
 
     console.log(`Quiz answer created: ${quizAnswer._id}`)
   } catch (error) {
+    console.warn(error)
     return res.status(500).send('Error while creating quiz answer.')
   }
 })

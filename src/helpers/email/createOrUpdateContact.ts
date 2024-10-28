@@ -1,6 +1,7 @@
-import axios, { AxiosResponse } from 'axios'
+import type { AxiosResponse } from 'axios'
+import axios from 'axios'
 import { axiosConf } from '../../constants/axios'
-import { SimulationType } from '../../schemas/SimulationSchema'
+import type { SimulationType } from '../../schemas/SimulationSchema'
 import { validateEmail } from '../../utils/validation/validateEmail'
 import { handleAddAttributes } from '../brevo/handleAddAttributes'
 
