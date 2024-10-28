@@ -6,11 +6,13 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  schemas  = ["ngc"]
 }
 
 model Answer {
@@ -24,6 +26,7 @@ model Answer {
   updatedAt  DateTime @updatedAt
 
   @@unique([id, survey])
+  @@schema("ngc")
 }
 
 model EmailSimulation {
@@ -31,6 +34,8 @@ model EmailSimulation {
   data      Json
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@schema("ngc")
 }
 
 model Group {
@@ -41,6 +46,8 @@ model Group {
   participants  GroupParticipant[]
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
+
+  @@schema("ngc")
 }
 
 model GroupAdministrator {
@@ -51,6 +58,8 @@ model GroupAdministrator {
   groupId   String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@schema("ngc")
 }
 
 model GroupParticipant {
@@ -64,11 +73,14 @@ model GroupParticipant {
   updatedAt    DateTime @updatedAt
 
   @@unique([groupId, userId])
+  @@schema("ngc")
 }
 
 enum NorthstarRatingType {
   learned
   actions
+
+  @@schema("ngc")
 }
 
 model NorthstarRating {
@@ -78,6 +90,8 @@ model NorthstarRating {
   value        Int?                @db.SmallInt
   createdAt    DateTime            @default(now())
   updatedAt    DateTime            @updatedAt
+
+  @@schema("ngc")
 }
 
 enum OrganisationType {
@@ -88,6 +102,8 @@ enum OrganisationType {
   other
   publicOrRegionalAuthority
   universityOrSchool
+
+  @@schema("ngc")
 }
 
 model Organisation {
@@ -100,6 +116,8 @@ model Organisation {
   polls                 Poll[]
   createdAt             DateTime                    @default(now())
   updatedAt             DateTime                    @updatedAt
+
+  @@schema("ngc")
 }
 
 model OrganisationAdministrator {
@@ -110,6 +128,8 @@ model OrganisationAdministrator {
   organisationId String
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
+
+  @@schema("ngc")
 }
 
 model Poll {
@@ -124,11 +144,15 @@ model Poll {
   simulations                  SimulationPoll[]
   createdAt                    DateTime                        @default(now())
   updatedAt                    DateTime                        @updatedAt
+
+  @@schema("ngc")
 }
 
 enum PollDefaultAdditionalQuestionType {
   postalCode
   birthdate
+
+  @@schema("ngc")
 }
 
 model PollDefaultAdditionalQuestion {
@@ -140,12 +164,15 @@ model PollDefaultAdditionalQuestion {
   updatedAt DateTime                          @updatedAt
 
   @@unique([pollId, type])
+  @@schema("ngc")
 }
 
 enum QuizzAnswerIsAnswerCorrect {
   correct
   almost
   wrong
+
+  @@schema("ngc")
 }
 
 model QuizzAnswer {
@@ -157,6 +184,7 @@ model QuizzAnswer {
   updatedAt       DateTime                   @updatedAt
 
   @@unique([simulationId, answer])
+  @@schema("ngc")
 }
 
 model Simulation {
@@ -176,11 +204,15 @@ model Simulation {
   verifiedUser               VerifiedUser?                        @relation(fields: [userEmail], references: [email], onDelete: Cascade)
   createdAt                  DateTime                             @default(now())
   updatedAt                  DateTime                             @updatedAt
+
+  @@schema("ngc")
 }
 
 enum SimulationAdditionalQuestionAnswerType {
   custom
   default
+
+  @@schema("ngc")
 }
 
 model SimulationAdditionalQuestionAnswer {
@@ -192,6 +224,8 @@ model SimulationAdditionalQuestionAnswer {
   answer       String
   createdAt    DateTime                               @default(now())
   updatedAt    DateTime                               @updatedAt
+
+  @@schema("ngc")
 }
 
 model SimulationPoll {
@@ -204,6 +238,7 @@ model SimulationPoll {
   updatedAt    DateTime   @updatedAt
 
   @@unique([simulationId, pollId])
+  @@schema("ngc")
 }
 
 model Survey {
@@ -212,6 +247,8 @@ model Survey {
   contextFile String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@schema("ngc")
 }
 
 model User {
@@ -223,6 +260,8 @@ model User {
   simulations   Simulation[]
   createdAt     DateTime             @default(now())
   updatedAt     DateTime             @updatedAt
+
+  @@schema("ngc")
 }
 
 model VerificationCode {
@@ -233,6 +272,8 @@ model VerificationCode {
   expirationDate DateTime
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+
+  @@schema("ngc")
 }
 
 model VerifiedUser {
@@ -246,4 +287,6 @@ model VerifiedUser {
   simulations              Simulation[]
   createdAt                DateTime                    @default(now())
   updatedAt                DateTime                    @updatedAt
+
+  @@schema("ngc")
 }
