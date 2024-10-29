@@ -20,11 +20,12 @@ export const addOrUpdateBrevoAdministratorContact: Handler<
     participantUser,
   },
 }) => {
-  if (
-    !email ||
-    (!participants?.some(({ user }) => user.id === id) &&
-      participantUser?.id !== id)
-  ) {
+  const administratorHasJoined = participants?.some(
+    ({ user }) => user.id === id
+  )
+  const isAdministrator = participantUser?.id === id
+
+  if (!email || (!administratorHasJoined && !isAdministrator)) {
     return
   }
 
