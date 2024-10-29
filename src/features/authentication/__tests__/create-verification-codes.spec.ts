@@ -73,7 +73,11 @@ describe('Given a NGC user', () => {
         email: faker.internet.email(),
       }
 
-      nock(process.env.BREVO_URL!).post('/v3/smtp/email').reply(200)
+      nock(process.env.BREVO_URL!)
+        .post('/v3/smtp/email')
+        .reply(200)
+        .post('/v3/contacts')
+        .reply(200)
 
       const response = await agent
         .post(url)
@@ -95,7 +99,11 @@ describe('Given a NGC user', () => {
         email: faker.internet.email(),
       }
 
-      nock(process.env.BREVO_URL!).post('/v3/smtp/email').reply(200)
+      nock(process.env.BREVO_URL!)
+        .post('/v3/smtp/email')
+        .reply(200)
+        .post('/v3/contacts')
+        .reply(200)
 
       await agent.post(url).send(payload)
 
@@ -138,9 +146,39 @@ describe('Given a NGC user', () => {
           },
         })
         .reply(200)
+        .post('/v3/contacts')
+        .reply(200)
 
       await agent.post(url).send({
         userId: faker.string.uuid(),
+        email,
+      })
+
+      expect(scope.isDone()).toBeTruthy()
+    })
+
+    test('Then it updates brevo contact', async () => {
+      const email = faker.internet.email()
+      const userId = faker.string.uuid()
+
+      const scope = nock(process.env.BREVO_URL!, {
+        reqheaders: {
+          'api-key': process.env.BREVO_API_KEY!,
+        },
+      })
+        .post('/v3/contacts', {
+          email,
+          attributes: {
+            USER_ID: userId,
+          },
+          updateEnabled: true,
+        })
+        .reply(200)
+        .post('/v3/smtp/email')
+        .reply(200)
+
+      await agent.post(url).send({
+        userId,
         email,
       })
 

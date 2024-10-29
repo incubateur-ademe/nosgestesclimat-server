@@ -1,4 +1,4 @@
-import { ATTRIBUTE_NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT } from '../../constants/brevo'
+import { Attributes } from '../../adapters/brevo/constant'
 import type { GroupType } from '../../schemas/GroupSchema'
 import { Group } from '../../schemas/GroupSchema'
 import { createOrUpdateContact } from '../email/createOrUpdateContact'
@@ -19,7 +19,7 @@ export async function handleUpdateGroupNumberOneParticipant({ group }: Props) {
     email: email ?? '',
     userId,
     otherAttributes: {
-      [ATTRIBUTE_NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT]:
+      [Attributes.NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT]:
         groupsCreatedWithOneParticipant.length,
     },
   })

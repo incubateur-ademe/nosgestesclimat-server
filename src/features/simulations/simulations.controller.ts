@@ -7,6 +7,7 @@ import { EventBus } from '../../core/event-bus/event-bus'
 import logger from '../../logger'
 import { SimulationUpsertedEvent } from './events/SimulationUpserted.event'
 import { sendSimulationUpserted } from './handlers/send-simulation-upserted'
+import { updateBrevoContact } from './handlers/update-brevo-contact'
 import {
   createSimulation,
   fetchSimulation,
@@ -14,6 +15,7 @@ import {
 } from './simulations.service'
 import {
   SimulationCreateDto,
+  SimulationCreateNewsletterList,
   SimulationCreateValidator,
   SimulationFetchValidator,
   SimulationsFetchValidator,
@@ -22,6 +24,7 @@ import {
 const router = express.Router()
 
 EventBus.on(SimulationUpsertedEvent, sendSimulationUpserted)
+EventBus.on(SimulationUpsertedEvent, updateBrevoContact)
 
 /**
  * Upserts a simulation
@@ -32,6 +35,9 @@ router
     try {
       const simulation = await createSimulation({
         simulationDto: SimulationCreateDto.parse(req.body), // default values are not set in middleware
+        newsletters: SimulationCreateNewsletterList.parse(
+          req.query?.newsletters || []
+        ),
         origin: req.get('origin') || config.origin,
       })
 

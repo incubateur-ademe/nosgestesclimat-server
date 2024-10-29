@@ -78,7 +78,7 @@ export const createGroupAndUser = async ({
   participants,
 }: GroupCreateDto) => {
   // upsert administrator
-  await prisma.user.upsert({
+  const administrator = await prisma.user.upsert({
     where: {
       id: userId,
     },
@@ -93,8 +93,10 @@ export const createGroupAndUser = async ({
     },
   })
 
+  const [participantDto] = participants || []
+
   // For now no relation
-  const [group, ...simulations] = await Promise.all([
+  const [group, simulation] = await Promise.all([
     // create group
     prisma.group.create({
       data: {
@@ -121,17 +123,21 @@ export const createGroupAndUser = async ({
       select: defaultGroupSelection,
     }),
     // create simulation if any
-    ...(participants || []).map((p) =>
-      createParticipantSimulation(userId, p.simulation)
-    ),
+    ...(participantDto
+      ? [createParticipantSimulation(userId, participantDto.simulation)]
+      : []),
   ])
 
   return {
-    ...group,
-    participants: group.participants.map((p, i) => ({
-      ...p,
-      simulation: simulations[i],
-    })),
+    administrator,
+    simulation,
+    group: {
+      ...group,
+      participants: group.participants.map((p) => ({
+        ...p,
+        simulation,
+      })),
+    },
   }
 }
 
@@ -238,10 +244,16 @@ export const findGroupParticipantById = (id: string) => {
   })
 }
 
-export const deleteParticipantById = (id: string) => {
+export const deleteParticipantById = async (id: string) => {
   return prisma.groupParticipant.delete({
     where: {
       id,
+    },
+    select: {
+      group: {
+        select: defaultGroupSelection,
+      },
+      user: defaultUserSelection,
     },
   })
 }
@@ -330,6 +342,59 @@ export const deleteUserGroup = async ({
       administrator: {
         userId,
       },
+    },
+    select: defaultGroupSelection,
+  })
+}
+
+export const getAdministratorGroupsStats = async (administratorId: string) => {
+  const [createdGroupsCount, createdGroupsWithOneParticipantCount, group] =
+    await Promise.all([
+      prisma.group.count({
+        where: {
+          administrator: {
+            userId: administratorId,
+          },
+        },
+      }),
+      prisma.group.count({
+        where: {
+          administrator: {
+            userId: administratorId,
+          },
+          participants: {
+            every: {
+              userId: administratorId,
+            },
+          },
+        },
+      }),
+      prisma.group.findFirst({
+        where: {
+          administrator: {
+            userId: administratorId,
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        select: {
+          createdAt: true,
+        },
+      }),
+    ])
+
+  return {
+    createdGroupsCount,
+    createdGroupsWithOneParticipantCount: createdGroupsWithOneParticipantCount,
+    lastGroupCreationDate: group?.createdAt,
+  }
+}
+
+export const getGroupsJoinedCount = (userId: string) => {
+  return prisma.groupParticipant.count({
+    where: {
+      userId,
     },
   })
 }

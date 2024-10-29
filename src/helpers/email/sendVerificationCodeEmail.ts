@@ -1,5 +1,5 @@
 import { sendVerificationCodeEmail as sendBrevoVerificationCodeEmail } from '../../adapters/brevo/client'
-import { LIST_ID_ORGANISATIONS } from '../../constants/brevo'
+import { Attributes, ListIds } from '../../adapters/brevo/constant'
 import { createOrUpdateContact } from './createOrUpdateContact'
 
 type Props = {
@@ -16,9 +16,9 @@ export async function sendVerificationCodeEmail({
     // Add contact to the list or update it
     await createOrUpdateContact({
       email,
-      listIds: [LIST_ID_ORGANISATIONS],
+      listIds: [ListIds.ORGANISATIONS],
       otherAttributes: {
-        ATTRIBUTE_IS_ORGANISATION_ADMIN: true,
+        [Attributes.IS_ORGANISATION_ADMIN]: true,
       },
     })
 

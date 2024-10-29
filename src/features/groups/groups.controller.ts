@@ -7,6 +7,8 @@ import { ForbiddenException } from '../../core/errors/ForbiddenException'
 import { EventBus } from '../../core/event-bus/event-bus'
 import logger from '../../logger'
 import { GroupCreatedEvent } from './events/GroupCreated.event'
+import { GroupDeletedEvent } from './events/GroupDeleted.event'
+import { GroupUpdatedEvent } from './events/GroupUpdated.event'
 import {
   createGroup,
   createParticipant,
@@ -27,11 +29,14 @@ import {
   ParticipantCreateValidator,
   ParticipantDeleteValidator,
 } from './groups.validator'
-import { sendGroupCreated } from './handlers/send-group-created'
+import {
+  addOrUpdateBrevoAdministratorContact,
+  addOrUpdateBrevoParticipantContact,
+} from './handlers/add-or-update-brevo-contact'
 
 const router = express.Router()
 
-EventBus.on(GroupCreatedEvent, sendGroupCreated)
+EventBus.on(GroupCreatedEvent, addOrUpdateBrevoAdministratorContact)
 
 /**
  * Creates a new group
@@ -52,6 +57,9 @@ router
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
     }
   })
+
+EventBus.on(GroupUpdatedEvent, addOrUpdateBrevoAdministratorContact)
+EventBus.on(GroupUpdatedEvent, addOrUpdateBrevoParticipantContact)
 
 /**
  * Updates a user group
@@ -92,6 +100,8 @@ router
       if (err instanceof EntityNotFoundException) {
         return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
       }
+
+      // console.log(err.reasons[0].errors[0])
 
       logger.error('Participant creation failed', err)
 
@@ -164,6 +174,9 @@ router
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
     }
   })
+
+EventBus.on(GroupDeletedEvent, addOrUpdateBrevoAdministratorContact)
+EventBus.on(GroupDeletedEvent, addOrUpdateBrevoParticipantContact)
 
 /**
  * Deletes group for a user and an id

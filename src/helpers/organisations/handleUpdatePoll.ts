@@ -1,5 +1,5 @@
 import { sendPollSimulationUpsertedEmail } from '../../adapters/brevo/client'
-import { ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER } from '../../constants/brevo'
+import { Attributes } from '../../adapters/brevo/constant'
 import { Organisation } from '../../schemas/OrganisationSchema'
 import type { PollType } from '../../schemas/PollSchema'
 import type { SimulationType } from '../../schemas/SimulationSchema'
@@ -36,7 +36,7 @@ export async function handleUpdatePoll({
         email: administrator.email,
         userId: administrator.userId,
         otherAttributes: {
-          [ATTRIBUTE_LAST_POLL_PARTICIPANTS_NUMBER]: poll.simulations.length,
+          [Attributes.LAST_POLL_PARTICIPANTS_NUMBER]: poll.simulations.length,
         },
       })
     }

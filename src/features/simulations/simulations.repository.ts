@@ -1,5 +1,9 @@
 import type { Prisma } from '@prisma/client'
 import { prisma } from '../../adapters/prisma/client'
+import {
+  defaultPollSelection,
+  organisationSelectionWithoutPolls,
+} from '../organisations/organisations.repository'
 import type { OrganisationPollParams } from '../organisations/organisations.validator'
 import type { UserParams } from '../users/users.validator'
 import type {
@@ -215,10 +219,7 @@ export const createPollUserSimulation = async (
     simulationId,
   }
 
-  const {
-    simulation,
-    poll: { organisation },
-  } = await prisma.simulationPoll.upsert({
+  const { simulation, poll } = await prisma.simulationPoll.upsert({
     where: {
       simulationId_pollId: relation,
     },
@@ -230,17 +231,28 @@ export const createPollUserSimulation = async (
       },
       poll: {
         select: {
+          ...defaultPollSelection,
           organisation: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
+            select: organisationSelectionWithoutPolls,
           },
         },
       },
     },
   })
 
-  return { simulation, organisation }
+  return { simulation, poll }
+}
+
+export const getIncompleteSimulationsCount = (user: {
+  userId: string
+  userEmail: string
+}) => {
+  return prisma.simulation.count({
+    where: {
+      ...user,
+      progression: {
+        lt: 1,
+      },
+    },
+  })
 }

@@ -18,6 +18,9 @@ import {
 } from '../simulations/simulations.validator'
 import { OrganisationCreatedEvent } from './events/OrganisationCreated.event'
 import { OrganisationUpdatedEvent } from './events/OrganisationUpdated.event'
+import { PollCreatedEvent } from './events/PollCreated.event'
+import { PollDeletedEvent } from './events/PollDeletedEvent'
+import { PollUpdatedEvent } from './events/PollUpdated.event'
 import { addOrUpdateBrevoContact } from './handlers/add-or-update-brevo-contact'
 import { addOrUpdateConnectContact } from './handlers/add-or-update-connect-contact'
 import { sendOrganisationCreated } from './handlers/send-organisation-created'
@@ -166,6 +169,8 @@ router
     }
   )
 
+EventBus.on(PollCreatedEvent, addOrUpdateBrevoContact)
+
 /**
  * Creates a new poll for an organisation
  */
@@ -195,6 +200,8 @@ router
     }
   )
 
+EventBus.on(PollUpdatedEvent, addOrUpdateBrevoContact)
+
 /**
  * Updates a poll for an organisation
  */
@@ -223,6 +230,8 @@ router
       }
     }
   )
+
+EventBus.on(PollDeletedEvent, addOrUpdateBrevoContact)
 
 /**
  * Deletes a poll for an organisation

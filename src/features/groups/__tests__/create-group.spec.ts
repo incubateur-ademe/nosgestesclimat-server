@@ -227,7 +227,7 @@ describe('Given a NGC user', () => {
 
         const {
           body: { id },
-        } = await agent.post(url).send(payload)
+        } = await agent.post(url).send(payload).expect(StatusCodes.CREATED)
 
         const createdGroup = await prisma.group.findUnique({
           where: {
@@ -270,6 +270,7 @@ describe('Given a NGC user', () => {
           participants: [],
         })
       })
+
       describe('And leaving his/her email', () => {
         test('Then it does not send a creation email', async () => {
           const email = faker.internet.email().toLocaleLowerCase()
@@ -287,6 +288,30 @@ describe('Given a NGC user', () => {
 
           const scope = nock(process.env.BREVO_URL!)
             .post('/v3/smtp/email')
+            .reply(200)
+
+          await agent.post(url).send(payload).expect(StatusCodes.CREATED)
+
+          expect(scope.isDone()).toBeFalsy()
+          nock.cleanAll()
+        })
+
+        test('Then it does not add or update administrator contact in brevo', async () => {
+          const email = faker.internet.email().toLocaleLowerCase()
+          const userId = faker.string.uuid()
+          const name = faker.person.fullName()
+          const payload: GroupCreateInputDto = {
+            name: faker.company.name(),
+            emoji: faker.internet.emoji(),
+            administrator: {
+              userId,
+              email,
+              name,
+            },
+          }
+
+          const scope = nock(process.env.BREVO_URL!)
+            .post('/v3/contacts')
             .reply(200)
 
           await agent.post(url).send(payload).expect(StatusCodes.CREATED)
@@ -376,11 +401,19 @@ describe('Given a NGC user', () => {
           ],
         }
 
-        nock(process.env.BREVO_URL!).post('/v3/smtp/email').reply(200)
+        nock(process.env.BREVO_URL!)
+          .post('/v3/contacts')
+          .reply(200)
+          .post('/v3/contacts')
+          .reply(200)
+          .post('/v3/smtp/email')
+          .reply(200)
+          .post('/v3/contacts/lists/35/contacts/remove')
+          .reply(200)
 
         const {
           body: { id },
-        } = await agent.post(url).send(payload)
+        } = await agent.post(url).send(payload).expect(StatusCodes.CREATED)
 
         const createdGroup = await prisma.group.findUnique({
           where: {
@@ -439,6 +472,168 @@ describe('Given a NGC user', () => {
       })
 
       describe('And leaving his/her email', () => {
+        test('Then it adds or updates group administrator in brevo', async () => {
+          const email = faker.internet.email().toLocaleLowerCase()
+          const userId = faker.string.uuid()
+          const name = faker.person.fullName()
+          const simulation = getSimulationPayload()
+          const payload: GroupCreateInputDto = {
+            name: faker.company.name(),
+            emoji: faker.internet.emoji(),
+            administrator: {
+              userId,
+              email,
+              name,
+            },
+            participants: [
+              {
+                simulation,
+              },
+            ],
+          }
+
+          // Need to be sure that the group gets created with a known createdAt date
+          const createdAt = new Date()
+
+          jest
+            .spyOn(prisma.group, 'create')
+            .mockImplementationOnce((params) => {
+              params.data.createdAt = createdAt
+
+              jest.spyOn(prisma.group, 'create').mockRestore()
+
+              return prisma.group.create(params)
+            })
+
+          const scope = nock(process.env.BREVO_URL!, {
+            reqheaders: {
+              'api-key': process.env.BREVO_API_KEY!,
+            },
+          })
+            .post('/v3/smtp/email')
+            .reply(200)
+            .post('/v3/contacts', {
+              email,
+              listIds: [29],
+              attributes: {
+                USER_ID: userId,
+                NUMBER_CREATED_GROUPS: 1,
+                LAST_GROUP_CREATION_DATE: createdAt.toISOString(),
+                NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT: 1,
+                PRENOM: name,
+              },
+              updateEnabled: true,
+            })
+            .reply(200)
+            .post('/v3/contacts/lists/35/contacts/remove')
+            .reply(200)
+            .post('/v3/contacts')
+            .reply(200)
+
+          await agent.post(url).send(payload).expect(StatusCodes.CREATED)
+
+          expect(scope.isDone()).toBeTruthy()
+        })
+
+        test('Then it updates group administrator simulation in brevo', async () => {
+          const date = new Date()
+          const email = faker.internet.email().toLocaleLowerCase()
+          const userId = faker.string.uuid()
+          const name = faker.person.fullName()
+          const simulation = getSimulationPayload({ date })
+          const { computedResults } = simulation
+          const payload: GroupCreateInputDto = {
+            name: faker.company.name(),
+            emoji: faker.internet.emoji(),
+            administrator: {
+              userId,
+              email,
+              name,
+            },
+            participants: [
+              {
+                simulation,
+              },
+            ],
+          }
+
+          // Need to be sure that the group gets created with a known createdAt date
+          const createdAt = new Date()
+
+          jest
+            .spyOn(prisma.group, 'create')
+            .mockImplementationOnce((params) => {
+              params.data.createdAt = createdAt
+
+              jest.spyOn(prisma.group, 'create').mockRestore()
+
+              return prisma.group.create(params)
+            })
+
+          const scope = nock(process.env.BREVO_URL!, {
+            reqheaders: {
+              'api-key': process.env.BREVO_API_KEY!,
+            },
+          })
+            .post('/v3/contacts', {
+              email,
+              attributes: {
+                USER_ID: userId,
+                LAST_SIMULATION_DATE: date.toISOString(),
+                ACTIONS_SELECTED_NUMBER: 0,
+                LAST_SIMULATION_BILAN_FOOTPRINT: (
+                  computedResults.carbone.bilan / 1000
+                ).toLocaleString('fr-FR', {
+                  maximumFractionDigits: 1,
+                }),
+                LAST_SIMULATION_TRANSPORTS_FOOTPRINT: (
+                  computedResults.carbone.categories.transport / 1000
+                ).toLocaleString('fr-FR', {
+                  maximumFractionDigits: 1,
+                }),
+                LAST_SIMULATION_ALIMENTATION_FOOTPRINT: (
+                  computedResults.carbone.categories.alimentation / 1000
+                ).toLocaleString('fr-FR', {
+                  maximumFractionDigits: 1,
+                }),
+                LAST_SIMULATION_LOGEMENT_FOOTPRINT: (
+                  computedResults.carbone.categories.logement / 1000
+                ).toLocaleString('fr-FR', {
+                  maximumFractionDigits: 1,
+                }),
+                LAST_SIMULATION_DIVERS_FOOTPRINT: (
+                  computedResults.carbone.categories.divers / 1000
+                ).toLocaleString('fr-FR', {
+                  maximumFractionDigits: 1,
+                }),
+                LAST_SIMULATION_SERVICES_FOOTPRINT: (
+                  computedResults.carbone.categories['services sociétaux'] /
+                  1000
+                ).toLocaleString('fr-FR', {
+                  maximumFractionDigits: 1,
+                }),
+                LAST_SIMULATION_BILAN_WATER: Math.round(
+                  computedResults.eau.bilan / 365
+                ).toString(),
+                PRENOM: name,
+              },
+              updateEnabled: true,
+            })
+            .reply(200)
+            .post('/v3/contacts/lists/35/contacts/remove', {
+              emails: [email],
+            })
+            .reply(200)
+            .post('/v3/contacts')
+            .reply(200)
+            .post('/v3/smtp/email')
+            .reply(200)
+
+          await agent.post(url).send(payload).expect(StatusCodes.CREATED)
+
+          expect(scope.isDone()).toBeTruthy()
+        })
+
         test('Then it sends a creation email', async () => {
           const email = faker.internet.email().toLocaleLowerCase()
           const userId = faker.string.uuid()
@@ -493,6 +688,12 @@ describe('Given a NGC user', () => {
                 NAME: name,
               },
             })
+            .reply(200)
+            .post('/v3/contacts/lists/35/contacts/remove')
+            .reply(200)
+            .post('/v3/contacts')
+            .reply(200)
+            .post('/v3/contacts')
             .reply(200)
 
           await agent.post(url).send(payload).expect(StatusCodes.CREATED)
@@ -555,6 +756,12 @@ describe('Given a NGC user', () => {
                   NAME: name,
                 },
               })
+              .reply(200)
+              .post('/v3/contacts/lists/35/contacts/remove')
+              .reply(200)
+              .post('/v3/contacts')
+              .reply(200)
+              .post('/v3/contacts')
               .reply(200)
 
             await agent

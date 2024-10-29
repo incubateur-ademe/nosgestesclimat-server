@@ -5,6 +5,10 @@ import nock from 'nock'
 import slugify from 'slugify'
 import { baseURL } from '../../../../adapters/connect/client'
 import { prisma } from '../../../../adapters/prisma/client'
+import {
+  defaultPollSelection,
+  organisationSelectionWithoutPolls,
+} from '../../organisations.repository'
 import type { OrganisationPollCreateDto } from '../../organisations.validator'
 import {
   OrganisationTypeEnum,
@@ -67,11 +71,18 @@ export const createOrganisation = async ({
     numberOfCollaborators,
   }
 
-  nock(process.env.BREVO_URL!)
+  const scope = nock(process.env.BREVO_URL!)
     .post('/v3/smtp/email')
     .reply(200)
     .post('/v3/contacts')
     .reply(200)
+
+  const [administrator] = administrators || []
+
+  if (!administrator?.optedInForCommunications) {
+    scope.post('/v3/contacts/lists/27/contacts/remove').reply(200)
+  }
+
   nock(baseURL).post('/api/v1/personnes').reply(200)
 
   const response = await agent
@@ -79,6 +90,8 @@ export const createOrganisation = async ({
     .set('cookie', cookie)
     .send(payload)
     .expect(201)
+
+  nock.abortPendingRequests()
 
   return response.body
 }
@@ -113,20 +126,12 @@ export const mockUpdateOrganisationPollCreation: any = async (params: any) => {
       id,
     },
     select: {
+      ...organisationSelectionWithoutPolls,
       polls: {
         where: {
           slug: create.slug!,
         },
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          defaultAdditionalQuestions: true,
-          customAdditionalQuestions: true,
-          expectedNumberOfParticipants: true,
-          createdAt: true,
-          updatedAt: true,
-        },
+        select: defaultPollSelection,
       },
     },
   })

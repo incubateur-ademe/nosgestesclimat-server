@@ -1,3 +1,5 @@
+import { StatusCodes } from 'http-status-codes'
+import nock from 'nock'
 import type supertest from 'supertest'
 import type { VerificationCodeCreateDto } from '../../verification-codes.validator'
 import { createVerificationCode } from './verification-codes.fixture'
@@ -18,11 +20,18 @@ export const login = async ({
     verificationCode,
   })
 
-  const response = await agent.post(LOGIN_ROUTE).send({
-    userId,
-    email,
-    code,
-  })
+  nock(process.env.BREVO_URL!).post('/v3/contacts').reply(200)
+
+  const response = await agent
+    .post(LOGIN_ROUTE)
+    .send({
+      userId,
+      email,
+      code,
+    })
+    .expect(StatusCodes.OK)
+
+  nock.abortPendingRequests()
 
   const [cookie] = response.headers['set-cookie']
 
