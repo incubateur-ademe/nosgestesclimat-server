@@ -3,8 +3,10 @@ import type { CookieOptions } from 'express'
 import jwt from 'jsonwebtoken'
 import { config } from '../../config'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
+import { EventBus } from '../../core/event-bus/event-bus'
 import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError'
 import type { LoginDto } from './authentication.validator'
+import { LoginEvent } from './events/Login.event'
 import { findUserVerificationCode } from './verification-codes.repository'
 
 export const COOKIE_MAX_AGE = 1000 * 60 * 60 * 24 * 61 // 2 months
@@ -25,19 +27,34 @@ export const generateVerificationCodeAndExpiration = () => ({
   expirationDate: dayjs().add(1, 'hour').toDate(),
 })
 
-export const login = async (loginDto: LoginDto) => {
+export const exchangeCredentialsForToken = async (loginDto: LoginDto) => {
   try {
     const { email, userId } = await findUserVerificationCode(loginDto)
 
-    // TODO migrate all users, groups and simulations for given email
-
-    return jwt.sign({ email, userId }, config.security.jwt.secret, {
-      expiresIn: COOKIE_MAX_AGE,
-    })
+    return {
+      email,
+      userId,
+      token: jwt.sign({ email, userId }, config.security.jwt.secret, {
+        expiresIn: COOKIE_MAX_AGE,
+      }),
+    }
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('VerificationCode not found')
     }
     throw e
   }
+}
+
+export const login = async (loginDto: LoginDto) => {
+  const { email, token, userId } = await exchangeCredentialsForToken(loginDto)
+
+  // TODO migrate all users, groups and simulations for given email
+  const loginEvent = new LoginEvent({ email, userId })
+
+  EventBus.emit(loginEvent)
+
+  await EventBus.once(loginEvent)
+
+  return token
 }

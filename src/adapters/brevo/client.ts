@@ -9,7 +9,14 @@ import axios from 'axios'
 import axiosRetry from 'axios-retry'
 import { config } from '../../config'
 import { isNetworkOrTimeoutOrRetryableError } from '../../core/typeguards/isRetryableAxiosError'
+import type {
+  ActionChoicesSchema,
+  ComputedResultSchema,
+} from '../../features/simulations/simulations.validator'
 import {
+  AllNewsletters,
+  Attributes,
+  ListIds,
   MATOMO_CAMPAIGN_EMAIL_AUTOMATISE,
   MATOMO_CAMPAIGN_KEY,
   MATOMO_KEYWORD_KEY,
@@ -229,7 +236,7 @@ export const sendPollSimulationUpsertedEmail = async ({
   })
 }
 
-export const addOrUpdateContact = ({
+const addOrUpdateContact = ({
   email,
   listIds,
   attributes,
@@ -243,5 +250,281 @@ export const addOrUpdateContact = ({
     listIds,
     attributes,
     updateEnabled: true,
+  })
+}
+
+const unsubscribeContactFromList = ({
+  email,
+  listId,
+}: Readonly<{
+  email: string
+  listId: ListIds
+}>) => {
+  return brevo.post(`/v3/contacts/lists/${listId}/contacts/remove`, {
+    emails: [email],
+  })
+}
+
+export const addOrUpdateContactAfterLogin = ({
+  userId,
+  email,
+}: {
+  userId: string
+  email: string
+}) => {
+  const attributes = {
+    [Attributes.USER_ID]: userId,
+  }
+
+  return addOrUpdateContact({
+    email,
+    attributes,
+  })
+}
+
+export const addOrUpdateContactAfterOrganisationChange = async ({
+  slug,
+  email,
+  userId,
+  organisationName,
+  administratorName,
+  optedInForCommunications,
+  lastPollParticipantsCount,
+}: {
+  slug: string
+  email: string
+  userId: string
+  organisationName: string
+  lastPollParticipantsCount: number
+  administratorName?: string | null
+  optedInForCommunications?: boolean
+}) => {
+  const attributes = {
+    [Attributes.USER_ID]: userId,
+    [Attributes.IS_ORGANISATION_ADMIN]: true,
+    [Attributes.ORGANISATION_NAME]: organisationName,
+    [Attributes.ORGANISATION_SLUG]: slug,
+    [Attributes.LAST_POLL_PARTICIPANTS_NUMBER]: lastPollParticipantsCount,
+    [Attributes.OPT_IN]: !!optedInForCommunications,
+    ...(administratorName
+      ? {
+          [Attributes.PRENOM]: administratorName,
+        }
+      : {}),
+  }
+
+  await addOrUpdateContact({
+    email,
+    attributes,
+    ...(optedInForCommunications ? { listIds: [ListIds.ORGANISATIONS] } : {}),
+  })
+
+  if (!optedInForCommunications) {
+    await unsubscribeContactFromList({
+      email,
+      listId: ListIds.ORGANISATIONS,
+    })
+  }
+}
+
+export const addOrUpdateAdministratorContactAfterGroupChange = async ({
+  email,
+  userId,
+  administratorName,
+  createdGroupsCount,
+  lastGroupCreationDate,
+  createdGroupsWithOneParticipantCount,
+}: {
+  email: string
+  userId: string
+  createdGroupsCount: number
+  lastGroupCreationDate: Date | undefined
+  administratorName?: string | null
+  createdGroupsWithOneParticipantCount: number
+}) => {
+  const attributes = {
+    [Attributes.USER_ID]: userId,
+    [Attributes.NUMBER_CREATED_GROUPS]: createdGroupsCount,
+    [Attributes.LAST_GROUP_CREATION_DATE]: lastGroupCreationDate?.toISOString(),
+    [Attributes.NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT]:
+      createdGroupsWithOneParticipantCount,
+    ...(administratorName
+      ? {
+          [Attributes.PRENOM]: administratorName,
+        }
+      : {}),
+  }
+
+  await addOrUpdateContact({
+    email,
+    ...(createdGroupsCount > 0
+      ? {
+          /**
+           * This list is purely technical for groups
+           * TODO update CGUs or warn user that we will use his mail
+           */
+          listIds: [ListIds.GROUP_CREATED],
+        }
+      : {}),
+    attributes,
+  })
+
+  if (createdGroupsCount === 0) {
+    await unsubscribeContactFromList({
+      email,
+      listId: ListIds.GROUP_CREATED,
+    })
+  }
+}
+
+export const addOrUpdateParticipantContactAfterGroupChange = async ({
+  email,
+  joinedGroupsCount,
+}: {
+  email: string
+  joinedGroupsCount: number
+}) => {
+  if (joinedGroupsCount === 0) {
+    await unsubscribeContactFromList({
+      email,
+      listId: ListIds.GROUP_JOINED,
+    })
+  }
+}
+
+const NUMBER_OF_DAYS_IN_A_YEAR = 365
+
+const NUMBER_OF_KG_IN_A_TON = 1000
+
+export const addOrUpdateContactAfterSimulationCreated = async ({
+  name,
+  email,
+  userId,
+  newsletters,
+  actionChoices,
+  computedResults,
+  lastSimulationDate,
+  incompleteSumulations,
+  subscribeToGroupNewsletter,
+}: {
+  name: string | null
+  email: string
+  userId: string
+  newsletters?: Array<
+    | ListIds.MAIN_NEWSLETTER
+    | ListIds.TRANSPORT_NEWSLETTER
+    | ListIds.LOGEMENT_NEWSLETTER
+  >
+  actionChoices?: ActionChoicesSchema
+  computedResults: ComputedResultSchema
+  lastSimulationDate: Date
+  incompleteSumulations: number
+  subscribeToGroupNewsletter: boolean
+}) => {
+  const locale = 'fr-FR' // for now
+  const bilan = computedResults?.carbone?.bilan ?? 0
+  const transport = computedResults?.carbone?.categories?.transport ?? 0
+  const alimentation = computedResults?.carbone?.categories?.alimentation ?? 0
+  const logement = computedResults?.carbone?.categories?.logement ?? 0
+  const divers = computedResults?.carbone?.categories?.divers ?? 0
+  const services =
+    computedResults?.carbone?.categories?.['services sociétaux'] ?? 0
+  const eau = computedResults?.eau?.bilan ?? 0
+
+  const attributes = {
+    [Attributes.USER_ID]: userId,
+    [Attributes.LAST_SIMULATION_DATE]: lastSimulationDate.toISOString(),
+    [Attributes.ACTIONS_SELECTED_NUMBER]: Object.values(
+      actionChoices || {}
+    ).filter((v) => !!v).length,
+    [Attributes.LAST_SIMULATION_BILAN_FOOTPRINT]: (
+      bilan / NUMBER_OF_KG_IN_A_TON
+    ).toLocaleString(locale, {
+      maximumFractionDigits: 1,
+    }),
+    [Attributes.LAST_SIMULATION_TRANSPORTS_FOOTPRINT]: (
+      transport / NUMBER_OF_KG_IN_A_TON
+    ).toLocaleString(locale, {
+      maximumFractionDigits: 1,
+    }),
+    [Attributes.LAST_SIMULATION_ALIMENTATION_FOOTPRINT]: (
+      alimentation / NUMBER_OF_KG_IN_A_TON
+    ).toLocaleString(locale, {
+      maximumFractionDigits: 1,
+    }),
+    [Attributes.LAST_SIMULATION_LOGEMENT_FOOTPRINT]: (
+      logement / NUMBER_OF_KG_IN_A_TON
+    ).toLocaleString(locale, {
+      maximumFractionDigits: 1,
+    }),
+    [Attributes.LAST_SIMULATION_DIVERS_FOOTPRINT]: (
+      divers / NUMBER_OF_KG_IN_A_TON
+    ).toLocaleString(locale, {
+      maximumFractionDigits: 1,
+    }),
+    [Attributes.LAST_SIMULATION_SERVICES_FOOTPRINT]: (
+      services / NUMBER_OF_KG_IN_A_TON
+    ).toLocaleString(locale, {
+      maximumFractionDigits: 1,
+    }),
+    [Attributes.LAST_SIMULATION_BILAN_WATER]: Math.round(
+      eau / NUMBER_OF_DAYS_IN_A_YEAR
+    ).toString(),
+    ...(name
+      ? {
+          [Attributes.PRENOM]: name,
+        }
+      : {}),
+  }
+
+  await addOrUpdateContact({
+    email,
+    attributes,
+    ...(subscribeToGroupNewsletter ? { listIds: [ListIds.GROUP_JOINED] } : {}),
+    ...(newsletters?.length ? { listIds: newsletters } : {}),
+  })
+
+  if (incompleteSumulations === 0) {
+    await unsubscribeContactFromList({
+      email,
+      listId: ListIds.UNFINISHED_SIMULATION,
+    })
+  }
+
+  if (newsletters) {
+    const userNewsletters = new Set(newsletters)
+    for (const newsletter of AllNewsletters) {
+      if (!userNewsletters.has(newsletter)) {
+        await unsubscribeContactFromList({
+          email,
+          listId: newsletter,
+        })
+      }
+    }
+  }
+}
+
+export const addOrUpdateContactAfterIncompleteSimulationCreated = ({
+  name,
+  email,
+  userId,
+}: {
+  name: string | null
+  email: string
+  userId: string
+}) => {
+  const attributes = {
+    [Attributes.USER_ID]: userId,
+    ...(name
+      ? {
+          [Attributes.PRENOM]: name,
+        }
+      : {}),
+  }
+
+  return addOrUpdateContact({
+    email,
+    attributes,
+    listIds: [ListIds.UNFINISHED_SIMULATION],
   })
 }

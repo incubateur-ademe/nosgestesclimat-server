@@ -2,11 +2,16 @@ import express from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { validateRequest } from 'zod-express-middleware'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
+import { EventBus } from '../../core/event-bus/event-bus'
 import logger from '../../logger'
 import { COOKIE_NAME, COOKIES_OPTIONS, login } from './authentication.service'
 import { LoginValidator } from './authentication.validator'
+import { LoginEvent } from './events/Login.event'
+import { updateBrevoContact } from './handlers/update-brevo-contact'
 
 const router = express.Router()
+
+EventBus.on(LoginEvent, updateBrevoContact)
 
 /**
  * Logs a user in

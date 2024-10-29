@@ -24,7 +24,7 @@ const defaultUserSelection = {
   },
 }
 
-const defaultOrganisationSelection = {
+export const organisationSelectionWithoutPolls = {
   id: true,
   name: true,
   slug: true,
@@ -36,6 +36,12 @@ const defaultOrganisationSelection = {
       user: defaultUserSelection,
     },
   },
+  createdAt: true,
+  updatedAt: true,
+}
+
+const defaultOrganisationSelection = {
+  ...organisationSelectionWithoutPolls,
   polls: {
     select: {
       id: true,
@@ -45,8 +51,6 @@ const defaultOrganisationSelection = {
       updatedAt: true,
     },
   },
-  createdAt: true,
-  updatedAt: true,
 }
 
 const findModelUniqueSlug = (
@@ -242,7 +246,9 @@ export const updateAdministratorOrganisation = async (
       ...defaultUserSelection,
     })
 
-    organisationUpdate.administrators.update.data.userEmail = email
+    if (email) {
+      organisationUpdate.administrators.update.data.userEmail = email
+    }
   }
 
   // update organisation
@@ -280,10 +286,11 @@ export const fetchUserOrganisation = (
   return findOrganisationBySlugOrId(params, user, defaultOrganisationSelection)
 }
 
-const defaultPollSelection = {
+export const defaultPollSelection = {
   id: true,
   name: true,
   slug: true,
+  organisationId: true,
   defaultAdditionalQuestions: true,
   customAdditionalQuestions: true,
   expectedNumberOfParticipants: true,
@@ -329,6 +336,7 @@ export const createOrganisationPoll = async (
       },
     },
     select: {
+      ...defaultOrganisationSelection,
       polls: {
         where: {
           slug,
@@ -399,7 +407,12 @@ export const updateOrganisationPoll = async (
           }
         : {}),
     },
-    select: defaultPollSelection,
+    select: {
+      ...defaultPollSelection,
+      organisation: {
+        select: organisationSelectionWithoutPolls,
+      },
+    },
   })
 }
 
@@ -409,6 +422,11 @@ export const deleteOrganisationPoll = async (
 ) => {
   return prisma.poll.delete({
     where: await findOrganisationPollBySlugOrId(params, user),
+    select: {
+      organisation: {
+        select: organisationSelectionWithoutPolls,
+      },
+    },
   })
 }
 
@@ -431,4 +449,45 @@ export const fetchOrganisationPoll = (
   user: NonNullable<Request['user']>
 ) => {
   return findOrganisationPollBySlugOrId(params, user, defaultPollSelection)
+}
+
+export const getLastPollParticipantsCount = async (organisationId: string) => {
+  /**
+   * Prisma does not handle the greatest-n-per-group
+   * https://github.com/prisma/prisma/discussions/17994
+   *
+   * We could replace it with
+   *   const [{ count }] = await prisma.$queryRaw<[{ count: bigint }]>(
+   * Prisma.sql`
+   *   Select count(id) from "SimulationPoll" where "pollId" in
+   *   (Select p1.id from "Poll" p1 left outer join "Poll" p2 on p1."organisationId" = p2."organisationId"
+   *   and (p1."createdAt" < p2."createdAt" or (p1."createdAt" = p2."createdAt" and p1.id < p2.id))
+   *   where p1."organisationId" = ${organisationId} and p2.id is null)
+   * `)
+   *
+   * But less readable
+   */
+
+  let count = 0
+  const poll = await prisma.poll.findFirst({
+    where: {
+      organisationId,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+    select: {
+      id: true,
+    },
+  })
+
+  if (poll) {
+    count = await prisma.simulationPoll.count({
+      where: {
+        pollId: poll.id,
+      },
+    })
+  }
+
+  return count
 }

@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker'
 import dayjs from 'dayjs'
+import { StatusCodes } from 'http-status-codes'
 import nock from 'nock'
 import type supertest from 'supertest'
 import * as authenticationService from '../../authentication.service'
@@ -35,11 +36,18 @@ export const createVerificationCode = async ({
     email: email || faker.internet.email(),
   }
 
-  nock(process.env.BREVO_URL!).post('/v3/smtp/email').reply(200)
+  nock(process.env.BREVO_URL!)
+    .post('/v3/smtp/email')
+    .reply(200)
+    .post('/v3/contacts')
+    .reply(200)
 
   const response = await agent
     .post(CREATE_VERIFICATION_CODE_ROUTE)
     .send(payload)
+    .expect(StatusCodes.CREATED)
+
+  nock.abortPendingRequests()
 
   jest
     .mocked(authenticationService)

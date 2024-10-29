@@ -1,9 +1,6 @@
 import type { Document } from 'mongoose'
 import { sendSimulationUpsertedEmail } from '../../adapters/brevo/client'
-import {
-  LIST_SUBSCRIBED_END_SIMULATION,
-  LIST_SUBSCRIBED_UNFINISHED_SIMULATION,
-} from '../../constants/brevo'
+import { ListIds } from '../../adapters/brevo/constant'
 import type { SimulationType } from '../../schemas/SimulationSchema'
 import type { UserType } from '../../schemas/UserSchema'
 import { createOrUpdateContact } from './createOrUpdateContact'
@@ -44,8 +41,8 @@ export async function sendSimulationEmail({
     userId,
     listIds: [
       isSimulationCompleted
-        ? LIST_SUBSCRIBED_END_SIMULATION
-        : LIST_SUBSCRIBED_UNFINISHED_SIMULATION,
+        ? ListIds.MAIN_NEWSLETTER
+        : ListIds.UNFINISHED_SIMULATION,
     ],
     optin: true,
   })

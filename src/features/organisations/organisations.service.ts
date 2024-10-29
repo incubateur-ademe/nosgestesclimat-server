@@ -7,9 +7,11 @@ import {
   isPrismaErrorNotFound,
   isPrismaErrorUniqueConstraintFailed,
 } from '../../core/typeguards/isPrismaError'
-import { login } from '../authentication/authentication.service'
+import { exchangeCredentialsForToken } from '../authentication/authentication.service'
 import { OrganisationCreatedEvent } from './events/OrganisationCreated.event'
 import { OrganisationUpdatedEvent } from './events/OrganisationUpdated.event'
+import { PollCreatedEvent as PollUpdatedEvent } from './events/PollCreated.event'
+import { PollDeletedEvent } from './events/PollDeletedEvent'
 import {
   createOrganisationAndAdministrator,
   createOrganisationPoll,
@@ -133,11 +135,11 @@ export const updateOrganisation = async ({
     }
 
     try {
-      token = await login({
+      ;({ token } = await exchangeCredentialsForToken({
         ...user,
         code,
         email,
-      })
+      }))
     } catch (e) {
       if (e instanceof EntityNotFoundException) {
         throw new ForbiddenException('Forbidden ! Invalid verification code.')
@@ -205,9 +207,10 @@ export const fetchOrganisation = async ({
   }
 }
 
-const pollToDto = (
-  poll: Awaited<ReturnType<typeof createOrganisationPoll>>['polls'][number]
-) => ({
+const pollToDto = ({
+  organisationId: _,
+  ...poll
+}: Awaited<ReturnType<typeof createOrganisationPoll>>['polls'][number]) => ({
   ...poll,
   defaultAdditionalQuestions: poll.defaultAdditionalQuestions.map(
     ({ type }) => type
@@ -226,7 +229,14 @@ export const createPoll = async ({
   try {
     const {
       polls: [poll],
+      ...organisation
     } = await createOrganisationPoll(params, pollDto, user)
+
+    const pollCreatedEvent = new PollUpdatedEvent({ poll, organisation })
+
+    EventBus.emit(pollCreatedEvent)
+
+    await EventBus.once(pollCreatedEvent)
 
     return pollToDto(poll)
   } catch (e) {
@@ -247,7 +257,17 @@ export const updatePoll = async ({
   user: NonNullable<Request['user']>
 }) => {
   try {
-    const poll = await updateOrganisationPoll(params, pollDto, user)
+    const { organisation, ...poll } = await updateOrganisationPoll(
+      params,
+      pollDto,
+      user
+    )
+
+    const pollUpdatedEvent = new PollUpdatedEvent({ poll, organisation })
+
+    EventBus.emit(pollUpdatedEvent)
+
+    await EventBus.once(pollUpdatedEvent)
 
     return pollToDto(poll)
   } catch (e) {
@@ -266,7 +286,13 @@ export const deletePoll = async ({
   user: NonNullable<Request['user']>
 }) => {
   try {
-    return await deleteOrganisationPoll(params, user)
+    const { organisation } = await deleteOrganisationPoll(params, user)
+
+    const pollDeletedEvent = new PollDeletedEvent({ organisation })
+
+    EventBus.emit(pollDeletedEvent)
+
+    await EventBus.once(pollDeletedEvent)
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('Poll not found')

@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker'
 import { StatusCodes } from 'http-status-codes'
+import nock from 'nock'
 import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
@@ -139,6 +140,175 @@ describe('Given a NGC user', () => {
               databaseError
             )
           })
+        })
+      })
+
+      describe('And he did join leaving his/her email', () => {
+        let participantId: string
+        let userId: string
+        let participantUserEmail: string
+
+        beforeEach(
+          async () =>
+            ({
+              id: participantId,
+              userId,
+              email: participantUserEmail,
+            } = await joinGroup({
+              agent,
+              groupId,
+              participant: {
+                email: faker.internet.email(),
+              },
+            }))
+        )
+
+        test('Then it updates group participant in brevo', async () => {
+          const scope = nock(process.env.BREVO_URL!, {
+            reqheaders: {
+              'api-key': process.env.BREVO_API_KEY!,
+            },
+          })
+            .post('/v3/contacts/lists/30/contacts/remove', {
+              emails: [participantUserEmail],
+            })
+            .reply(200)
+
+          await agent
+            .delete(
+              url
+                .replace(':groupId', groupId)
+                .replace(':participantId', participantId)
+                .replace(':userId', userId)
+            )
+            .expect(StatusCodes.NO_CONTENT)
+
+          expect(scope.isDone()).toBeTruthy()
+        })
+      })
+    })
+
+    describe('And group does exist And administrator left his/her email', () => {
+      let groupId: string
+      let groupCreatedAt: string
+      let administratorId: string
+      let administratorName: string
+      let administratorEmail: string
+
+      beforeEach(async () => {
+        const simulation = getSimulationPayload()
+        ;({
+          id: groupId,
+          createdAt: groupCreatedAt,
+          administrator: {
+            id: administratorId,
+            email: administratorEmail,
+            name: administratorName,
+          },
+        } = await createGroup({
+          agent,
+          group: {
+            administrator: {
+              userId: faker.string.uuid(),
+              email: faker.internet.email(),
+              name: faker.person.fullName(),
+            },
+            participants: [{ simulation }],
+          },
+        }))
+      })
+
+      describe('And he did join', () => {
+        let participantId: string
+        let userId: string
+
+        beforeEach(
+          async () =>
+            ({ id: participantId, userId } = await joinGroup({
+              agent,
+              groupId,
+            }))
+        )
+
+        test('Then it updates group administrator in brevo', async () => {
+          const scope = nock(process.env.BREVO_URL!, {
+            reqheaders: {
+              'api-key': process.env.BREVO_API_KEY!,
+            },
+          })
+            .post('/v3/contacts', {
+              email: administratorEmail,
+              listIds: [29],
+              attributes: {
+                USER_ID: administratorId,
+                NUMBER_CREATED_GROUPS: 1,
+                LAST_GROUP_CREATION_DATE: groupCreatedAt,
+                NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT: 1,
+                PRENOM: administratorName,
+              },
+              updateEnabled: true,
+            })
+            .reply(200)
+
+          await agent
+            .delete(
+              url
+                .replace(':groupId', groupId)
+                .replace(':participantId', participantId)
+                .replace(':userId', userId)
+            )
+            .expect(StatusCodes.NO_CONTENT)
+
+          expect(scope.isDone()).toBeTruthy()
+        })
+      })
+    })
+
+    describe('And group does exist And administrator left his/her email but did not join', () => {
+      let groupId: string
+
+      beforeEach(
+        async () =>
+          ({ id: groupId } = await createGroup({
+            agent,
+            group: {
+              administrator: {
+                userId: faker.string.uuid(),
+                email: faker.internet.email(),
+                name: faker.person.fullName(),
+              },
+            },
+          }))
+      )
+
+      describe('And he did join', () => {
+        let participantId: string
+        let userId: string
+
+        beforeEach(
+          async () =>
+            ({ id: participantId, userId } = await joinGroup({
+              agent,
+              groupId,
+            }))
+        )
+
+        test('Then it updates group administrator in brevo', async () => {
+          const scope = nock(process.env.BREVO_URL!)
+            .post('/v3/contacts')
+            .reply(200)
+
+          await agent
+            .delete(
+              url
+                .replace(':groupId', groupId)
+                .replace(':participantId', participantId)
+                .replace(':userId', userId)
+            )
+            .expect(StatusCodes.NO_CONTENT)
+
+          expect(scope.isDone()).toBeFalsy()
+          nock.cleanAll()
         })
       })
     })

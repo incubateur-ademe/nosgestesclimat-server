@@ -238,6 +238,98 @@ describe('Given a NGC user', () => {
 
       describe('And leaving his/her email', () => {
         describe('And simulation finished', () => {
+          test('Then it adds or updates contact in brevo', async () => {
+            const date = new Date()
+            const email = faker.internet.email().toLocaleLowerCase()
+            const userId = faker.string.uuid()
+            const payload: SimulationCreateInputDto = {
+              id: faker.string.uuid(),
+              date,
+              situation,
+              computedResults,
+              progression: 1,
+              savedViaEmail: true,
+              user: {
+                id: userId,
+                name: nom,
+                email,
+              },
+            }
+
+            const scope = nock(process.env.BREVO_URL!, {
+              reqheaders: {
+                'api-key': process.env.BREVO_API_KEY!,
+              },
+            })
+              .post('/v3/smtp/email')
+              .reply(200)
+              .post('/v3/contacts', {
+                email,
+                attributes: {
+                  USER_ID: userId,
+                  LAST_SIMULATION_DATE: date.toISOString(),
+                  ACTIONS_SELECTED_NUMBER: 0,
+                  LAST_SIMULATION_BILAN_FOOTPRINT: (
+                    computedResults.carbone.bilan / 1000
+                  ).toLocaleString('fr-FR', {
+                    maximumFractionDigits: 1,
+                  }),
+                  LAST_SIMULATION_TRANSPORTS_FOOTPRINT: (
+                    computedResults.carbone.categories.transport / 1000
+                  ).toLocaleString('fr-FR', {
+                    maximumFractionDigits: 1,
+                  }),
+                  LAST_SIMULATION_ALIMENTATION_FOOTPRINT: (
+                    computedResults.carbone.categories.alimentation / 1000
+                  ).toLocaleString('fr-FR', {
+                    maximumFractionDigits: 1,
+                  }),
+                  LAST_SIMULATION_LOGEMENT_FOOTPRINT: (
+                    computedResults.carbone.categories.logement / 1000
+                  ).toLocaleString('fr-FR', {
+                    maximumFractionDigits: 1,
+                  }),
+                  LAST_SIMULATION_DIVERS_FOOTPRINT: (
+                    computedResults.carbone.categories.divers / 1000
+                  ).toLocaleString('fr-FR', {
+                    maximumFractionDigits: 1,
+                  }),
+                  LAST_SIMULATION_SERVICES_FOOTPRINT: (
+                    computedResults.carbone.categories['services sociétaux'] /
+                    1000
+                  ).toLocaleString('fr-FR', {
+                    maximumFractionDigits: 1,
+                  }),
+                  LAST_SIMULATION_BILAN_WATER: Math.round(
+                    computedResults.eau.bilan / 365
+                  ).toString(),
+                  PRENOM: nom,
+                },
+                updateEnabled: true,
+              })
+              .reply(200)
+              .post('/v3/contacts/lists/35/contacts/remove', {
+                emails: [email],
+              })
+              .reply(200)
+              .post('/v3/contacts/lists/22/contacts/remove', {
+                emails: [email],
+              })
+              .reply(200)
+              .post('/v3/contacts/lists/32/contacts/remove', {
+                emails: [email],
+              })
+              .reply(200)
+              .post('/v3/contacts/lists/36/contacts/remove', {
+                emails: [email],
+              })
+              .reply(200)
+
+            await agent.post(url).send(payload).expect(StatusCodes.CREATED)
+
+            expect(scope.isDone()).toBeTruthy()
+          })
+
           test(`Then it sends a SIMULATION_COMPLETED email`, async () => {
             const id = faker.string.uuid()
             const email = faker.internet.email().toLocaleLowerCase()
@@ -268,6 +360,22 @@ describe('Given a NGC user', () => {
                 params: {
                   SIMULATION_URL: `https://nosgestesclimat.fr/fin?sid=${id}&mtm_campaign=email-automatise&mtm_kwd=fin-retrouver-simulation`,
                 },
+              })
+              .reply(200)
+              .post('/v3/contacts')
+              .reply(200)
+              .post('/v3/contacts/lists/35/contacts/remove')
+              .reply(200)
+              .post('/v3/contacts/lists/22/contacts/remove', {
+                emails: [email],
+              })
+              .reply(200)
+              .post('/v3/contacts/lists/32/contacts/remove', {
+                emails: [email],
+              })
+              .reply(200)
+              .post('/v3/contacts/lists/36/contacts/remove', {
+                emails: [email],
               })
               .reply(200)
 
@@ -309,6 +417,22 @@ describe('Given a NGC user', () => {
                   },
                 })
                 .reply(200)
+                .post('/v3/contacts')
+                .reply(200)
+                .post('/v3/contacts/lists/35/contacts/remove')
+                .reply(200)
+                .post('/v3/contacts/lists/22/contacts/remove', {
+                  emails: [email],
+                })
+                .reply(200)
+                .post('/v3/contacts/lists/32/contacts/remove', {
+                  emails: [email],
+                })
+                .reply(200)
+                .post('/v3/contacts/lists/36/contacts/remove', {
+                  emails: [email],
+                })
+                .reply(200)
 
               await agent
                 .post(url)
@@ -319,9 +443,134 @@ describe('Given a NGC user', () => {
               expect(scope.isDone()).toBeTruthy()
             })
           })
+
+          describe('And he subsribed to newsletters', () => {
+            test('Then it adds or updates contact in brevo', async () => {
+              const date = new Date()
+              const email = faker.internet.email().toLocaleLowerCase()
+              const userId = faker.string.uuid()
+              const payload: SimulationCreateInputDto = {
+                id: faker.string.uuid(),
+                date,
+                situation,
+                computedResults,
+                progression: 1,
+                savedViaEmail: true,
+                user: {
+                  id: userId,
+                  name: nom,
+                  email,
+                },
+              }
+
+              const scope = nock(process.env.BREVO_URL!, {
+                reqheaders: {
+                  'api-key': process.env.BREVO_API_KEY!,
+                },
+              })
+                .post('/v3/smtp/email')
+                .reply(200)
+                .post('/v3/contacts', {
+                  email,
+                  listIds: [22, 32, 36],
+                  attributes: {
+                    USER_ID: userId,
+                    LAST_SIMULATION_DATE: date.toISOString(),
+                    ACTIONS_SELECTED_NUMBER: 0,
+                    LAST_SIMULATION_BILAN_FOOTPRINT: (
+                      computedResults.carbone.bilan / 1000
+                    ).toLocaleString('fr-FR', {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_TRANSPORTS_FOOTPRINT: (
+                      computedResults.carbone.categories.transport / 1000
+                    ).toLocaleString('fr-FR', {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_ALIMENTATION_FOOTPRINT: (
+                      computedResults.carbone.categories.alimentation / 1000
+                    ).toLocaleString('fr-FR', {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_LOGEMENT_FOOTPRINT: (
+                      computedResults.carbone.categories.logement / 1000
+                    ).toLocaleString('fr-FR', {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_DIVERS_FOOTPRINT: (
+                      computedResults.carbone.categories.divers / 1000
+                    ).toLocaleString('fr-FR', {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_SERVICES_FOOTPRINT: (
+                      computedResults.carbone.categories['services sociétaux'] /
+                      1000
+                    ).toLocaleString('fr-FR', {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_BILAN_WATER: Math.round(
+                      computedResults.eau.bilan / 365
+                    ).toString(),
+                    PRENOM: nom,
+                  },
+                  updateEnabled: true,
+                })
+                .reply(200)
+                .post('/v3/contacts/lists/35/contacts/remove', {
+                  emails: [email],
+                })
+                .reply(200)
+
+              await agent
+                .post(url)
+                .query({
+                  'newsletters[]': [22, 32, 36],
+                })
+                .send(payload)
+                .expect(StatusCodes.CREATED)
+
+              expect(scope.isDone()).toBeTruthy()
+            })
+          })
         })
 
         describe('And simulation incomplete', () => {
+          test(`Then it adds or updates contact in brevo`, async () => {
+            const id = faker.string.uuid()
+            const email = faker.internet.email().toLocaleLowerCase()
+            const payload: SimulationCreateInputDto = {
+              id,
+              situation,
+              computedResults,
+              progression: 0.5,
+              user: {
+                id: faker.string.uuid(),
+                email,
+              },
+            }
+
+            const scope = nock(process.env.BREVO_URL!, {
+              reqheaders: {
+                'api-key': process.env.BREVO_API_KEY!,
+              },
+            })
+              .post('/v3/smtp/email')
+              .reply(200)
+              .post('/v3/contacts', {
+                email,
+                listIds: [35],
+                attributes: {
+                  USER_ID: payload.user.id,
+                },
+                updateEnabled: true,
+              })
+              .reply(200)
+
+            await agent.post(url).send(payload).expect(StatusCodes.CREATED)
+
+            expect(scope.isDone()).toBeTruthy()
+          })
+
           test(`Then it sends a SIMULATION_IN_PROGRESS email`, async () => {
             const id = faker.string.uuid()
             const email = faker.internet.email().toLocaleLowerCase()
@@ -353,6 +602,8 @@ describe('Given a NGC user', () => {
                   SIMULATION_URL: `https://nosgestesclimat.fr/simulateur/bilan?sid=${id}&mtm_campaign=email-automatise&mtm_kwd=pause-test-en-cours`,
                 },
               })
+              .reply(200)
+              .post('/v3/contacts')
               .reply(200)
 
             await agent.post(url).send(payload).expect(StatusCodes.CREATED)
