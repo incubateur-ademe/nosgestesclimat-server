@@ -13,7 +13,7 @@ const router = express.Router()
 const MAX_NUMBER_QUESTIONS = 4
 
 router
-  .use(authentificationMiddleware)
+  .use(authentificationMiddleware())
   .route('/')
   .post(async (req: Request, res: Response) => {
     try {

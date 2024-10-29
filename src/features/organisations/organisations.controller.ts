@@ -59,7 +59,7 @@ EventBus.on(OrganisationCreatedEvent, addOrUpdateConnectContact)
 router
   .route('/v1/')
   .post(
-    authentificationMiddleware,
+    authentificationMiddleware(),
     validateRequest(OrganisationCreateValidator),
     async (req, res) => {
       try {
@@ -91,7 +91,7 @@ EventBus.on(OrganisationUpdatedEvent, addOrUpdateConnectContact)
 router
   .route('/v1/:organisationIdOrSlug')
   .put(
-    authentificationMiddleware,
+    authentificationMiddleware(),
     validateRequest(OrganisationUpdateValidator),
     async ({ body, params, query, user }, res) => {
       try {
@@ -129,7 +129,7 @@ router
 router
   .route('/v1/')
   .get(
-    authentificationMiddleware,
+    authentificationMiddleware(),
     validateRequest(OrganisationsFetchValidator),
     async ({ user }, res) => {
       try {
@@ -150,7 +150,7 @@ router
 router
   .route('/v1/:organisationIdOrSlug')
   .get(
-    authentificationMiddleware,
+    authentificationMiddleware(),
     validateRequest(OrganisationFetchValidator),
     async ({ params, user }, res) => {
       try {
@@ -177,7 +177,7 @@ EventBus.on(PollCreatedEvent, addOrUpdateBrevoContact)
 router
   .route('/v1/:organisationIdOrSlug/polls')
   .post(
-    authentificationMiddleware,
+    authentificationMiddleware(),
     validateRequest(OrganisationPollCreateValidator),
     async ({ body, params, user }, res) => {
       try {
@@ -208,7 +208,7 @@ EventBus.on(PollUpdatedEvent, addOrUpdateBrevoContact)
 router
   .route('/v1/:organisationIdOrSlug/polls/:pollIdOrSlug')
   .put(
-    authentificationMiddleware,
+    authentificationMiddleware(),
     validateRequest(OrganisationPollUpdateValidator),
     async ({ body, params, user }, res) => {
       try {
@@ -239,7 +239,7 @@ EventBus.on(PollDeletedEvent, addOrUpdateBrevoContact)
 router
   .route('/v1/:organisationIdOrSlug/polls/:pollIdOrSlug')
   .delete(
-    authentificationMiddleware,
+    authentificationMiddleware(),
     validateRequest(OrganisationPollDeleteValidator),
     async ({ params, user }, res) => {
       try {
@@ -267,7 +267,7 @@ router
 router
   .route('/v1/:organisationIdOrSlug/polls')
   .get(
-    authentificationMiddleware,
+    authentificationMiddleware(),
     validateRequest(OrganisationPollsFetchValidator),
     async ({ params, user }, res) => {
       try {
@@ -295,7 +295,7 @@ router
 router
   .route('/v1/:organisationIdOrSlug/polls/:pollIdOrSlug')
   .get(
-    authentificationMiddleware,
+    authentificationMiddleware(),
     validateRequest(OrganisationPollFetchValidator),
     async ({ params, user }, res) => {
       try {

@@ -157,6 +157,8 @@ describe('Given a NGC user', () => {
                   savedViaEmail: false,
                   additionalQuestionsAnswers: [],
                 },
+                createdAt: expect.any(String),
+                updatedAt: null,
               },
               {
                 id: participant2Group1Id,
@@ -215,6 +217,8 @@ describe('Given a NGC user', () => {
                   savedViaEmail: false,
                   additionalQuestionsAnswers: [],
                 },
+                createdAt: expect.any(String),
+                updatedAt: null,
               },
             ],
             createdAt: expect.any(String),
@@ -254,6 +258,8 @@ describe('Given a NGC user', () => {
                     savedViaEmail: false,
                     additionalQuestionsAnswers: [],
                   },
+                  createdAt: expect.any(String),
+                  updatedAt: null,
                 },
                 {
                   id: participant2Group1Id,

@@ -7,11 +7,13 @@ import logger from '../../logger'
 import { COOKIE_NAME, COOKIES_OPTIONS, login } from './authentication.service'
 import { LoginValidator } from './authentication.validator'
 import { LoginEvent } from './events/Login.event'
+import { syncUserDataAfterLogin } from './handlers/sync-user-data-after-login'
 import { updateBrevoContact } from './handlers/update-brevo-contact'
 
 const router = express.Router()
 
 EventBus.on(LoginEvent, updateBrevoContact)
+EventBus.on(LoginEvent, syncUserDataAfterLogin)
 
 /**
  * Logs a user in

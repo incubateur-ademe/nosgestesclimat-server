@@ -13,7 +13,7 @@ const router = express.Router()
  * Needs to be authenticated and generates a new token at each request
  */
 router
-  .use(authentificationMiddleware)
+  .use(authentificationMiddleware())
   .post('/', async (req: Request, res: Response) => {
     const email = formatEmail(req.body.email)
     const slug = req.body.slug

@@ -1,19 +1,22 @@
 import type supertest from 'supertest'
 
 import { faker } from '@faker-js/faker'
+import { StatusCodes } from 'http-status-codes'
 import nock from 'nock'
 import slugify from 'slugify'
 import { baseURL } from '../../../../adapters/connect/client'
 import { prisma } from '../../../../adapters/prisma/client'
+import { getSimulationPayload } from '../../../simulations/__tests__/fixtures/simulations.fixtures'
+import type { SimulationCreateInputDto } from '../../../simulations/simulations.validator'
 import {
   defaultPollSelection,
   organisationSelectionWithoutPolls,
 } from '../../organisations.repository'
-import type { OrganisationPollCreateDto } from '../../organisations.validator'
-import {
-  OrganisationTypeEnum,
-  type OrganisationCreateDto,
+import type {
+  OrganisationCreateDto,
+  OrganisationPollCreateDto,
 } from '../../organisations.validator'
+import { OrganisationTypeEnum } from '../../organisations.validator'
 
 export const CREATE_ORGANISATION_ROUTE = '/organisations/v1'
 
@@ -39,6 +42,9 @@ export const FETCH_ORGANISATION_POLLS_ROUTE =
 
 export const FETCH_ORGANISATION_POLL_ROUTE =
   '/organisations/v1/:organisationIdOrSlug/polls/:pollIdOrSlug'
+
+export const CREATE_POLL_SIMULATION_ROUTE =
+  '/organisations/v1/:organisationIdOrSlug/polls/:pollIdOrSlug/simulations'
 
 type TestAgent = ReturnType<typeof supertest>
 
@@ -89,7 +95,7 @@ export const createOrganisation = async ({
     .post(CREATE_ORGANISATION_ROUTE)
     .set('cookie', cookie)
     .send(payload)
-    .expect(201)
+    .expect(StatusCodes.CREATED)
 
   nock.abortPendingRequests()
 
@@ -137,6 +143,50 @@ export const mockUpdateOrganisationPollCreation: any = async (params: any) => {
   })
 }
 
+/**
+ * Hack because prismock does not handle this correctly
+ * The bug is that we sort by nested simulation createdAt => no effect
+ */
+type FindManySimulationPolls = typeof prisma.simulationPoll.findMany
+
+export const mockSimulationPollsFindManyOrderBySimulationCreatedAt =
+  (originalFindMany: FindManySimulationPolls) =>
+  (params: Parameters<FindManySimulationPolls>[0]) =>
+    originalFindMany({
+      ...params,
+      skip: 0,
+      select: {
+        id: true,
+        simulation: {
+          select: {
+            createdAt: true,
+          },
+        },
+      },
+    }).then((result) => {
+      if (
+        params?.orderBy &&
+        !Array.isArray(params.orderBy) &&
+        params.orderBy.simulation?.createdAt
+      ) {
+        const sort = params.orderBy.simulation.createdAt
+
+        result.sort((a, b) => {
+          return sort === 'desc'
+            ? a.simulation.createdAt > b.simulation.createdAt
+              ? -1
+              : 1
+            : a.simulation.createdAt > b.simulation.createdAt
+              ? 1
+              : -1
+        })
+      }
+
+      return result.slice(params?.skip || 0).map(({ id }) => ({
+        id,
+      }))
+    }) as ReturnType<FindManySimulationPolls>
+
 export const createOrganisationPoll = async ({
   agent,
   cookie,
@@ -174,7 +224,7 @@ export const createOrganisationPoll = async ({
     )
     .set('cookie', cookie)
     .send(payload)
-    .expect(500)
+    .expect(StatusCodes.INTERNAL_SERVER_ERROR)
 
   const poll = await prisma.poll.update({
     where: {
@@ -202,4 +252,53 @@ export const createOrganisationPoll = async ({
       ({ type }) => type
     ),
   }
+}
+
+export const createOrganisationPollSimulation = async ({
+  agent,
+  organisationId,
+  pollId,
+  simulation = {},
+}: {
+  agent: TestAgent
+  organisationId: string
+  pollId: string
+  simulation?: Partial<SimulationCreateInputDto>
+}) => {
+  const { user } = simulation
+  const payload: SimulationCreateInputDto = {
+    ...getSimulationPayload(simulation),
+    user: {
+      ...user,
+      id: user?.id || faker.string.uuid(),
+    },
+  }
+
+  const scope = nock(process.env.BREVO_URL!)
+    .post('/v3/contacts')
+    .reply(200)
+    .post('/v3/contacts/lists/27/contacts/remove')
+    .reply(200)
+
+  if (payload.user.email) {
+    scope
+      .post('/v3/smtp/email')
+      .reply(200)
+      .post('/v3/contacts')
+      .reply(200)
+      .post('/v3/contacts/lists/35/contacts/remove')
+      .reply(200)
+  }
+
+  const response = await agent
+    .post(
+      CREATE_POLL_SIMULATION_ROUTE.replace(
+        ':organisationIdOrSlug',
+        organisationId
+      ).replace(':pollIdOrSlug', pollId)
+    )
+    .send(payload)
+    .expect(StatusCodes.CREATED)
+
+  return response.body
 }
