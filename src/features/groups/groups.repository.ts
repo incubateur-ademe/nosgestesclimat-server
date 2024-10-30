@@ -3,6 +3,7 @@ import {
   createParticipantSimulation,
   fetchParticipantSimulation,
 } from '../simulations/simulations.repository'
+import { transferOwnershipToUser } from '../users/users.repository'
 import type { UserParams } from '../users/users.validator'
 import type {
   GroupParams,
@@ -29,6 +30,8 @@ const defaultParticipantSelection = {
   id: true,
   user: defaultUserSelection,
   simulationId: true,
+  createdAt: true,
+  updatedAt: true,
 }
 
 const groupSelectionWithoutParticipants = {
@@ -166,6 +169,11 @@ export const createParticipantAndUser = async (
   { groupId }: GroupParams,
   { userId, name, email, simulation: simulationDto }: ParticipantCreateDto
 ) => {
+  // Dedupe user
+  if (email) {
+    await transferOwnershipToUser({ email, userId })
+  }
+
   // upsert user
   await prisma.user.upsert({
     where: {

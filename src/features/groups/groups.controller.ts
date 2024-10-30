@@ -6,6 +6,7 @@ import { EntityNotFoundException } from '../../core/errors/EntityNotFoundExcepti
 import { ForbiddenException } from '../../core/errors/ForbiddenException'
 import { EventBus } from '../../core/event-bus/event-bus'
 import logger from '../../logger'
+import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
 import { GroupCreatedEvent } from './events/GroupCreated.event'
 import { GroupDeletedEvent } from './events/GroupDeleted.event'
 import { GroupUpdatedEvent } from './events/GroupUpdated.event'
@@ -33,9 +34,11 @@ import {
   addOrUpdateBrevoAdministratorContact,
   addOrUpdateBrevoParticipantContact,
 } from './handlers/add-or-update-brevo-contact'
+import { syncUserDataAfterGroupCreated } from './handlers/sync-user-data-after-group-created'
 
 const router = express.Router()
 
+EventBus.on(GroupCreatedEvent, syncUserDataAfterGroupCreated)
 EventBus.on(GroupCreatedEvent, addOrUpdateBrevoAdministratorContact)
 
 /**
@@ -140,6 +143,7 @@ router
 router
   .route('/v1/:userId')
   .get(
+    authentificationMiddleware({ passIfUnauthorized: true }),
     validateRequest(GroupsFetchValidator),
     async ({ params, query }, res) => {
       try {
@@ -159,21 +163,25 @@ router
  */
 router
   .route('/v1/:userId/:groupId')
-  .get(validateRequest(GroupFetchValidator), async ({ params }, res) => {
-    try {
-      const group = await fetchGroup(params)
+  .get(
+    authentificationMiddleware({ passIfUnauthorized: true }),
+    validateRequest(GroupFetchValidator),
+    async ({ params }, res) => {
+      try {
+        const group = await fetchGroup(params)
 
-      return res.status(StatusCodes.OK).json(group)
-    } catch (err) {
-      if (err instanceof EntityNotFoundException) {
-        return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
+        return res.status(StatusCodes.OK).json(group)
+      } catch (err) {
+        if (err instanceof EntityNotFoundException) {
+          return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
+        }
+
+        logger.error('Group fetch failed', err)
+
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
       }
-
-      logger.error('Group fetch failed', err)
-
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
     }
-  })
+  )
 
 EventBus.on(GroupDeletedEvent, addOrUpdateBrevoAdministratorContact)
 EventBus.on(GroupDeletedEvent, addOrUpdateBrevoParticipantContact)
