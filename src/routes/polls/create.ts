@@ -11,7 +11,7 @@ import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 const router = express.Router()
 
 router
-  .use(authentificationMiddleware)
+  .use(authentificationMiddleware())
   .route('/')
   .post(async (req: Request, res: Response) => {
     try {

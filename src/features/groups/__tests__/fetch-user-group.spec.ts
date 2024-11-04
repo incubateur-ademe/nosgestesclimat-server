@@ -70,7 +70,7 @@ describe('Given a NGC user', () => {
         beforeEach(async () => {
           user = await joinGroup({ agent, groupId })
           userId = user.userId
-        })
+        }, 5000)
 
         test(`Then it returns a ${StatusCodes.OK} response with the group`, async () => {
           const response = await agent
