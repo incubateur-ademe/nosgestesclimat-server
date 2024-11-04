@@ -7,6 +7,7 @@ import app from '../../../app'
 import logger from '../../../logger'
 import { login } from '../../authentication/__tests__/fixtures/login.fixture'
 import {
+  CREATE_POLL_SIMULATION_ROUTE,
   createOrganisation,
   createOrganisationPoll,
 } from '../../organisations/__tests__/fixtures/organisations.fixture'
@@ -15,10 +16,7 @@ import type {
   SimulationAdditionalQuestionAnswerType,
   SimulationCreateInputDto,
 } from '../simulations.validator'
-import {
-  CREATE_POLL_SIMULATION_ROUTE,
-  getRandomTestCase,
-} from './fixtures/simulations.fixtures'
+import { getRandomTestCase } from './fixtures/simulations.fixtures'
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)
