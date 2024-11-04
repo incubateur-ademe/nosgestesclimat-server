@@ -235,7 +235,7 @@ const NewSimulationSchema = z
     id: z.string().uuid(),
     data: OldSimulationDataSchema.optional(),
     date: z.instanceof(Date),
-    progression: z.number(),
+    progression: z.number().optional(),
     savedViaEmail: z.boolean().optional(),
     computedResults: ComputedResultSchema.optional(),
     actionChoices: z.record(z.string(), z.boolean().nullable()).optional(),
