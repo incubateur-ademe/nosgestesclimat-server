@@ -32,6 +32,7 @@ import {
   fetchOrganisations,
   fetchPoll,
   fetchPolls,
+  fetchPublicPoll,
   updateOrganisation,
   updatePoll,
 } from './organisations.service'
@@ -43,6 +44,7 @@ import {
   OrganisationPollFetchValidator,
   OrganisationPollsFetchValidator,
   OrganisationPollUpdateValidator,
+  OrganisationPublicPollFetchValidator,
   OrganisationsFetchValidator,
   OrganisationUpdateValidator,
 } from './organisations.validator'
@@ -339,6 +341,39 @@ router
         }
 
         logger.error('Poll simulation creation failed', err)
+
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
+      }
+    }
+  )
+
+/**
+ * Returns poll informations for public or administrator users following authentication
+ */
+router
+  .route('/v1/:userId/public-polls/:pollIdOrSlug')
+  .get(
+    authentificationMiddleware({ passIfUnauthorized: true }),
+    validateRequest(OrganisationPublicPollFetchValidator),
+    async (req, res) => {
+      try {
+        if (req.user && req.user.userId !== req.params.userId) {
+          throw new ForbiddenException(`Different user ids found`)
+        }
+
+        const poll = await fetchPublicPoll(req)
+
+        return res.status(StatusCodes.OK).json(poll)
+      } catch (err) {
+        if (err instanceof EntityNotFoundException) {
+          return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
+        }
+
+        if (err instanceof ForbiddenException) {
+          return res.status(StatusCodes.FORBIDDEN).send(err.message).end()
+        }
+
+        logger.error('Public poll fetch failed', err)
 
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
       }

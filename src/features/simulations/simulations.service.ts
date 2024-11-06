@@ -1,3 +1,4 @@
+import type { JsonValue } from '@prisma/client/runtime/library'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
 import { EventBus } from '../../core/event-bus/event-bus'
 import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError'
@@ -15,7 +16,11 @@ import type {
   SimulationCreateNewsletterList,
   UserSimulationParams,
 } from './simulations.validator'
-import { type SimulationCreateDto } from './simulations.validator'
+import {
+  ComputedResultSchema,
+  SituationSchema,
+  type SimulationCreateDto,
+} from './simulations.validator'
 
 const simulationToDto = (
   { polls, user, ...rest }: Awaited<ReturnType<typeof createUserSimulation>>,
@@ -112,4 +117,31 @@ export const createPollSimulation = async ({
     }
     throw e
   }
+}
+
+const MAX_VALUE = 100000
+
+export const isValidSimulation = <T>(
+  simulation: T & {
+    computedResults: JsonValue
+    situation: JsonValue
+  }
+): simulation is T & {
+  computedResults: ComputedResultSchema
+  situation: SituationSchema
+} => {
+  const computedResults = ComputedResultSchema.safeParse(
+    simulation.computedResults
+  )
+
+  const situation = SituationSchema.safeParse(simulation.situation)
+
+  if (computedResults.error || situation.error) {
+    return false
+  }
+
+  return [
+    computedResults.data.carbone.bilan,
+    ...Object.values(computedResults.data.carbone.categories),
+  ].every((v) => v <= MAX_VALUE)
 }

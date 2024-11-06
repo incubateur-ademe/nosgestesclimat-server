@@ -17,6 +17,7 @@ import type {
   OrganisationPollParams,
   OrganisationPollUpdateDto,
   OrganisationUpdateDto,
+  PollParams,
 } from './organisations.validator'
 
 const findModelUniqueSlug = (model: 'organisation' | 'poll') => {
@@ -467,6 +468,22 @@ export const fetchOrganisationPoll = (
     },
     { session: prisma }
   )
+}
+
+export const fetchOrganisationPublicPoll = ({ pollIdOrSlug }: PollParams) => {
+  return prisma.poll.findFirstOrThrow({
+    where: {
+      OR: [
+        {
+          id: pollIdOrSlug,
+        },
+        {
+          slug: pollIdOrSlug,
+        },
+      ],
+    },
+    select: defaultPollSelection,
+  })
 }
 
 export const getLastPollParticipantsCount = async (organisationId: string) => {

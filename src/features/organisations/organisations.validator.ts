@@ -1,5 +1,6 @@
 import z from 'zod'
 import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail'
+import { UserParams } from '../users/users.validator'
 
 const OrganisationParams = z
   .object({
@@ -20,6 +21,12 @@ export type PollParams = z.infer<typeof PollParams>
 export const OrganisationPollParams = OrganisationParams.merge(PollParams)
 
 export type OrganisationPollParams = z.infer<typeof OrganisationPollParams>
+
+export const OrganisationPublicPollParams = UserParams.merge(PollParams)
+
+export type OrganisationPublicPollParams = z.infer<
+  typeof OrganisationPublicPollParams
+>
 
 export enum OrganisationTypeEnum {
   association = 'association',
@@ -198,5 +205,11 @@ export const OrganisationPollsFetchValidator = {
 export const OrganisationPollFetchValidator = {
   body: z.object({}).strict().optional(),
   params: OrganisationPollParams,
+  query: z.object({}).strict().optional(),
+}
+
+export const OrganisationPublicPollFetchValidator = {
+  body: z.object({}).strict().optional(),
+  params: OrganisationPublicPollParams,
   query: z.object({}).strict().optional(),
 }

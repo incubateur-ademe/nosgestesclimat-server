@@ -41,7 +41,7 @@ const MetricComputedResultSchema = z
   })
   .strict()
 
-const ComputedResultSchema = z
+export const ComputedResultSchema = z
   .object({
     carbone: MetricComputedResultSchema,
     eau: MetricComputedResultSchema,

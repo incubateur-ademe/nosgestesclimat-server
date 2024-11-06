@@ -19,6 +19,7 @@ import {
   deleteOrganisationPoll,
   fetchOrganisationPoll,
   fetchOrganisationPolls,
+  fetchOrganisationPublicPoll,
   fetchUserOrganisation,
   fetchUserOrganisations,
   updateAdministratorOrganisation,
@@ -31,6 +32,7 @@ import type {
   OrganisationPollParams,
   OrganisationPollUpdateDto,
   OrganisationUpdateDto,
+  PollParams,
 } from './organisations.validator'
 
 const organisationToDto = (
@@ -340,6 +342,28 @@ export const fetchPoll = async ({
     const poll = await fetchOrganisationPoll(params, user)
 
     return pollToDto({ poll, user })
+  } catch (e) {
+    if (isPrismaErrorNotFound(e)) {
+      throw new EntityNotFoundException('Poll not found')
+    }
+    throw e
+  }
+}
+
+export const fetchPublicPoll = async ({
+  params,
+  user,
+}: {
+  params: PollParams
+  user?: NonNullable<Request['user']>
+}) => {
+  try {
+    const poll = await fetchOrganisationPublicPoll(params)
+
+    return pollToDto({
+      poll,
+      user,
+    })
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('Poll not found')
