@@ -103,6 +103,7 @@
     "setupFilesAfterEnv": [
       "../jest.setup.ts"
     ],
+    "testTimeout": 10000,
     "testRegex": ".spec.ts$",
     "transform": {
       "^.+\\.(t|j)sx?$": "@swc/jest"

@@ -97,8 +97,6 @@ export const createOrganisation = async ({
     .send(payload)
     .expect(StatusCodes.CREATED)
 
-  nock.abortPendingRequests()
-
   return response.body
 }
 
