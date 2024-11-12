@@ -208,21 +208,24 @@ describe('Given a NGC user', () => {
       })
 
       describe('And organisation does exist', () => {
+        let organisation: Awaited<ReturnType<typeof createOrganisation>>
+        let _organisationPolls: unknown
         let organisationId: string
         let organisationName: string
         let organisationSlug: string
 
-        beforeEach(
-          async () =>
-            ({
-              id: organisationId,
-              name: organisationName,
-              slug: organisationSlug,
-            } = await createOrganisation({
+        beforeEach(async () => {
+          ;({ polls: _organisationPolls, ...organisation } =
+            await createOrganisation({
               agent,
               cookie,
             }))
-        )
+          ;({
+            id: organisationId,
+            name: organisationName,
+            slug: organisationSlug,
+          } = organisation)
+        })
 
         beforeEach(() => {
           // This is not ideal but prismock does not handle this correctly
@@ -255,6 +258,7 @@ describe('Given a NGC user', () => {
           expect(response.body).toEqual({
             ...payload,
             id: expect.any(String),
+            organisation,
             slug: slugify(payload.name.toLowerCase(), { strict: true }),
             defaultAdditionalQuestions: [],
             customAdditionalQuestions: [],
@@ -392,6 +396,7 @@ describe('Given a NGC user', () => {
 
             expect(response.body).toEqual({
               ...payload,
+              organisation,
               id: expect.any(String),
               slug: slugify(payload.name.toLowerCase(), { strict: true }),
               defaultAdditionalQuestions: [],
@@ -474,14 +479,18 @@ describe('Given a NGC user', () => {
       })
 
       describe('And a poll with the same name already exists in the organisation', () => {
+        let organisation: Awaited<ReturnType<typeof createOrganisation>>
+        let _organisationPolls: unknown
         let organisationId: string
         let name: string
 
         beforeEach(async () => {
-          ;({ id: organisationId } = await createOrganisation({
-            agent,
-            cookie,
-          }))
+          ;({ polls: _organisationPolls, ...organisation } =
+            await createOrganisation({
+              agent,
+              cookie,
+            }))
+          ;({ id: organisationId } = organisation)
           name = faker.company.buzzNoun()
           await createOrganisationPoll({
             agent,
@@ -515,6 +524,7 @@ describe('Given a NGC user', () => {
 
           expect(response.body).toEqual({
             ...payload,
+            organisation,
             id: expect.any(String),
             slug: `${slugify(payload.name.toLowerCase(), { strict: true })}-1`,
             defaultAdditionalQuestions: [],

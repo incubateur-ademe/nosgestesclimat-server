@@ -410,12 +410,7 @@ export const updateOrganisationPoll = async (
             }
           : {}),
       },
-      select: {
-        ...defaultPollSelection,
-        organisation: {
-          select: defaultOrganisationSelectionWithoutPolls,
-        },
-      },
+      select: defaultPollSelection,
     })
   }, session)
 }
@@ -465,7 +460,11 @@ export const fetchOrganisationPoll = (
   user: NonNullable<Request['user']>
 ) => {
   return findOrganisationPollBySlugOrId(
-    { params, user, select: defaultPollSelection },
+    {
+      params,
+      user,
+      select: defaultPollSelection,
+    },
     { session: prisma }
   )
 }

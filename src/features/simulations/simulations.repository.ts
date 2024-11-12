@@ -1,10 +1,10 @@
 import type { Prisma } from '@prisma/client'
 import { prisma } from '../../adapters/prisma/client'
 import {
-  defaultGroupParticipantSimulationSelection,
   defaultOrganisationSelectionWithoutPolls,
   defaultPollSelection,
   defaultSimulationSelection,
+  defaultSimulationSelectionWithoutUser,
 } from '../../adapters/prisma/selection'
 import type { Session } from '../../adapters/prisma/transaction'
 import { transaction } from '../../adapters/prisma/transaction'
@@ -58,7 +58,7 @@ export const createUserSimulation = (
 
 export const createParticipantSimulation = <
   T extends
-    Prisma.SimulationSelect = typeof defaultGroupParticipantSimulationSelection,
+    Prisma.SimulationSelect = typeof defaultSimulationSelectionWithoutUser,
 >(
   {
     userId,
@@ -73,7 +73,7 @@ export const createParticipantSimulation = <
       savedViaEmail,
       additionalQuestionsAnswers,
     },
-    select = defaultGroupParticipantSimulationSelection as T,
+    select = defaultSimulationSelectionWithoutUser as T,
   }: {
     userId: string
     simulation: SimulationParticipantCreateDto
@@ -174,7 +174,7 @@ export const fetchParticipantSimulation = (
     where: {
       id: simulationId,
     },
-    select: defaultGroupParticipantSimulationSelection,
+    select: defaultSimulationSelectionWithoutUser,
   })
 }
 

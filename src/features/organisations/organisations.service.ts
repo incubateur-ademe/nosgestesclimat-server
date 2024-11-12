@@ -1,3 +1,4 @@
+import type { Organisation, Poll } from '@prisma/client'
 import type { Request } from 'express'
 import { config } from '../../config'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
@@ -33,17 +34,14 @@ import type {
 } from './organisations.validator'
 
 const organisationToDto = (
-  organisation:
-    | Awaited<
-        ReturnType<typeof createOrganisationAndAdministrator>
-      >['organisation']
-    | Awaited<ReturnType<typeof fetchUserOrganisation>>,
+  organisation: Organisation &
+    Partial<Awaited<ReturnType<typeof fetchUserOrganisation>>>,
   connectedUser: string
 ) => ({
   ...organisation,
   hasCustomQuestionEnabled:
     config.organisationIdsWithCustomQuestionsEnabled.has(organisation.id),
-  administrators: organisation.administrators.map(
+  administrators: organisation.administrators?.map(
     ({
       id,
       user: {
@@ -208,11 +206,25 @@ export const fetchOrganisation = async ({
 }
 
 const pollToDto = ({
-  organisationId: _,
-  ...poll
-}: Awaited<ReturnType<typeof createOrganisationPoll>>['polls'][number]) => ({
+  poll: { organisationId: _, organisation, ...poll },
+  user,
+}: {
+  poll: Poll & Partial<Awaited<ReturnType<typeof fetchOrganisationPoll>>>
+  user?: NonNullable<Request['user']>
+}) => ({
   ...poll,
-  defaultAdditionalQuestions: poll.defaultAdditionalQuestions.map(
+  ...(organisation
+    ? {
+        organisation: user
+          ? organisationToDto(organisation, user.userId)
+          : {
+              id: organisation.id,
+              name: organisation.name,
+              slug: organisation.slug,
+            },
+      }
+    : {}),
+  defaultAdditionalQuestions: poll.defaultAdditionalQuestions?.map(
     ({ type }) => type
   ),
 })
@@ -238,7 +250,7 @@ export const createPoll = async ({
 
     await EventBus.once(pollCreatedEvent)
 
-    return pollToDto(poll)
+    return pollToDto({ poll, user })
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('Organisation not found')
@@ -257,11 +269,8 @@ export const updatePoll = async ({
   user: NonNullable<Request['user']>
 }) => {
   try {
-    const { organisation, ...poll } = await updateOrganisationPoll(
-      params,
-      pollDto,
-      user
-    )
+    const poll = await updateOrganisationPoll(params, pollDto, user)
+    const { organisation } = poll
 
     const pollUpdatedEvent = new PollUpdatedEvent({ poll, organisation })
 
@@ -269,7 +278,7 @@ export const updatePoll = async ({
 
     await EventBus.once(pollUpdatedEvent)
 
-    return pollToDto(poll)
+    return pollToDto({ poll, user })
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('Poll not found')
@@ -311,7 +320,7 @@ export const fetchPolls = async ({
   try {
     const { polls } = await fetchOrganisationPolls(params, user)
 
-    return polls.map(pollToDto)
+    return polls.map((poll) => pollToDto({ poll, user }))
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('Organisation not found')
@@ -330,7 +339,7 @@ export const fetchPoll = async ({
   try {
     const poll = await fetchOrganisationPoll(params, user)
 
-    return pollToDto(poll)
+    return pollToDto({ poll, user })
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('Poll not found')

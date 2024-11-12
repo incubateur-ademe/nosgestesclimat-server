@@ -10,6 +10,7 @@ import {
   defaultOrganisationSelectionWithoutPolls,
   defaultPollSelection,
 } from '../../../../adapters/prisma/selection'
+import { config } from '../../../../config'
 import { getSimulationPayload } from '../../../simulations/__tests__/fixtures/simulations.fixtures'
 import type { SimulationCreateInputDto } from '../../../simulations/simulations.validator'
 import type {
@@ -42,6 +43,9 @@ export const FETCH_ORGANISATION_POLLS_ROUTE =
 
 export const FETCH_ORGANISATION_POLL_ROUTE =
   '/organisations/v1/:organisationIdOrSlug/polls/:pollIdOrSlug'
+
+export const FETCH_ORGANISATION_PUBLIC_POLL_ROUTE =
+  '/organisations/v1/:userId/public-polls/:pollIdOrSlug'
 
 export const CREATE_POLL_SIMULATION_ROUTE =
   '/organisations/v1/:organisationIdOrSlug/polls/:pollIdOrSlug/simulations'
@@ -224,28 +228,58 @@ export const createOrganisationPoll = async ({
     .send(payload)
     .expect(StatusCodes.INTERNAL_SERVER_ERROR)
 
-  const poll = await prisma.poll.update({
+  const {
+    organisationId: _,
+    organisation,
+    ...poll
+  } = await prisma.poll.update({
     where: {
       slug: slugify(payload.name.toLowerCase(), { strict: true }),
     },
     data: {
       organisationId,
     },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      defaultAdditionalQuestions: true,
-      customAdditionalQuestions: true,
-      expectedNumberOfParticipants: true,
-      createdAt: true,
-      updatedAt: true,
-    },
+    select: defaultPollSelection,
   })
 
   return {
     ...poll,
+    organisation: {
+      ...organisation,
+      hasCustomQuestionEnabled:
+        config.organisationIdsWithCustomQuestionsEnabled.has(organisation.id),
+      administrators: organisation.administrators?.map(
+        ({
+          id,
+          user: {
+            id: userId,
+            name,
+            email,
+            createdAt,
+            optedInForCommunications,
+            position,
+            telephone,
+            updatedAt,
+          },
+        }) => ({
+          id,
+          userId,
+          name,
+          email,
+          position,
+          telephone,
+          optedInForCommunications,
+          createdAt: createdAt.toISOString(),
+          updatedAt: updatedAt ? updatedAt.toISOString() : updatedAt,
+        })
+      ),
+      createdAt: organisation.createdAt.toISOString(),
+      updatedAt: organisation.updatedAt
+        ? organisation.updatedAt.toISOString()
+        : organisation.updatedAt,
+    },
     createdAt: poll.createdAt.toISOString(),
+    updatedAt: poll.updatedAt ? poll.updatedAt.toISOString() : poll.updatedAt,
     defaultAdditionalQuestions: poll.defaultAdditionalQuestions.map(
       ({ type }) => type
     ),

@@ -79,17 +79,6 @@ export const defaultGroupParticipantSimulationSelection = {
   updatedAt: true,
 }
 
-export const defaultSimulationSelection = {
-  ...defaultGroupParticipantSimulationSelection,
-  user: {
-    select: {
-      id: true,
-      name: true,
-      email: true,
-    },
-  },
-}
-
 export const defaultOrganisationSelectionWithoutPolls = {
   id: true,
   name: true,
@@ -126,9 +115,62 @@ export const defaultPollSelection = {
   name: true,
   slug: true,
   organisationId: true,
+  organisation: {
+    select: defaultOrganisationSelectionWithoutPolls,
+  },
   defaultAdditionalQuestions: true,
   customAdditionalQuestions: true,
   expectedNumberOfParticipants: true,
   createdAt: true,
   updatedAt: true,
+}
+
+export const defaultSimulationSelectionWithoutUserAndPoll = {
+  id: true,
+  date: true,
+  situation: true,
+  foldedSteps: true,
+  progression: true,
+  actionChoices: true,
+  savedViaEmail: true,
+  computedResults: true,
+  additionalQuestionsAnswers: {
+    select: {
+      key: true,
+      answer: true,
+      type: true,
+    },
+  },
+  createdAt: true,
+  updatedAt: true,
+}
+
+export const defaultSimulationSelectionWithoutUser = {
+  ...defaultSimulationSelectionWithoutUserAndPoll,
+  polls: {
+    select: {
+      pollId: true,
+      poll: {
+        select: {
+          slug: true,
+        },
+      },
+    },
+  },
+}
+
+export const defaultSimulationSelectionWithoutPoll = {
+  ...defaultSimulationSelectionWithoutUserAndPoll,
+  user: {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+    },
+  },
+}
+
+export const defaultSimulationSelection = {
+  ...defaultSimulationSelectionWithoutUser,
+  ...defaultSimulationSelectionWithoutPoll,
 }
