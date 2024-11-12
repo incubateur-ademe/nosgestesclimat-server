@@ -6,12 +6,12 @@ import nock from 'nock'
 import slugify from 'slugify'
 import { baseURL } from '../../../../adapters/connect/client'
 import { prisma } from '../../../../adapters/prisma/client'
+import {
+  defaultOrganisationSelectionWithoutPolls,
+  defaultPollSelection,
+} from '../../../../adapters/prisma/selection'
 import { getSimulationPayload } from '../../../simulations/__tests__/fixtures/simulations.fixtures'
 import type { SimulationCreateInputDto } from '../../../simulations/simulations.validator'
-import {
-  defaultPollSelection,
-  organisationSelectionWithoutPolls,
-} from '../../organisations.repository'
 import type {
   OrganisationCreateDto,
   OrganisationPollCreateDto,
@@ -130,7 +130,7 @@ export const mockUpdateOrganisationPollCreation: any = async (params: any) => {
       id,
     },
     select: {
-      ...organisationSelectionWithoutPolls,
+      ...defaultOrganisationSelectionWithoutPolls,
       polls: {
         where: {
           slug: create.slug!,

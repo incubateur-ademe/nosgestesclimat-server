@@ -1,4 +1,9 @@
 import { prisma } from '../../adapters/prisma/client'
+import {
+  defaultGroupParticipantSelection,
+  defaultGroupSelection,
+  defaultUserSelection,
+} from '../../adapters/prisma/selection'
 import type { Session } from '../../adapters/prisma/transaction'
 import { transaction } from '../../adapters/prisma/transaction'
 import {
@@ -17,44 +22,6 @@ import {
   type GroupUpdateDto,
   type UserGroupParams,
 } from './groups.validator'
-
-const defaultUserSelection = {
-  select: {
-    id: true,
-    name: true,
-    email: true,
-    createdAt: true,
-    updatedAt: true,
-  },
-}
-
-const defaultParticipantSelection = {
-  id: true,
-  user: defaultUserSelection,
-  simulationId: true,
-  createdAt: true,
-  updatedAt: true,
-}
-
-const groupSelectionWithoutParticipants = {
-  id: true,
-  name: true,
-  emoji: true,
-  administrator: {
-    select: {
-      user: defaultUserSelection,
-    },
-  },
-  updatedAt: true,
-  createdAt: true,
-}
-
-const defaultGroupSelection = {
-  ...groupSelectionWithoutParticipants,
-  participants: {
-    select: defaultParticipantSelection,
-  },
-}
 
 const getParticipantsWithSimulations = <T extends { simulationId: string }>(
   group: {
@@ -245,7 +212,7 @@ export const createParticipantAndUser = async (
           simulationId,
         },
         select: {
-          ...defaultParticipantSelection,
+          ...defaultGroupParticipantSelection,
           group: {
             select: defaultGroupSelection,
           },
@@ -297,7 +264,9 @@ export const deleteParticipantById = async (id: string) => {
       group: {
         select: defaultGroupSelection,
       },
-      user: defaultUserSelection,
+      user: {
+        select: defaultUserSelection,
+      },
     },
   })
 }

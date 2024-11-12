@@ -2,6 +2,12 @@ import type { Prisma } from '@prisma/client'
 import type { Request } from 'express'
 import slugify from 'slugify'
 import { prisma } from '../../adapters/prisma/client'
+import {
+  defaultOrganisationSelection,
+  defaultOrganisationSelectionWithoutPolls,
+  defaultPollSelection,
+  defaultVerifiedUserSelection,
+} from '../../adapters/prisma/selection'
 import type { Session } from '../../adapters/prisma/transaction'
 import { transaction } from '../../adapters/prisma/transaction'
 import type {
@@ -12,48 +18,6 @@ import type {
   OrganisationPollUpdateDto,
   OrganisationUpdateDto,
 } from './organisations.validator'
-
-const defaultUserSelection = {
-  select: {
-    id: true,
-    name: true,
-    email: true,
-    position: true,
-    telephone: true,
-    optedInForCommunications: true,
-    createdAt: true,
-    updatedAt: true,
-  },
-}
-
-export const organisationSelectionWithoutPolls = {
-  id: true,
-  name: true,
-  slug: true,
-  type: true,
-  numberOfCollaborators: true,
-  administrators: {
-    select: {
-      id: true,
-      user: defaultUserSelection,
-    },
-  },
-  createdAt: true,
-  updatedAt: true,
-}
-
-const defaultOrganisationSelection = {
-  ...organisationSelectionWithoutPolls,
-  polls: {
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  },
-}
 
 const findModelUniqueSlug = (model: 'organisation' | 'poll') => {
   const findUniqueSlug = async (
@@ -185,7 +149,7 @@ export const createOrganisationAndAdministrator = async (
         telephone,
         optedInForCommunications,
       },
-      ...defaultUserSelection,
+      select: defaultVerifiedUserSelection,
     })
 
     const slug = await findUniqueOrganisationSlug(name, {
@@ -268,7 +232,7 @@ export const updateAdministratorOrganisation = async (
           telephone,
           optedInForCommunications,
         },
-        ...defaultUserSelection,
+        select: defaultVerifiedUserSelection,
       })
 
       if (email) {
@@ -320,18 +284,6 @@ export const fetchUserOrganisation = (
     },
     { session: prisma }
   )
-}
-
-export const defaultPollSelection = {
-  id: true,
-  name: true,
-  slug: true,
-  organisationId: true,
-  defaultAdditionalQuestions: true,
-  customAdditionalQuestions: true,
-  expectedNumberOfParticipants: true,
-  createdAt: true,
-  updatedAt: true,
 }
 
 const findUniquePollSlug = findModelUniqueSlug('poll')
@@ -461,7 +413,7 @@ export const updateOrganisationPoll = async (
       select: {
         ...defaultPollSelection,
         organisation: {
-          select: organisationSelectionWithoutPolls,
+          select: defaultOrganisationSelectionWithoutPolls,
         },
       },
     })
@@ -481,7 +433,7 @@ export const deleteOrganisationPoll = async (
       ),
       select: {
         organisation: {
-          select: organisationSelectionWithoutPolls,
+          select: defaultOrganisationSelectionWithoutPolls,
         },
       },
     })

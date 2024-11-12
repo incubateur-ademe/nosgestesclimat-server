@@ -1,60 +1,21 @@
 import type { Prisma } from '@prisma/client'
 import { prisma } from '../../adapters/prisma/client'
+import {
+  defaultGroupParticipantSimulationSelection,
+  defaultOrganisationSelectionWithoutPolls,
+  defaultPollSelection,
+  defaultSimulationSelection,
+} from '../../adapters/prisma/selection'
 import type { Session } from '../../adapters/prisma/transaction'
 import { transaction } from '../../adapters/prisma/transaction'
-import {
-  defaultPollSelection,
-  organisationSelectionWithoutPolls,
-} from '../organisations/organisations.repository'
 import type { OrganisationPollParams } from '../organisations/organisations.validator'
 import { transferOwnershipToUser } from '../users/users.repository'
 import type { UserParams } from '../users/users.validator'
 import type {
+  SimulationCreateDto,
   SimulationParticipantCreateDto,
   UserSimulationParams,
 } from './simulations.validator'
-import { type SimulationCreateDto } from './simulations.validator'
-
-const defaultGroupParticipantSimulationSelection = {
-  id: true,
-  date: true,
-  situation: true,
-  foldedSteps: true,
-  progression: true,
-  actionChoices: true,
-  savedViaEmail: true,
-  computedResults: true,
-  additionalQuestionsAnswers: {
-    select: {
-      key: true,
-      answer: true,
-      type: true,
-    },
-  },
-  polls: {
-    select: {
-      pollId: true,
-      poll: {
-        select: {
-          slug: true,
-        },
-      },
-    },
-  },
-  createdAt: true,
-  updatedAt: true,
-}
-
-const defaultSimulationSelection = {
-  ...defaultGroupParticipantSimulationSelection,
-  user: {
-    select: {
-      id: true,
-      name: true,
-      email: true,
-    },
-  },
-}
 
 export const createUserSimulation = (
   simulation: SimulationCreateDto,
@@ -257,7 +218,7 @@ export const createPollUserSimulation = (
           select: {
             ...defaultPollSelection,
             organisation: {
-              select: organisationSelectionWithoutPolls,
+              select: defaultOrganisationSelectionWithoutPolls,
             },
           },
         },
