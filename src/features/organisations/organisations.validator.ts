@@ -217,3 +217,9 @@ export const OrganisationPublicPollSimulationsFetchValidator = {
   params: PublicPollParams,
   query: z.object({}).strict().optional(),
 }
+
+export const OrganisationPublicPollDashboardValidator = {
+  body: z.object({}).strict().optional(),
+  params: PublicPollParams,
+  query: z.object({}).strict().optional(),
+}

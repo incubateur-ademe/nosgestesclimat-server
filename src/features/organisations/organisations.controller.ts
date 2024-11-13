@@ -13,6 +13,7 @@ import {
 } from '../authentication/authentication.service'
 import {
   createPollSimulation,
+  fetchPublicPollDashboard,
   fetchPublicPollSimulations,
 } from '../simulations/simulations.service'
 import {
@@ -47,6 +48,7 @@ import {
   OrganisationPollFetchValidator,
   OrganisationPollsFetchValidator,
   OrganisationPollUpdateValidator,
+  OrganisationPublicPollDashboardValidator,
   OrganisationPublicPollFetchValidator,
   OrganisationPublicPollSimulationsFetchValidator,
   OrganisationsFetchValidator,
@@ -411,6 +413,30 @@ router
         }
 
         logger.error('Public poll simulations fetch failed', err)
+
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
+      }
+    }
+  )
+
+/**
+ * Returns poll dashboard for public or administrator users following authentication
+ */
+router
+  .route('/v1/:userId/public-polls/:pollIdOrSlug/dashboard')
+  .get(
+    validateRequest(OrganisationPublicPollDashboardValidator),
+    async (req, res) => {
+      try {
+        const dashboard = await fetchPublicPollDashboard(req)
+
+        return res.status(StatusCodes.OK).json(dashboard)
+      } catch (err) {
+        if (err instanceof EntityNotFoundException) {
+          return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
+        }
+
+        logger.error('Public poll dashboard fetch failed', err)
 
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
       }

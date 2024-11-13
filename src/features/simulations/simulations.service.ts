@@ -1,7 +1,16 @@
+import type {
+  DottedName,
+  FunFacts,
+  NGCRule,
+} from '@incubateur-ademe/nosgestesclimat'
+import modelRules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
+import modelFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRules.json'
 import type { JsonValue } from '@prisma/client/runtime/library'
+import { engine } from '../../constants/publicode'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
 import { EventBus } from '../../core/event-bus/event-bus'
 import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError'
+import logger from '../../logger'
 import { PollUpdatedEvent } from '../organisations/events/PollUpdated.event'
 import type {
   OrganisationPollParams,
@@ -25,6 +34,9 @@ import {
   SituationSchema,
   type SimulationCreateDto,
 } from './simulations.validator'
+
+const rules = modelRules as Record<DottedName, NGCRule | string | null>
+const funFactsRules = modelFunFacts as { [k in keyof FunFacts]: DottedName }
 
 const simulationToDto = (
   {
@@ -129,17 +141,40 @@ export const createPollSimulation = async ({
   }
 }
 
+export const fetchPublicPollSimulations = async ({
+  params,
+}: {
+  params: PublicPollParams
+}) => {
+  try {
+    const simulations = await fetchPollSimulations(params)
+
+    return simulations.map((s) => simulationToDto(s, params.userId))
+  } catch (e) {
+    if (isPrismaErrorNotFound(e)) {
+      throw new EntityNotFoundException('Poll not found')
+    }
+    throw e
+  }
+}
+
 const MAX_VALUE = 100000
 
-export const isValidSimulation = <T>(
+const isValidSimulation = <T>(
   simulation: T & {
+    progression: number
     computedResults: JsonValue
     situation: JsonValue
   }
 ): simulation is T & {
+  progression: number
   computedResults: ComputedResultSchema
   situation: SituationSchema
 } => {
+  if (simulation.progression !== 1) {
+    return false
+  }
+
   const computedResults = ComputedResultSchema.safeParse(
     simulation.computedResults
   )
@@ -156,7 +191,94 @@ export const isValidSimulation = <T>(
   ].every((v) => v <= MAX_VALUE)
 }
 
-export const fetchPublicPollSimulations = async ({
+type FunFactsSimulations = Array<{
+  computedResults: ComputedResultSchema
+  situation: SituationSchema
+}>
+
+const getSituationDottedNameValue = (
+  situation: SituationSchema,
+  dottedName: DottedName
+): number => {
+  try {
+    engine.setSituation(situation)
+
+    const value = engine.evaluate(dottedName).nodeValue
+
+    if (typeof value === 'number' && !!value) {
+      return value
+    }
+
+    if (value === true) {
+      return 1
+    }
+
+    return 0
+  } catch (error) {
+    logger.error(`Cannot evaluate dottedName ${dottedName}`, {
+      situation,
+      error,
+    })
+
+    return 0
+  }
+}
+
+const getFunFactValue = (
+  dottedName: DottedName,
+  simulations: FunFactsSimulations
+): number =>
+  simulations.reduce(
+    (acc, { situation }) =>
+      acc + getSituationDottedNameValue(situation, dottedName),
+    0
+  )
+
+const specialAverageKeys = new Set<string>(<(keyof FunFacts)[]>[
+  'averageOfCarKilometers',
+  'averageOfTravelers',
+  'averageOfElectricityConsumption',
+])
+
+const getSimulationsFunFacts = (simulations: FunFactsSimulations) => {
+  return Object.fromEntries(
+    Object.entries(funFactsRules).map(([key, dottedName]) => {
+      if (dottedName in rules) {
+        let value = getFunFactValue(dottedName, simulations)
+
+        const rule = rules[dottedName]
+        if (
+          !!rule &&
+          typeof rule === 'object' &&
+          specialAverageKeys.has(key) &&
+          typeof rule.formule === 'object' &&
+          Array.isArray(rule.formule?.moyenne)
+        ) {
+          const [moyenneDottedName] = rule.formule.moyenne
+          if (typeof moyenneDottedName === 'string') {
+            const totalAnswers = simulations.reduce(
+              (acc, { situation }) =>
+                acc + (moyenneDottedName in situation ? 1 : 0),
+              0
+            )
+            if (totalAnswers > 0) {
+              value = value / totalAnswers
+            }
+          }
+        }
+
+        if (key.startsWith('percentage')) {
+          value = (value / simulations.length) * 100
+        }
+
+        return [key, value]
+      }
+      return [key, 0]
+    })
+  ) as FunFacts
+}
+
+export const fetchPublicPollDashboard = async ({
   params,
 }: {
   params: PublicPollParams
@@ -164,7 +286,11 @@ export const fetchPublicPollSimulations = async ({
   try {
     const simulations = await fetchPollSimulations(params)
 
-    return simulations.map((s) => simulationToDto(s, params.userId))
+    const validSimulations = simulations.filter(isValidSimulation)
+
+    return {
+      funFacts: getSimulationsFunFacts(validSimulations),
+    }
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('Poll not found')

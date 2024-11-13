@@ -50,6 +50,9 @@ export const FETCH_ORGANISATION_PUBLIC_POLL_ROUTE =
 export const FETCH_ORGANISATION_PUBLIC_POLL_SIMULATIONS_ROUTE =
   '/organisations/v1/:userId/public-polls/:pollIdOrSlug/simulations'
 
+export const FETCH_ORGANISATION_PUBLIC_POLL_DASHBOARD_ROUTE =
+  '/organisations/v1/:userId/public-polls/:pollIdOrSlug/dashboard'
+
 export const CREATE_POLL_SIMULATION_ROUTE =
   '/organisations/v1/:organisationIdOrSlug/polls/:pollIdOrSlug/simulations'
 
