@@ -11,7 +11,10 @@ import {
   COOKIE_NAME,
   COOKIES_OPTIONS,
 } from '../authentication/authentication.service'
-import { createPollSimulation } from '../simulations/simulations.service'
+import {
+  createPollSimulation,
+  fetchPublicPollSimulations,
+} from '../simulations/simulations.service'
 import {
   OrganisationPollSimulationCreateValidator,
   SimulationCreateDto,
@@ -45,6 +48,7 @@ import {
   OrganisationPollsFetchValidator,
   OrganisationPollUpdateValidator,
   OrganisationPublicPollFetchValidator,
+  OrganisationPublicPollSimulationsFetchValidator,
   OrganisationsFetchValidator,
   OrganisationUpdateValidator,
 } from './organisations.validator'
@@ -374,6 +378,39 @@ router
         }
 
         logger.error('Public poll fetch failed', err)
+
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
+      }
+    }
+  )
+
+/**
+ * Returns poll simulations for public or administrator users following authentication
+ */
+router
+  .route('/v1/:userId/public-polls/:pollIdOrSlug/simulations')
+  .get(
+    authentificationMiddleware({ passIfUnauthorized: true }),
+    validateRequest(OrganisationPublicPollSimulationsFetchValidator),
+    async (req, res) => {
+      try {
+        if (req.user && req.user.userId !== req.params.userId) {
+          throw new ForbiddenException(`Different user ids found`)
+        }
+
+        const simulations = await fetchPublicPollSimulations(req)
+
+        return res.status(StatusCodes.OK).json(simulations)
+      } catch (err) {
+        if (err instanceof EntityNotFoundException) {
+          return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
+        }
+
+        if (err instanceof ForbiddenException) {
+          return res.status(StatusCodes.FORBIDDEN).send(err.message).end()
+        }
+
+        logger.error('Public poll simulations fetch failed', err)
 
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
       }

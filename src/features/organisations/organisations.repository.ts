@@ -110,6 +110,26 @@ const findOrganisationPollBySlugOrId = <
   })
 }
 
+export const findOrganisationPublicPollBySlugOrId = <
+  T extends Prisma.PollSelect = { id: true },
+>(
+  {
+    params: { pollIdOrSlug },
+    select = { id: true } as T,
+  }: {
+    params: PollParams
+    select?: T
+  },
+  { session }: { session: Session }
+) => {
+  return session.poll.findFirstOrThrow({
+    where: {
+      OR: [{ id: pollIdOrSlug }, { slug: pollIdOrSlug }],
+    },
+    select,
+  })
+}
+
 const findUniqueOrganisationSlug = findModelUniqueSlug('organisation')
 
 export const createOrganisationAndAdministrator = async (

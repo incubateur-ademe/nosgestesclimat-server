@@ -47,6 +47,9 @@ export const FETCH_ORGANISATION_POLL_ROUTE =
 export const FETCH_ORGANISATION_PUBLIC_POLL_ROUTE =
   '/organisations/v1/:userId/public-polls/:pollIdOrSlug'
 
+export const FETCH_ORGANISATION_PUBLIC_POLL_SIMULATIONS_ROUTE =
+  '/organisations/v1/:userId/public-polls/:pollIdOrSlug/simulations'
+
 export const CREATE_POLL_SIMULATION_ROUTE =
   '/organisations/v1/:organisationIdOrSlug/polls/:pollIdOrSlug/simulations'
 

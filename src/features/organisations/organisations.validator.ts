@@ -22,11 +22,9 @@ export const OrganisationPollParams = OrganisationParams.merge(PollParams)
 
 export type OrganisationPollParams = z.infer<typeof OrganisationPollParams>
 
-export const OrganisationPublicPollParams = UserParams.merge(PollParams)
+export const PublicPollParams = UserParams.merge(PollParams)
 
-export type OrganisationPublicPollParams = z.infer<
-  typeof OrganisationPublicPollParams
->
+export type PublicPollParams = z.infer<typeof PublicPollParams>
 
 export enum OrganisationTypeEnum {
   association = 'association',
@@ -210,6 +208,12 @@ export const OrganisationPollFetchValidator = {
 
 export const OrganisationPublicPollFetchValidator = {
   body: z.object({}).strict().optional(),
-  params: OrganisationPublicPollParams,
+  params: PublicPollParams,
+  query: z.object({}).strict().optional(),
+}
+
+export const OrganisationPublicPollSimulationsFetchValidator = {
+  body: z.object({}).strict().optional(),
+  params: PublicPollParams,
   query: z.object({}).strict().optional(),
 }

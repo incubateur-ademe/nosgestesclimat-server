@@ -4,11 +4,16 @@ import {
   defaultOrganisationSelectionWithoutPolls,
   defaultPollSelection,
   defaultSimulationSelection,
+  defaultSimulationSelectionWithoutPoll,
   defaultSimulationSelectionWithoutUser,
 } from '../../adapters/prisma/selection'
 import type { Session } from '../../adapters/prisma/transaction'
 import { transaction } from '../../adapters/prisma/transaction'
-import type { OrganisationPollParams } from '../organisations/organisations.validator'
+import { findOrganisationPublicPollBySlugOrId } from '../organisations/organisations.repository'
+import type {
+  OrganisationPollParams,
+  PublicPollParams,
+} from '../organisations/organisations.validator'
 import { transferOwnershipToUser } from '../users/users.repository'
 import type { UserParams } from '../users/users.validator'
 import type {
@@ -248,4 +253,50 @@ export const getIncompleteSimulationsCount = (user: {
       },
     },
   })
+}
+
+export const fetchPollSimulations = (params: PublicPollParams) => {
+  return transaction(async (session) => {
+    const { id } = await findOrganisationPublicPollBySlugOrId(
+      { params },
+      { session }
+    )
+
+    const { userId } = params
+
+    return prisma.simulation.findMany({
+      where: {
+        polls: {
+          some: {
+            poll: {
+              id,
+              OR: [
+                {
+                  organisation: {
+                    administrators: {
+                      some: {
+                        user: {
+                          id: userId,
+                        },
+                      },
+                    },
+                  },
+                },
+                {
+                  simulations: {
+                    some: {
+                      simulation: {
+                        userId,
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      },
+      select: defaultSimulationSelectionWithoutPoll,
+    })
+  }, prisma)
 }

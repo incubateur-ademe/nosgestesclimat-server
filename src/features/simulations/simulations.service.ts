@@ -3,12 +3,16 @@ import { EntityNotFoundException } from '../../core/errors/EntityNotFoundExcepti
 import { EventBus } from '../../core/event-bus/event-bus'
 import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError'
 import { PollUpdatedEvent } from '../organisations/events/PollUpdated.event'
-import type { OrganisationPollParams } from '../organisations/organisations.validator'
+import type {
+  OrganisationPollParams,
+  PublicPollParams,
+} from '../organisations/organisations.validator'
 import type { UserParams } from '../users/users.validator'
 import { SimulationUpsertedEvent } from './events/SimulationUpserted.event'
 import {
   createPollUserSimulation,
   createUserSimulation,
+  fetchPollSimulations,
   fetchUserSimulation,
   fetchUserSimulations,
 } from './simulations.repository'
@@ -23,12 +27,18 @@ import {
 } from './simulations.validator'
 
 const simulationToDto = (
-  { polls, user, ...rest }: Awaited<ReturnType<typeof createUserSimulation>>,
+  {
+    polls,
+    user,
+    ...rest
+  }: Partial<Awaited<ReturnType<typeof fetchUserSimulation>>>,
   connectedUser: string
 ) => ({
   ...rest,
-  polls: polls.map(({ pollId, poll: { slug } }) => ({ id: pollId, slug })),
-  user: user.id === connectedUser ? user : { name: user.name },
+  polls: polls?.map(({ pollId, poll: { slug } }) => ({ id: pollId, slug })),
+  ...(user
+    ? { user: user.id === connectedUser ? user : { name: user.name } }
+    : {}),
 })
 
 export const createSimulation = async ({
@@ -144,4 +154,21 @@ export const isValidSimulation = <T>(
     computedResults.data.carbone.bilan,
     ...Object.values(computedResults.data.carbone.categories),
   ].every((v) => v <= MAX_VALUE)
+}
+
+export const fetchPublicPollSimulations = async ({
+  params,
+}: {
+  params: PublicPollParams
+}) => {
+  try {
+    const simulations = await fetchPollSimulations(params)
+
+    return simulations.map((s) => simulationToDto(s, params.userId))
+  } catch (e) {
+    if (isPrismaErrorNotFound(e)) {
+      throw new EntityNotFoundException('Poll not found')
+    }
+    throw e
+  }
 }

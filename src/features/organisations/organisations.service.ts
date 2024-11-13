@@ -31,8 +31,8 @@ import type {
   OrganisationPollCreateDto,
   OrganisationPollParams,
   OrganisationPollUpdateDto,
-  OrganisationPublicPollParams,
   OrganisationUpdateDto,
+  PublicPollParams,
 } from './organisations.validator'
 
 const organisationToDto = (
@@ -369,7 +369,7 @@ export const fetchPublicPoll = async ({
   params,
   user,
 }: {
-  params: OrganisationPublicPollParams
+  params: PublicPollParams
   user?: NonNullable<Request['user']>
 }) => {
   try {
