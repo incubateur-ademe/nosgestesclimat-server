@@ -283,6 +283,13 @@ export const createOrganisationPoll = async ({
     defaultAdditionalQuestions: poll.defaultAdditionalQuestions.map(
       ({ type }) => type
     ),
+    simulations: {
+      count: poll.simulations.length,
+      finished: poll.simulations.filter(
+        ({ simulation: { progression } }) => progression === 1
+      ).length,
+      hasParticipated: false,
+    },
   }
 }
 

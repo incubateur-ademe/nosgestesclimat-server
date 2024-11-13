@@ -127,6 +127,11 @@ describe('Given a NGC user', () => {
                 slug: organisationSlug,
                 name: organisationName,
               },
+              simulations: {
+                count: 1,
+                finished: 1,
+                hasParticipated: true,
+              },
             })
           })
 
@@ -146,6 +151,11 @@ describe('Given a NGC user', () => {
                   id: organisationId,
                   slug: organisationSlug,
                   name: organisationName,
+                },
+                simulations: {
+                  count: 1,
+                  finished: 1,
+                  hasParticipated: true,
                 },
               })
             })
@@ -363,6 +373,11 @@ describe('Given a NGC user', () => {
             expect(response.body).toEqual({
               ...poll,
               organisation: expectedOrganisation,
+              simulations: {
+                count: 3,
+                finished: 3,
+                hasParticipated: false,
+              },
             })
           })
 

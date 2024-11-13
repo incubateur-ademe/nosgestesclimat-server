@@ -265,6 +265,11 @@ describe('Given a NGC user', () => {
             expectedNumberOfParticipants: null,
             createdAt: expect.any(String),
             updatedAt: null,
+            simulations: {
+              count: 0,
+              finished: 0,
+              hasParticipated: false,
+            },
           })
         })
 
@@ -404,6 +409,11 @@ describe('Given a NGC user', () => {
               expectedNumberOfParticipants: null,
               createdAt: expect.any(String),
               updatedAt: null,
+              simulations: {
+                count: 0,
+                finished: 0,
+                hasParticipated: false,
+              },
             })
           })
         })
@@ -532,6 +542,11 @@ describe('Given a NGC user', () => {
             expectedNumberOfParticipants: null,
             createdAt: expect.any(String),
             updatedAt: null,
+            simulations: {
+              count: 0,
+              finished: 0,
+              hasParticipated: false,
+            },
           })
 
           jest.spyOn(prisma.organisation, 'update').mockRestore()

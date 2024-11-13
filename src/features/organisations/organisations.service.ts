@@ -31,8 +31,8 @@ import type {
   OrganisationPollCreateDto,
   OrganisationPollParams,
   OrganisationPollUpdateDto,
+  OrganisationPublicPollParams,
   OrganisationUpdateDto,
-  PollParams,
 } from './organisations.validator'
 
 const organisationToDto = (
@@ -208,27 +208,42 @@ export const fetchOrganisation = async ({
 }
 
 const pollToDto = ({
-  poll: { organisationId: _, organisation, ...poll },
+  poll: { organisationId: _, organisation, simulations, ...poll },
   user,
 }: {
   poll: Poll & Partial<Awaited<ReturnType<typeof fetchOrganisationPoll>>>
-  user?: NonNullable<Request['user']>
+  user?: NonNullable<Request['user']> | string
 }) => ({
   ...poll,
   ...(organisation
     ? {
-        organisation: user
-          ? organisationToDto(organisation, user.userId)
-          : {
-              id: organisation.id,
-              name: organisation.name,
-              slug: organisation.slug,
-            },
+        organisation:
+          typeof user === 'object'
+            ? organisationToDto(organisation, user.userId)
+            : {
+                id: organisation.id,
+                name: organisation.name,
+                slug: organisation.slug,
+              },
       }
     : {}),
   defaultAdditionalQuestions: poll.defaultAdditionalQuestions?.map(
     ({ type }) => type
   ),
+  simulations: {
+    count: simulations?.length || 0,
+    finished:
+      simulations?.filter(
+        ({ simulation: { progression } }) => progression === 1
+      ).length || 0,
+    hasParticipated: !!simulations?.find(
+      ({
+        simulation: {
+          user: { id },
+        },
+      }) => (typeof user === 'object' ? user.userId === id : user === id)
+    ),
+  },
 })
 
 export const createPoll = async ({
@@ -354,7 +369,7 @@ export const fetchPublicPoll = async ({
   params,
   user,
 }: {
-  params: PollParams
+  params: OrganisationPublicPollParams
   user?: NonNullable<Request['user']>
 }) => {
   try {
@@ -362,7 +377,7 @@ export const fetchPublicPoll = async ({
 
     return pollToDto({
       poll,
-      user,
+      user: user || params.userId,
     })
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {

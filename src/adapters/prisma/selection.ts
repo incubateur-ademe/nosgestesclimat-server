@@ -123,6 +123,21 @@ export const defaultPollSelection = {
   expectedNumberOfParticipants: true,
   createdAt: true,
   updatedAt: true,
+  simulations: {
+    select: {
+      id: true,
+      simulation: {
+        select: {
+          progression: true,
+          user: {
+            select: {
+              id: true,
+            },
+          },
+        },
+      },
+    },
+  },
 }
 
 export const defaultSimulationSelectionWithoutUserAndPoll = {
