@@ -104,8 +104,6 @@ router
         return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
       }
 
-      // console.log(err.reasons[0].errors[0])
-
       logger.error('Participant creation failed', err)
 
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()

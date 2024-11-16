@@ -318,29 +318,13 @@ export const fetchUserGroups = async (
 }
 
 export const fetchUserGroup = async (
-  { userId, groupId }: UserGroupParams,
+  { groupId }: GroupParams,
   { session }: { session?: Session } = {}
 ) => {
   return transaction(async (prismaSession) => {
     const group = await prismaSession.group.findUniqueOrThrow({
       where: {
         id: groupId,
-        OR: [
-          {
-            administrator: {
-              user: {
-                id: userId,
-              },
-            },
-          },
-          {
-            participants: {
-              some: {
-                userId,
-              },
-            },
-          },
-        ],
       },
       select: defaultGroupSelection,
     })
