@@ -17,7 +17,7 @@ import { SituationSchema } from '../../simulations.validator'
 
 type TestAgent = ReturnType<typeof supertest>
 
-export const CREATE_SIMULATION_ROUTE = '/simulations/v1'
+export const CREATE_SIMULATION_ROUTE = '/simulations/v1/:userId'
 
 export const FETCH_USER_SIMULATIONS_ROUTE = '/simulations/v1/:userId'
 
@@ -181,23 +181,23 @@ export const getSimulationPayload = ({
 
 export const createSimulation = async ({
   agent,
+  userId,
   simulation = {},
 }: {
   agent: TestAgent
+  userId?: string
   simulation?: Partial<SimulationCreateInputDto>
 }) => {
+  userId = userId ?? faker.string.uuid()
   const { user } = simulation
   const payload: SimulationCreateInputDto = {
     ...getSimulationPayload(simulation),
-    user: {
-      ...user,
-      id: user?.id || faker.string.uuid(),
-    },
+    user,
   }
 
   const scope = nock(process.env.BREVO_URL!)
 
-  if (payload.user.email) {
+  if (payload.user?.email) {
     scope
       .post('/v3/contacts')
       .reply(200)
@@ -216,7 +216,7 @@ export const createSimulation = async ({
   }
 
   const response = await agent
-    .post(CREATE_SIMULATION_ROUTE)
+    .post(CREATE_SIMULATION_ROUTE.replace(':userId', userId))
     .send(payload)
     .expect(StatusCodes.CREATED)
 

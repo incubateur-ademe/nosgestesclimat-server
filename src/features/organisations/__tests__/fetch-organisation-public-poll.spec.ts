@@ -108,7 +108,6 @@ describe('Given a NGC user', () => {
               user: { id: userId },
             } = await createOrganisationPollSimulation({
               agent,
-              organisationId,
               pollId,
             }))
           })
@@ -278,7 +277,6 @@ describe('Given a NGC user', () => {
 
       describe('And poll does exist', () => {
         let organisation: Awaited<ReturnType<typeof createOrganisation>>
-        let organisationId: string
         let poll: Awaited<ReturnType<typeof createOrganisationPoll>>
         let pollId: string
         let pollSlug: string
@@ -288,7 +286,7 @@ describe('Given a NGC user', () => {
             agent,
             cookie,
           })
-          ;({ id: organisationId } = organisation)
+          const { id: organisationId } = organisation
           poll = await createOrganisationPoll({
             agent,
             cookie,
@@ -342,17 +340,14 @@ describe('Given a NGC user', () => {
             simulations = await Promise.all([
               createOrganisationPollSimulation({
                 agent,
-                organisationId,
                 pollId,
               }),
               createOrganisationPollSimulation({
                 agent,
-                organisationId,
                 pollId,
               }),
               createOrganisationPollSimulation({
                 agent,
-                organisationId,
                 pollId,
               }),
             ])

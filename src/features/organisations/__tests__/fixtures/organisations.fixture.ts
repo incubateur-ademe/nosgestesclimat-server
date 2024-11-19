@@ -47,14 +47,14 @@ export const FETCH_ORGANISATION_POLL_ROUTE =
 export const FETCH_ORGANISATION_PUBLIC_POLL_ROUTE =
   '/organisations/v1/:userId/public-polls/:pollIdOrSlug'
 
+export const CREATE_ORGANISATION_PUBLIC_POLL_SIMULATION_ROUTE =
+  '/organisations/v1/:userId/public-polls/:pollIdOrSlug/simulations'
+
 export const FETCH_ORGANISATION_PUBLIC_POLL_SIMULATIONS_ROUTE =
   '/organisations/v1/:userId/public-polls/:pollIdOrSlug/simulations'
 
 export const FETCH_ORGANISATION_PUBLIC_POLL_DASHBOARD_ROUTE =
   '/organisations/v1/:userId/public-polls/:pollIdOrSlug/dashboard'
-
-export const CREATE_POLL_SIMULATION_ROUTE =
-  '/organisations/v1/:organisationIdOrSlug/polls/:pollIdOrSlug/simulations'
 
 type TestAgent = ReturnType<typeof supertest>
 
@@ -301,22 +301,20 @@ export const createOrganisationPoll = async ({
 
 export const createOrganisationPollSimulation = async ({
   agent,
-  organisationId,
+  userId,
   pollId,
   simulation = {},
 }: {
   agent: TestAgent
-  organisationId: string
+  userId?: string
   pollId: string
   simulation?: Partial<SimulationCreateInputDto>
 }) => {
+  userId = userId ?? faker.string.uuid()
   const { user } = simulation
   const payload: SimulationCreateInputDto = {
     ...getSimulationPayload(simulation),
-    user: {
-      ...user,
-      id: user?.id || faker.string.uuid(),
-    },
+    user,
   }
 
   const scope = nock(process.env.BREVO_URL!)
@@ -325,7 +323,7 @@ export const createOrganisationPollSimulation = async ({
     .post('/v3/contacts/lists/27/contacts/remove')
     .reply(200)
 
-  if (payload.user.email) {
+  if (payload.user?.email) {
     scope
       .post('/v3/smtp/email')
       .reply(200)
@@ -337,9 +335,9 @@ export const createOrganisationPollSimulation = async ({
 
   const response = await agent
     .post(
-      CREATE_POLL_SIMULATION_ROUTE.replace(
-        ':organisationIdOrSlug',
-        organisationId
+      CREATE_ORGANISATION_PUBLIC_POLL_SIMULATION_ROUTE.replace(
+        ':userId',
+        userId
       ).replace(':pollIdOrSlug', pollId)
     )
     .send(payload)

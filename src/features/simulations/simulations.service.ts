@@ -12,10 +12,7 @@ import { EventBus } from '../../core/event-bus/event-bus'
 import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError'
 import logger from '../../logger'
 import { PollUpdatedEvent } from '../organisations/events/PollUpdated.event'
-import type {
-  OrganisationPollParams,
-  PublicPollParams,
-} from '../organisations/organisations.validator'
+import type { PublicPollParams } from '../organisations/organisations.validator'
 import type { UserParams } from '../users/users.validator'
 import { SimulationUpsertedEvent } from './events/SimulationUpserted.event'
 import {
@@ -56,13 +53,15 @@ const simulationToDto = (
 export const createSimulation = async ({
   simulationDto,
   newsletters,
+  params,
   origin,
 }: {
   simulationDto: SimulationCreateDto
   newsletters: SimulationCreateNewsletterList
+  params: UserParams
   origin: string
 }) => {
-  const simulation = await createUserSimulation(simulationDto)
+  const simulation = await createUserSimulation(params, simulationDto)
   const { user } = simulation
 
   const simulationUpsertedEvent = new SimulationUpsertedEvent({
@@ -76,7 +75,7 @@ export const createSimulation = async ({
 
   await EventBus.once(simulationUpsertedEvent)
 
-  return simulationToDto(simulation, simulationDto.user.id)
+  return simulationToDto(simulation, params.userId)
 }
 
 export const fetchSimulations = async (params: UserParams) => {
@@ -104,7 +103,7 @@ export const createPollSimulation = async ({
   simulationDto,
 }: {
   origin: string
-  params: OrganisationPollParams
+  params: PublicPollParams
   simulationDto: SimulationCreateDto
 }) => {
   try {
@@ -132,7 +131,7 @@ export const createPollSimulation = async ({
     // @ts-expect-error 2 events different types: TODO fix
     await EventBus.once(simulationUpsertedEvent, pollUpdatedEvent)
 
-    return simulationToDto(simulation, simulationDto.user.id)
+    return simulationToDto(simulation, params.userId)
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('Poll not found')

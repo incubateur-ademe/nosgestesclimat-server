@@ -10,10 +10,7 @@ import {
 import type { Session } from '../../adapters/prisma/transaction'
 import { transaction } from '../../adapters/prisma/transaction'
 import { findOrganisationPublicPollBySlugOrId } from '../organisations/organisations.repository'
-import type {
-  OrganisationPollParams,
-  PublicPollParams,
-} from '../organisations/organisations.validator'
+import type { PublicPollParams } from '../organisations/organisations.validator'
 import { transferOwnershipToUser } from '../users/users.repository'
 import type { UserParams } from '../users/users.validator'
 import type {
@@ -23,13 +20,12 @@ import type {
 } from './simulations.validator'
 
 export const createUserSimulation = (
+  { userId }: UserParams,
   simulation: SimulationCreateDto,
   { session }: { session?: Session } = {}
 ) => {
   return transaction(async (prismaSession) => {
-    const {
-      user: { id: userId, name, email },
-    } = simulation
+    const { user: { name, email } = {} } = simulation
     await prismaSession.user.upsert({
       where: {
         id: userId,
@@ -184,25 +180,26 @@ export const fetchParticipantSimulation = (
 }
 
 export const createPollUserSimulation = (
-  { organisationIdOrSlug, pollIdOrSlug }: OrganisationPollParams,
+  params: PublicPollParams,
   simulationDto: SimulationCreateDto,
   { session }: { session?: Session } = {}
 ) => {
   return transaction(async (prismaSession) => {
-    const { id: userId, email } = simulationDto.user
+    const { userId, pollIdOrSlug } = params
+    const { email } = simulationDto.user ?? {}
     const { id: pollId } = await prismaSession.poll.findFirstOrThrow({
       where: {
         OR: [{ id: pollIdOrSlug }, { slug: pollIdOrSlug }],
-        organisation: {
-          OR: [{ id: organisationIdOrSlug }, { slug: organisationIdOrSlug }],
-        },
       },
       select: {
         id: true,
       },
     })
 
-    const { id: simulationId } = await createUserSimulation(simulationDto)
+    const { id: simulationId } = await createUserSimulation(
+      params,
+      simulationDto
+    )
 
     const relation = {
       pollId,

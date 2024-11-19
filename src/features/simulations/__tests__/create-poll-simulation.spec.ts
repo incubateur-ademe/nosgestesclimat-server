@@ -7,7 +7,7 @@ import app from '../../../app'
 import logger from '../../../logger'
 import { login } from '../../authentication/__tests__/fixtures/login.fixture'
 import {
-  CREATE_POLL_SIMULATION_ROUTE,
+  CREATE_ORGANISATION_PUBLIC_POLL_SIMULATION_ROUTE,
   createOrganisation,
   createOrganisationPoll,
 } from '../../organisations/__tests__/fixtures/organisations.fixture'
@@ -20,7 +20,7 @@ import { getRandomTestCase } from './fixtures/simulations.fixtures'
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)
-  const url = CREATE_POLL_SIMULATION_ROUTE
+  const url = CREATE_ORGANISATION_PUBLIC_POLL_SIMULATION_ROUTE
   const { computedResults, nom, situation } = getRandomTestCase()
 
   afterEach(() =>
@@ -34,15 +34,24 @@ describe('Given a NGC user', () => {
 
   describe(`And ${nom} persona situation`, () => {
     describe('When creating a simulation in a poll ', () => {
+      describe('And invalid user Id', () => {
+        test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
+          await agent
+            .post(
+              url
+                .replace(':userId', faker.string.alpha(34))
+                .replace(':pollIdOrSlug', faker.database.mongodbObjectId())
+            )
+            .expect(StatusCodes.BAD_REQUEST)
+        })
+      })
+
       describe('And no data provided', () => {
         test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
           await agent
             .post(
               url
-                .replace(
-                  ':organisationIdOrSlug',
-                  faker.database.mongodbObjectId()
-                )
+                .replace(':userId', faker.string.uuid())
                 .replace(':pollIdOrSlug', faker.database.mongodbObjectId())
             )
             .expect(StatusCodes.BAD_REQUEST)
@@ -54,10 +63,7 @@ describe('Given a NGC user', () => {
           await agent
             .post(
               url
-                .replace(
-                  ':organisationIdOrSlug',
-                  faker.database.mongodbObjectId()
-                )
+                .replace(':userId', faker.string.uuid())
                 .replace(':pollIdOrSlug', faker.database.mongodbObjectId())
             )
             .send({
@@ -66,7 +72,6 @@ describe('Given a NGC user', () => {
               computedResults,
               progression: 1,
               user: {
-                id: faker.string.uuid(),
                 name: nom,
                 email: 'Je ne donne jamais mon email',
               },
@@ -80,10 +85,7 @@ describe('Given a NGC user', () => {
           await agent
             .post(
               url
-                .replace(
-                  ':organisationIdOrSlug',
-                  faker.database.mongodbObjectId()
-                )
+                .replace(':userId', faker.string.uuid())
                 .replace(':pollIdOrSlug', faker.database.mongodbObjectId())
             )
             .send({
@@ -92,7 +94,6 @@ describe('Given a NGC user', () => {
               computedResults,
               progression: 1,
               user: {
-                id: faker.string.uuid(),
                 name: nom,
               },
             })
@@ -105,10 +106,7 @@ describe('Given a NGC user', () => {
           await agent
             .post(
               url
-                .replace(
-                  ':organisationIdOrSlug',
-                  faker.database.mongodbObjectId()
-                )
+                .replace(':userId', faker.string.uuid())
                 .replace(':pollIdOrSlug', faker.database.mongodbObjectId())
             )
             .send({
@@ -117,7 +115,6 @@ describe('Given a NGC user', () => {
               computedResults,
               progression: 1,
               user: {
-                id: faker.string.uuid(),
                 name: nom,
               },
             })
@@ -130,10 +127,7 @@ describe('Given a NGC user', () => {
           await agent
             .post(
               url
-                .replace(
-                  ':organisationIdOrSlug',
-                  faker.database.mongodbObjectId()
-                )
+                .replace(':userId', faker.string.uuid())
                 .replace(':pollIdOrSlug', faker.database.mongodbObjectId())
             )
             .send({
@@ -142,7 +136,6 @@ describe('Given a NGC user', () => {
               computedResults: null,
               progression: 1,
               user: {
-                id: faker.string.uuid(),
                 name: nom,
               },
             })
@@ -155,10 +148,7 @@ describe('Given a NGC user', () => {
           await agent
             .post(
               url
-                .replace(
-                  ':organisationIdOrSlug',
-                  faker.database.mongodbObjectId()
-                )
+                .replace(':userId', faker.string.uuid())
                 .replace(':pollIdOrSlug', faker.database.mongodbObjectId())
             )
             .send({
@@ -166,9 +156,6 @@ describe('Given a NGC user', () => {
               situation,
               computedResults,
               progression: 1,
-              user: {
-                id: faker.string.uuid(),
-              },
             })
             .expect(StatusCodes.NOT_FOUND)
         })
@@ -180,6 +167,7 @@ describe('Given a NGC user', () => {
         let organisationName: string
         let administratorEmail: string
         let administratorId: string
+        let userId: string
         let pollId: string
         let pollSlug: string
         let poll: Awaited<ReturnType<typeof createOrganisationPoll>>
@@ -203,6 +191,7 @@ describe('Given a NGC user', () => {
             organisationId,
           })
           ;({ id: pollId, slug: pollSlug } = poll)
+          userId = faker.string.uuid()
         })
 
         test(`Then it returns a ${StatusCodes.CREATED} response with the created simulation`, async () => {
@@ -211,9 +200,6 @@ describe('Given a NGC user', () => {
             situation,
             computedResults,
             progression: 1,
-            user: {
-              id: faker.string.uuid(),
-            },
           }
 
           nock(process.env.BREVO_URL!)
@@ -224,9 +210,7 @@ describe('Given a NGC user', () => {
 
           const response = await agent
             .post(
-              url
-                .replace(':organisationIdOrSlug', organisationId)
-                .replace(':pollIdOrSlug', pollId)
+              url.replace(':userId', userId).replace(':pollIdOrSlug', pollId)
             )
             .send(payload)
             .expect(StatusCodes.CREATED)
@@ -248,7 +232,7 @@ describe('Given a NGC user', () => {
             // ],
             polls: [],
             user: {
-              ...payload.user,
+              id: userId,
               email: null,
               name: null,
             },
@@ -280,7 +264,6 @@ describe('Given a NGC user', () => {
               },
             ],
             user: {
-              id: faker.string.uuid(),
               name: nom,
               email: faker.internet.email().toLocaleLowerCase(),
             },
@@ -300,9 +283,7 @@ describe('Given a NGC user', () => {
             body: { id },
           } = await agent
             .post(
-              url
-                .replace(':organisationIdOrSlug', organisationId)
-                .replace(':pollIdOrSlug', pollId)
+              url.replace(':userId', userId).replace(':pollIdOrSlug', pollId)
             )
             .send(payload)
 
@@ -362,6 +343,10 @@ describe('Given a NGC user', () => {
                 },
               },
             ],
+            user: {
+              ...payload.user,
+              id: userId,
+            },
           })
         })
 
@@ -371,9 +356,6 @@ describe('Given a NGC user', () => {
             situation,
             computedResults,
             progression: 1,
-            user: {
-              id: faker.string.uuid(),
-            },
           }
 
           const scope = nock(process.env.BREVO_URL!, {
@@ -401,9 +383,7 @@ describe('Given a NGC user', () => {
 
           await agent
             .post(
-              url
-                .replace(':organisationIdOrSlug', organisationId)
-                .replace(':pollIdOrSlug', pollId)
+              url.replace(':userId', userId).replace(':pollIdOrSlug', pollId)
             )
             .send(payload)
             .expect(StatusCodes.CREATED)
@@ -418,9 +398,6 @@ describe('Given a NGC user', () => {
               situation,
               computedResults,
               progression: 1,
-              user: {
-                id: faker.string.uuid(),
-              },
             }
 
             nock(process.env.BREVO_URL!)
@@ -432,7 +409,7 @@ describe('Given a NGC user', () => {
             const response = await agent
               .post(
                 url
-                  .replace(':organisationIdOrSlug', organisationSlug)
+                  .replace(':userId', userId)
                   .replace(':pollIdOrSlug', pollSlug)
               )
               .send(payload)
@@ -455,7 +432,7 @@ describe('Given a NGC user', () => {
               // ],
               polls: [],
               user: {
-                ...payload.user,
+                id: userId,
                 email: null,
                 name: null,
               },
@@ -466,7 +443,6 @@ describe('Given a NGC user', () => {
         describe('And leaving his/her email', () => {
           test('Then it adds or updates contact in brevo', async () => {
             const date = new Date()
-            const userId = faker.string.uuid()
             const email = faker.internet.email().toLocaleLowerCase()
             const payload: SimulationCreateInputDto = {
               id: faker.string.uuid(),
@@ -475,7 +451,6 @@ describe('Given a NGC user', () => {
               progression: 1,
               date,
               user: {
-                id: userId,
                 email,
               },
             }
@@ -542,9 +517,7 @@ describe('Given a NGC user', () => {
 
             await agent
               .post(
-                url
-                  .replace(':organisationIdOrSlug', organisationId)
-                  .replace(':pollIdOrSlug', pollId)
+                url.replace(':userId', userId).replace(':pollIdOrSlug', pollId)
               )
               .send(payload)
               .expect(StatusCodes.CREATED)
@@ -560,7 +533,6 @@ describe('Given a NGC user', () => {
               computedResults,
               progression: 1,
               user: {
-                id: faker.string.uuid(),
                 email,
               },
             }
@@ -595,9 +567,7 @@ describe('Given a NGC user', () => {
 
             await agent
               .post(
-                url
-                  .replace(':organisationIdOrSlug', organisationId)
-                  .replace(':pollIdOrSlug', pollId)
+                url.replace(':userId', userId).replace(':pollIdOrSlug', pollId)
               )
               .send(payload)
               .expect(StatusCodes.CREATED)
@@ -614,7 +584,6 @@ describe('Given a NGC user', () => {
                 computedResults,
                 progression: 0.5,
                 user: {
-                  id: faker.string.uuid(),
                   email,
                 },
               }
@@ -645,7 +614,7 @@ describe('Given a NGC user', () => {
               await agent
                 .post(
                   url
-                    .replace(':organisationIdOrSlug', organisationId)
+                    .replace(':userId', userId)
                     .replace(':pollIdOrSlug', pollId)
                 )
                 .send(payload)
@@ -664,7 +633,6 @@ describe('Given a NGC user', () => {
                 computedResults,
                 progression: 1,
                 user: {
-                  id: faker.string.uuid(),
                   email,
                 },
               }
@@ -700,7 +668,7 @@ describe('Given a NGC user', () => {
               await agent
                 .post(
                   url
-                    .replace(':organisationIdOrSlug', organisationId)
+                    .replace(':userId', userId)
                     .replace(':pollIdOrSlug', pollId)
                 )
                 .set('origin', 'https://preprod.nosgestesclimat.fr')
@@ -721,6 +689,7 @@ describe('Given a NGC user', () => {
         let administratorId: string
         let pollId: string
         let poll: Awaited<ReturnType<typeof createOrganisationPoll>>
+        let userId: string
 
         beforeEach(async () => {
           const { cookie } = await login({ agent })
@@ -748,6 +717,7 @@ describe('Given a NGC user', () => {
             organisationId,
           })
           ;({ id: pollId } = poll)
+          userId = faker.string.uuid()
         })
 
         test('Then it updates organisation administrator in brevo', async () => {
@@ -756,9 +726,6 @@ describe('Given a NGC user', () => {
             situation,
             computedResults,
             progression: 1,
-            user: {
-              id: faker.string.uuid(),
-            },
           }
 
           const scope = nock(process.env.BREVO_URL!, {
@@ -783,9 +750,7 @@ describe('Given a NGC user', () => {
 
           await agent
             .post(
-              url
-                .replace(':organisationIdOrSlug', organisationId)
-                .replace(':pollIdOrSlug', pollId)
+              url.replace(':userId', userId).replace(':pollIdOrSlug', pollId)
             )
             .send(payload)
             .expect(StatusCodes.CREATED)
@@ -811,10 +776,7 @@ describe('Given a NGC user', () => {
           await agent
             .post(
               url
-                .replace(
-                  ':organisationIdOrSlug',
-                  faker.database.mongodbObjectId()
-                )
+                .replace(':userId', faker.string.uuid())
                 .replace(':pollIdOrSlug', faker.database.mongodbObjectId())
             )
             .send({
@@ -822,9 +784,6 @@ describe('Given a NGC user', () => {
               situation,
               computedResults,
               progression: 1,
-              user: {
-                id: faker.string.uuid(),
-              },
             })
             .expect(StatusCodes.INTERNAL_SERVER_ERROR)
         })
@@ -833,10 +792,7 @@ describe('Given a NGC user', () => {
           await agent
             .post(
               url
-                .replace(
-                  ':organisationIdOrSlug',
-                  faker.database.mongodbObjectId()
-                )
+                .replace(':userId', faker.string.uuid())
                 .replace(':pollIdOrSlug', faker.database.mongodbObjectId())
             )
             .send({
@@ -844,9 +800,6 @@ describe('Given a NGC user', () => {
               situation,
               computedResults,
               progression: 1,
-              user: {
-                id: faker.string.uuid(),
-              },
             })
             .expect(StatusCodes.INTERNAL_SERVER_ERROR)
 

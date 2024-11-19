@@ -2,8 +2,8 @@ import z from 'zod'
 import { ListIds } from '../../adapters/brevo/constant'
 import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail'
 import {
-  OrganisationPollParams,
   PollDefaultAdditionalQuestionTypeEnum,
+  PublicPollParams,
 } from '../organisations/organisations.validator'
 import { UserParams } from '../users/users.validator'
 
@@ -148,7 +148,6 @@ export type SituationSchema = z.infer<typeof SituationSchema>
 
 const SimulationCreateUser = z
   .object({
-    id: z.string().uuid(),
     email: z
       .string()
       .regex(EMAIL_REGEX)
@@ -181,9 +180,11 @@ export type SimulationParticipantCreateInputDto = z.input<
 >
 
 export const SimulationCreateDto = SimulationParticipantCreateDto.merge(
-  z.object({
-    user: SimulationCreateUser,
-  })
+  z
+    .object({
+      user: SimulationCreateUser.optional(),
+    })
+    .strict()
 )
 
 export type SimulationCreateDto = z.infer<typeof SimulationCreateDto>
@@ -210,7 +211,7 @@ export type SimulationCreateNewsletterList = z.infer<
 
 export const SimulationCreateValidator = {
   body: SimulationCreateDto,
-  params: z.object({}).strict().optional(),
+  params: UserParams,
   query: z
     .object({
       newsletters: SimulationCreateNewsletterList,
@@ -233,6 +234,6 @@ export const SimulationFetchValidator = {
 
 export const OrganisationPollSimulationCreateValidator = {
   body: SimulationCreateDto,
-  params: OrganisationPollParams,
+  params: PublicPollParams,
   query: z.object({}).strict().optional(),
 }

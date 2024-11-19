@@ -329,7 +329,7 @@ router
  * Upserts simulation poll for an organisation and an id or a slug
  */
 router
-  .route('/v1/:organisationIdOrSlug/polls/:pollIdOrSlug/simulations')
+  .route('/v1/:userId/public-polls/:pollIdOrSlug/simulations')
   .post(
     validateRequest(OrganisationPollSimulationCreateValidator),
     async (req, res) => {

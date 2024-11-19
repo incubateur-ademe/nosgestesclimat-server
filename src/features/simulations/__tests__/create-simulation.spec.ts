@@ -26,22 +26,21 @@ describe('Given a NGC user', () => {
     describe('When creating his simulation', () => {
       describe('And no data provided', () => {
         test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
-          await agent.post(url).expect(StatusCodes.BAD_REQUEST)
+          await agent
+            .post(url.replace(':userId', faker.string.uuid()))
+            .expect(StatusCodes.BAD_REQUEST)
         })
       })
 
       describe('And invalid user id', () => {
         test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
           await agent
-            .post(url)
+            .post(url.replace(':userId', faker.database.mongodbObjectId()))
             .send({
               id: faker.string.uuid(),
               situation,
               computedResults,
               progression: 1,
-              user: {
-                id: faker.database.mongodbObjectId(),
-              },
             })
             .expect(StatusCodes.BAD_REQUEST)
         })
@@ -50,14 +49,13 @@ describe('Given a NGC user', () => {
       describe('And invalid user email', () => {
         test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
           await agent
-            .post(url)
+            .post(url.replace(':userId', faker.string.uuid()))
             .send({
               id: faker.string.uuid(),
               situation,
               computedResults,
               progression: 1,
               user: {
-                id: faker.string.uuid(),
                 name: nom,
                 email: 'Je ne donne jamais mon email',
               },
@@ -69,14 +67,13 @@ describe('Given a NGC user', () => {
       describe('And invalid simulation id', () => {
         test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
           await agent
-            .post(url)
+            .post(url.replace(':userId', faker.string.uuid()))
             .send({
               id: faker.database.mongodbObjectId(),
               situation,
               computedResults,
               progression: 1,
               user: {
-                id: faker.string.uuid(),
                 name: nom,
               },
             })
@@ -87,14 +84,13 @@ describe('Given a NGC user', () => {
       describe('And invalid situation', () => {
         test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
           await agent
-            .post(url)
+            .post(url.replace(':userId', faker.string.uuid()))
             .send({
               id: faker.string.uuid(),
               situation: null,
               computedResults,
               progression: 1,
               user: {
-                id: faker.string.uuid(),
                 name: nom,
               },
             })
@@ -105,14 +101,13 @@ describe('Given a NGC user', () => {
       describe('And invalid computedResults', () => {
         test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
           await agent
-            .post(url)
+            .post(url.replace(':userId', faker.string.uuid()))
             .send({
               id: faker.string.uuid(),
               situation,
               computedResults: null,
               progression: 1,
               user: {
-                id: faker.string.uuid(),
                 name: nom,
               },
             })
@@ -121,18 +116,16 @@ describe('Given a NGC user', () => {
       })
 
       test(`Then it returns a ${StatusCodes.CREATED} response with the created simulation`, async () => {
+        const userId = faker.string.uuid()
         const payload: SimulationCreateInputDto = {
           id: faker.string.uuid(),
           situation,
           computedResults,
           progression: 1,
-          user: {
-            id: faker.string.uuid(),
-          },
         }
 
         const response = await agent
-          .post(url)
+          .post(url.replace(':userId', userId))
           .send(payload)
           .expect(StatusCodes.CREATED)
 
@@ -147,7 +140,7 @@ describe('Given a NGC user', () => {
           foldedSteps: [],
           polls: [],
           user: {
-            ...payload.user,
+            id: userId,
             email: null,
             name: null,
           },
@@ -155,6 +148,7 @@ describe('Given a NGC user', () => {
       })
 
       test('Then it stores a simulation in database', async () => {
+        const userId = faker.string.uuid()
         const payload: SimulationCreateInputDto = {
           id: faker.string.uuid(),
           date: new Date(),
@@ -179,7 +173,6 @@ describe('Given a NGC user', () => {
             },
           ],
           user: {
-            id: faker.string.uuid(),
             name: nom,
             email: faker.internet.email().toLocaleLowerCase(),
           },
@@ -187,7 +180,7 @@ describe('Given a NGC user', () => {
 
         const {
           body: { id },
-        } = await agent.post(url).send(payload)
+        } = await agent.post(url.replace(':userId', userId)).send(payload)
 
         const createdSimulation = await prisma.simulation.findUnique({
           where: {
@@ -233,6 +226,10 @@ describe('Given a NGC user', () => {
           date: expect.anything(),
           updatedAt: null,
           polls: [],
+          user: {
+            ...payload.user,
+            id: userId,
+          },
         })
       })
 
@@ -250,7 +247,6 @@ describe('Given a NGC user', () => {
               progression: 1,
               savedViaEmail: true,
               user: {
-                id: userId,
                 name: nom,
                 email,
               },
@@ -325,7 +321,10 @@ describe('Given a NGC user', () => {
               })
               .reply(200)
 
-            await agent.post(url).send(payload).expect(StatusCodes.CREATED)
+            await agent
+              .post(url.replace(':userId', userId))
+              .send(payload)
+              .expect(StatusCodes.CREATED)
 
             expect(scope.isDone()).toBeTruthy()
           })
@@ -339,7 +338,6 @@ describe('Given a NGC user', () => {
               computedResults,
               progression: 1,
               user: {
-                id: faker.string.uuid(),
                 email,
               },
             }
@@ -379,7 +377,10 @@ describe('Given a NGC user', () => {
               })
               .reply(200)
 
-            await agent.post(url).send(payload).expect(StatusCodes.CREATED)
+            await agent
+              .post(url.replace(':userId', faker.string.uuid()))
+              .send(payload)
+              .expect(StatusCodes.CREATED)
 
             expect(scope.isDone()).toBeTruthy()
           })
@@ -394,7 +395,6 @@ describe('Given a NGC user', () => {
                 computedResults,
                 progression: 1,
                 user: {
-                  id: faker.string.uuid(),
                   email,
                 },
               }
@@ -435,7 +435,7 @@ describe('Given a NGC user', () => {
                 .reply(200)
 
               await agent
-                .post(url)
+                .post(url.replace(':userId', faker.string.uuid()))
                 .send(payload)
                 .set('origin', 'https://preprod.nosgestesclimat.fr')
                 .expect(StatusCodes.CREATED)
@@ -457,7 +457,6 @@ describe('Given a NGC user', () => {
                 progression: 1,
                 savedViaEmail: true,
                 user: {
-                  id: userId,
                   name: nom,
                   email,
                 },
@@ -522,7 +521,7 @@ describe('Given a NGC user', () => {
                 .reply(200)
 
               await agent
-                .post(url)
+                .post(url.replace(':userId', userId))
                 .query({
                   'newsletters[]': [22, 32, 36],
                 })
@@ -538,13 +537,13 @@ describe('Given a NGC user', () => {
           test(`Then it adds or updates contact in brevo`, async () => {
             const id = faker.string.uuid()
             const email = faker.internet.email().toLocaleLowerCase()
+            const userId = faker.string.uuid()
             const payload: SimulationCreateInputDto = {
               id,
               situation,
               computedResults,
               progression: 0.5,
               user: {
-                id: faker.string.uuid(),
                 email,
               },
             }
@@ -560,13 +559,16 @@ describe('Given a NGC user', () => {
                 email,
                 listIds: [35],
                 attributes: {
-                  USER_ID: payload.user.id,
+                  USER_ID: userId,
                 },
                 updateEnabled: true,
               })
               .reply(200)
 
-            await agent.post(url).send(payload).expect(StatusCodes.CREATED)
+            await agent
+              .post(url.replace(':userId', userId))
+              .send(payload)
+              .expect(StatusCodes.CREATED)
 
             expect(scope.isDone()).toBeTruthy()
           })
@@ -580,7 +582,6 @@ describe('Given a NGC user', () => {
               computedResults,
               progression: 0.5,
               user: {
-                id: faker.string.uuid(),
                 email,
               },
             }
@@ -606,7 +607,10 @@ describe('Given a NGC user', () => {
               .post('/v3/contacts')
               .reply(200)
 
-            await agent.post(url).send(payload).expect(StatusCodes.CREATED)
+            await agent
+              .post(url.replace(':userId', faker.string.uuid()))
+              .send(payload)
+              .expect(StatusCodes.CREATED)
 
             expect(scope.isDone()).toBeTruthy()
           })
@@ -626,28 +630,22 @@ describe('Given a NGC user', () => {
 
         test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
           await agent
-            .post(url)
+            .post(url.replace(':userId', faker.string.uuid()))
             .send({
               id: faker.string.uuid(),
               situation,
               computedResults,
               progression: 1,
-              user: {
-                id: faker.string.uuid(),
-              },
             })
             .expect(StatusCodes.INTERNAL_SERVER_ERROR)
         })
 
         test(`Then it logs the exception`, async () => {
-          await agent.post(url).send({
+          await agent.post(url.replace(':userId', faker.string.uuid())).send({
             id: faker.string.uuid(),
             situation,
             computedResults,
             progression: 1,
-            user: {
-              id: faker.string.uuid(),
-            },
           })
 
           expect(logger.error).toHaveBeenCalledWith(

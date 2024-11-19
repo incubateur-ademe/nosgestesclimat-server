@@ -97,7 +97,6 @@ export async function handleUpdateGroup({
         name: userDocument.name || '🦊',
         userId: userDocument.userId,
         simulation: mapSimulation(simulationSaved, {
-          id: userDocument.userId,
           email: userDocument.email,
           name: userDocument.name,
         }),

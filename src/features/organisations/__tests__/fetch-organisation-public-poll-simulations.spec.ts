@@ -54,16 +54,15 @@ describe('Given a NGC user', () => {
       })
 
       describe('And poll does exist', () => {
-        let organisationId: string
         let pollId: string
         let pollSlug: string
 
         beforeEach(async () => {
           const { cookie } = await login({ agent })
-          ;({ id: organisationId } = await createOrganisation({
+          const { id: organisationId } = await createOrganisation({
             agent,
             cookie,
-          }))
+          })
           ;({ id: pollId, slug: pollSlug } = await createOrganisationPoll({
             agent,
             cookie,
@@ -96,7 +95,6 @@ describe('Given a NGC user', () => {
             ;({ polls: _simulationPolls, ...simulation } =
               await createOrganisationPollSimulation({
                 agent,
-                organisationId,
                 pollId,
               }))
             ;({
@@ -141,7 +139,6 @@ describe('Given a NGC user', () => {
                 ...simulation2
               } = await createOrganisationPollSimulation({
                 agent,
-                organisationId,
                 pollId,
               }))
             })
@@ -210,15 +207,14 @@ describe('Given a NGC user', () => {
   describe('And invalid cookie on his organisation space', () => {
     describe('When fetching his organisation public poll simulations', () => {
       describe('And poll does exist', () => {
-        let organisationId: string
         let pollId: string
 
         beforeEach(async () => {
           const { cookie } = await login({ agent })
-          ;({ id: organisationId } = await createOrganisation({
+          const { id: organisationId } = await createOrganisation({
             agent,
             cookie,
-          }))
+          })
           ;({ id: pollId } = await createOrganisationPoll({
             agent,
             cookie,
@@ -243,7 +239,6 @@ describe('Given a NGC user', () => {
           beforeEach(async () =>
             createOrganisationPollSimulation({
               agent,
-              organisationId,
               pollId,
             })
           )
@@ -289,7 +284,6 @@ describe('Given a NGC user', () => {
 
       describe('And poll does exist', () => {
         let organisation: Awaited<ReturnType<typeof createOrganisation>>
-        let organisationId: string
         let poll: Awaited<ReturnType<typeof createOrganisationPoll>>
         let pollId: string
         let pollSlug: string
@@ -299,7 +293,7 @@ describe('Given a NGC user', () => {
             agent,
             cookie,
           })
-          ;({ id: organisationId } = organisation)
+          const { id: organisationId } = organisation
           poll = await createOrganisationPoll({
             agent,
             cookie,
@@ -343,17 +337,14 @@ describe('Given a NGC user', () => {
             simulations = await Promise.all([
               createOrganisationPollSimulation({
                 agent,
-                organisationId,
                 pollId,
               }),
               createOrganisationPollSimulation({
                 agent,
-                organisationId,
                 pollId,
               }),
               createOrganisationPollSimulation({
                 agent,
-                organisationId,
                 pollId,
               }),
             ])
