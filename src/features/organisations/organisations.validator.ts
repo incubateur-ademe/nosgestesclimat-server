@@ -48,9 +48,9 @@ const OrganisationType = z.enum([
 
 const OrganisationCreateAdministrator = z
   .object({
-    name: z.string().optional(),
-    telephone: z.string().optional(),
-    position: z.string().optional(),
+    name: z.string().optional().nullable(),
+    telephone: z.string().optional().nullable(),
+    position: z.string().optional().nullable(),
     optedInForCommunications: z.boolean().optional(),
   })
   .strict()
@@ -62,9 +62,9 @@ export type OrganisationCreateAdministrator = z.infer<
 const OrganisationCreateDto = z
   .object({
     name: z.string().min(1).max(100),
-    type: OrganisationType,
+    type: OrganisationType.optional().nullable(),
     administrators: z.tuple([OrganisationCreateAdministrator]).optional(),
-    numberOfCollaborators: z.number().optional(),
+    numberOfCollaborators: z.number().optional().nullable(),
   })
   .strict()
 
@@ -150,7 +150,7 @@ const MAX_CUSTOM_ADDITIONAL_QUESTIONS = 4
 const OrganisationPollCreateDto = z
   .object({
     name: z.string().min(1).max(150),
-    expectedNumberOfParticipants: z.number().optional(),
+    expectedNumberOfParticipants: z.number().optional().nullable(),
     defaultAdditionalQuestions: z
       .array(
         z.enum([
@@ -158,11 +158,13 @@ const OrganisationPollCreateDto = z
           PollDefaultAdditionalQuestionTypeEnum.postalCode,
         ])
       )
-      .optional(),
+      .optional()
+      .nullable(),
     customAdditionalQuestions: z
       .array(OrganisationPollCreateCustomAdditionalQuestion)
       .max(MAX_CUSTOM_ADDITIONAL_QUESTIONS)
-      .optional(),
+      .optional()
+      .nullable(),
   })
   .strict()
 

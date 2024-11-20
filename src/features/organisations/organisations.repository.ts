@@ -315,7 +315,7 @@ export const createOrganisationPoll = async (
     name,
     expectedNumberOfParticipants,
     defaultAdditionalQuestions,
-    customAdditionalQuestions = [],
+    customAdditionalQuestions,
   }: OrganisationPollCreateDto,
   user: NonNullable<Request['user']>,
   { session }: { session?: Session } = {}
@@ -333,7 +333,7 @@ export const createOrganisationPoll = async (
           create: {
             slug,
             name,
-            customAdditionalQuestions,
+            customAdditionalQuestions: customAdditionalQuestions ?? [],
             expectedNumberOfParticipants,
             ...(!!defaultAdditionalQuestions?.length
               ? {
