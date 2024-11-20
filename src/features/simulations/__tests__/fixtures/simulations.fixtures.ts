@@ -202,13 +202,13 @@ export const createSimulation = async ({
       .post('/v3/contacts')
       .reply(200)
       .post('/v3/contacts/lists/22/contacts/remove')
-      .reply(200)
+      .reply(400, { code: 'invalid_parameter' })
       .post('/v3/contacts/lists/32/contacts/remove')
-      .reply(200)
+      .reply(400, { code: 'invalid_parameter' })
       .post('/v3/contacts/lists/35/contacts/remove')
-      .reply(200)
+      .reply(400, { code: 'invalid_parameter' })
       .post('/v3/contacts/lists/36/contacts/remove')
-      .reply(200)
+      .reply(400, { code: 'invalid_parameter' })
 
     if (payload.progression === 1) {
       scope.post('/v3/smtp/email').reply(200)

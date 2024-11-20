@@ -96,7 +96,9 @@ export const createOrganisation = async ({
   const [administrator] = administrators || []
 
   if (!administrator?.optedInForCommunications) {
-    scope.post('/v3/contacts/lists/27/contacts/remove').reply(200)
+    scope
+      .post('/v3/contacts/lists/27/contacts/remove')
+      .reply(400, { code: 'invalid_parameter' })
   }
 
   nock(baseURL).post('/api/v1/personnes').reply(200)
@@ -321,7 +323,7 @@ export const createOrganisationPollSimulation = async ({
     .post('/v3/contacts')
     .reply(200)
     .post('/v3/contacts/lists/27/contacts/remove')
-    .reply(200)
+    .reply(400, { code: 'invalid_parameter' })
 
   if (payload.user?.email) {
     scope
@@ -330,7 +332,7 @@ export const createOrganisationPollSimulation = async ({
       .post('/v3/contacts')
       .reply(200)
       .post('/v3/contacts/lists/35/contacts/remove')
-      .reply(200)
+      .reply(400, { code: 'invalid_parameter' })
   }
 
   const response = await agent
