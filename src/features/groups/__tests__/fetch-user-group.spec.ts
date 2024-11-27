@@ -65,12 +65,12 @@ describe('Given a NGC user', () => {
       })
 
       describe('And he joined it', () => {
-        let user: Awaited<ReturnType<typeof joinGroup>>
+        let participant: Awaited<ReturnType<typeof joinGroup>>
 
         beforeEach(async () => {
-          user = await joinGroup({ agent, groupId })
-          userId = user.userId
-        }, 5000)
+          participant = await joinGroup({ agent, groupId })
+          userId = participant.userId
+        })
 
         test(`Then it returns a ${StatusCodes.OK} response with the group`, async () => {
           const response = await agent
@@ -84,7 +84,7 @@ describe('Given a NGC user', () => {
             administrator: {
               name: group.administrator.name,
             },
-            participants: [user],
+            participants: [participant],
             createdAt: expect.any(String),
             updatedAt: null,
           })
@@ -124,6 +124,68 @@ describe('Given a NGC user', () => {
           'Group fetch failed',
           databaseError
         )
+      })
+    })
+  })
+
+  describe('And invited to join', () => {
+    let group: Awaited<ReturnType<typeof createGroup>>
+    let groupId: string
+
+    beforeEach(async () => {
+      group = await createGroup({ agent })
+      ;({ id: groupId } = group)
+    })
+
+    describe('When fetching the group', () => {
+      test(`Then it returns a ${StatusCodes.OK} response with the group`, async () => {
+        const response = await agent
+          .get(
+            url
+              .replace(':userId', faker.string.uuid())
+              .replace(':groupId', groupId)
+          )
+          .expect(StatusCodes.OK)
+
+        expect(response.body).toEqual({
+          ...group,
+          administrator: {
+            name: group.administrator.name,
+          },
+        })
+      })
+
+      describe('And other participants joined', () => {
+        let participants: Awaited<ReturnType<typeof joinGroup>>[]
+
+        beforeEach(async () => {
+          participants = await Promise.all([
+            joinGroup({ agent, groupId }),
+            joinGroup({ agent, groupId }),
+          ])
+        })
+
+        test(`Then it returns a ${StatusCodes.OK} response with the group`, async () => {
+          const response = await agent
+            .get(
+              url
+                .replace(':userId', faker.string.uuid())
+                .replace(':groupId', groupId)
+            )
+            .expect(StatusCodes.OK)
+
+          expect(response.body).toEqual({
+            ...group,
+            administrator: {
+              name: group.administrator.name,
+            },
+            participants: participants.map(({ id, simulation, name }) => ({
+              id,
+              name,
+              simulation,
+            })),
+          })
+        })
       })
     })
   })

@@ -47,8 +47,6 @@ export const createVerificationCode = async ({
     .send(payload)
     .expect(StatusCodes.CREATED)
 
-  nock.abortPendingRequests()
-
   jest
     .mocked(authenticationService)
     .generateVerificationCodeAndExpiration.mockRestore()

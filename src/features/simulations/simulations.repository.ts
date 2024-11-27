@@ -1,69 +1,31 @@
 import type { Prisma } from '@prisma/client'
 import { prisma } from '../../adapters/prisma/client'
+import {
+  defaultOrganisationSelectionWithoutPolls,
+  defaultPollSelection,
+  defaultSimulationSelection,
+  defaultSimulationSelectionWithoutPoll,
+  defaultSimulationSelectionWithoutUser,
+} from '../../adapters/prisma/selection'
 import type { Session } from '../../adapters/prisma/transaction'
 import { transaction } from '../../adapters/prisma/transaction'
-import {
-  defaultPollSelection,
-  organisationSelectionWithoutPolls,
-} from '../organisations/organisations.repository'
-import type { OrganisationPollParams } from '../organisations/organisations.validator'
+import { findOrganisationPublicPollBySlugOrId } from '../organisations/organisations.repository'
+import type { PublicPollParams } from '../organisations/organisations.validator'
 import { transferOwnershipToUser } from '../users/users.repository'
 import type { UserParams } from '../users/users.validator'
 import type {
+  SimulationCreateDto,
   SimulationParticipantCreateDto,
   UserSimulationParams,
 } from './simulations.validator'
-import { type SimulationCreateDto } from './simulations.validator'
-
-const defaultGroupParticipantSimulationSelection = {
-  id: true,
-  date: true,
-  situation: true,
-  foldedSteps: true,
-  progression: true,
-  actionChoices: true,
-  savedViaEmail: true,
-  computedResults: true,
-  additionalQuestionsAnswers: {
-    select: {
-      key: true,
-      answer: true,
-      type: true,
-    },
-  },
-  polls: {
-    select: {
-      pollId: true,
-      poll: {
-        select: {
-          slug: true,
-        },
-      },
-    },
-  },
-  createdAt: true,
-  updatedAt: true,
-}
-
-const defaultSimulationSelection = {
-  ...defaultGroupParticipantSimulationSelection,
-  user: {
-    select: {
-      id: true,
-      name: true,
-      email: true,
-    },
-  },
-}
 
 export const createUserSimulation = (
+  { userId }: UserParams,
   simulation: SimulationCreateDto,
   { session }: { session?: Session } = {}
 ) => {
   return transaction(async (prismaSession) => {
-    const {
-      user: { id: userId, name, email },
-    } = simulation
+    const { user: { name, email } = {} } = simulation
     await prismaSession.user.upsert({
       where: {
         id: userId,
@@ -97,7 +59,7 @@ export const createUserSimulation = (
 
 export const createParticipantSimulation = <
   T extends
-    Prisma.SimulationSelect = typeof defaultGroupParticipantSimulationSelection,
+    Prisma.SimulationSelect = typeof defaultSimulationSelectionWithoutUser,
 >(
   {
     userId,
@@ -112,7 +74,7 @@ export const createParticipantSimulation = <
       savedViaEmail,
       additionalQuestionsAnswers,
     },
-    select = defaultGroupParticipantSimulationSelection as T,
+    select = defaultSimulationSelectionWithoutUser as T,
   }: {
     userId: string
     simulation: SimulationParticipantCreateDto
@@ -213,30 +175,31 @@ export const fetchParticipantSimulation = (
     where: {
       id: simulationId,
     },
-    select: defaultGroupParticipantSimulationSelection,
+    select: defaultSimulationSelectionWithoutUser,
   })
 }
 
 export const createPollUserSimulation = (
-  { organisationIdOrSlug, pollIdOrSlug }: OrganisationPollParams,
+  params: PublicPollParams,
   simulationDto: SimulationCreateDto,
   { session }: { session?: Session } = {}
 ) => {
   return transaction(async (prismaSession) => {
-    const { id: userId, email } = simulationDto.user
+    const { userId, pollIdOrSlug } = params
+    const { email } = simulationDto.user ?? {}
     const { id: pollId } = await prismaSession.poll.findFirstOrThrow({
       where: {
         OR: [{ id: pollIdOrSlug }, { slug: pollIdOrSlug }],
-        organisation: {
-          OR: [{ id: organisationIdOrSlug }, { slug: organisationIdOrSlug }],
-        },
       },
       select: {
         id: true,
       },
     })
 
-    const { id: simulationId } = await createUserSimulation(simulationDto)
+    const { id: simulationId } = await createUserSimulation(
+      params,
+      simulationDto
+    )
 
     const relation = {
       pollId,
@@ -257,7 +220,7 @@ export const createPollUserSimulation = (
           select: {
             ...defaultPollSelection,
             organisation: {
-              select: organisationSelectionWithoutPolls,
+              select: defaultOrganisationSelectionWithoutPolls,
             },
           },
         },
@@ -287,4 +250,50 @@ export const getIncompleteSimulationsCount = (user: {
       },
     },
   })
+}
+
+export const fetchPollSimulations = (params: PublicPollParams) => {
+  return transaction(async (session) => {
+    const { id } = await findOrganisationPublicPollBySlugOrId(
+      { params },
+      { session }
+    )
+
+    const { userId } = params
+
+    return prisma.simulation.findMany({
+      where: {
+        polls: {
+          some: {
+            poll: {
+              id,
+              OR: [
+                {
+                  organisation: {
+                    administrators: {
+                      some: {
+                        user: {
+                          id: userId,
+                        },
+                      },
+                    },
+                  },
+                },
+                {
+                  simulations: {
+                    some: {
+                      simulation: {
+                        userId,
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      },
+      select: defaultSimulationSelectionWithoutPoll,
+    })
+  }, prisma)
 }

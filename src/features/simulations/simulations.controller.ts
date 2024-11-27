@@ -33,7 +33,7 @@ EventBus.on(SimulationUpsertedEvent, syncUserDataAfterSimulationUpserted)
  * Upserts a simulation
  */
 router
-  .route('/v1/')
+  .route('/v1/:userId')
   .post(validateRequest(SimulationCreateValidator), async (req, res) => {
     try {
       const simulation = await createSimulation({
@@ -41,6 +41,7 @@ router
         newsletters: SimulationCreateNewsletterList.parse(
           req.query?.newsletters || []
         ),
+        params: req.params,
         origin: req.get('origin') || config.origin,
       })
 

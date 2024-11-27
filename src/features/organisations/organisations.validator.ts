@@ -1,5 +1,6 @@
 import z from 'zod'
 import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail'
+import { UserParams } from '../users/users.validator'
 
 const OrganisationParams = z
   .object({
@@ -20,6 +21,10 @@ export type PollParams = z.infer<typeof PollParams>
 export const OrganisationPollParams = OrganisationParams.merge(PollParams)
 
 export type OrganisationPollParams = z.infer<typeof OrganisationPollParams>
+
+export const PublicPollParams = UserParams.merge(PollParams)
+
+export type PublicPollParams = z.infer<typeof PublicPollParams>
 
 export enum OrganisationTypeEnum {
   association = 'association',
@@ -43,9 +48,9 @@ const OrganisationType = z.enum([
 
 const OrganisationCreateAdministrator = z
   .object({
-    name: z.string().optional(),
-    telephone: z.string().optional(),
-    position: z.string().optional(),
+    name: z.string().optional().nullable(),
+    telephone: z.string().optional().nullable(),
+    position: z.string().optional().nullable(),
     optedInForCommunications: z.boolean().optional(),
   })
   .strict()
@@ -57,9 +62,9 @@ export type OrganisationCreateAdministrator = z.infer<
 const OrganisationCreateDto = z
   .object({
     name: z.string().min(1).max(100),
-    type: OrganisationType,
+    type: OrganisationType.optional().nullable(),
     administrators: z.tuple([OrganisationCreateAdministrator]).optional(),
-    numberOfCollaborators: z.number().optional(),
+    numberOfCollaborators: z.number().optional().nullable(),
   })
   .strict()
 
@@ -145,7 +150,7 @@ const MAX_CUSTOM_ADDITIONAL_QUESTIONS = 4
 const OrganisationPollCreateDto = z
   .object({
     name: z.string().min(1).max(150),
-    expectedNumberOfParticipants: z.number().optional(),
+    expectedNumberOfParticipants: z.number().optional().nullable(),
     defaultAdditionalQuestions: z
       .array(
         z.enum([
@@ -153,11 +158,13 @@ const OrganisationPollCreateDto = z
           PollDefaultAdditionalQuestionTypeEnum.postalCode,
         ])
       )
-      .optional(),
+      .optional()
+      .nullable(),
     customAdditionalQuestions: z
       .array(OrganisationPollCreateCustomAdditionalQuestion)
       .max(MAX_CUSTOM_ADDITIONAL_QUESTIONS)
-      .optional(),
+      .optional()
+      .nullable(),
   })
   .strict()
 
@@ -198,5 +205,23 @@ export const OrganisationPollsFetchValidator = {
 export const OrganisationPollFetchValidator = {
   body: z.object({}).strict().optional(),
   params: OrganisationPollParams,
+  query: z.object({}).strict().optional(),
+}
+
+export const OrganisationPublicPollFetchValidator = {
+  body: z.object({}).strict().optional(),
+  params: PublicPollParams,
+  query: z.object({}).strict().optional(),
+}
+
+export const OrganisationPublicPollSimulationsFetchValidator = {
+  body: z.object({}).strict().optional(),
+  params: PublicPollParams,
+  query: z.object({}).strict().optional(),
+}
+
+export const OrganisationPublicPollDashboardValidator = {
+  body: z.object({}).strict().optional(),
+  params: PublicPollParams,
   query: z.object({}).strict().optional(),
 }
