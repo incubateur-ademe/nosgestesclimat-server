@@ -2,6 +2,12 @@ import type { Prisma } from '@prisma/client'
 import type { Request } from 'express'
 import slugify from 'slugify'
 import { prisma } from '../../adapters/prisma/client'
+import {
+  defaultOrganisationSelection,
+  defaultOrganisationSelectionWithoutPolls,
+  defaultPollSelection,
+  defaultVerifiedUserSelection,
+} from '../../adapters/prisma/selection'
 import type { Session } from '../../adapters/prisma/transaction'
 import { transaction } from '../../adapters/prisma/transaction'
 import type {
@@ -11,49 +17,8 @@ import type {
   OrganisationPollParams,
   OrganisationPollUpdateDto,
   OrganisationUpdateDto,
+  PollParams,
 } from './organisations.validator'
-
-const defaultUserSelection = {
-  select: {
-    id: true,
-    name: true,
-    email: true,
-    position: true,
-    telephone: true,
-    optedInForCommunications: true,
-    createdAt: true,
-    updatedAt: true,
-  },
-}
-
-export const organisationSelectionWithoutPolls = {
-  id: true,
-  name: true,
-  slug: true,
-  type: true,
-  numberOfCollaborators: true,
-  administrators: {
-    select: {
-      id: true,
-      user: defaultUserSelection,
-    },
-  },
-  createdAt: true,
-  updatedAt: true,
-}
-
-const defaultOrganisationSelection = {
-  ...organisationSelectionWithoutPolls,
-  polls: {
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  },
-}
 
 const findModelUniqueSlug = (model: 'organisation' | 'poll') => {
   const findUniqueSlug = async (
@@ -145,6 +110,26 @@ const findOrganisationPollBySlugOrId = <
   })
 }
 
+export const findOrganisationPublicPollBySlugOrId = <
+  T extends Prisma.PollSelect = { id: true },
+>(
+  {
+    params: { pollIdOrSlug },
+    select = { id: true } as T,
+  }: {
+    params: PollParams
+    select?: T
+  },
+  { session }: { session: Session }
+) => {
+  return session.poll.findFirstOrThrow({
+    where: {
+      OR: [{ id: pollIdOrSlug }, { slug: pollIdOrSlug }],
+    },
+    select,
+  })
+}
+
 const findUniqueOrganisationSlug = findModelUniqueSlug('organisation')
 
 export const createOrganisationAndAdministrator = async (
@@ -185,7 +170,7 @@ export const createOrganisationAndAdministrator = async (
         telephone,
         optedInForCommunications,
       },
-      ...defaultUserSelection,
+      select: defaultVerifiedUserSelection,
     })
 
     const slug = await findUniqueOrganisationSlug(name, {
@@ -268,7 +253,7 @@ export const updateAdministratorOrganisation = async (
           telephone,
           optedInForCommunications,
         },
-        ...defaultUserSelection,
+        select: defaultVerifiedUserSelection,
       })
 
       if (email) {
@@ -322,18 +307,6 @@ export const fetchUserOrganisation = (
   )
 }
 
-export const defaultPollSelection = {
-  id: true,
-  name: true,
-  slug: true,
-  organisationId: true,
-  defaultAdditionalQuestions: true,
-  customAdditionalQuestions: true,
-  expectedNumberOfParticipants: true,
-  createdAt: true,
-  updatedAt: true,
-}
-
 const findUniquePollSlug = findModelUniqueSlug('poll')
 
 export const createOrganisationPoll = async (
@@ -342,7 +315,7 @@ export const createOrganisationPoll = async (
     name,
     expectedNumberOfParticipants,
     defaultAdditionalQuestions,
-    customAdditionalQuestions = [],
+    customAdditionalQuestions,
   }: OrganisationPollCreateDto,
   user: NonNullable<Request['user']>,
   { session }: { session?: Session } = {}
@@ -360,7 +333,7 @@ export const createOrganisationPoll = async (
           create: {
             slug,
             name,
-            customAdditionalQuestions,
+            customAdditionalQuestions: customAdditionalQuestions ?? [],
             expectedNumberOfParticipants,
             ...(!!defaultAdditionalQuestions?.length
               ? {
@@ -458,12 +431,7 @@ export const updateOrganisationPoll = async (
             }
           : {}),
       },
-      select: {
-        ...defaultPollSelection,
-        organisation: {
-          select: organisationSelectionWithoutPolls,
-        },
-      },
+      select: defaultPollSelection,
     })
   }, session)
 }
@@ -481,7 +449,7 @@ export const deleteOrganisationPoll = async (
       ),
       select: {
         organisation: {
-          select: organisationSelectionWithoutPolls,
+          select: defaultOrganisationSelectionWithoutPolls,
         },
       },
     })
@@ -513,9 +481,29 @@ export const fetchOrganisationPoll = (
   user: NonNullable<Request['user']>
 ) => {
   return findOrganisationPollBySlugOrId(
-    { params, user, select: defaultPollSelection },
+    {
+      params,
+      user,
+      select: defaultPollSelection,
+    },
     { session: prisma }
   )
+}
+
+export const fetchOrganisationPublicPoll = ({ pollIdOrSlug }: PollParams) => {
+  return prisma.poll.findFirstOrThrow({
+    where: {
+      OR: [
+        {
+          id: pollIdOrSlug,
+        },
+        {
+          slug: pollIdOrSlug,
+        },
+      ],
+    },
+    select: defaultPollSelection,
+  })
 }
 
 export const getLastPollParticipantsCount = async (organisationId: string) => {

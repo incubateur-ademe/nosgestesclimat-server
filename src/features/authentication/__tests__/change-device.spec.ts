@@ -342,7 +342,6 @@ describe('Given a ngc user', () => {
         agent,
         simulation: {
           user: {
-            id: faker.string.uuid(),
             email: faker.internet.email(),
           },
         },
@@ -468,7 +467,6 @@ describe('Given a ngc user', () => {
           agent,
           simulation: {
             user: {
-              id: faker.string.uuid(),
               email,
             },
           },
@@ -627,11 +625,9 @@ describe('Given a ngc user', () => {
       }))
       simulationDevice1 = await createOrganisationPollSimulation({
         agent,
-        organisationId,
         pollId,
         simulation: {
           user: {
-            id: faker.string.uuid(),
             email: faker.internet.email(),
           },
         },
@@ -661,11 +657,9 @@ describe('Given a ngc user', () => {
       beforeEach(async () => {
         simulationDevice2 = await createOrganisationPollSimulation({
           agent,
-          organisationId,
           pollId,
           simulation: {
             user: {
-              id: faker.string.uuid(),
               email,
             },
           },

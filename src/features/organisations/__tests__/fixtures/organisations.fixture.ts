@@ -6,12 +6,13 @@ import nock from 'nock'
 import slugify from 'slugify'
 import { baseURL } from '../../../../adapters/connect/client'
 import { prisma } from '../../../../adapters/prisma/client'
+import {
+  defaultOrganisationSelectionWithoutPolls,
+  defaultPollSelection,
+} from '../../../../adapters/prisma/selection'
+import { config } from '../../../../config'
 import { getSimulationPayload } from '../../../simulations/__tests__/fixtures/simulations.fixtures'
 import type { SimulationCreateInputDto } from '../../../simulations/simulations.validator'
-import {
-  defaultPollSelection,
-  organisationSelectionWithoutPolls,
-} from '../../organisations.repository'
 import type {
   OrganisationCreateDto,
   OrganisationPollCreateDto,
@@ -43,8 +44,17 @@ export const FETCH_ORGANISATION_POLLS_ROUTE =
 export const FETCH_ORGANISATION_POLL_ROUTE =
   '/organisations/v1/:organisationIdOrSlug/polls/:pollIdOrSlug'
 
-export const CREATE_POLL_SIMULATION_ROUTE =
-  '/organisations/v1/:organisationIdOrSlug/polls/:pollIdOrSlug/simulations'
+export const FETCH_ORGANISATION_PUBLIC_POLL_ROUTE =
+  '/organisations/v1/:userId/public-polls/:pollIdOrSlug'
+
+export const CREATE_ORGANISATION_PUBLIC_POLL_SIMULATION_ROUTE =
+  '/organisations/v1/:userId/public-polls/:pollIdOrSlug/simulations'
+
+export const FETCH_ORGANISATION_PUBLIC_POLL_SIMULATIONS_ROUTE =
+  '/organisations/v1/:userId/public-polls/:pollIdOrSlug/simulations'
+
+export const FETCH_ORGANISATION_PUBLIC_POLL_DASHBOARD_ROUTE =
+  '/organisations/v1/:userId/public-polls/:pollIdOrSlug/dashboard'
 
 type TestAgent = ReturnType<typeof supertest>
 
@@ -86,7 +96,9 @@ export const createOrganisation = async ({
   const [administrator] = administrators || []
 
   if (!administrator?.optedInForCommunications) {
-    scope.post('/v3/contacts/lists/27/contacts/remove').reply(200)
+    scope
+      .post('/v3/contacts/lists/27/contacts/remove')
+      .reply(400, { code: 'invalid_parameter' })
   }
 
   nock(baseURL).post('/api/v1/personnes').reply(200)
@@ -96,8 +108,6 @@ export const createOrganisation = async ({
     .set('cookie', cookie)
     .send(payload)
     .expect(StatusCodes.CREATED)
-
-  nock.abortPendingRequests()
 
   return response.body
 }
@@ -132,7 +142,7 @@ export const mockUpdateOrganisationPollCreation: any = async (params: any) => {
       id,
     },
     select: {
-      ...organisationSelectionWithoutPolls,
+      ...defaultOrganisationSelectionWithoutPolls,
       polls: {
         where: {
           slug: create.slug!,
@@ -226,75 +236,110 @@ export const createOrganisationPoll = async ({
     .send(payload)
     .expect(StatusCodes.INTERNAL_SERVER_ERROR)
 
-  const poll = await prisma.poll.update({
+  const {
+    organisationId: _,
+    organisation,
+    ...poll
+  } = await prisma.poll.update({
     where: {
       slug: slugify(payload.name.toLowerCase(), { strict: true }),
     },
     data: {
       organisationId,
     },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      defaultAdditionalQuestions: true,
-      customAdditionalQuestions: true,
-      expectedNumberOfParticipants: true,
-      createdAt: true,
-      updatedAt: true,
-    },
+    select: defaultPollSelection,
   })
 
   return {
     ...poll,
+    organisation: {
+      ...organisation,
+      hasCustomQuestionEnabled:
+        config.organisationIdsWithCustomQuestionsEnabled.has(organisation.id),
+      administrators: organisation.administrators?.map(
+        ({
+          id,
+          user: {
+            id: userId,
+            name,
+            email,
+            createdAt,
+            optedInForCommunications,
+            position,
+            telephone,
+            updatedAt,
+          },
+        }) => ({
+          id,
+          userId,
+          name,
+          email,
+          position,
+          telephone,
+          optedInForCommunications,
+          createdAt: createdAt.toISOString(),
+          updatedAt: updatedAt ? updatedAt.toISOString() : updatedAt,
+        })
+      ),
+      createdAt: organisation.createdAt.toISOString(),
+      updatedAt: organisation.updatedAt
+        ? organisation.updatedAt.toISOString()
+        : organisation.updatedAt,
+    },
     createdAt: poll.createdAt.toISOString(),
+    updatedAt: poll.updatedAt ? poll.updatedAt.toISOString() : poll.updatedAt,
     defaultAdditionalQuestions: poll.defaultAdditionalQuestions.map(
       ({ type }) => type
     ),
+    simulations: {
+      count: poll.simulations.length,
+      finished: poll.simulations.filter(
+        ({ simulation: { progression } }) => progression === 1
+      ).length,
+      hasParticipated: false,
+    },
   }
 }
 
 export const createOrganisationPollSimulation = async ({
   agent,
-  organisationId,
+  userId,
   pollId,
   simulation = {},
 }: {
   agent: TestAgent
-  organisationId: string
+  userId?: string
   pollId: string
   simulation?: Partial<SimulationCreateInputDto>
 }) => {
+  userId = userId ?? faker.string.uuid()
   const { user } = simulation
   const payload: SimulationCreateInputDto = {
     ...getSimulationPayload(simulation),
-    user: {
-      ...user,
-      id: user?.id || faker.string.uuid(),
-    },
+    user,
   }
 
   const scope = nock(process.env.BREVO_URL!)
     .post('/v3/contacts')
     .reply(200)
     .post('/v3/contacts/lists/27/contacts/remove')
-    .reply(200)
+    .reply(400, { code: 'invalid_parameter' })
 
-  if (payload.user.email) {
+  if (payload.user?.email) {
     scope
       .post('/v3/smtp/email')
       .reply(200)
       .post('/v3/contacts')
       .reply(200)
       .post('/v3/contacts/lists/35/contacts/remove')
-      .reply(200)
+      .reply(400, { code: 'invalid_parameter' })
   }
 
   const response = await agent
     .post(
-      CREATE_POLL_SIMULATION_ROUTE.replace(
-        ':organisationIdOrSlug',
-        organisationId
+      CREATE_ORGANISATION_PUBLIC_POLL_SIMULATION_ROUTE.replace(
+        ':userId',
+        userId
       ).replace(':pollIdOrSlug', pollId)
     )
     .send(payload)
