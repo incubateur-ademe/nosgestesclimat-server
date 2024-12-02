@@ -1,6 +1,4 @@
 import { faker } from '@faker-js/faker'
-import { version as clientVersion } from '@prisma/client/package.json'
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 import { StatusCodes } from 'http-status-codes'
 import nock from 'nock'
 import slugify from 'slugify'
@@ -160,7 +158,7 @@ describe('Given a NGC user', () => {
         const payload: OrganisationCreateDto = {
           name: faker.company.name(),
           type: randomOrganisationType(),
-          numberOfCollaborators: faker.number.int(),
+          numberOfCollaborators: faker.number.int({ max: 100 }),
           administrators: [administratorPayload],
         }
 
@@ -469,17 +467,6 @@ describe('Given a NGC user', () => {
         beforeEach(() => createOrganisation({ agent, cookie }))
 
         test(`Then it returns a ${StatusCodes.FORBIDDEN} error`, async () => {
-          // This is not ideal but prismock does not handle this correctly
-          jest.spyOn(prisma.organisation, 'create').mockRejectedValueOnce(
-            new PrismaClientKnownRequestError(
-              'ForeignKeyConstraintFailedError',
-              {
-                code: 'P2002',
-                clientVersion,
-              }
-            )
-          )
-
           const response = await agent
             .post(url)
             .set('cookie', cookie)
@@ -494,8 +481,6 @@ describe('Given a NGC user', () => {
           )
 
           jest.spyOn(prisma.organisation, 'create').mockRestore()
-
-          // Cannot cover other expectation... prismock does not raise
         })
       })
 

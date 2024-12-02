@@ -95,7 +95,11 @@ const evaluate = ({
     },
   }).nodeValue
 
-  return typeof value === 'number' ? value : !!value ? +value : undefined
+  return typeof value === 'number'
+    ? +value.toFixed(4)
+    : !!value
+      ? +value
+      : undefined
 }
 
 const computeMetricResults = (
@@ -219,6 +223,8 @@ export const createSimulation = async ({
     .post(CREATE_SIMULATION_ROUTE.replace(':userId', userId))
     .send(payload)
     .expect(StatusCodes.CREATED)
+
+  expect(nock.isDone()).toBeTruthy()
 
   return response.body
 }

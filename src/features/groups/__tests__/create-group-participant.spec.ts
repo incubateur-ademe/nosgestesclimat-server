@@ -1,6 +1,4 @@
 import { faker } from '@faker-js/faker'
-import { version as clientVersion } from '@prisma/client/package.json'
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 import { StatusCodes } from 'http-status-codes'
 import nock from 'nock'
 import supertest from 'supertest'
@@ -29,14 +27,6 @@ describe('Given a NGC user', () => {
   describe("When trying to join another administrator's group", () => {
     describe('And group does not exist', () => {
       test(`Then it returns a ${StatusCodes.NOT_FOUND} error`, async () => {
-        // This is not ideal but prismock does not handle this correctly
-        jest.spyOn(prisma.groupParticipant, 'upsert').mockRejectedValueOnce(
-          new PrismaClientKnownRequestError('ForeignKeyConstraintFailedError', {
-            code: 'P2003',
-            clientVersion,
-          })
-        )
-
         await agent
           .post(url.replace(':groupId', faker.database.mongodbObjectId()))
           .send({
@@ -47,8 +37,6 @@ describe('Given a NGC user', () => {
           .expect(StatusCodes.NOT_FOUND)
 
         jest.spyOn(prisma.groupParticipant, 'upsert').mockRestore()
-
-        // Cannot cover other expectation... prismock does not raise
       })
     })
 

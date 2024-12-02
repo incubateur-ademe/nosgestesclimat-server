@@ -12,7 +12,6 @@ import {
   createOrganisation,
   createOrganisationPoll,
   createOrganisationPollSimulation,
-  mockSimulationPollsFindManyOrderBySimulationCreatedAt,
 } from '../../organisations/__tests__/fixtures/organisations.fixture'
 import {
   createSimulation,
@@ -150,24 +149,7 @@ describe('Given a ngc user', () => {
               .get(url.replace(':userId', userIdDevice1))
               .expect(StatusCodes.OK)
 
-            // prismock does not filter groups correctly
-            // but he only sees public part of it
-            const [participant] = groupDevice1.participants
-            expect(response.body).toEqual([
-              {
-                ...groupDevice1,
-                administrator: {
-                  name,
-                },
-                participants: [
-                  {
-                    simulation: participant.simulation,
-                    id: participant.id,
-                    name,
-                  },
-                ],
-              },
-            ])
+            expect(response.body).toEqual([])
           })
         })
 
@@ -695,16 +677,6 @@ describe('Given a ngc user', () => {
       let simulationId: string
       let userId: string
 
-      beforeEach(() =>
-        jest
-          .spyOn(prisma.simulationPoll, 'findMany')
-          .mockImplementationOnce(
-            mockSimulationPollsFindManyOrderBySimulationCreatedAt(
-              prisma.simulationPoll.findMany
-            )
-          )
-      )
-
       beforeEach(async () => {
         simulationDevice2 = await createOrganisationPollSimulation({
           agent,
@@ -720,10 +692,6 @@ describe('Given a ngc user', () => {
           user: { id: userId },
         } = simulationDevice2)
       })
-
-      afterEach(() =>
-        jest.spyOn(prisma.simulationPoll, 'findMany').mockRestore()
-      )
 
       describe('When fetching the poll', () => {
         test('Then it returns device 2 participation only', async () => {

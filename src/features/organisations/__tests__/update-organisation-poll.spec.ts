@@ -340,13 +340,16 @@ describe('Given a NGC user', () => {
               .send(payload)
               .expect(StatusCodes.OK)
 
-            expect(response.body).toEqual({ ...poll, ...payload })
+            expect(response.body).toEqual({
+              ...poll,
+              ...payload,
+              updatedAt: expect.any(String),
+            })
           })
         })
 
         describe('And updating defaultAdditionalQuestions', () => {
-          // prismock does not handle this correcly
-          test.skip(`Then it returns a ${StatusCodes.OK} response with the updated group`, async () => {
+          test(`Then it returns a ${StatusCodes.OK} response with the updated group`, async () => {
             const payload: OrganisationPollUpdateDto = {
               defaultAdditionalQuestions: [
                 'postalCode' as PollDefaultAdditionalQuestionTypeEnum,
@@ -379,7 +382,11 @@ describe('Given a NGC user', () => {
               'birthdate' as PollDefaultAdditionalQuestionTypeEnum,
             ]
 
-            nock(process.env.BREVO_URL!).post('/v3/contacts').reply(200)
+            nock(process.env.BREVO_URL!)
+              .post('/v3/contacts')
+              .reply(200)
+              .post('/v3/contacts/lists/27/contacts/remove')
+              .reply(200)
 
             response = await agent
               .put(

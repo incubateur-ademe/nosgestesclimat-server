@@ -228,13 +228,12 @@ describe('Given a NGC user', () => {
             actionChoices: {},
             additionalQuestionsAnswers: [],
             foldedSteps: [],
-            // prismock does not handle this correctly but covered in test below
-            // polls: [
-            //   {
-            //     id: pollId,
-            //   },
-            // ],
-            polls: [],
+            polls: [
+              {
+                id: pollId,
+                slug: pollSlug,
+              },
+            ],
             user: {
               id: userId,
               email: null,
@@ -254,7 +253,8 @@ describe('Given a NGC user', () => {
               myAction: true,
             },
             savedViaEmail: true,
-            foldedSteps: ['myStep'],
+            // foldedSteps: ['myStep'], // Cannot do that with PG lite
+            foldedSteps: [],
             additionalQuestionsAnswers: [
               {
                 type: 'custom' as SimulationAdditionalQuestionAnswerType.custom,
@@ -282,6 +282,8 @@ describe('Given a NGC user', () => {
             .reply(200)
             .post('/v3/contacts/lists/27/contacts/remove')
             .reply(200)
+            .post('/v3/contacts/lists/35/contacts/remove')
+            .reply(200)
 
           const {
             body: { id },
@@ -290,6 +292,7 @@ describe('Given a NGC user', () => {
               url.replace(':userId', userId).replace(':pollIdOrSlug', pollId)
             )
             .send(payload)
+            .expect(StatusCodes.CREATED)
 
           const createdSimulation = await prisma.simulation.findUnique({
             where: {
@@ -427,13 +430,12 @@ describe('Given a NGC user', () => {
               actionChoices: {},
               additionalQuestionsAnswers: [],
               foldedSteps: [],
-              // prismock does not handle this correctly but covered in test above
-              // polls: [
-              //   {
-              //     id: pollId,
-              //   },
-              // ],
-              polls: [],
+              polls: [
+                {
+                  id: pollId,
+                  slug: pollSlug,
+                },
+              ],
               user: {
                 id: userId,
                 email: null,

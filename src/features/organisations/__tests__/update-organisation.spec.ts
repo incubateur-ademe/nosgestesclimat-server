@@ -1,6 +1,4 @@
 import { faker } from '@faker-js/faker'
-import { version as clientVersion } from '@prisma/client/package.json'
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
 import nock from 'nock'
@@ -174,7 +172,7 @@ describe('Given a NGC user', () => {
           const payload: OrganisationUpdateDto = {
             name: faker.company.name(),
             type: randomOrganisationType(),
-            numberOfCollaborators: faker.number.int(),
+            numberOfCollaborators: faker.number.int({ max: 100 }),
           }
 
           nock(process.env.BREVO_URL!)
@@ -201,7 +199,7 @@ describe('Given a NGC user', () => {
             const payload: OrganisationUpdateDto = {
               name: faker.company.name(),
               type: randomOrganisationType(),
-              numberOfCollaborators: faker.number.int(),
+              numberOfCollaborators: faker.number.int({ max: 100 }),
               administrators: [
                 {
                   optedInForCommunications: true,
@@ -244,7 +242,7 @@ describe('Given a NGC user', () => {
             const payload: OrganisationUpdateDto = {
               name: faker.company.name(),
               type: randomOrganisationType(),
-              numberOfCollaborators: faker.number.int(),
+              numberOfCollaborators: faker.number.int({ max: 100 }),
               administrators: [
                 {
                   optedInForCommunications: false,
@@ -308,7 +306,7 @@ describe('Given a NGC user', () => {
             const payload: OrganisationUpdateDto = {
               name: faker.company.name(),
               type: randomOrganisationType(),
-              numberOfCollaborators: faker.number.int(),
+              numberOfCollaborators: faker.number.int({ max: 100 }),
             }
 
             nock(process.env.BREVO_URL!)
@@ -571,15 +569,6 @@ describe('Given a NGC user', () => {
           })
 
           test(`Then it returns a ${StatusCodes.FORBIDDEN} error`, async () => {
-            // This is not ideal but prismock does not handle this correctly
-            jest.spyOn(prisma.verifiedUser, 'update').mockRejectedValueOnce(
-              new PrismaClientKnownRequestError('UniqueConstraintFailedError', {
-                code: 'P2002',
-                clientVersion,
-              })
-            )
-
-            // In case of correct error
             const payload: OrganisationUpdateDto = {
               administrators: [
                 {
@@ -600,10 +589,6 @@ describe('Given a NGC user', () => {
             expect(response.text).toEqual(
               'Forbidden ! This email already belongs to another organisation.'
             )
-
-            jest.spyOn(prisma.verifiedUser, 'update').mockRestore()
-
-            // Cannot cover other expectation... prismock does not raise
           })
         })
       })

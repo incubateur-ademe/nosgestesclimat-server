@@ -107,6 +107,8 @@ describe('Given a NGC user', () => {
       const payload = {
         simulation: {
           id: faker.string.uuid(),
+          computedResults: {},
+          progression: 1,
         },
         userId: faker.string.uuid(),
       }
@@ -128,7 +130,7 @@ describe('Given a NGC user', () => {
         date: expect.any(Date),
         foldedSteps: [],
         id: simulationId,
-        progression: null,
+        progression: 1,
         savedViaEmail: false,
         situation: {},
         updatedAt: expect.any(Date),

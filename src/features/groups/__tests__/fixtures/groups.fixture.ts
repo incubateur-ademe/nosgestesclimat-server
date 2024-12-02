@@ -62,6 +62,8 @@ export const createGroup = async ({
     .send(payload)
     .expect(StatusCodes.CREATED)
 
+  expect(nock.isDone()).toBeTruthy()
+
   return response.body
 }
 
@@ -144,6 +146,8 @@ export const joinGroup = async ({
     .post(CREATE_PARTICIPANT_ROUTE.replace(':groupId', groupId))
     .send(payload)
     .expect(StatusCodes.CREATED)
+
+  expect(nock.isDone()).toBeTruthy()
 
   return response.body
 }

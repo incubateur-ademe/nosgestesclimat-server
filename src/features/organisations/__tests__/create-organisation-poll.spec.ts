@@ -227,17 +227,6 @@ describe('Given a NGC user', () => {
           } = organisation)
         })
 
-        beforeEach(() => {
-          // This is not ideal but prismock does not handle this correctly
-          jest
-            .spyOn(prisma.organisation, 'update')
-            .mockImplementationOnce(mockUpdateOrganisationPollCreation)
-        })
-
-        afterEach(() => {
-          jest.spyOn(prisma.organisation, 'update').mockRestore()
-        })
-
         test(`Then it returns a ${StatusCodes.CREATED} response with the created poll`, async () => {
           const payload = {
             name: faker.company.buzzNoun(),
@@ -285,7 +274,7 @@ describe('Given a NGC user', () => {
                 isEnabled: true,
               },
             ],
-            expectedNumberOfParticipants: faker.number.int(),
+            expectedNumberOfParticipants: faker.number.int({ max: 100 }),
           }
 
           nock(process.env.BREVO_URL!)
@@ -347,7 +336,7 @@ describe('Given a NGC user', () => {
                 isEnabled: true,
               },
             ],
-            expectedNumberOfParticipants: faker.number.int(),
+            expectedNumberOfParticipants: faker.number.int({ max: 100 }),
           }
 
           const scope = nock(process.env.BREVO_URL!, {
@@ -454,7 +443,7 @@ describe('Given a NGC user', () => {
                 isEnabled: true,
               },
             ],
-            expectedNumberOfParticipants: faker.number.int(),
+            expectedNumberOfParticipants: faker.number.int({ max: 100 }),
           }
 
           const scope = nock(process.env.BREVO_URL!, {
@@ -510,11 +499,6 @@ describe('Given a NGC user', () => {
         })
 
         test(`Then it returns a ${StatusCodes.CREATED} response with the created poll and an incremented slug`, async () => {
-          // This is not ideal but prismock does not handle this correctly
-          jest
-            .spyOn(prisma.organisation, 'update')
-            .mockImplementationOnce(mockUpdateOrganisationPollCreation)
-
           const payload = {
             name,
           }
@@ -547,8 +531,6 @@ describe('Given a NGC user', () => {
               hasParticipated: false,
             },
           })
-
-          jest.spyOn(prisma.organisation, 'update').mockRestore()
         })
       })
 

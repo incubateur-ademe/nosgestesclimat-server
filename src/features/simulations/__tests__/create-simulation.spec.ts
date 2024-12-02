@@ -159,7 +159,8 @@ describe('Given a NGC user', () => {
             myAction: true,
           },
           savedViaEmail: true,
-          foldedSteps: ['myStep'],
+          // foldedSteps: ['myStep'], // Cannot do that with PG lite
+          foldedSteps: [],
           additionalQuestionsAnswers: [
             {
               type: 'custom' as SimulationAdditionalQuestionAnswerType.custom,
@@ -178,9 +179,26 @@ describe('Given a NGC user', () => {
           },
         }
 
+        nock(process.env.BREVO_URL!)
+          .post('/v3/smtp/email')
+          .reply(200)
+          .post('/v3/contacts')
+          .reply(200)
+          .post('/v3/contacts/lists/35/contacts/remove')
+          .reply(200)
+          .post('/v3/contacts/lists/22/contacts/remove')
+          .reply(200)
+          .post('/v3/contacts/lists/32/contacts/remove')
+          .reply(200)
+          .post('/v3/contacts/lists/36/contacts/remove')
+          .reply(200)
+
         const {
           body: { id },
-        } = await agent.post(url.replace(':userId', userId)).send(payload)
+        } = await agent
+          .post(url.replace(':userId', userId))
+          .send(payload)
+          .expect(StatusCodes.CREATED)
 
         const createdSimulation = await prisma.simulation.findUnique({
           where: {
