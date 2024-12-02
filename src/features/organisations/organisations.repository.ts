@@ -247,6 +247,7 @@ export const updateAdministratorOrganisation = async (
           email: userEmail,
         },
         data: {
+          id: user.userId,
           name: administratorName,
           email,
           position,
@@ -257,6 +258,8 @@ export const updateAdministratorOrganisation = async (
       })
 
       if (email) {
+        user.email = email
+        organisationUpdate.administrators.update.where.userEmail = email
         organisationUpdate.administrators.update.data.userEmail = email
       }
     }
