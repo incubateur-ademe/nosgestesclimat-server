@@ -61,7 +61,13 @@ export const authentificationMiddleware =
           logger.warn(`Could not find verified user for ${result.email}`, e)
         }
       } else if (passIfUnauthorized && userId === req.params.userId) {
-        await syncUserData({ userId, email })
+        try {
+          await syncUserData({ userId, email })
+        } catch (err) {
+          logger.error('Sync user data failed', err)
+
+          return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
+        }
       }
 
       req.user = {

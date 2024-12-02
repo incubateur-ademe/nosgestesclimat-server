@@ -170,12 +170,12 @@ describe('Given a NGC user', () => {
 
         beforeEach(() => {
           jest
-            .spyOn(prisma.poll, 'findFirstOrThrow')
+            .spyOn(prisma, '$transaction')
             .mockRejectedValueOnce(databaseError)
         })
 
         afterEach(() => {
-          jest.spyOn(prisma.poll, 'findFirstOrThrow').mockRestore()
+          jest.spyOn(prisma, '$transaction').mockRestore()
         })
 
         test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
@@ -403,12 +403,12 @@ describe('Given a NGC user', () => {
 
         beforeEach(() => {
           jest
-            .spyOn(prisma.poll, 'findFirstOrThrow')
+            .spyOn(prisma, '$transaction')
             .mockRejectedValueOnce(databaseError)
         })
 
         afterEach(() => {
-          jest.spyOn(prisma.poll, 'findFirstOrThrow').mockRestore()
+          jest.spyOn(prisma, '$transaction').mockRestore()
         })
 
         test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
@@ -433,7 +433,7 @@ describe('Given a NGC user', () => {
             .expect(StatusCodes.INTERNAL_SERVER_ERROR)
 
           expect(logger.error).toHaveBeenCalledWith(
-            'Public poll fetch failed',
+            'Sync user data failed',
             databaseError
           )
         })

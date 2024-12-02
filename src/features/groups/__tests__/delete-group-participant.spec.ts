@@ -110,12 +110,12 @@ describe('Given a NGC user', () => {
 
           beforeEach(() => {
             jest
-              .spyOn(prisma.group, 'findUniqueOrThrow')
+              .spyOn(prisma, '$transaction')
               .mockRejectedValueOnce(databaseError)
           })
 
           afterEach(() => {
-            jest.spyOn(prisma.group, 'findUniqueOrThrow').mockRestore()
+            jest.spyOn(prisma, '$transaction').mockRestore()
           })
 
           test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {

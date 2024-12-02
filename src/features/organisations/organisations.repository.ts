@@ -284,29 +284,33 @@ export const updateAdministratorOrganisation = async (
 export const fetchUserOrganisations = ({
   email: userEmail,
 }: NonNullable<Request['user']>) => {
-  return prisma.organisation.findMany({
-    where: {
-      administrators: {
-        some: {
-          userEmail,
+  return transaction((prismaSession) =>
+    prismaSession.organisation.findMany({
+      where: {
+        administrators: {
+          some: {
+            userEmail,
+          },
         },
       },
-    },
-    select: defaultOrganisationSelection,
-  })
+      select: defaultOrganisationSelection,
+    })
+  )
 }
 
 export const fetchUserOrganisation = (
   params: OrganisationParams,
   user: NonNullable<Request['user']>
 ) => {
-  return findOrganisationBySlugOrId(
-    {
-      params,
-      user,
-      select: defaultOrganisationSelection,
-    },
-    { session: prisma }
+  return transaction((prismaSession) =>
+    findOrganisationBySlugOrId(
+      {
+        params,
+        user,
+        select: defaultOrganisationSelection,
+      },
+      { session: prismaSession }
+    )
   )
 }
 
@@ -483,30 +487,34 @@ export const fetchOrganisationPoll = (
   params: OrganisationPollParams,
   user: NonNullable<Request['user']>
 ) => {
-  return findOrganisationPollBySlugOrId(
-    {
-      params,
-      user,
-      select: defaultPollSelection,
-    },
-    { session: prisma }
+  return transaction((prismaSession) =>
+    findOrganisationPollBySlugOrId(
+      {
+        params,
+        user,
+        select: defaultPollSelection,
+      },
+      { session: prismaSession }
+    )
   )
 }
 
 export const fetchOrganisationPublicPoll = ({ pollIdOrSlug }: PollParams) => {
-  return prisma.poll.findFirstOrThrow({
-    where: {
-      OR: [
-        {
-          id: pollIdOrSlug,
-        },
-        {
-          slug: pollIdOrSlug,
-        },
-      ],
-    },
-    select: defaultPollSelection,
-  })
+  return transaction((prismaSession) =>
+    prismaSession.poll.findFirstOrThrow({
+      where: {
+        OR: [
+          {
+            id: pollIdOrSlug,
+          },
+          {
+            slug: pollIdOrSlug,
+          },
+        ],
+      },
+      select: defaultPollSelection,
+    })
+  )
 }
 
 export const getLastPollParticipantsCount = async (organisationId: string) => {

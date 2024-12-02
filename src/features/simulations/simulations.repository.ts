@@ -146,25 +146,29 @@ export const createParticipantSimulation = <
 }
 
 export const fetchUserSimulations = ({ userId }: UserParams) => {
-  return prisma.simulation.findMany({
-    where: {
-      userId,
-    },
-    select: defaultSimulationSelection,
-  })
+  return transaction((prismaSession) =>
+    prismaSession.simulation.findMany({
+      where: {
+        userId,
+      },
+      select: defaultSimulationSelection,
+    })
+  )
 }
 
 export const fetchUserSimulation = ({
   simulationId,
   userId,
 }: UserSimulationParams) => {
-  return prisma.simulation.findUniqueOrThrow({
-    where: {
-      id: simulationId,
-      userId,
-    },
-    select: defaultSimulationSelection,
-  })
+  return transaction((prismaSession) =>
+    prismaSession.simulation.findUniqueOrThrow({
+      where: {
+        id: simulationId,
+        userId,
+      },
+      select: defaultSimulationSelection,
+    })
+  )
 }
 
 export const fetchParticipantSimulation = (
@@ -198,7 +202,8 @@ export const createPollUserSimulation = (
 
     const { id: simulationId } = await createUserSimulation(
       params,
-      simulationDto
+      simulationDto,
+      { session: prismaSession }
     )
 
     const relation = {
@@ -228,10 +233,13 @@ export const createPollUserSimulation = (
     })
 
     if (email) {
-      await transferOwnershipToUser({
-        email,
-        userId,
-      })
+      await transferOwnershipToUser(
+        {
+          email,
+          userId,
+        },
+        { session: prismaSession }
+      )
     }
 
     return { simulation, poll }
@@ -253,15 +261,15 @@ export const getIncompleteSimulationsCount = (user: {
 }
 
 export const fetchPollSimulations = (params: PublicPollParams) => {
-  return transaction(async (session) => {
+  return transaction(async (prismaSession) => {
     const { id } = await findOrganisationPublicPollBySlugOrId(
       { params },
-      { session }
+      { session: prismaSession }
     )
 
     const { userId } = params
 
-    return prisma.simulation.findMany({
+    return prismaSession.simulation.findMany({
       where: {
         polls: {
           some: {
@@ -295,5 +303,5 @@ export const fetchPollSimulations = (params: PublicPollParams) => {
       },
       select: defaultSimulationSelectionWithoutPoll,
     })
-  }, prisma)
+  })
 }

@@ -16,6 +16,7 @@ import type {
   GroupParams,
   GroupsFetchQuery,
   ParticipantCreateDto,
+  UserGroupParticipantParams,
 } from './groups.validator'
 import {
   type GroupCreateDto,
@@ -227,48 +228,51 @@ export const createParticipantAndUser = async (
   }, session)
 }
 
-export const findGroupById = (id: string) => {
-  return prisma.group.findUniqueOrThrow({
-    where: {
-      id,
-    },
-    select: {
-      id: true,
-      administrator: {
-        select: {
-          userId: true,
+export const findGroupAndParticipantById = ({
+  groupId,
+  participantId,
+}: UserGroupParticipantParams) => {
+  return transaction((prismaSession) =>
+    prismaSession.groupParticipant.findUniqueOrThrow({
+      where: {
+        id: participantId,
+        group: {
+          id: groupId,
         },
       },
-    },
-  })
-}
-
-export const findGroupParticipantById = (id: string) => {
-  return prisma.groupParticipant.findUniqueOrThrow({
-    where: {
-      id,
-    },
-    select: {
-      id: true,
-      userId: true,
-    },
-  })
+      select: {
+        id: true,
+        userId: true,
+        group: {
+          select: {
+            administrator: {
+              select: {
+                userId: true,
+              },
+            },
+          },
+        },
+      },
+    })
+  )
 }
 
 export const deleteParticipantById = async (id: string) => {
-  return prisma.groupParticipant.delete({
-    where: {
-      id,
-    },
-    select: {
-      group: {
-        select: defaultGroupSelection,
+  return transaction((prismaSession) =>
+    prismaSession.groupParticipant.delete({
+      where: {
+        id,
       },
-      user: {
-        select: defaultUserSelection,
+      select: {
+        group: {
+          select: defaultGroupSelection,
+        },
+        user: {
+          select: defaultUserSelection,
+        },
       },
-    },
-  })
+    })
+  )
 }
 
 export const fetchUserGroups = async (
@@ -345,15 +349,17 @@ export const deleteUserGroup = async ({
   userId: string
   groupId: string
 }) => {
-  return prisma.group.delete({
-    where: {
-      id: groupId,
-      administrator: {
-        userId,
+  return transaction((prismaSession) =>
+    prismaSession.group.delete({
+      where: {
+        id: groupId,
+        administrator: {
+          userId,
+        },
       },
-    },
-    select: defaultGroupSelection,
-  })
+      select: defaultGroupSelection,
+    })
+  )
 }
 
 export const getAdministratorGroupsStats = async (administratorId: string) => {
