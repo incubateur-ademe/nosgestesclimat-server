@@ -224,7 +224,7 @@ describe('Given a NGC user', () => {
             date: expect.any(String),
             savedViaEmail: false,
             createdAt: expect.any(String),
-            updatedAt: null,
+            updatedAt: expect.any(String),
             actionChoices: {},
             additionalQuestionsAnswers: [],
             foldedSteps: [],
@@ -335,10 +335,9 @@ describe('Given a NGC user', () => {
 
           expect(createdSimulation).toEqual({
             ...payload,
-            // dates are not instance of Date due to jest
-            createdAt: expect.anything(),
-            date: expect.anything(),
-            updatedAt: null,
+            createdAt: expect.any(Date),
+            date: expect.any(Date),
+            updatedAt: expect.any(Date),
             polls: [
               {
                 pollId,
@@ -424,7 +423,7 @@ describe('Given a NGC user', () => {
               date: expect.any(String),
               savedViaEmail: false,
               createdAt: expect.any(String),
-              updatedAt: null,
+              updatedAt: expect.any(String),
               actionChoices: {},
               additionalQuestionsAnswers: [],
               foldedSteps: [],

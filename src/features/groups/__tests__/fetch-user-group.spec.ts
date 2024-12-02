@@ -90,7 +90,7 @@ describe('Given a NGC user', () => {
             },
             participants: [participant],
             createdAt: expect.any(String),
-            updatedAt: null,
+            updatedAt: expect.any(String),
           })
         })
       })

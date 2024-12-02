@@ -76,7 +76,7 @@ describe('Given a NGC user', () => {
       expect(response.body).toEqual({
         id: expect.any(String),
         createdAt: expect.any(String),
-        updatedAt: null,
+        updatedAt: expect.any(String),
         ...payload,
       })
     })
@@ -98,8 +98,8 @@ describe('Given a NGC user', () => {
 
       expect(createdNorthstarRating).toEqual({
         id: expect.any(String),
-        createdAt: expect.anything(), // is not instance of Date due to jest
-        updatedAt: null,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
         ...payload,
       })
     })

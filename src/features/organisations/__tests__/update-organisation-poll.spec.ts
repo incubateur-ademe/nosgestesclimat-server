@@ -247,7 +247,11 @@ describe('Given a NGC user', () => {
             .send(payload)
             .expect(StatusCodes.OK)
 
-          expect(response.body).toEqual({ ...poll, ...payload })
+          expect(response.body).toEqual({
+            ...poll,
+            ...payload,
+            updatedAt: expect.any(String),
+          })
         })
 
         describe('And no data in the update', () => {
@@ -268,7 +272,10 @@ describe('Given a NGC user', () => {
               .send({})
               .expect(StatusCodes.OK)
 
-            expect(response.body).toEqual(poll)
+            expect(response.body).toEqual({
+              ...poll,
+              updatedAt: expect.any(String),
+            })
           })
         })
 
@@ -362,7 +369,11 @@ describe('Given a NGC user', () => {
               .send(payload)
               .expect(StatusCodes.OK)
 
-            expect(response.body).toEqual({ ...poll, ...payload })
+            expect(response.body).toEqual({
+              ...poll,
+              ...payload,
+              updatedAt: expect.any(String),
+            })
 
             payload.defaultAdditionalQuestions = [
               'birthdate' as PollDefaultAdditionalQuestionTypeEnum,
@@ -380,7 +391,11 @@ describe('Given a NGC user', () => {
               .send(payload)
               .expect(StatusCodes.OK)
 
-            expect(response.body).toEqual({ ...poll, ...payload })
+            expect(response.body).toEqual({
+              ...poll,
+              ...payload,
+              updatedAt: expect.any(String),
+            })
           })
         })
       })

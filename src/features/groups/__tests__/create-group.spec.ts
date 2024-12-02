@@ -203,13 +203,13 @@ describe('Given a NGC user', () => {
           ...payload,
           id: expect.any(String),
           createdAt: expect.any(String),
-          updatedAt: null,
+          updatedAt: expect.any(String),
           participants: [],
           administrator: {
             id: userId,
             name,
             createdAt: expect.any(String),
-            updatedAt: null,
+            updatedAt: expect.any(String),
             email: null,
           },
         })
@@ -256,19 +256,18 @@ describe('Given a NGC user', () => {
           },
         })
 
-        // createdAt are not instance of Date due to jest
         expect(createdGroup).toEqual({
           ...payload,
           id,
-          createdAt: expect.anything(),
-          updatedAt: null,
+          createdAt: expect.any(Date),
+          updatedAt: expect.any(Date),
           administrator: {
             user: {
               id: userId,
               name,
               email,
-              createdAt: expect.anything(),
-              updatedAt: null,
+              createdAt: expect.any(Date),
+              updatedAt: expect.any(Date),
             },
           },
           participants: [],
@@ -357,7 +356,7 @@ describe('Given a NGC user', () => {
             id: userId,
             name,
             createdAt: expect.any(String),
-            updatedAt: null,
+            updatedAt: expect.any(String),
             email: null,
           },
           participants: [
@@ -369,7 +368,7 @@ describe('Given a NGC user', () => {
                 ...simulation,
                 date: expect.any(String),
                 createdAt: expect.any(String),
-                updatedAt: null,
+                updatedAt: expect.any(String),
                 polls: [],
                 foldedSteps: [],
                 actionChoices: {},
@@ -377,11 +376,11 @@ describe('Given a NGC user', () => {
                 additionalQuestionsAnswers: [],
               },
               createdAt: expect.any(String),
-              updatedAt: null,
+              updatedAt: expect.any(String),
             },
           ],
           createdAt: expect.any(String),
-          updatedAt: null,
+          updatedAt: expect.any(String),
         })
       })
 
@@ -444,19 +443,18 @@ describe('Given a NGC user', () => {
           },
         })
 
-        // createdAt are not instance of Date due to jest
         expect(createdGroup).toEqual({
           ...payload,
           id,
-          createdAt: expect.anything(),
-          updatedAt: null,
+          createdAt: expect.any(Date),
+          updatedAt: expect.any(Date),
           administrator: {
             user: {
               id: userId,
               name,
               email,
-              createdAt: expect.anything(),
-              updatedAt: null,
+              createdAt: expect.any(Date),
+              updatedAt: expect.any(Date),
             },
           },
           participants: [
@@ -467,8 +465,8 @@ describe('Given a NGC user', () => {
                 id: userId,
                 name,
                 email,
-                createdAt: expect.anything(),
-                updatedAt: null,
+                createdAt: expect.any(Date),
+                updatedAt: expect.any(Date),
               },
             },
           ],

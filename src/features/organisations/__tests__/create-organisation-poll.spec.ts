@@ -264,7 +264,7 @@ describe('Given a NGC user', () => {
             customAdditionalQuestions: [],
             expectedNumberOfParticipants: null,
             createdAt: expect.any(String),
-            updatedAt: null,
+            updatedAt: expect.any(String),
             simulations: {
               count: 0,
               finished: 0,
@@ -322,14 +322,13 @@ describe('Given a NGC user', () => {
               updatedAt: true,
             },
           })
-          // createdAt are not instance of Date due to jest
           expect(createdPoll).toEqual({
             ...payload,
             id,
             slug: slugify(payload.name.toLowerCase(), { strict: true }),
             organisationId,
-            createdAt: expect.anything(),
-            updatedAt: null,
+            createdAt: expect.any(Date),
+            updatedAt: expect.any(Date),
             defaultAdditionalQuestions: payload.defaultAdditionalQuestions?.map(
               (type) => ({ type })
             ),
@@ -408,7 +407,7 @@ describe('Given a NGC user', () => {
               customAdditionalQuestions: [],
               expectedNumberOfParticipants: null,
               createdAt: expect.any(String),
-              updatedAt: null,
+              updatedAt: expect.any(String),
               simulations: {
                 count: 0,
                 finished: 0,
@@ -541,7 +540,7 @@ describe('Given a NGC user', () => {
             customAdditionalQuestions: [],
             expectedNumberOfParticipants: null,
             createdAt: expect.any(String),
-            updatedAt: null,
+            updatedAt: expect.any(String),
             simulations: {
               count: 0,
               finished: 0,

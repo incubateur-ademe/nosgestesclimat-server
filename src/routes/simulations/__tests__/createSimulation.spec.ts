@@ -121,18 +121,17 @@ describe('Given a NGC user', () => {
         },
       })
 
-      // dates are not instance of Date due to jest
       expect(simulation).toEqual({
         actionChoices: {},
-        computedResults: null,
-        createdAt: expect.anything(),
-        date: expect.anything(),
+        computedResults: {},
+        createdAt: expect.any(Date),
+        date: expect.any(Date),
         foldedSteps: [],
         id: simulationId,
         progression: null,
         savedViaEmail: false,
         situation: {},
-        updatedAt: null,
+        updatedAt: expect.any(Date),
         userEmail: null,
         userId: expect.any(String),
       })

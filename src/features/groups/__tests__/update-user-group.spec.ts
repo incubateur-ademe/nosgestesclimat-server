@@ -76,7 +76,11 @@ describe('Given a NGC user', () => {
           .send(payload)
           .expect(StatusCodes.OK)
 
-        expect(response.body).toEqual({ ...group, ...payload })
+        expect(response.body).toEqual({
+          ...group,
+          ...payload,
+          updatedAt: expect.any(String),
+        })
       })
 
       describe('And no data in the update', () => {
@@ -142,7 +146,11 @@ describe('Given a NGC user', () => {
           .send(payload)
           .expect(StatusCodes.OK)
 
-        expect(response.body).toEqual({ ...group, ...payload })
+        expect(response.body).toEqual({
+          ...group,
+          ...payload,
+          updatedAt: expect.any(String),
+        })
       })
 
       test('Then it updates group administrator in brevo', async () => {

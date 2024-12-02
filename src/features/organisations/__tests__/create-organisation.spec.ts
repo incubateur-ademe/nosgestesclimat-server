@@ -132,7 +132,7 @@ describe('Given a NGC user', () => {
           hasCustomQuestionEnabled: false,
           numberOfCollaborators: null,
           createdAt: expect.any(String),
-          updatedAt: null,
+          updatedAt: expect.any(String),
           polls: [],
           administrators: [
             {
@@ -144,7 +144,7 @@ describe('Given a NGC user', () => {
               telephone: null,
               optedInForCommunications: false,
               createdAt: expect.any(String),
-              updatedAt: null,
+              updatedAt: expect.any(String),
             },
           ],
         })
@@ -211,13 +211,12 @@ describe('Given a NGC user', () => {
             updatedAt: true,
           },
         })
-        // createdAt are not instance of Date due to jest
         expect(createdOrganisation).toEqual({
           ...payload,
           id,
           slug: slugify(payload.name.toLowerCase(), { strict: true }),
-          createdAt: expect.anything(),
-          updatedAt: null,
+          createdAt: expect.any(Date),
+          updatedAt: expect.any(Date),
           polls: [],
           administrators: [
             {
@@ -226,8 +225,8 @@ describe('Given a NGC user', () => {
                 ...administratorPayload,
                 id: userId,
                 email,
-                createdAt: expect.anything(),
-                updatedAt: null,
+                createdAt: expect.any(Date),
+                updatedAt: expect.any(Date),
               },
             },
           ],
@@ -542,7 +541,7 @@ describe('Given a NGC user', () => {
             numberOfCollaborators: null,
             hasCustomQuestionEnabled: false,
             createdAt: expect.any(String),
-            updatedAt: null,
+            updatedAt: expect.any(String),
             polls: [],
             administrators: [
               {
@@ -554,7 +553,7 @@ describe('Given a NGC user', () => {
                 telephone: null,
                 optedInForCommunications: true,
                 createdAt: expect.any(String),
-                updatedAt: null,
+                updatedAt: expect.any(String),
               },
             ],
           })

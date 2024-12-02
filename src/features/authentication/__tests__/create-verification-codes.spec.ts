@@ -87,7 +87,7 @@ describe('Given a NGC user', () => {
       expect(response.body).toEqual({
         id: expect.any(String),
         createdAt: expect.any(String),
-        updatedAt: null,
+        updatedAt: expect.any(String),
         expirationDate: expirationDate.toISOString(),
         ...payload,
       })
@@ -114,13 +114,12 @@ describe('Given a NGC user', () => {
         },
       })
 
-      // dates are not instance of Date due to jest
       expect(createdVerificationCode).toEqual({
         id: expect.any(String),
         code,
         expirationDate,
-        createdAt: expect.anything(),
-        updatedAt: null,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
         ...payload,
       })
     })

@@ -165,7 +165,7 @@ describe('Given a NGC user', () => {
             ...payload.simulation,
             date: expect.any(String),
             createdAt: expect.any(String),
-            updatedAt: null,
+            updatedAt: expect.any(String),
             polls: [],
             foldedSteps: [],
             actionChoices: {},
@@ -173,7 +173,7 @@ describe('Given a NGC user', () => {
             additionalQuestionsAnswers: [],
           },
           createdAt: expect.any(String),
-          updatedAt: null,
+          updatedAt: expect.any(String),
           email: null,
         })
       })
@@ -216,19 +216,18 @@ describe('Given a NGC user', () => {
           },
         })
 
-        // createdAt are not instance of Date due to jest
         expect(createdParticipant).toEqual({
           id: expect.any(String),
           user: {
             id: payload.userId,
             name: payload.name,
             email: payload.email,
-            createdAt: expect.anything(),
-            updatedAt: null,
+            createdAt: expect.any(Date),
+            updatedAt: expect.any(Date),
           },
           simulationId: payload.simulation.id,
-          createdAt: expect.anything(),
-          updatedAt: null,
+          createdAt: expect.any(Date),
+          updatedAt: expect.any(Date),
           groupId,
         })
       })
@@ -624,7 +623,7 @@ describe('Given a NGC user', () => {
           ...payload.simulation,
           date: expect.any(String),
           createdAt: expect.any(String),
-          updatedAt: null,
+          updatedAt: expect.any(String),
           polls: [],
           foldedSteps: [],
           actionChoices: {},
@@ -633,7 +632,7 @@ describe('Given a NGC user', () => {
         },
         email: null,
         createdAt: expect.any(String),
-        updatedAt: null,
+        updatedAt: expect.any(String),
       })
     })
   })
@@ -698,7 +697,7 @@ describe('Given a NGC user', () => {
           ...payload.simulation,
           date: expect.any(String),
           createdAt: expect.any(String),
-          updatedAt: null,
+          updatedAt: expect.any(String),
           polls: [],
           foldedSteps: [],
           actionChoices: {},
@@ -707,7 +706,7 @@ describe('Given a NGC user', () => {
         },
         email: administratorEmail,
         createdAt: expect.any(String),
-        updatedAt: null,
+        updatedAt: expect.any(String),
       })
     })
 

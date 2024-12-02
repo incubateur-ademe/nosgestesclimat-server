@@ -189,7 +189,11 @@ describe('Given a NGC user', () => {
             .send(payload)
             .expect(StatusCodes.OK)
 
-          expect(response.body).toEqual({ ...organisation, ...payload })
+          expect(response.body).toEqual({
+            ...organisation,
+            ...payload,
+            updatedAt: expect.any(String),
+          })
         })
 
         describe('And update administrator opt in for communications', () => {
@@ -319,7 +323,11 @@ describe('Given a NGC user', () => {
               .send(payload)
               .expect(StatusCodes.OK)
 
-            expect(response.body).toEqual({ ...organisation, ...payload })
+            expect(response.body).toEqual({
+              ...organisation,
+              ...payload,
+              updatedAt: expect.any(String),
+            })
           })
         })
       })
@@ -496,8 +504,10 @@ describe('Given a NGC user', () => {
               {
                 ...existingAdministrator,
                 ...administratorPayload,
+                updatedAt: expect.any(String),
               },
             ],
+            updatedAt: expect.any(String),
           })
 
           // Cookies are kept in supertest
