@@ -15,20 +15,20 @@ import {
   CREATE_ORGANISATION_POLL_ROUTE,
   createOrganisation,
   createOrganisationPoll,
-  mockUpdateOrganisationPollCreation,
 } from './fixtures/organisations.fixture'
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = CREATE_ORGANISATION_POLL_ROUTE
 
-  afterEach(() =>
-    Promise.all([
+  afterEach(async () => {
+    await prisma.organisationAdministrator.deleteMany()
+    await Promise.all([
       prisma.organisation.deleteMany(),
       prisma.verifiedUser.deleteMany(),
       prisma.verificationCode.deleteMany(),
     ])
-  )
+  })
 
   describe('And logged out', () => {
     describe('When creating a poll in his organisation', () => {

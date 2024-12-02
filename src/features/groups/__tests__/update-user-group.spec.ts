@@ -13,9 +13,13 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = UPDATE_USER_GROUP_ROUTE
 
-  afterEach(() =>
-    Promise.all([prisma.group.deleteMany(), prisma.user.deleteMany()])
-  )
+  afterEach(async () => {
+    await Promise.all([
+      prisma.groupAdministrator.deleteMany(),
+      prisma.groupParticipant.deleteMany(),
+    ])
+    await Promise.all([prisma.user.deleteMany(), prisma.group.deleteMany()])
+  })
 
   describe('When updating one of his groups', () => {
     describe('And invalid userId', () => {

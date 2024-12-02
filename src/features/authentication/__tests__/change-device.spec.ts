@@ -24,15 +24,21 @@ import { login } from './fixtures/login.fixture'
 const agent = supertest(app)
 
 describe('Given a ngc user', () => {
-  afterEach(() =>
-    Promise.all([
+  afterEach(async () => {
+    await Promise.all([
+      prisma.groupAdministrator.deleteMany(),
+      prisma.groupParticipant.deleteMany(),
+      prisma.organisationAdministrator.deleteMany(),
+      prisma.simulationPoll.deleteMany(),
+    ])
+    await Promise.all([
       prisma.group.deleteMany(),
+      prisma.organisation.deleteMany(),
       prisma.user.deleteMany(),
       prisma.verifiedUser.deleteMany(),
       prisma.verificationCode.deleteMany(),
-      prisma.organisation.deleteMany(),
     ])
-  )
+  })
 
   describe('And he/she creates a group leaving his/her email on device 1', () => {
     let groupDevice1: Awaited<ReturnType<typeof createGroup>>

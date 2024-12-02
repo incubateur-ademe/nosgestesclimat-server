@@ -33,6 +33,10 @@ describe('Given a NGC user', () => {
   })
 
   afterEach(async () => {
+    await Promise.all([
+      prisma.groupAdministrator.deleteMany(),
+      prisma.groupParticipant.deleteMany(),
+    ])
     await Promise.all([prisma.user.deleteMany(), prisma.group.deleteMany()])
     jest.restoreAllMocks()
   })

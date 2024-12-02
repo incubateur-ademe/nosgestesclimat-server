@@ -23,14 +23,18 @@ describe('Given a NGC user', () => {
   const url = CREATE_ORGANISATION_PUBLIC_POLL_SIMULATION_ROUTE
   const { computedResults, nom, situation } = getRandomTestCase()
 
-  afterEach(() =>
-    Promise.all([
+  afterEach(async () => {
+    await Promise.all([
+      prisma.organisationAdministrator.deleteMany(),
+      prisma.simulationPoll.deleteMany(),
+    ])
+    await Promise.all([
       prisma.organisation.deleteMany(),
       prisma.user.deleteMany(),
       prisma.verifiedUser.deleteMany(),
       prisma.verificationCode.deleteMany(),
     ])
-  )
+  })
 
   describe(`And ${nom} persona situation`, () => {
     describe('When creating a simulation in a poll ', () => {

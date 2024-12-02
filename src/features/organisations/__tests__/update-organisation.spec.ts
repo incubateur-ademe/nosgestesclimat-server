@@ -23,13 +23,14 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = UPDATE_ORGANISATION_ROUTE
 
-  afterEach(() =>
-    Promise.all([
+  afterEach(async () => {
+    await prisma.organisationAdministrator.deleteMany()
+    await Promise.all([
       prisma.organisation.deleteMany(),
       prisma.verifiedUser.deleteMany(),
       prisma.verificationCode.deleteMany(),
     ])
-  )
+  })
 
   describe('And logged out', () => {
     describe('When updating his organisation', () => {

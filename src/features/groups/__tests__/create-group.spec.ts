@@ -14,9 +14,13 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = CREATE_GROUP_ROUTE
 
-  afterEach(() =>
-    Promise.all([prisma.group.deleteMany(), prisma.user.deleteMany()])
-  )
+  afterEach(async () => {
+    await Promise.all([
+      prisma.groupAdministrator.deleteMany(),
+      prisma.groupParticipant.deleteMany(),
+    ])
+    await Promise.all([prisma.user.deleteMany(), prisma.group.deleteMany()])
+  })
 
   describe('When creating his group', () => {
     describe('And no data provided', () => {

@@ -16,15 +16,18 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = FETCH_ORGANISATION_PUBLIC_POLL_DASHBOARD_ROUTE
 
-  afterEach(() =>
-    Promise.all([
+  afterEach(async () => {
+    await Promise.all([
+      prisma.organisationAdministrator.deleteMany(),
+      prisma.simulationPoll.deleteMany(),
+    ])
+    await Promise.all([
       prisma.organisation.deleteMany(),
-      prisma.verifiedUser.deleteMany(),
-      prisma.simulation.deleteMany(),
       prisma.user.deleteMany(),
+      prisma.verifiedUser.deleteMany(),
       prisma.verificationCode.deleteMany(),
     ])
-  )
+  })
 
   describe('And logged out', () => {
     describe('When fetching a public organisation poll dashboard', () => {
