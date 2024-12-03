@@ -17,15 +17,18 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = FETCH_ORGANISATION_PUBLIC_POLL_ROUTE
 
-  afterEach(() =>
-    Promise.all([
+  afterEach(async () => {
+    await Promise.all([
+      prisma.organisationAdministrator.deleteMany(),
+      prisma.simulationPoll.deleteMany(),
+    ])
+    await Promise.all([
       prisma.organisation.deleteMany(),
-      prisma.verifiedUser.deleteMany(),
-      prisma.simulation.deleteMany(),
       prisma.user.deleteMany(),
+      prisma.verifiedUser.deleteMany(),
       prisma.verificationCode.deleteMany(),
     ])
-  )
+  })
 
   describe('And logged out', () => {
     describe('When fetching a public organisation poll', () => {
@@ -167,12 +170,12 @@ describe('Given a NGC user', () => {
 
         beforeEach(() => {
           jest
-            .spyOn(prisma.poll, 'findFirstOrThrow')
+            .spyOn(prisma, '$transaction')
             .mockRejectedValueOnce(databaseError)
         })
 
         afterEach(() => {
-          jest.spyOn(prisma.poll, 'findFirstOrThrow').mockRestore()
+          jest.spyOn(prisma, '$transaction').mockRestore()
         })
 
         test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
@@ -400,12 +403,12 @@ describe('Given a NGC user', () => {
 
         beforeEach(() => {
           jest
-            .spyOn(prisma.poll, 'findFirstOrThrow')
+            .spyOn(prisma, '$transaction')
             .mockRejectedValueOnce(databaseError)
         })
 
         afterEach(() => {
-          jest.spyOn(prisma.poll, 'findFirstOrThrow').mockRestore()
+          jest.spyOn(prisma, '$transaction').mockRestore()
         })
 
         test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
@@ -430,7 +433,7 @@ describe('Given a NGC user', () => {
             .expect(StatusCodes.INTERNAL_SERVER_ERROR)
 
           expect(logger.error).toHaveBeenCalledWith(
-            'Public poll fetch failed',
+            'Sync user data failed',
             databaseError
           )
         })

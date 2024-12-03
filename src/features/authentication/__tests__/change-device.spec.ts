@@ -12,7 +12,6 @@ import {
   createOrganisation,
   createOrganisationPoll,
   createOrganisationPollSimulation,
-  mockSimulationPollsFindManyOrderBySimulationCreatedAt,
 } from '../../organisations/__tests__/fixtures/organisations.fixture'
 import {
   createSimulation,
@@ -24,15 +23,21 @@ import { login } from './fixtures/login.fixture'
 const agent = supertest(app)
 
 describe('Given a ngc user', () => {
-  afterEach(() =>
-    Promise.all([
+  afterEach(async () => {
+    await Promise.all([
+      prisma.groupAdministrator.deleteMany(),
+      prisma.groupParticipant.deleteMany(),
+      prisma.organisationAdministrator.deleteMany(),
+      prisma.simulationPoll.deleteMany(),
+    ])
+    await Promise.all([
       prisma.group.deleteMany(),
+      prisma.organisation.deleteMany(),
       prisma.user.deleteMany(),
       prisma.verifiedUser.deleteMany(),
       prisma.verificationCode.deleteMany(),
-      prisma.organisation.deleteMany(),
     ])
-  )
+  })
 
   describe('And he/she creates a group leaving his/her email on device 1', () => {
     let groupDevice1: Awaited<ReturnType<typeof createGroup>>
@@ -99,7 +104,12 @@ describe('Given a ngc user', () => {
               participants: [
                 {
                   ...participant,
+                  simulation: {
+                    ...participant.simulation,
+                    updatedAt: expect.any(String),
+                  },
                   userId,
+                  updatedAt: expect.any(String),
                 },
               ],
             },
@@ -119,6 +129,7 @@ describe('Given a ngc user', () => {
           expect(response.body).toEqual([
             {
               ...simulationDevice1,
+              updatedAt: expect.any(String),
               user: {
                 name,
                 email,
@@ -138,24 +149,7 @@ describe('Given a ngc user', () => {
               .get(url.replace(':userId', userIdDevice1))
               .expect(StatusCodes.OK)
 
-            // prismock does not filter groups correctly
-            // but he only sees public part of it
-            const [participant] = groupDevice1.participants
-            expect(response.body).toEqual([
-              {
-                ...groupDevice1,
-                administrator: {
-                  name,
-                },
-                participants: [
-                  {
-                    simulation: participant.simulation,
-                    id: participant.id,
-                    name,
-                  },
-                ],
-              },
-            ])
+            expect(response.body).toEqual([])
           })
         })
 
@@ -181,7 +175,23 @@ describe('Given a ngc user', () => {
                 .set('cookie', cookieDevice1)
                 .expect(StatusCodes.OK)
 
-              expect(response.body).toEqual([groupDevice1])
+              const [participant] = groupDevice1.participants
+
+              expect(response.body).toEqual([
+                {
+                  ...groupDevice1,
+                  participants: [
+                    {
+                      ...participant,
+                      simulation: {
+                        ...participant.simulation,
+                        updatedAt: expect.any(String),
+                      },
+                      updatedAt: expect.any(String),
+                    },
+                  ],
+                },
+              ])
             })
           })
 
@@ -197,6 +207,7 @@ describe('Given a ngc user', () => {
               expect(response.body).toEqual([
                 {
                   ...simulationDevice1,
+                  updatedAt: expect.any(String),
                   user: {
                     name,
                     email,
@@ -236,6 +247,11 @@ describe('Given a ngc user', () => {
                   participants: [
                     {
                       ...participant,
+                      simulation: {
+                        ...participant.simulation,
+                        updatedAt: expect.any(String),
+                      },
+                      updatedAt: expect.any(String),
                       userId,
                     },
                   ],
@@ -256,6 +272,7 @@ describe('Given a ngc user', () => {
               expect(response.body).toEqual([
                 {
                   ...simulationDevice1,
+                  updatedAt: expect.any(String),
                   user: {
                     name,
                     email,
@@ -313,6 +330,11 @@ describe('Given a ngc user', () => {
               participants: [
                 {
                   ...participant,
+                  simulation: {
+                    ...participant.simulation,
+                    updatedAt: expect.any(String),
+                  },
+                  updatedAt: expect.any(String),
                   userId,
                 },
               ],
@@ -322,6 +344,7 @@ describe('Given a ngc user', () => {
               administrator: {
                 ...groupDevice2.administrator,
                 createdAt: groupDevice1.administrator.createdAt,
+                updatedAt: expect.any(String),
                 id: userId,
               },
             },
@@ -378,6 +401,7 @@ describe('Given a ngc user', () => {
           expect(response.body).toEqual([
             {
               ...simulationDevice1,
+              updatedAt: expect.any(String),
               user: {
                 email,
                 id: userId,
@@ -414,6 +438,7 @@ describe('Given a ngc user', () => {
               expect(response.body).toEqual([
                 {
                   ...simulationDevice1,
+                  updatedAt: expect.any(String),
                   user: {
                     email,
                     id: userIdDevice1,
@@ -445,6 +470,7 @@ describe('Given a ngc user', () => {
               expect(response.body).toEqual([
                 {
                   ...simulationDevice1,
+                  updatedAt: expect.any(String),
                   user: {
                     email,
                     id: userId,
@@ -484,16 +510,19 @@ describe('Given a ngc user', () => {
             .get(url.replace(':userId', userId))
             .expect(StatusCodes.OK)
 
-          expect(response.body).toEqual([
-            {
-              ...simulationDevice1,
-              user: {
-                ...simulationDevice1.user,
-                id: userId,
+          expect(response.body).toEqual(
+            expect.arrayContaining([
+              {
+                ...simulationDevice1,
+                updatedAt: expect.any(String),
+                user: {
+                  ...simulationDevice1.user,
+                  id: userId,
+                },
               },
-            },
-            simulationDevice2,
-          ])
+              simulationDevice2,
+            ])
+          )
         })
       })
     })
@@ -560,6 +589,7 @@ describe('Given a ngc user', () => {
                 administratorParticipant,
                 {
                   ...participant,
+                  updatedAt: expect.any(String),
                   simulation,
                   userId,
                   email,
@@ -579,24 +609,28 @@ describe('Given a ngc user', () => {
             .get(url.replace(':userId', userId))
             .expect(StatusCodes.OK)
 
-          expect(response.body).toEqual([
-            {
-              ...participant.simulation,
-              user: {
-                id: userId,
-                email,
-                name,
+          expect(response.body).toEqual(
+            expect.arrayContaining([
+              {
+                ...participant.simulation,
+                updatedAt: expect.any(String),
+                user: {
+                  id: userId,
+                  email,
+                  name,
+                },
               },
-            },
-            {
-              ...simulation,
-              user: {
-                id: userId,
-                email,
-                name,
+              {
+                ...simulation,
+                updatedAt: expect.any(String),
+                user: {
+                  id: userId,
+                  email,
+                  name,
+                },
               },
-            },
-          ])
+            ])
+          )
         })
       })
     })
@@ -607,7 +641,6 @@ describe('Given a ngc user', () => {
       ReturnType<typeof createOrganisationPollSimulation>
     >
     let organisationId: string
-    let pollSlug: string
     let cookie: string
     let pollId: string
     let email: string
@@ -618,7 +651,7 @@ describe('Given a ngc user', () => {
         agent,
         cookie,
       }))
-      ;({ id: pollId, slug: pollSlug } = await createOrganisationPoll({
+      ;({ id: pollId } = await createOrganisationPoll({
         agent,
         cookie,
         organisationId,
@@ -644,16 +677,6 @@ describe('Given a ngc user', () => {
       let simulationId: string
       let userId: string
 
-      beforeEach(() =>
-        jest
-          .spyOn(prisma.simulationPoll, 'findMany')
-          .mockImplementationOnce(
-            mockSimulationPollsFindManyOrderBySimulationCreatedAt(
-              prisma.simulationPoll.findMany
-            )
-          )
-      )
-
       beforeEach(async () => {
         simulationDevice2 = await createOrganisationPollSimulation({
           agent,
@@ -669,10 +692,6 @@ describe('Given a ngc user', () => {
           user: { id: userId },
         } = simulationDevice2)
       })
-
-      afterEach(() =>
-        jest.spyOn(prisma.simulationPoll, 'findMany').mockRestore()
-      )
 
       describe('When fetching the poll', () => {
         test('Then it returns device 2 participation only', async () => {
@@ -705,26 +724,24 @@ describe('Given a ngc user', () => {
             .get(url.replace(':userId', userId))
             .expect(StatusCodes.OK)
 
-          expect(response.body).toEqual([
-            {
-              ...simulationDevice1,
-              user: {
-                id: userId,
-                name: null,
-                email,
-              },
-            },
-            {
-              ...simulationDevice2,
-              // Not returned by prismock on creation
-              polls: [
-                {
-                  id: pollId,
-                  slug: pollSlug,
+          expect(response.body).toEqual(
+            expect.arrayContaining([
+              {
+                ...simulationDevice1,
+                updatedAt: expect.any(String),
+                polls: [], // We deassociated the simulation from the poll to have only one
+                user: {
+                  id: userId,
+                  name: null,
+                  email,
                 },
-              ],
-            },
-          ])
+              },
+              {
+                ...simulationDevice2,
+                updatedAt: expect.any(String),
+              },
+            ])
+          )
         })
       })
     })

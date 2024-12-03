@@ -23,14 +23,18 @@ describe('Given a NGC user', () => {
   const url = CREATE_ORGANISATION_PUBLIC_POLL_SIMULATION_ROUTE
   const { computedResults, nom, situation } = getRandomTestCase()
 
-  afterEach(() =>
-    Promise.all([
+  afterEach(async () => {
+    await Promise.all([
+      prisma.organisationAdministrator.deleteMany(),
+      prisma.simulationPoll.deleteMany(),
+    ])
+    await Promise.all([
       prisma.organisation.deleteMany(),
       prisma.user.deleteMany(),
       prisma.verifiedUser.deleteMany(),
       prisma.verificationCode.deleteMany(),
     ])
-  )
+  })
 
   describe(`And ${nom} persona situation`, () => {
     describe('When creating a simulation in a poll ', () => {
@@ -220,17 +224,16 @@ describe('Given a NGC user', () => {
             date: expect.any(String),
             savedViaEmail: false,
             createdAt: expect.any(String),
-            updatedAt: null,
+            updatedAt: expect.any(String),
             actionChoices: {},
             additionalQuestionsAnswers: [],
             foldedSteps: [],
-            // prismock does not handle this correctly but covered in test below
-            // polls: [
-            //   {
-            //     id: pollId,
-            //   },
-            // ],
-            polls: [],
+            polls: [
+              {
+                id: pollId,
+                slug: pollSlug,
+              },
+            ],
             user: {
               id: userId,
               email: null,
@@ -250,7 +253,8 @@ describe('Given a NGC user', () => {
               myAction: true,
             },
             savedViaEmail: true,
-            foldedSteps: ['myStep'],
+            // foldedSteps: ['myStep'], // Cannot do that with PG lite
+            foldedSteps: [],
             additionalQuestionsAnswers: [
               {
                 type: 'custom' as SimulationAdditionalQuestionAnswerType.custom,
@@ -278,6 +282,8 @@ describe('Given a NGC user', () => {
             .reply(200)
             .post('/v3/contacts/lists/27/contacts/remove')
             .reply(200)
+            .post('/v3/contacts/lists/35/contacts/remove')
+            .reply(200)
 
           const {
             body: { id },
@@ -286,6 +292,7 @@ describe('Given a NGC user', () => {
               url.replace(':userId', userId).replace(':pollIdOrSlug', pollId)
             )
             .send(payload)
+            .expect(StatusCodes.CREATED)
 
           const createdSimulation = await prisma.simulation.findUnique({
             where: {
@@ -331,10 +338,9 @@ describe('Given a NGC user', () => {
 
           expect(createdSimulation).toEqual({
             ...payload,
-            // dates are not instance of Date due to jest
-            createdAt: expect.anything(),
-            date: expect.anything(),
-            updatedAt: null,
+            createdAt: expect.any(Date),
+            date: expect.any(Date),
+            updatedAt: expect.any(Date),
             polls: [
               {
                 pollId,
@@ -420,17 +426,16 @@ describe('Given a NGC user', () => {
               date: expect.any(String),
               savedViaEmail: false,
               createdAt: expect.any(String),
-              updatedAt: null,
+              updatedAt: expect.any(String),
               actionChoices: {},
               additionalQuestionsAnswers: [],
               foldedSteps: [],
-              // prismock does not handle this correctly but covered in test above
-              // polls: [
-              //   {
-              //     id: pollId,
-              //   },
-              // ],
-              polls: [],
+              polls: [
+                {
+                  id: pollId,
+                  slug: pollSlug,
+                },
+              ],
               user: {
                 id: userId,
                 email: null,
@@ -764,12 +769,12 @@ describe('Given a NGC user', () => {
 
         beforeEach(() => {
           jest
-            .spyOn(prisma.poll, 'findFirstOrThrow')
+            .spyOn(prisma, '$transaction')
             .mockRejectedValueOnce(databaseError)
         })
 
         afterEach(() => {
-          jest.spyOn(prisma.poll, 'findFirstOrThrow').mockRestore()
+          jest.spyOn(prisma, '$transaction').mockRestore()
         })
 
         test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {

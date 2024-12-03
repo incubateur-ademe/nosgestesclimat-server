@@ -13,9 +13,13 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = UPDATE_USER_GROUP_ROUTE
 
-  afterEach(() =>
-    Promise.all([prisma.group.deleteMany(), prisma.user.deleteMany()])
-  )
+  afterEach(async () => {
+    await Promise.all([
+      prisma.groupAdministrator.deleteMany(),
+      prisma.groupParticipant.deleteMany(),
+    ])
+    await Promise.all([prisma.user.deleteMany(), prisma.group.deleteMany()])
+  })
 
   describe('When updating one of his groups', () => {
     describe('And invalid userId', () => {
@@ -72,7 +76,11 @@ describe('Given a NGC user', () => {
           .send(payload)
           .expect(StatusCodes.OK)
 
-        expect(response.body).toEqual({ ...group, ...payload })
+        expect(response.body).toEqual({
+          ...group,
+          ...payload,
+          updatedAt: expect.any(String),
+        })
       })
 
       describe('And no data in the update', () => {
@@ -138,7 +146,11 @@ describe('Given a NGC user', () => {
           .send(payload)
           .expect(StatusCodes.OK)
 
-        expect(response.body).toEqual({ ...group, ...payload })
+        expect(response.body).toEqual({
+          ...group,
+          ...payload,
+          updatedAt: expect.any(String),
+        })
       })
 
       test('Then it updates group administrator in brevo', async () => {
@@ -225,11 +237,11 @@ describe('Given a NGC user', () => {
       const databaseError = new Error('Something went wrong')
 
       beforeEach(() => {
-        jest.spyOn(prisma.group, 'update').mockRejectedValueOnce(databaseError)
+        jest.spyOn(prisma, '$transaction').mockRejectedValueOnce(databaseError)
       })
 
       afterEach(() => {
-        jest.spyOn(prisma.group, 'update').mockRestore()
+        jest.spyOn(prisma, '$transaction').mockRestore()
       })
 
       test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {

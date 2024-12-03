@@ -134,7 +134,7 @@ describe('Given a NGC user', () => {
           date: expect.any(String),
           savedViaEmail: false,
           createdAt: expect.any(String),
-          updatedAt: null,
+          updatedAt: expect.any(String),
           actionChoices: {},
           additionalQuestionsAnswers: [],
           foldedSteps: [],
@@ -159,7 +159,8 @@ describe('Given a NGC user', () => {
             myAction: true,
           },
           savedViaEmail: true,
-          foldedSteps: ['myStep'],
+          // foldedSteps: ['myStep'], // Cannot do that with PG lite
+          foldedSteps: [],
           additionalQuestionsAnswers: [
             {
               type: 'custom' as SimulationAdditionalQuestionAnswerType.custom,
@@ -178,9 +179,26 @@ describe('Given a NGC user', () => {
           },
         }
 
+        nock(process.env.BREVO_URL!)
+          .post('/v3/smtp/email')
+          .reply(200)
+          .post('/v3/contacts')
+          .reply(200)
+          .post('/v3/contacts/lists/35/contacts/remove')
+          .reply(200)
+          .post('/v3/contacts/lists/22/contacts/remove')
+          .reply(200)
+          .post('/v3/contacts/lists/32/contacts/remove')
+          .reply(200)
+          .post('/v3/contacts/lists/36/contacts/remove')
+          .reply(200)
+
         const {
           body: { id },
-        } = await agent.post(url.replace(':userId', userId)).send(payload)
+        } = await agent
+          .post(url.replace(':userId', userId))
+          .send(payload)
+          .expect(StatusCodes.CREATED)
 
         const createdSimulation = await prisma.simulation.findUnique({
           where: {
@@ -221,10 +239,9 @@ describe('Given a NGC user', () => {
 
         expect(createdSimulation).toEqual({
           ...payload,
-          // dates are not instance of Date due to jest
-          createdAt: expect.anything(),
-          date: expect.anything(),
-          updatedAt: null,
+          createdAt: expect.any(Date),
+          date: expect.any(Date),
+          updatedAt: expect.any(Date),
           polls: [],
           user: {
             ...payload.user,
@@ -621,11 +638,13 @@ describe('Given a NGC user', () => {
         const databaseError = new Error('Something went wrong')
 
         beforeEach(() => {
-          jest.spyOn(prisma.user, 'upsert').mockRejectedValueOnce(databaseError)
+          jest
+            .spyOn(prisma, '$transaction')
+            .mockRejectedValueOnce(databaseError)
         })
 
         afterEach(() => {
-          jest.spyOn(prisma.user, 'upsert').mockRestore()
+          jest.spyOn(prisma, '$transaction').mockRestore()
         })
 
         test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {

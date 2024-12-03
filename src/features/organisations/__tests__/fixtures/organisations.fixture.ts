@@ -3,14 +3,8 @@ import type supertest from 'supertest'
 import { faker } from '@faker-js/faker'
 import { StatusCodes } from 'http-status-codes'
 import nock from 'nock'
-import slugify from 'slugify'
 import { baseURL } from '../../../../adapters/connect/client'
 import { prisma } from '../../../../adapters/prisma/client'
-import {
-  defaultOrganisationSelectionWithoutPolls,
-  defaultPollSelection,
-} from '../../../../adapters/prisma/selection'
-import { config } from '../../../../config'
 import { getSimulationPayload } from '../../../simulations/__tests__/fixtures/simulations.fixtures'
 import type { SimulationCreateInputDto } from '../../../simulations/simulations.validator'
 import type {
@@ -109,93 +103,10 @@ export const createOrganisation = async ({
     .send(payload)
     .expect(StatusCodes.CREATED)
 
+  expect(nock.isDone()).toBeTruthy()
+
   return response.body
 }
-
-/**
- * Hack because prismock does not handle this correctly
- * The bug is that the created poll is not linked to the organisation
- * We create it and the we return the organisation
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const mockUpdateOrganisationPollCreation: any = async (params: any) => {
-  if (!params.data.polls?.create || !params.where.id) {
-    throw new Error('Invalid call')
-  }
-
-  const {
-    where: { id },
-    data: {
-      polls: { create },
-    },
-  } = params
-
-  await prisma.poll.create({
-    data: {
-      ...create,
-      organisationId: id,
-    },
-  })
-
-  return prisma.organisation.findUniqueOrThrow({
-    where: {
-      id,
-    },
-    select: {
-      ...defaultOrganisationSelectionWithoutPolls,
-      polls: {
-        where: {
-          slug: create.slug!,
-        },
-        select: defaultPollSelection,
-      },
-    },
-  })
-}
-
-/**
- * Hack because prismock does not handle this correctly
- * The bug is that we sort by nested simulation createdAt => no effect
- */
-type FindManySimulationPolls = typeof prisma.simulationPoll.findMany
-
-export const mockSimulationPollsFindManyOrderBySimulationCreatedAt =
-  (originalFindMany: FindManySimulationPolls) =>
-  (params: Parameters<FindManySimulationPolls>[0]) =>
-    originalFindMany({
-      ...params,
-      skip: 0,
-      select: {
-        id: true,
-        simulation: {
-          select: {
-            createdAt: true,
-          },
-        },
-      },
-    }).then((result) => {
-      if (
-        params?.orderBy &&
-        !Array.isArray(params.orderBy) &&
-        params.orderBy.simulation?.createdAt
-      ) {
-        const sort = params.orderBy.simulation.createdAt
-
-        result.sort((a, b) => {
-          return sort === 'desc'
-            ? a.simulation.createdAt > b.simulation.createdAt
-              ? -1
-              : 1
-            : a.simulation.createdAt > b.simulation.createdAt
-              ? 1
-              : -1
-        })
-      }
-
-      return result.slice(params?.skip || 0).map(({ id }) => ({
-        id,
-      }))
-    }) as ReturnType<FindManySimulationPolls>
 
 export const createOrganisationPoll = async ({
   agent,
@@ -220,12 +131,34 @@ export const createOrganisationPoll = async ({
     expectedNumberOfParticipants,
   }
 
-  /**
-   * Hack because prismock does not handle this correctly
-   * The bug is that the created poll is not linked to the organisation
-   * We create it and the we update it
-   */
-  await agent
+  const scope = nock(process.env.BREVO_URL!).post('/v3/contacts').reply(200)
+
+  const {
+    administrators: [administrator],
+  } = await prisma.organisation.findUniqueOrThrow({
+    where: {
+      id: organisationId,
+    },
+    select: {
+      administrators: {
+        select: {
+          user: {
+            select: {
+              optedInForCommunications: true,
+            },
+          },
+        },
+      },
+    },
+  })
+
+  if (!administrator.user.optedInForCommunications) {
+    scope
+      .post('/v3/contacts/lists/27/contacts/remove')
+      .reply(400, { code: 'invalid_parameter' })
+  }
+
+  const response = await agent
     .post(
       CREATE_ORGANISATION_POLL_ROUTE.replace(
         ':organisationIdOrSlug',
@@ -234,71 +167,11 @@ export const createOrganisationPoll = async ({
     )
     .set('cookie', cookie)
     .send(payload)
-    .expect(StatusCodes.INTERNAL_SERVER_ERROR)
+    .expect(StatusCodes.CREATED)
 
-  const {
-    organisationId: _,
-    organisation,
-    ...poll
-  } = await prisma.poll.update({
-    where: {
-      slug: slugify(payload.name.toLowerCase(), { strict: true }),
-    },
-    data: {
-      organisationId,
-    },
-    select: defaultPollSelection,
-  })
+  expect(nock.isDone()).toBeTruthy()
 
-  return {
-    ...poll,
-    organisation: {
-      ...organisation,
-      hasCustomQuestionEnabled:
-        config.organisationIdsWithCustomQuestionsEnabled.has(organisation.id),
-      administrators: organisation.administrators?.map(
-        ({
-          id,
-          user: {
-            id: userId,
-            name,
-            email,
-            createdAt,
-            optedInForCommunications,
-            position,
-            telephone,
-            updatedAt,
-          },
-        }) => ({
-          id,
-          userId,
-          name,
-          email,
-          position,
-          telephone,
-          optedInForCommunications,
-          createdAt: createdAt.toISOString(),
-          updatedAt: updatedAt ? updatedAt.toISOString() : updatedAt,
-        })
-      ),
-      createdAt: organisation.createdAt.toISOString(),
-      updatedAt: organisation.updatedAt
-        ? organisation.updatedAt.toISOString()
-        : organisation.updatedAt,
-    },
-    createdAt: poll.createdAt.toISOString(),
-    updatedAt: poll.updatedAt ? poll.updatedAt.toISOString() : poll.updatedAt,
-    defaultAdditionalQuestions: poll.defaultAdditionalQuestions.map(
-      ({ type }) => type
-    ),
-    simulations: {
-      count: poll.simulations.length,
-      finished: poll.simulations.filter(
-        ({ simulation: { progression } }) => progression === 1
-      ).length,
-      hasParticipated: false,
-    },
-  }
+  return response.body
 }
 
 export const createOrganisationPollSimulation = async ({
@@ -344,6 +217,8 @@ export const createOrganisationPollSimulation = async ({
     )
     .send(payload)
     .expect(StatusCodes.CREATED)
+
+  expect(nock.isDone()).toBeTruthy()
 
   return response.body
 }

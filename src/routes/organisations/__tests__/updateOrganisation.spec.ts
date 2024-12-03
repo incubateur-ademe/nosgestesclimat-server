@@ -117,7 +117,7 @@ describe(`Given a validated NGC user organisation`, () => {
     afterEach(() => jest.spyOn(prisma.organisation, 'upsert').mockRestore())
 
     it(`Then it stores a number`, async () => {
-      // both mongoose and prismock coerce a number
+      // both mongoose and prisma coerce a number
       expect(prisma.organisation.upsert).toHaveBeenCalledWith(
         expect.objectContaining({
           create: expect.objectContaining({

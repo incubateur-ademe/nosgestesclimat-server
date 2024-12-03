@@ -1,6 +1,4 @@
 import { faker } from '@faker-js/faker'
-import { version as clientVersion } from '@prisma/client/package.json'
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 import { StatusCodes } from 'http-status-codes'
 import nock from 'nock'
 import supertest from 'supertest'
@@ -18,21 +16,17 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = CREATE_PARTICIPANT_ROUTE
 
-  afterEach(() =>
-    Promise.all([prisma.group.deleteMany(), prisma.user.deleteMany()])
-  )
+  afterEach(async () => {
+    await Promise.all([
+      prisma.groupAdministrator.deleteMany(),
+      prisma.groupParticipant.deleteMany(),
+    ])
+    await Promise.all([prisma.user.deleteMany(), prisma.group.deleteMany()])
+  })
 
   describe("When trying to join another administrator's group", () => {
     describe('And group does not exist', () => {
       test(`Then it returns a ${StatusCodes.NOT_FOUND} error`, async () => {
-        // This is not ideal but prismock does not handle this correctly
-        jest.spyOn(prisma.groupParticipant, 'upsert').mockRejectedValueOnce(
-          new PrismaClientKnownRequestError('ForeignKeyConstraintFailedError', {
-            code: 'P2003',
-            clientVersion,
-          })
-        )
-
         await agent
           .post(url.replace(':groupId', faker.database.mongodbObjectId()))
           .send({
@@ -43,8 +37,6 @@ describe('Given a NGC user', () => {
           .expect(StatusCodes.NOT_FOUND)
 
         jest.spyOn(prisma.groupParticipant, 'upsert').mockRestore()
-
-        // Cannot cover other expectation... prismock does not raise
       })
     })
 
@@ -161,7 +153,7 @@ describe('Given a NGC user', () => {
             ...payload.simulation,
             date: expect.any(String),
             createdAt: expect.any(String),
-            updatedAt: null,
+            updatedAt: expect.any(String),
             polls: [],
             foldedSteps: [],
             actionChoices: {},
@@ -169,7 +161,7 @@ describe('Given a NGC user', () => {
             additionalQuestionsAnswers: [],
           },
           createdAt: expect.any(String),
-          updatedAt: null,
+          updatedAt: expect.any(String),
           email: null,
         })
       })
@@ -212,19 +204,18 @@ describe('Given a NGC user', () => {
           },
         })
 
-        // createdAt are not instance of Date due to jest
         expect(createdParticipant).toEqual({
           id: expect.any(String),
           user: {
             id: payload.userId,
             name: payload.name,
             email: payload.email,
-            createdAt: expect.anything(),
-            updatedAt: null,
+            createdAt: expect.any(Date),
+            updatedAt: expect.any(Date),
           },
           simulationId: payload.simulation.id,
-          createdAt: expect.anything(),
-          updatedAt: null,
+          createdAt: expect.any(Date),
+          updatedAt: expect.any(Date),
           groupId,
         })
       })
@@ -449,11 +440,13 @@ describe('Given a NGC user', () => {
         const databaseError = new Error('Something went wrong')
 
         beforeEach(() => {
-          jest.spyOn(prisma.user, 'upsert').mockRejectedValueOnce(databaseError)
+          jest
+            .spyOn(prisma, '$transaction')
+            .mockRejectedValueOnce(databaseError)
         })
 
         afterEach(() => {
-          jest.spyOn(prisma.user, 'upsert').mockRestore()
+          jest.spyOn(prisma, '$transaction').mockRestore()
         })
 
         test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
@@ -620,7 +613,7 @@ describe('Given a NGC user', () => {
           ...payload.simulation,
           date: expect.any(String),
           createdAt: expect.any(String),
-          updatedAt: null,
+          updatedAt: expect.any(String),
           polls: [],
           foldedSteps: [],
           actionChoices: {},
@@ -629,7 +622,7 @@ describe('Given a NGC user', () => {
         },
         email: null,
         createdAt: expect.any(String),
-        updatedAt: null,
+        updatedAt: expect.any(String),
       })
     })
   })
@@ -694,7 +687,7 @@ describe('Given a NGC user', () => {
           ...payload.simulation,
           date: expect.any(String),
           createdAt: expect.any(String),
-          updatedAt: null,
+          updatedAt: expect.any(String),
           polls: [],
           foldedSteps: [],
           actionChoices: {},
@@ -703,7 +696,7 @@ describe('Given a NGC user', () => {
         },
         email: administratorEmail,
         createdAt: expect.any(String),
-        updatedAt: null,
+        updatedAt: expect.any(String),
       })
     })
 

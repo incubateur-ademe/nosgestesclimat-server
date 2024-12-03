@@ -16,9 +16,13 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = DELETE_PARTICIPANT_ROUTE
 
-  afterEach(() =>
-    Promise.all([prisma.group.deleteMany(), prisma.user.deleteMany()])
-  )
+  afterEach(async () => {
+    await Promise.all([
+      prisma.groupAdministrator.deleteMany(),
+      prisma.groupParticipant.deleteMany(),
+    ])
+    await Promise.all([prisma.user.deleteMany(), prisma.group.deleteMany()])
+  })
 
   describe("When trying to leave another administrator's group", () => {
     describe('And group does not exist', () => {
@@ -106,12 +110,12 @@ describe('Given a NGC user', () => {
 
           beforeEach(() => {
             jest
-              .spyOn(prisma.group, 'findUniqueOrThrow')
+              .spyOn(prisma, '$transaction')
               .mockRejectedValueOnce(databaseError)
           })
 
           afterEach(() => {
-            jest.spyOn(prisma.group, 'findUniqueOrThrow').mockRestore()
+            jest.spyOn(prisma, '$transaction').mockRestore()
           })
 
           test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {

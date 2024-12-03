@@ -15,20 +15,20 @@ import {
   CREATE_ORGANISATION_POLL_ROUTE,
   createOrganisation,
   createOrganisationPoll,
-  mockUpdateOrganisationPollCreation,
 } from './fixtures/organisations.fixture'
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = CREATE_ORGANISATION_POLL_ROUTE
 
-  afterEach(() =>
-    Promise.all([
+  afterEach(async () => {
+    await prisma.organisationAdministrator.deleteMany()
+    await Promise.all([
       prisma.organisation.deleteMany(),
       prisma.verifiedUser.deleteMany(),
       prisma.verificationCode.deleteMany(),
     ])
-  )
+  })
 
   describe('And logged out', () => {
     describe('When creating a poll in his organisation', () => {
@@ -227,17 +227,6 @@ describe('Given a NGC user', () => {
           } = organisation)
         })
 
-        beforeEach(() => {
-          // This is not ideal but prismock does not handle this correctly
-          jest
-            .spyOn(prisma.organisation, 'update')
-            .mockImplementationOnce(mockUpdateOrganisationPollCreation)
-        })
-
-        afterEach(() => {
-          jest.spyOn(prisma.organisation, 'update').mockRestore()
-        })
-
         test(`Then it returns a ${StatusCodes.CREATED} response with the created poll`, async () => {
           const payload = {
             name: faker.company.buzzNoun(),
@@ -264,7 +253,7 @@ describe('Given a NGC user', () => {
             customAdditionalQuestions: [],
             expectedNumberOfParticipants: null,
             createdAt: expect.any(String),
-            updatedAt: null,
+            updatedAt: expect.any(String),
             simulations: {
               count: 0,
               finished: 0,
@@ -285,7 +274,7 @@ describe('Given a NGC user', () => {
                 isEnabled: true,
               },
             ],
-            expectedNumberOfParticipants: faker.number.int(),
+            expectedNumberOfParticipants: faker.number.int({ max: 100 }),
           }
 
           nock(process.env.BREVO_URL!)
@@ -322,14 +311,13 @@ describe('Given a NGC user', () => {
               updatedAt: true,
             },
           })
-          // createdAt are not instance of Date due to jest
           expect(createdPoll).toEqual({
             ...payload,
             id,
             slug: slugify(payload.name.toLowerCase(), { strict: true }),
             organisationId,
-            createdAt: expect.anything(),
-            updatedAt: null,
+            createdAt: expect.any(Date),
+            updatedAt: expect.any(Date),
             defaultAdditionalQuestions: payload.defaultAdditionalQuestions?.map(
               (type) => ({ type })
             ),
@@ -348,7 +336,7 @@ describe('Given a NGC user', () => {
                 isEnabled: true,
               },
             ],
-            expectedNumberOfParticipants: faker.number.int(),
+            expectedNumberOfParticipants: faker.number.int({ max: 100 }),
           }
 
           const scope = nock(process.env.BREVO_URL!, {
@@ -408,7 +396,7 @@ describe('Given a NGC user', () => {
               customAdditionalQuestions: [],
               expectedNumberOfParticipants: null,
               createdAt: expect.any(String),
-              updatedAt: null,
+              updatedAt: expect.any(String),
               simulations: {
                 count: 0,
                 finished: 0,
@@ -455,7 +443,7 @@ describe('Given a NGC user', () => {
                 isEnabled: true,
               },
             ],
-            expectedNumberOfParticipants: faker.number.int(),
+            expectedNumberOfParticipants: faker.number.int({ max: 100 }),
           }
 
           const scope = nock(process.env.BREVO_URL!, {
@@ -511,11 +499,6 @@ describe('Given a NGC user', () => {
         })
 
         test(`Then it returns a ${StatusCodes.CREATED} response with the created poll and an incremented slug`, async () => {
-          // This is not ideal but prismock does not handle this correctly
-          jest
-            .spyOn(prisma.organisation, 'update')
-            .mockImplementationOnce(mockUpdateOrganisationPollCreation)
-
           const payload = {
             name,
           }
@@ -541,15 +524,13 @@ describe('Given a NGC user', () => {
             customAdditionalQuestions: [],
             expectedNumberOfParticipants: null,
             createdAt: expect.any(String),
-            updatedAt: null,
+            updatedAt: expect.any(String),
             simulations: {
               count: 0,
               finished: 0,
               hasParticipated: false,
             },
           })
-
-          jest.spyOn(prisma.organisation, 'update').mockRestore()
         })
       })
 
@@ -558,12 +539,12 @@ describe('Given a NGC user', () => {
 
         beforeEach(() => {
           jest
-            .spyOn(prisma.organisation, 'findFirstOrThrow')
+            .spyOn(prisma, '$transaction')
             .mockRejectedValueOnce(databaseError)
         })
 
         afterEach(() => {
-          jest.spyOn(prisma.organisation, 'findFirstOrThrow').mockRestore()
+          jest.spyOn(prisma, '$transaction').mockRestore()
         })
 
         test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
