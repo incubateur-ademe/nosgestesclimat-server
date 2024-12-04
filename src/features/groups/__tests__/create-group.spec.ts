@@ -14,9 +14,13 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = CREATE_GROUP_ROUTE
 
-  afterEach(() =>
-    Promise.all([prisma.group.deleteMany(), prisma.user.deleteMany()])
-  )
+  afterEach(async () => {
+    await Promise.all([
+      prisma.groupAdministrator.deleteMany(),
+      prisma.groupParticipant.deleteMany(),
+    ])
+    await Promise.all([prisma.user.deleteMany(), prisma.group.deleteMany()])
+  })
 
   describe('When creating his group', () => {
     describe('And no data provided', () => {
@@ -199,13 +203,13 @@ describe('Given a NGC user', () => {
           ...payload,
           id: expect.any(String),
           createdAt: expect.any(String),
-          updatedAt: null,
+          updatedAt: expect.any(String),
           participants: [],
           administrator: {
             id: userId,
             name,
             createdAt: expect.any(String),
-            updatedAt: null,
+            updatedAt: expect.any(String),
             email: null,
           },
         })
@@ -252,19 +256,18 @@ describe('Given a NGC user', () => {
           },
         })
 
-        // createdAt are not instance of Date due to jest
         expect(createdGroup).toEqual({
           ...payload,
           id,
-          createdAt: expect.anything(),
-          updatedAt: null,
+          createdAt: expect.any(Date),
+          updatedAt: expect.any(Date),
           administrator: {
             user: {
               id: userId,
               name,
               email,
-              createdAt: expect.anything(),
-              updatedAt: null,
+              createdAt: expect.any(Date),
+              updatedAt: expect.any(Date),
             },
           },
           participants: [],
@@ -353,7 +356,7 @@ describe('Given a NGC user', () => {
             id: userId,
             name,
             createdAt: expect.any(String),
-            updatedAt: null,
+            updatedAt: expect.any(String),
             email: null,
           },
           participants: [
@@ -365,7 +368,7 @@ describe('Given a NGC user', () => {
                 ...simulation,
                 date: expect.any(String),
                 createdAt: expect.any(String),
-                updatedAt: null,
+                updatedAt: expect.any(String),
                 polls: [],
                 foldedSteps: [],
                 actionChoices: {},
@@ -373,11 +376,11 @@ describe('Given a NGC user', () => {
                 additionalQuestionsAnswers: [],
               },
               createdAt: expect.any(String),
-              updatedAt: null,
+              updatedAt: expect.any(String),
             },
           ],
           createdAt: expect.any(String),
-          updatedAt: null,
+          updatedAt: expect.any(String),
         })
       })
 
@@ -440,19 +443,18 @@ describe('Given a NGC user', () => {
           },
         })
 
-        // createdAt are not instance of Date due to jest
         expect(createdGroup).toEqual({
           ...payload,
           id,
-          createdAt: expect.anything(),
-          updatedAt: null,
+          createdAt: expect.any(Date),
+          updatedAt: expect.any(Date),
           administrator: {
             user: {
               id: userId,
               name,
               email,
-              createdAt: expect.anything(),
-              updatedAt: null,
+              createdAt: expect.any(Date),
+              updatedAt: expect.any(Date),
             },
           },
           participants: [
@@ -463,8 +465,8 @@ describe('Given a NGC user', () => {
                 id: userId,
                 name,
                 email,
-                createdAt: expect.anything(),
-                updatedAt: null,
+                createdAt: expect.any(Date),
+                updatedAt: expect.any(Date),
               },
             },
           ],
@@ -472,6 +474,16 @@ describe('Given a NGC user', () => {
       })
 
       describe('And leaving his/her email', () => {
+        beforeEach(() => {
+          jest
+            .spyOn(prisma, '$transaction')
+            .mockImplementationOnce((cb) => cb(prisma))
+        })
+
+        afterEach(() => {
+          jest.spyOn(prisma, '$transaction').mockRestore()
+        })
+
         test('Then it adds or updates group administrator in brevo', async () => {
           const email = faker.internet.email().toLocaleLowerCase()
           const userId = faker.string.uuid()
@@ -780,11 +792,11 @@ describe('Given a NGC user', () => {
       const databaseError = new Error('Something went wrong')
 
       beforeEach(() => {
-        jest.spyOn(prisma.user, 'upsert').mockRejectedValueOnce(databaseError)
+        jest.spyOn(prisma, '$transaction').mockRejectedValueOnce(databaseError)
       })
 
       afterEach(() => {
-        jest.spyOn(prisma.user, 'upsert').mockRestore()
+        jest.spyOn(prisma, '$transaction').mockRestore()
       })
 
       test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {

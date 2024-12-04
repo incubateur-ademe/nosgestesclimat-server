@@ -54,13 +54,15 @@ export const createGroup = async ({
       .post('/v3/contacts')
       .reply(200)
       .post('/v3/contacts/lists/35/contacts/remove')
-      .reply(200)
+      .reply(400, { code: 'invalid_parameter' })
   }
 
   const response = await agent
     .post(CREATE_GROUP_ROUTE)
     .send(payload)
     .expect(StatusCodes.CREATED)
+
+  expect(nock.isDone()).toBeTruthy()
 
   return response.body
 }
@@ -124,7 +126,9 @@ export const joinGroup = async ({
     scope.post('/v3/smtp/email').reply(200).post('/v3/contacts').reply(200)
 
     if (payload.simulation.progression === 1) {
-      scope.post('/v3/contacts/lists/35/contacts/remove').reply(200)
+      scope
+        .post('/v3/contacts/lists/35/contacts/remove')
+        .reply(400, { code: 'invalid_parameter' })
     }
   }
 
@@ -142,6 +146,8 @@ export const joinGroup = async ({
     .post(CREATE_PARTICIPANT_ROUTE.replace(':groupId', groupId))
     .send(payload)
     .expect(StatusCodes.CREATED)
+
+  expect(nock.isDone()).toBeTruthy()
 
   return response.body
 }

@@ -1,6 +1,4 @@
 import { faker } from '@faker-js/faker'
-import { version as clientVersion } from '@prisma/client/package.json'
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 import { StatusCodes } from 'http-status-codes'
 import nock from 'nock'
 import slugify from 'slugify'
@@ -22,13 +20,14 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = CREATE_ORGANISATION_ROUTE
 
-  afterEach(() =>
-    Promise.all([
+  afterEach(async () => {
+    await prisma.organisationAdministrator.deleteMany()
+    await Promise.all([
       prisma.organisation.deleteMany(),
       prisma.verifiedUser.deleteMany(),
       prisma.verificationCode.deleteMany(),
     ])
-  )
+  })
 
   describe('And logged out', () => {
     describe('When creating his organisation', () => {
@@ -131,7 +130,7 @@ describe('Given a NGC user', () => {
           hasCustomQuestionEnabled: false,
           numberOfCollaborators: null,
           createdAt: expect.any(String),
-          updatedAt: null,
+          updatedAt: expect.any(String),
           polls: [],
           administrators: [
             {
@@ -143,7 +142,7 @@ describe('Given a NGC user', () => {
               telephone: null,
               optedInForCommunications: false,
               createdAt: expect.any(String),
-              updatedAt: null,
+              updatedAt: expect.any(String),
             },
           ],
         })
@@ -159,7 +158,7 @@ describe('Given a NGC user', () => {
         const payload: OrganisationCreateDto = {
           name: faker.company.name(),
           type: randomOrganisationType(),
-          numberOfCollaborators: faker.number.int(),
+          numberOfCollaborators: faker.number.int({ max: 100 }),
           administrators: [administratorPayload],
         }
 
@@ -210,13 +209,12 @@ describe('Given a NGC user', () => {
             updatedAt: true,
           },
         })
-        // createdAt are not instance of Date due to jest
         expect(createdOrganisation).toEqual({
           ...payload,
           id,
           slug: slugify(payload.name.toLowerCase(), { strict: true }),
-          createdAt: expect.anything(),
-          updatedAt: null,
+          createdAt: expect.any(Date),
+          updatedAt: expect.any(Date),
           polls: [],
           administrators: [
             {
@@ -225,8 +223,8 @@ describe('Given a NGC user', () => {
                 ...administratorPayload,
                 id: userId,
                 email,
-                createdAt: expect.anything(),
-                updatedAt: null,
+                createdAt: expect.any(Date),
+                updatedAt: expect.any(Date),
               },
             },
           ],
@@ -469,17 +467,6 @@ describe('Given a NGC user', () => {
         beforeEach(() => createOrganisation({ agent, cookie }))
 
         test(`Then it returns a ${StatusCodes.FORBIDDEN} error`, async () => {
-          // This is not ideal but prismock does not handle this correctly
-          jest.spyOn(prisma.organisation, 'create').mockRejectedValueOnce(
-            new PrismaClientKnownRequestError(
-              'ForeignKeyConstraintFailedError',
-              {
-                code: 'P2002',
-                clientVersion,
-              }
-            )
-          )
-
           const response = await agent
             .post(url)
             .set('cookie', cookie)
@@ -494,8 +481,6 @@ describe('Given a NGC user', () => {
           )
 
           jest.spyOn(prisma.organisation, 'create').mockRestore()
-
-          // Cannot cover other expectation... prismock does not raise
         })
       })
 
@@ -541,7 +526,7 @@ describe('Given a NGC user', () => {
             numberOfCollaborators: null,
             hasCustomQuestionEnabled: false,
             createdAt: expect.any(String),
-            updatedAt: null,
+            updatedAt: expect.any(String),
             polls: [],
             administrators: [
               {
@@ -553,7 +538,7 @@ describe('Given a NGC user', () => {
                 telephone: null,
                 optedInForCommunications: true,
                 createdAt: expect.any(String),
-                updatedAt: null,
+                updatedAt: expect.any(String),
               },
             ],
           })
@@ -565,12 +550,12 @@ describe('Given a NGC user', () => {
 
         beforeEach(() => {
           jest
-            .spyOn(prisma.verifiedUser, 'upsert')
+            .spyOn(prisma, '$transaction')
             .mockRejectedValueOnce(databaseError)
         })
 
         afterEach(() => {
-          jest.spyOn(prisma.verifiedUser, 'upsert').mockRestore()
+          jest.spyOn(prisma, '$transaction').mockRestore()
         })
 
         test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {

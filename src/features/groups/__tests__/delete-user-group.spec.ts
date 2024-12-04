@@ -16,9 +16,13 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = DELETE_USER_GROUP_ROUTE
 
-  afterEach(() =>
-    Promise.all([prisma.group.deleteMany(), prisma.user.deleteMany()])
-  )
+  afterEach(async () => {
+    await Promise.all([
+      prisma.groupAdministrator.deleteMany(),
+      prisma.groupParticipant.deleteMany(),
+    ])
+    await Promise.all([prisma.user.deleteMany(), prisma.group.deleteMany()])
+  })
 
   describe('When deleting his group', () => {
     describe('And invalid userId', () => {
@@ -222,11 +226,11 @@ describe('Given a NGC user', () => {
       const databaseError = new Error('Something went wrong')
 
       beforeEach(() => {
-        jest.spyOn(prisma.group, 'delete').mockRejectedValueOnce(databaseError)
+        jest.spyOn(prisma, '$transaction').mockRejectedValueOnce(databaseError)
       })
 
       afterEach(() => {
-        jest.spyOn(prisma.group, 'delete').mockRestore()
+        jest.spyOn(prisma, '$transaction').mockRestore()
       })
 
       test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {

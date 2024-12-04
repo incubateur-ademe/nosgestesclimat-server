@@ -87,7 +87,7 @@ describe('Given a NGC user', () => {
       expect(response.body).toEqual({
         id: expect.any(String),
         createdAt: expect.any(String),
-        updatedAt: null,
+        updatedAt: expect.any(String),
         expirationDate: expirationDate.toISOString(),
         ...payload,
       })
@@ -114,13 +114,12 @@ describe('Given a NGC user', () => {
         },
       })
 
-      // dates are not instance of Date due to jest
       expect(createdVerificationCode).toEqual({
         id: expect.any(String),
         code,
         expirationDate,
-        createdAt: expect.anything(),
-        updatedAt: null,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
         ...payload,
       })
     })
@@ -189,13 +188,11 @@ describe('Given a NGC user', () => {
       const databaseError = new Error('Something went wrong')
 
       beforeEach(() => {
-        jest
-          .spyOn(prisma.verificationCode, 'create')
-          .mockRejectedValueOnce(databaseError)
+        jest.spyOn(prisma, '$transaction').mockRejectedValueOnce(databaseError)
       })
 
       afterEach(() => {
-        jest.spyOn(prisma.verificationCode, 'create').mockRestore()
+        jest.spyOn(prisma, '$transaction').mockRestore()
       })
 
       test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {

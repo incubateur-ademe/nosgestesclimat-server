@@ -21,13 +21,14 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = UPDATE_ORGANISATION_POLL_ROUTE
 
-  afterEach(() =>
-    Promise.all([
+  afterEach(async () => {
+    await prisma.organisationAdministrator.deleteMany()
+    await Promise.all([
       prisma.organisation.deleteMany(),
       prisma.verifiedUser.deleteMany(),
       prisma.verificationCode.deleteMany(),
     ])
-  )
+  })
 
   describe('And logged out', () => {
     describe('When updating one of his organisation poll', () => {
@@ -246,7 +247,11 @@ describe('Given a NGC user', () => {
             .send(payload)
             .expect(StatusCodes.OK)
 
-          expect(response.body).toEqual({ ...poll, ...payload })
+          expect(response.body).toEqual({
+            ...poll,
+            ...payload,
+            updatedAt: expect.any(String),
+          })
         })
 
         describe('And no data in the update', () => {
@@ -267,7 +272,10 @@ describe('Given a NGC user', () => {
               .send({})
               .expect(StatusCodes.OK)
 
-            expect(response.body).toEqual(poll)
+            expect(response.body).toEqual({
+              ...poll,
+              updatedAt: expect.any(String),
+            })
           })
         })
 
@@ -332,13 +340,16 @@ describe('Given a NGC user', () => {
               .send(payload)
               .expect(StatusCodes.OK)
 
-            expect(response.body).toEqual({ ...poll, ...payload })
+            expect(response.body).toEqual({
+              ...poll,
+              ...payload,
+              updatedAt: expect.any(String),
+            })
           })
         })
 
         describe('And updating defaultAdditionalQuestions', () => {
-          // prismock does not handle this correcly
-          test.skip(`Then it returns a ${StatusCodes.OK} response with the updated group`, async () => {
+          test(`Then it returns a ${StatusCodes.OK} response with the updated group`, async () => {
             const payload: OrganisationPollUpdateDto = {
               defaultAdditionalQuestions: [
                 'postalCode' as PollDefaultAdditionalQuestionTypeEnum,
@@ -361,13 +372,21 @@ describe('Given a NGC user', () => {
               .send(payload)
               .expect(StatusCodes.OK)
 
-            expect(response.body).toEqual({ ...poll, ...payload })
+            expect(response.body).toEqual({
+              ...poll,
+              ...payload,
+              updatedAt: expect.any(String),
+            })
 
             payload.defaultAdditionalQuestions = [
               'birthdate' as PollDefaultAdditionalQuestionTypeEnum,
             ]
 
-            nock(process.env.BREVO_URL!).post('/v3/contacts').reply(200)
+            nock(process.env.BREVO_URL!)
+              .post('/v3/contacts')
+              .reply(200)
+              .post('/v3/contacts/lists/27/contacts/remove')
+              .reply(200)
 
             response = await agent
               .put(
@@ -379,7 +398,11 @@ describe('Given a NGC user', () => {
               .send(payload)
               .expect(StatusCodes.OK)
 
-            expect(response.body).toEqual({ ...poll, ...payload })
+            expect(response.body).toEqual({
+              ...poll,
+              ...payload,
+              updatedAt: expect.any(String),
+            })
           })
         })
       })
@@ -459,12 +482,12 @@ describe('Given a NGC user', () => {
 
         beforeEach(() => {
           jest
-            .spyOn(prisma.poll, 'findFirstOrThrow')
+            .spyOn(prisma, '$transaction')
             .mockRejectedValueOnce(databaseError)
         })
 
         afterEach(() => {
-          jest.spyOn(prisma.poll, 'findFirstOrThrow').mockRestore()
+          jest.spyOn(prisma, '$transaction').mockRestore()
         })
 
         test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {

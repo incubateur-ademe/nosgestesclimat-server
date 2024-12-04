@@ -5,8 +5,9 @@ import type {
   User,
   VerifiedUser,
 } from '@prisma/client'
-import axios from 'axios'
+import axios, { isAxiosError } from 'axios'
 import axiosRetry from 'axios-retry'
+import { StatusCodes } from 'http-status-codes'
 import { config } from '../../config'
 import { isNetworkOrTimeoutOrRetryableError } from '../../core/typeguards/isRetryableAxiosError'
 import type {
@@ -253,16 +254,28 @@ const addOrUpdateContact = ({
   })
 }
 
-const unsubscribeContactFromList = ({
+const unsubscribeContactFromList = async ({
   email,
   listId,
 }: Readonly<{
   email: string
   listId: ListIds
 }>) => {
-  return brevo.post(`/v3/contacts/lists/${listId}/contacts/remove`, {
-    emails: [email],
-  })
+  try {
+    await brevo.post(`/v3/contacts/lists/${listId}/contacts/remove`, {
+      emails: [email],
+    })
+  } catch (e) {
+    // Brevo raises if not subscribed...
+    if (
+      !isAxiosError(e) ||
+      !e.response ||
+      e.response.status !== StatusCodes.BAD_REQUEST ||
+      e.response.data.code !== 'invalid_parameter'
+    ) {
+      throw e
+    }
+  }
 }
 
 export const addOrUpdateContactAfterLogin = ({

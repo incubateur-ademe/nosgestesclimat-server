@@ -31,8 +31,6 @@ export const login = async ({
     })
     .expect(StatusCodes.OK)
 
-  nock.abortPendingRequests()
-
   const [cookie] = response.headers['set-cookie']
 
   return {

@@ -1,19 +1,17 @@
 import type supertest from 'supertest'
 
 import { faker } from '@faker-js/faker'
+import { StatusCodes } from 'http-status-codes'
 import nock from 'nock'
-import slugify from 'slugify'
 import { baseURL } from '../../../../adapters/connect/client'
 import { prisma } from '../../../../adapters/prisma/client'
-import {
-  defaultPollSelection,
-  organisationSelectionWithoutPolls,
-} from '../../organisations.repository'
-import type { OrganisationPollCreateDto } from '../../organisations.validator'
-import {
-  OrganisationTypeEnum,
-  type OrganisationCreateDto,
+import { getSimulationPayload } from '../../../simulations/__tests__/fixtures/simulations.fixtures'
+import type { SimulationCreateInputDto } from '../../../simulations/simulations.validator'
+import type {
+  OrganisationCreateDto,
+  OrganisationPollCreateDto,
 } from '../../organisations.validator'
+import { OrganisationTypeEnum } from '../../organisations.validator'
 
 export const CREATE_ORGANISATION_ROUTE = '/organisations/v1'
 
@@ -39,6 +37,18 @@ export const FETCH_ORGANISATION_POLLS_ROUTE =
 
 export const FETCH_ORGANISATION_POLL_ROUTE =
   '/organisations/v1/:organisationIdOrSlug/polls/:pollIdOrSlug'
+
+export const FETCH_ORGANISATION_PUBLIC_POLL_ROUTE =
+  '/organisations/v1/:userId/public-polls/:pollIdOrSlug'
+
+export const CREATE_ORGANISATION_PUBLIC_POLL_SIMULATION_ROUTE =
+  '/organisations/v1/:userId/public-polls/:pollIdOrSlug/simulations'
+
+export const FETCH_ORGANISATION_PUBLIC_POLL_SIMULATIONS_ROUTE =
+  '/organisations/v1/:userId/public-polls/:pollIdOrSlug/simulations'
+
+export const FETCH_ORGANISATION_PUBLIC_POLL_DASHBOARD_ROUTE =
+  '/organisations/v1/:userId/public-polls/:pollIdOrSlug/dashboard'
 
 type TestAgent = ReturnType<typeof supertest>
 
@@ -80,7 +90,9 @@ export const createOrganisation = async ({
   const [administrator] = administrators || []
 
   if (!administrator?.optedInForCommunications) {
-    scope.post('/v3/contacts/lists/27/contacts/remove').reply(200)
+    scope
+      .post('/v3/contacts/lists/27/contacts/remove')
+      .reply(400, { code: 'invalid_parameter' })
   }
 
   nock(baseURL).post('/api/v1/personnes').reply(200)
@@ -89,52 +101,11 @@ export const createOrganisation = async ({
     .post(CREATE_ORGANISATION_ROUTE)
     .set('cookie', cookie)
     .send(payload)
-    .expect(201)
+    .expect(StatusCodes.CREATED)
 
-  nock.abortPendingRequests()
+  expect(nock.isDone()).toBeTruthy()
 
   return response.body
-}
-
-/**
- * Hack because prismock does not handle this correctly
- * The bug is that the created poll is not linked to the organisation
- * We create it and the we return the organisation
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const mockUpdateOrganisationPollCreation: any = async (params: any) => {
-  if (!params.data.polls?.create || !params.where.id) {
-    throw new Error('Invalid call')
-  }
-
-  const {
-    where: { id },
-    data: {
-      polls: { create },
-    },
-  } = params
-
-  await prisma.poll.create({
-    data: {
-      ...create,
-      organisationId: id,
-    },
-  })
-
-  return prisma.organisation.findUniqueOrThrow({
-    where: {
-      id,
-    },
-    select: {
-      ...organisationSelectionWithoutPolls,
-      polls: {
-        where: {
-          slug: create.slug!,
-        },
-        select: defaultPollSelection,
-      },
-    },
-  })
 }
 
 export const createOrganisationPoll = async ({
@@ -160,12 +131,34 @@ export const createOrganisationPoll = async ({
     expectedNumberOfParticipants,
   }
 
-  /**
-   * Hack because prismock does not handle this correctly
-   * The bug is that the created poll is not linked to the organisation
-   * We create it and the we update it
-   */
-  await agent
+  const scope = nock(process.env.BREVO_URL!).post('/v3/contacts').reply(200)
+
+  const {
+    administrators: [administrator],
+  } = await prisma.organisation.findUniqueOrThrow({
+    where: {
+      id: organisationId,
+    },
+    select: {
+      administrators: {
+        select: {
+          user: {
+            select: {
+              optedInForCommunications: true,
+            },
+          },
+        },
+      },
+    },
+  })
+
+  if (!administrator.user.optedInForCommunications) {
+    scope
+      .post('/v3/contacts/lists/27/contacts/remove')
+      .reply(400, { code: 'invalid_parameter' })
+  }
+
+  const response = await agent
     .post(
       CREATE_ORGANISATION_POLL_ROUTE.replace(
         ':organisationIdOrSlug',
@@ -174,32 +167,58 @@ export const createOrganisationPoll = async ({
     )
     .set('cookie', cookie)
     .send(payload)
-    .expect(500)
+    .expect(StatusCodes.CREATED)
 
-  const poll = await prisma.poll.update({
-    where: {
-      slug: slugify(payload.name.toLowerCase(), { strict: true }),
-    },
-    data: {
-      organisationId,
-    },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      defaultAdditionalQuestions: true,
-      customAdditionalQuestions: true,
-      expectedNumberOfParticipants: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  })
+  expect(nock.isDone()).toBeTruthy()
 
-  return {
-    ...poll,
-    createdAt: poll.createdAt.toISOString(),
-    defaultAdditionalQuestions: poll.defaultAdditionalQuestions.map(
-      ({ type }) => type
-    ),
+  return response.body
+}
+
+export const createOrganisationPollSimulation = async ({
+  agent,
+  userId,
+  pollId,
+  simulation = {},
+}: {
+  agent: TestAgent
+  userId?: string
+  pollId: string
+  simulation?: Partial<SimulationCreateInputDto>
+}) => {
+  userId = userId ?? faker.string.uuid()
+  const { user } = simulation
+  const payload: SimulationCreateInputDto = {
+    ...getSimulationPayload(simulation),
+    user,
   }
+
+  const scope = nock(process.env.BREVO_URL!)
+    .post('/v3/contacts')
+    .reply(200)
+    .post('/v3/contacts/lists/27/contacts/remove')
+    .reply(400, { code: 'invalid_parameter' })
+
+  if (payload.user?.email) {
+    scope
+      .post('/v3/smtp/email')
+      .reply(200)
+      .post('/v3/contacts')
+      .reply(200)
+      .post('/v3/contacts/lists/35/contacts/remove')
+      .reply(400, { code: 'invalid_parameter' })
+  }
+
+  const response = await agent
+    .post(
+      CREATE_ORGANISATION_PUBLIC_POLL_SIMULATION_ROUTE.replace(
+        ':userId',
+        userId
+      ).replace(':pollIdOrSlug', pollId)
+    )
+    .send(payload)
+    .expect(StatusCodes.CREATED)
+
+  expect(nock.isDone()).toBeTruthy()
+
+  return response.body
 }

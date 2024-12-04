@@ -235,7 +235,7 @@ const NewSimulationSchema = z
     id: z.string().uuid(),
     data: OldSimulationDataSchema.optional(),
     date: z.instanceof(Date),
-    progression: z.number(),
+    progression: z.number().optional(),
     savedViaEmail: z.boolean().optional(),
     computedResults: ComputedResultSchema.optional(),
     actionChoices: z.record(z.string(), z.boolean().nullable()).optional(),
@@ -261,7 +261,8 @@ const NewSimulationSchema = z
         userId: z.string().uuid(),
         email: z.string().optional(),
       })
-      .optional(),
+      .optional()
+      .nullable(),
     createdAt: z.instanceof(Date),
     updatedAt: z.instanceof(Date),
     __v: z.number(),
@@ -565,7 +566,7 @@ const migrateSimulationToPg = async () => {
       unknownPolls: Array.from(unknownPolls),
     })
   } catch (error) {
-    logger.error(error)
+    logger.error('import simulation failed', error)
   } finally {
     await prisma.$disconnect()
     await mongoose.disconnect()

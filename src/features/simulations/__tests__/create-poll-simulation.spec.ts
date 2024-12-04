@@ -7,6 +7,7 @@ import app from '../../../app'
 import logger from '../../../logger'
 import { login } from '../../authentication/__tests__/fixtures/login.fixture'
 import {
+  CREATE_ORGANISATION_PUBLIC_POLL_SIMULATION_ROUTE,
   createOrganisation,
   createOrganisationPoll,
 } from '../../organisations/__tests__/fixtures/organisations.fixture'
@@ -15,36 +16,46 @@ import type {
   SimulationAdditionalQuestionAnswerType,
   SimulationCreateInputDto,
 } from '../simulations.validator'
-import {
-  CREATE_POLL_SIMULATION_ROUTE,
-  getRandomTestCase,
-} from './fixtures/simulations.fixtures'
+import { getRandomTestCase } from './fixtures/simulations.fixtures'
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)
-  const url = CREATE_POLL_SIMULATION_ROUTE
+  const url = CREATE_ORGANISATION_PUBLIC_POLL_SIMULATION_ROUTE
   const { computedResults, nom, situation } = getRandomTestCase()
 
-  afterEach(() =>
-    Promise.all([
+  afterEach(async () => {
+    await Promise.all([
+      prisma.organisationAdministrator.deleteMany(),
+      prisma.simulationPoll.deleteMany(),
+    ])
+    await Promise.all([
       prisma.organisation.deleteMany(),
       prisma.user.deleteMany(),
       prisma.verifiedUser.deleteMany(),
       prisma.verificationCode.deleteMany(),
     ])
-  )
+  })
 
   describe(`And ${nom} persona situation`, () => {
     describe('When creating a simulation in a poll ', () => {
+      describe('And invalid user Id', () => {
+        test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
+          await agent
+            .post(
+              url
+                .replace(':userId', faker.string.alpha(34))
+                .replace(':pollIdOrSlug', faker.database.mongodbObjectId())
+            )
+            .expect(StatusCodes.BAD_REQUEST)
+        })
+      })
+
       describe('And no data provided', () => {
         test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
           await agent
             .post(
               url
-                .replace(
-                  ':organisationIdOrSlug',
-                  faker.database.mongodbObjectId()
-                )
+                .replace(':userId', faker.string.uuid())
                 .replace(':pollIdOrSlug', faker.database.mongodbObjectId())
             )
             .expect(StatusCodes.BAD_REQUEST)
@@ -56,10 +67,7 @@ describe('Given a NGC user', () => {
           await agent
             .post(
               url
-                .replace(
-                  ':organisationIdOrSlug',
-                  faker.database.mongodbObjectId()
-                )
+                .replace(':userId', faker.string.uuid())
                 .replace(':pollIdOrSlug', faker.database.mongodbObjectId())
             )
             .send({
@@ -68,7 +76,6 @@ describe('Given a NGC user', () => {
               computedResults,
               progression: 1,
               user: {
-                id: faker.string.uuid(),
                 name: nom,
                 email: 'Je ne donne jamais mon email',
               },
@@ -82,10 +89,7 @@ describe('Given a NGC user', () => {
           await agent
             .post(
               url
-                .replace(
-                  ':organisationIdOrSlug',
-                  faker.database.mongodbObjectId()
-                )
+                .replace(':userId', faker.string.uuid())
                 .replace(':pollIdOrSlug', faker.database.mongodbObjectId())
             )
             .send({
@@ -94,7 +98,6 @@ describe('Given a NGC user', () => {
               computedResults,
               progression: 1,
               user: {
-                id: faker.string.uuid(),
                 name: nom,
               },
             })
@@ -107,10 +110,7 @@ describe('Given a NGC user', () => {
           await agent
             .post(
               url
-                .replace(
-                  ':organisationIdOrSlug',
-                  faker.database.mongodbObjectId()
-                )
+                .replace(':userId', faker.string.uuid())
                 .replace(':pollIdOrSlug', faker.database.mongodbObjectId())
             )
             .send({
@@ -119,7 +119,6 @@ describe('Given a NGC user', () => {
               computedResults,
               progression: 1,
               user: {
-                id: faker.string.uuid(),
                 name: nom,
               },
             })
@@ -132,10 +131,7 @@ describe('Given a NGC user', () => {
           await agent
             .post(
               url
-                .replace(
-                  ':organisationIdOrSlug',
-                  faker.database.mongodbObjectId()
-                )
+                .replace(':userId', faker.string.uuid())
                 .replace(':pollIdOrSlug', faker.database.mongodbObjectId())
             )
             .send({
@@ -144,7 +140,6 @@ describe('Given a NGC user', () => {
               computedResults: null,
               progression: 1,
               user: {
-                id: faker.string.uuid(),
                 name: nom,
               },
             })
@@ -157,10 +152,7 @@ describe('Given a NGC user', () => {
           await agent
             .post(
               url
-                .replace(
-                  ':organisationIdOrSlug',
-                  faker.database.mongodbObjectId()
-                )
+                .replace(':userId', faker.string.uuid())
                 .replace(':pollIdOrSlug', faker.database.mongodbObjectId())
             )
             .send({
@@ -168,9 +160,6 @@ describe('Given a NGC user', () => {
               situation,
               computedResults,
               progression: 1,
-              user: {
-                id: faker.string.uuid(),
-              },
             })
             .expect(StatusCodes.NOT_FOUND)
         })
@@ -182,6 +171,7 @@ describe('Given a NGC user', () => {
         let organisationName: string
         let administratorEmail: string
         let administratorId: string
+        let userId: string
         let pollId: string
         let pollSlug: string
         let poll: Awaited<ReturnType<typeof createOrganisationPoll>>
@@ -205,6 +195,7 @@ describe('Given a NGC user', () => {
             organisationId,
           })
           ;({ id: pollId, slug: pollSlug } = poll)
+          userId = faker.string.uuid()
         })
 
         test(`Then it returns a ${StatusCodes.CREATED} response with the created simulation`, async () => {
@@ -213,9 +204,6 @@ describe('Given a NGC user', () => {
             situation,
             computedResults,
             progression: 1,
-            user: {
-              id: faker.string.uuid(),
-            },
           }
 
           nock(process.env.BREVO_URL!)
@@ -226,9 +214,7 @@ describe('Given a NGC user', () => {
 
           const response = await agent
             .post(
-              url
-                .replace(':organisationIdOrSlug', organisationId)
-                .replace(':pollIdOrSlug', pollId)
+              url.replace(':userId', userId).replace(':pollIdOrSlug', pollId)
             )
             .send(payload)
             .expect(StatusCodes.CREATED)
@@ -238,19 +224,18 @@ describe('Given a NGC user', () => {
             date: expect.any(String),
             savedViaEmail: false,
             createdAt: expect.any(String),
-            updatedAt: null,
+            updatedAt: expect.any(String),
             actionChoices: {},
             additionalQuestionsAnswers: [],
             foldedSteps: [],
-            // prismock does not handle this correctly but covered in test below
-            // polls: [
-            //   {
-            //     id: pollId,
-            //   },
-            // ],
-            polls: [],
+            polls: [
+              {
+                id: pollId,
+                slug: pollSlug,
+              },
+            ],
             user: {
-              ...payload.user,
+              id: userId,
               email: null,
               name: null,
             },
@@ -268,7 +253,8 @@ describe('Given a NGC user', () => {
               myAction: true,
             },
             savedViaEmail: true,
-            foldedSteps: ['myStep'],
+            // foldedSteps: ['myStep'], // Cannot do that with PG lite
+            foldedSteps: [],
             additionalQuestionsAnswers: [
               {
                 type: 'custom' as SimulationAdditionalQuestionAnswerType.custom,
@@ -282,7 +268,6 @@ describe('Given a NGC user', () => {
               },
             ],
             user: {
-              id: faker.string.uuid(),
               name: nom,
               email: faker.internet.email().toLocaleLowerCase(),
             },
@@ -297,16 +282,17 @@ describe('Given a NGC user', () => {
             .reply(200)
             .post('/v3/contacts/lists/27/contacts/remove')
             .reply(200)
+            .post('/v3/contacts/lists/35/contacts/remove')
+            .reply(200)
 
           const {
             body: { id },
           } = await agent
             .post(
-              url
-                .replace(':organisationIdOrSlug', organisationId)
-                .replace(':pollIdOrSlug', pollId)
+              url.replace(':userId', userId).replace(':pollIdOrSlug', pollId)
             )
             .send(payload)
+            .expect(StatusCodes.CREATED)
 
           const createdSimulation = await prisma.simulation.findUnique({
             where: {
@@ -352,10 +338,9 @@ describe('Given a NGC user', () => {
 
           expect(createdSimulation).toEqual({
             ...payload,
-            // dates are not instance of Date due to jest
-            createdAt: expect.anything(),
-            date: expect.anything(),
-            updatedAt: null,
+            createdAt: expect.any(Date),
+            date: expect.any(Date),
+            updatedAt: expect.any(Date),
             polls: [
               {
                 pollId,
@@ -364,6 +349,10 @@ describe('Given a NGC user', () => {
                 },
               },
             ],
+            user: {
+              ...payload.user,
+              id: userId,
+            },
           })
         })
 
@@ -373,9 +362,6 @@ describe('Given a NGC user', () => {
             situation,
             computedResults,
             progression: 1,
-            user: {
-              id: faker.string.uuid(),
-            },
           }
 
           const scope = nock(process.env.BREVO_URL!, {
@@ -403,9 +389,7 @@ describe('Given a NGC user', () => {
 
           await agent
             .post(
-              url
-                .replace(':organisationIdOrSlug', organisationId)
-                .replace(':pollIdOrSlug', pollId)
+              url.replace(':userId', userId).replace(':pollIdOrSlug', pollId)
             )
             .send(payload)
             .expect(StatusCodes.CREATED)
@@ -420,9 +404,6 @@ describe('Given a NGC user', () => {
               situation,
               computedResults,
               progression: 1,
-              user: {
-                id: faker.string.uuid(),
-              },
             }
 
             nock(process.env.BREVO_URL!)
@@ -434,7 +415,7 @@ describe('Given a NGC user', () => {
             const response = await agent
               .post(
                 url
-                  .replace(':organisationIdOrSlug', organisationSlug)
+                  .replace(':userId', userId)
                   .replace(':pollIdOrSlug', pollSlug)
               )
               .send(payload)
@@ -445,19 +426,18 @@ describe('Given a NGC user', () => {
               date: expect.any(String),
               savedViaEmail: false,
               createdAt: expect.any(String),
-              updatedAt: null,
+              updatedAt: expect.any(String),
               actionChoices: {},
               additionalQuestionsAnswers: [],
               foldedSteps: [],
-              // prismock does not handle this correctly but covered in test above
-              // polls: [
-              //   {
-              //     id: pollId,
-              //   },
-              // ],
-              polls: [],
+              polls: [
+                {
+                  id: pollId,
+                  slug: pollSlug,
+                },
+              ],
               user: {
-                ...payload.user,
+                id: userId,
                 email: null,
                 name: null,
               },
@@ -468,7 +448,6 @@ describe('Given a NGC user', () => {
         describe('And leaving his/her email', () => {
           test('Then it adds or updates contact in brevo', async () => {
             const date = new Date()
-            const userId = faker.string.uuid()
             const email = faker.internet.email().toLocaleLowerCase()
             const payload: SimulationCreateInputDto = {
               id: faker.string.uuid(),
@@ -477,7 +456,6 @@ describe('Given a NGC user', () => {
               progression: 1,
               date,
               user: {
-                id: userId,
                 email,
               },
             }
@@ -544,9 +522,7 @@ describe('Given a NGC user', () => {
 
             await agent
               .post(
-                url
-                  .replace(':organisationIdOrSlug', organisationId)
-                  .replace(':pollIdOrSlug', pollId)
+                url.replace(':userId', userId).replace(':pollIdOrSlug', pollId)
               )
               .send(payload)
               .expect(StatusCodes.CREATED)
@@ -562,7 +538,6 @@ describe('Given a NGC user', () => {
               computedResults,
               progression: 1,
               user: {
-                id: faker.string.uuid(),
                 email,
               },
             }
@@ -597,9 +572,7 @@ describe('Given a NGC user', () => {
 
             await agent
               .post(
-                url
-                  .replace(':organisationIdOrSlug', organisationId)
-                  .replace(':pollIdOrSlug', pollId)
+                url.replace(':userId', userId).replace(':pollIdOrSlug', pollId)
               )
               .send(payload)
               .expect(StatusCodes.CREATED)
@@ -616,7 +589,6 @@ describe('Given a NGC user', () => {
                 computedResults,
                 progression: 0.5,
                 user: {
-                  id: faker.string.uuid(),
                   email,
                 },
               }
@@ -647,7 +619,7 @@ describe('Given a NGC user', () => {
               await agent
                 .post(
                   url
-                    .replace(':organisationIdOrSlug', organisationId)
+                    .replace(':userId', userId)
                     .replace(':pollIdOrSlug', pollId)
                 )
                 .send(payload)
@@ -666,7 +638,6 @@ describe('Given a NGC user', () => {
                 computedResults,
                 progression: 1,
                 user: {
-                  id: faker.string.uuid(),
                   email,
                 },
               }
@@ -702,7 +673,7 @@ describe('Given a NGC user', () => {
               await agent
                 .post(
                   url
-                    .replace(':organisationIdOrSlug', organisationId)
+                    .replace(':userId', userId)
                     .replace(':pollIdOrSlug', pollId)
                 )
                 .set('origin', 'https://preprod.nosgestesclimat.fr')
@@ -723,6 +694,7 @@ describe('Given a NGC user', () => {
         let administratorId: string
         let pollId: string
         let poll: Awaited<ReturnType<typeof createOrganisationPoll>>
+        let userId: string
 
         beforeEach(async () => {
           const { cookie } = await login({ agent })
@@ -750,6 +722,7 @@ describe('Given a NGC user', () => {
             organisationId,
           })
           ;({ id: pollId } = poll)
+          userId = faker.string.uuid()
         })
 
         test('Then it updates organisation administrator in brevo', async () => {
@@ -758,9 +731,6 @@ describe('Given a NGC user', () => {
             situation,
             computedResults,
             progression: 1,
-            user: {
-              id: faker.string.uuid(),
-            },
           }
 
           const scope = nock(process.env.BREVO_URL!, {
@@ -785,9 +755,7 @@ describe('Given a NGC user', () => {
 
           await agent
             .post(
-              url
-                .replace(':organisationIdOrSlug', organisationId)
-                .replace(':pollIdOrSlug', pollId)
+              url.replace(':userId', userId).replace(':pollIdOrSlug', pollId)
             )
             .send(payload)
             .expect(StatusCodes.CREATED)
@@ -801,22 +769,19 @@ describe('Given a NGC user', () => {
 
         beforeEach(() => {
           jest
-            .spyOn(prisma.poll, 'findFirstOrThrow')
+            .spyOn(prisma, '$transaction')
             .mockRejectedValueOnce(databaseError)
         })
 
         afterEach(() => {
-          jest.spyOn(prisma.poll, 'findFirstOrThrow').mockRestore()
+          jest.spyOn(prisma, '$transaction').mockRestore()
         })
 
         test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
           await agent
             .post(
               url
-                .replace(
-                  ':organisationIdOrSlug',
-                  faker.database.mongodbObjectId()
-                )
+                .replace(':userId', faker.string.uuid())
                 .replace(':pollIdOrSlug', faker.database.mongodbObjectId())
             )
             .send({
@@ -824,9 +789,6 @@ describe('Given a NGC user', () => {
               situation,
               computedResults,
               progression: 1,
-              user: {
-                id: faker.string.uuid(),
-              },
             })
             .expect(StatusCodes.INTERNAL_SERVER_ERROR)
         })
@@ -835,10 +797,7 @@ describe('Given a NGC user', () => {
           await agent
             .post(
               url
-                .replace(
-                  ':organisationIdOrSlug',
-                  faker.database.mongodbObjectId()
-                )
+                .replace(':userId', faker.string.uuid())
                 .replace(':pollIdOrSlug', faker.database.mongodbObjectId())
             )
             .send({
@@ -846,9 +805,6 @@ describe('Given a NGC user', () => {
               situation,
               computedResults,
               progression: 1,
-              user: {
-                id: faker.string.uuid(),
-              },
             })
             .expect(StatusCodes.INTERNAL_SERVER_ERROR)
 

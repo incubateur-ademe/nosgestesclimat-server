@@ -14,9 +14,13 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = FETCH_USER_GROUP_ROUTE
 
-  afterEach(() =>
-    Promise.all([prisma.group.deleteMany(), prisma.user.deleteMany()])
-  )
+  afterEach(async () => {
+    await Promise.all([
+      prisma.groupAdministrator.deleteMany(),
+      prisma.groupParticipant.deleteMany(),
+    ])
+    await Promise.all([prisma.user.deleteMany(), prisma.group.deleteMany()])
+  })
 
   describe('When fetching one of his groups', () => {
     describe('And invalid userId', () => {
@@ -65,11 +69,11 @@ describe('Given a NGC user', () => {
       })
 
       describe('And he joined it', () => {
-        let user: Awaited<ReturnType<typeof joinGroup>>
+        let participant: Awaited<ReturnType<typeof joinGroup>>
 
         beforeEach(async () => {
-          user = await joinGroup({ agent, groupId })
-          userId = user.userId
+          participant = await joinGroup({ agent, groupId })
+          userId = participant.userId
         })
 
         test(`Then it returns a ${StatusCodes.OK} response with the group`, async () => {
@@ -84,9 +88,9 @@ describe('Given a NGC user', () => {
             administrator: {
               name: group.administrator.name,
             },
-            participants: [user],
+            participants: [participant],
             createdAt: expect.any(String),
-            updatedAt: null,
+            updatedAt: expect.any(String),
           })
         })
       })
@@ -96,9 +100,11 @@ describe('Given a NGC user', () => {
       const databaseError = new Error('Something went wrong')
 
       beforeEach(() => {
-        jest
-          .spyOn(prisma.group, 'findUniqueOrThrow')
-          .mockRejectedValueOnce(databaseError)
+        jest.spyOn(prisma, '$transaction').mockRejectedValueOnce(databaseError)
+      })
+
+      afterEach(() => {
+        jest.spyOn(prisma, '$transaction').mockRestore()
       })
 
       test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
@@ -124,6 +130,68 @@ describe('Given a NGC user', () => {
           'Group fetch failed',
           databaseError
         )
+      })
+    })
+  })
+
+  describe('And invited to join', () => {
+    let group: Awaited<ReturnType<typeof createGroup>>
+    let groupId: string
+
+    beforeEach(async () => {
+      group = await createGroup({ agent })
+      ;({ id: groupId } = group)
+    })
+
+    describe('When fetching the group', () => {
+      test(`Then it returns a ${StatusCodes.OK} response with the group`, async () => {
+        const response = await agent
+          .get(
+            url
+              .replace(':userId', faker.string.uuid())
+              .replace(':groupId', groupId)
+          )
+          .expect(StatusCodes.OK)
+
+        expect(response.body).toEqual({
+          ...group,
+          administrator: {
+            name: group.administrator.name,
+          },
+        })
+      })
+
+      describe('And other participants joined', () => {
+        let participants: Awaited<ReturnType<typeof joinGroup>>[]
+
+        beforeEach(async () => {
+          participants = await Promise.all([
+            joinGroup({ agent, groupId }),
+            joinGroup({ agent, groupId }),
+          ])
+        })
+
+        test(`Then it returns a ${StatusCodes.OK} response with the group`, async () => {
+          const response = await agent
+            .get(
+              url
+                .replace(':userId', faker.string.uuid())
+                .replace(':groupId', groupId)
+            )
+            .expect(StatusCodes.OK)
+
+          expect(response.body).toEqual({
+            ...group,
+            administrator: {
+              name: group.administrator.name,
+            },
+            participants: participants.map(({ id, simulation, name }) => ({
+              id,
+              name,
+              simulation,
+            })),
+          })
+        })
       })
     })
   })

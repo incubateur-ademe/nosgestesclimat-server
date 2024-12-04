@@ -1,6 +1,8 @@
 import { faker } from '@faker-js/faker'
 import type { DottedName, NGCRuleNode } from '@incubateur-ademe/nosgestesclimat'
 import personas from '@incubateur-ademe/nosgestesclimat/public/personas-fr.json'
+import { StatusCodes } from 'http-status-codes'
+import nock from 'nock'
 import type { ParsedRules, PublicodesExpression } from 'publicodes'
 import { utils } from 'publicodes'
 import type supertest from 'supertest'
@@ -15,15 +17,12 @@ import { SituationSchema } from '../../simulations.validator'
 
 type TestAgent = ReturnType<typeof supertest>
 
-export const CREATE_SIMULATION_ROUTE = '/simulations/v1'
+export const CREATE_SIMULATION_ROUTE = '/simulations/v1/:userId'
 
 export const FETCH_USER_SIMULATIONS_ROUTE = '/simulations/v1/:userId'
 
 export const FETCH_USER_SIMULATION_ROUTE =
   '/simulations/v1/:userId/:simulationId'
-
-export const CREATE_POLL_SIMULATION_ROUTE =
-  '/organisations/v1/:organisationIdOrSlug/polls/:pollIdOrSlug/simulations'
 
 const categories = [
   'transport',
@@ -96,7 +95,11 @@ const evaluate = ({
     },
   }).nodeValue
 
-  return typeof value === 'number' ? value : !!value ? +value : undefined
+  return typeof value === 'number'
+    ? +value.toFixed(4)
+    : !!value
+      ? +value
+      : undefined
 }
 
 const computeMetricResults = (
@@ -182,21 +185,46 @@ export const getSimulationPayload = ({
 
 export const createSimulation = async ({
   agent,
+  userId,
   simulation = {},
 }: {
   agent: TestAgent
+  userId?: string
   simulation?: Partial<SimulationCreateInputDto>
 }) => {
+  userId = userId ?? faker.string.uuid()
   const { user } = simulation
   const payload: SimulationCreateInputDto = {
     ...getSimulationPayload(simulation),
-    user: {
-      ...user,
-      id: user?.id || faker.string.uuid(),
-    },
+    user,
   }
 
-  const response = await agent.post(CREATE_SIMULATION_ROUTE).send(payload)
+  const scope = nock(process.env.BREVO_URL!)
+
+  if (payload.user?.email) {
+    scope
+      .post('/v3/contacts')
+      .reply(200)
+      .post('/v3/contacts/lists/22/contacts/remove')
+      .reply(400, { code: 'invalid_parameter' })
+      .post('/v3/contacts/lists/32/contacts/remove')
+      .reply(400, { code: 'invalid_parameter' })
+      .post('/v3/contacts/lists/35/contacts/remove')
+      .reply(400, { code: 'invalid_parameter' })
+      .post('/v3/contacts/lists/36/contacts/remove')
+      .reply(400, { code: 'invalid_parameter' })
+
+    if (payload.progression === 1) {
+      scope.post('/v3/smtp/email').reply(200)
+    }
+  }
+
+  const response = await agent
+    .post(CREATE_SIMULATION_ROUTE.replace(':userId', userId))
+    .send(payload)
+    .expect(StatusCodes.CREATED)
+
+  expect(nock.isDone()).toBeTruthy()
 
   return response.body
 }

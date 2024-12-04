@@ -15,9 +15,13 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = FETCH_USER_GROUPS_ROUTE
 
-  afterEach(() =>
-    Promise.all([prisma.group.deleteMany(), prisma.user.deleteMany()])
-  )
+  afterEach(async () => {
+    await Promise.all([
+      prisma.groupAdministrator.deleteMany(),
+      prisma.groupParticipant.deleteMany(),
+    ])
+    await Promise.all([prisma.user.deleteMany(), prisma.group.deleteMany()])
+  })
 
   describe('When fetching his groups', () => {
     describe('And invalid userId', () => {
@@ -140,7 +144,10 @@ describe('Given a NGC user', () => {
             id: group1.id,
             name: group1.name,
             emoji: group1.emoji,
-            administrator: group1.administrator,
+            administrator: {
+              ...group1.administrator,
+              updatedAt: expect.any(String),
+            },
             participants: [
               {
                 ...group1.administrator,
@@ -150,13 +157,15 @@ describe('Given a NGC user', () => {
                   ...simulationUser1,
                   date: expect.any(String),
                   createdAt: expect.any(String),
-                  updatedAt: null,
+                  updatedAt: expect.any(String),
                   polls: [],
                   foldedSteps: [],
                   actionChoices: {},
                   savedViaEmail: false,
                   additionalQuestionsAnswers: [],
                 },
+                createdAt: expect.any(String),
+                updatedAt: expect.any(String),
               },
               {
                 id: participant2Group1Id,
@@ -165,7 +174,7 @@ describe('Given a NGC user', () => {
                   ...simulationUser2,
                   date: expect.any(String),
                   createdAt: expect.any(String),
-                  updatedAt: null,
+                  updatedAt: expect.any(String),
                   polls: [],
                   foldedSteps: [],
                   actionChoices: {},
@@ -175,7 +184,7 @@ describe('Given a NGC user', () => {
               },
             ],
             createdAt: expect.any(String),
-            updatedAt: null,
+            updatedAt: expect.any(String),
           },
           {
             id: group2.id,
@@ -192,7 +201,7 @@ describe('Given a NGC user', () => {
                   ...simulationUser2,
                   date: expect.any(String),
                   createdAt: expect.any(String),
-                  updatedAt: null,
+                  updatedAt: expect.any(String),
                   polls: [],
                   foldedSteps: [],
                   actionChoices: {},
@@ -208,17 +217,19 @@ describe('Given a NGC user', () => {
                   ...simulationUser1,
                   date: expect.any(String),
                   createdAt: expect.any(String),
-                  updatedAt: null,
+                  updatedAt: expect.any(String),
                   polls: [],
                   foldedSteps: [],
                   actionChoices: {},
                   savedViaEmail: false,
                   additionalQuestionsAnswers: [],
                 },
+                createdAt: expect.any(String),
+                updatedAt: expect.any(String),
               },
             ],
             createdAt: expect.any(String),
-            updatedAt: null,
+            updatedAt: expect.any(String),
           },
         ])
       })
@@ -237,7 +248,10 @@ describe('Given a NGC user', () => {
               id: group1.id,
               name: group1.name,
               emoji: group1.emoji,
-              administrator: group1.administrator,
+              administrator: {
+                ...group1.administrator,
+                updatedAt: expect.any(String),
+              },
               participants: [
                 {
                   ...group1.administrator,
@@ -247,13 +261,15 @@ describe('Given a NGC user', () => {
                     ...simulationUser1,
                     date: expect.any(String),
                     createdAt: expect.any(String),
-                    updatedAt: null,
+                    updatedAt: expect.any(String),
                     polls: [],
                     foldedSteps: [],
                     actionChoices: {},
                     savedViaEmail: false,
                     additionalQuestionsAnswers: [],
                   },
+                  createdAt: expect.any(String),
+                  updatedAt: expect.any(String),
                 },
                 {
                   id: participant2Group1Id,
@@ -262,7 +278,7 @@ describe('Given a NGC user', () => {
                     ...simulationUser2,
                     date: expect.any(String),
                     createdAt: expect.any(String),
-                    updatedAt: null,
+                    updatedAt: expect.any(String),
                     polls: [],
                     foldedSteps: [],
                     actionChoices: {},
@@ -272,7 +288,7 @@ describe('Given a NGC user', () => {
                 },
               ],
               createdAt: expect.any(String),
-              updatedAt: null,
+              updatedAt: expect.any(String),
             },
           ])
         })
@@ -283,9 +299,15 @@ describe('Given a NGC user', () => {
       const databaseError = new Error('Something went wrong')
 
       beforeEach(() => {
-        jest
-          .spyOn(prisma.group, 'findMany')
-          .mockRejectedValueOnce(databaseError)
+        jest.spyOn(prisma, '$transaction').mockRejectedValueOnce(databaseError)
+      })
+
+      afterEach(() => {
+        jest.spyOn(prisma, '$transaction').mockRestore()
+      })
+
+      afterEach(() => {
+        jest.spyOn(prisma, '$transaction').mockRestore()
       })
 
       test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {

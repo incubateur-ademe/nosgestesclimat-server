@@ -11,7 +11,11 @@ import {
   COOKIE_NAME,
   COOKIES_OPTIONS,
 } from '../authentication/authentication.service'
-import { createPollSimulation } from '../simulations/simulations.service'
+import {
+  createPollSimulation,
+  fetchPublicPollDashboard,
+  fetchPublicPollSimulations,
+} from '../simulations/simulations.service'
 import {
   OrganisationPollSimulationCreateValidator,
   SimulationCreateDto,
@@ -32,6 +36,7 @@ import {
   fetchOrganisations,
   fetchPoll,
   fetchPolls,
+  fetchPublicPoll,
   updateOrganisation,
   updatePoll,
 } from './organisations.service'
@@ -43,6 +48,9 @@ import {
   OrganisationPollFetchValidator,
   OrganisationPollsFetchValidator,
   OrganisationPollUpdateValidator,
+  OrganisationPublicPollDashboardValidator,
+  OrganisationPublicPollFetchValidator,
+  OrganisationPublicPollSimulationsFetchValidator,
   OrganisationsFetchValidator,
   OrganisationUpdateValidator,
 } from './organisations.validator'
@@ -59,7 +67,7 @@ EventBus.on(OrganisationCreatedEvent, addOrUpdateConnectContact)
 router
   .route('/v1/')
   .post(
-    authentificationMiddleware,
+    authentificationMiddleware(),
     validateRequest(OrganisationCreateValidator),
     async (req, res) => {
       try {
@@ -91,7 +99,7 @@ EventBus.on(OrganisationUpdatedEvent, addOrUpdateConnectContact)
 router
   .route('/v1/:organisationIdOrSlug')
   .put(
-    authentificationMiddleware,
+    authentificationMiddleware(),
     validateRequest(OrganisationUpdateValidator),
     async ({ body, params, query, user }, res) => {
       try {
@@ -129,7 +137,7 @@ router
 router
   .route('/v1/')
   .get(
-    authentificationMiddleware,
+    authentificationMiddleware(),
     validateRequest(OrganisationsFetchValidator),
     async ({ user }, res) => {
       try {
@@ -150,7 +158,7 @@ router
 router
   .route('/v1/:organisationIdOrSlug')
   .get(
-    authentificationMiddleware,
+    authentificationMiddleware(),
     validateRequest(OrganisationFetchValidator),
     async ({ params, user }, res) => {
       try {
@@ -177,7 +185,7 @@ EventBus.on(PollCreatedEvent, addOrUpdateBrevoContact)
 router
   .route('/v1/:organisationIdOrSlug/polls')
   .post(
-    authentificationMiddleware,
+    authentificationMiddleware(),
     validateRequest(OrganisationPollCreateValidator),
     async ({ body, params, user }, res) => {
       try {
@@ -208,7 +216,7 @@ EventBus.on(PollUpdatedEvent, addOrUpdateBrevoContact)
 router
   .route('/v1/:organisationIdOrSlug/polls/:pollIdOrSlug')
   .put(
-    authentificationMiddleware,
+    authentificationMiddleware(),
     validateRequest(OrganisationPollUpdateValidator),
     async ({ body, params, user }, res) => {
       try {
@@ -239,7 +247,7 @@ EventBus.on(PollDeletedEvent, addOrUpdateBrevoContact)
 router
   .route('/v1/:organisationIdOrSlug/polls/:pollIdOrSlug')
   .delete(
-    authentificationMiddleware,
+    authentificationMiddleware(),
     validateRequest(OrganisationPollDeleteValidator),
     async ({ params, user }, res) => {
       try {
@@ -267,7 +275,7 @@ router
 router
   .route('/v1/:organisationIdOrSlug/polls')
   .get(
-    authentificationMiddleware,
+    authentificationMiddleware(),
     validateRequest(OrganisationPollsFetchValidator),
     async ({ params, user }, res) => {
       try {
@@ -295,7 +303,7 @@ router
 router
   .route('/v1/:organisationIdOrSlug/polls/:pollIdOrSlug')
   .get(
-    authentificationMiddleware,
+    authentificationMiddleware(),
     validateRequest(OrganisationPollFetchValidator),
     async ({ params, user }, res) => {
       try {
@@ -321,7 +329,7 @@ router
  * Upserts simulation poll for an organisation and an id or a slug
  */
 router
-  .route('/v1/:organisationIdOrSlug/polls/:pollIdOrSlug/simulations')
+  .route('/v1/:userId/public-polls/:pollIdOrSlug/simulations')
   .post(
     validateRequest(OrganisationPollSimulationCreateValidator),
     async (req, res) => {
@@ -339,6 +347,96 @@ router
         }
 
         logger.error('Poll simulation creation failed', err)
+
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
+      }
+    }
+  )
+
+/**
+ * Returns poll informations for public or administrator users following authentication
+ */
+router
+  .route('/v1/:userId/public-polls/:pollIdOrSlug')
+  .get(
+    authentificationMiddleware({ passIfUnauthorized: true }),
+    validateRequest(OrganisationPublicPollFetchValidator),
+    async (req, res) => {
+      try {
+        if (req.user && req.user.userId !== req.params.userId) {
+          throw new ForbiddenException(`Different user ids found`)
+        }
+
+        const poll = await fetchPublicPoll(req)
+
+        return res.status(StatusCodes.OK).json(poll)
+      } catch (err) {
+        if (err instanceof EntityNotFoundException) {
+          return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
+        }
+
+        if (err instanceof ForbiddenException) {
+          return res.status(StatusCodes.FORBIDDEN).send(err.message).end()
+        }
+
+        logger.error('Public poll fetch failed', err)
+
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
+      }
+    }
+  )
+
+/**
+ * Returns poll simulations for public or administrator users following authentication
+ */
+router
+  .route('/v1/:userId/public-polls/:pollIdOrSlug/simulations')
+  .get(
+    authentificationMiddleware({ passIfUnauthorized: true }),
+    validateRequest(OrganisationPublicPollSimulationsFetchValidator),
+    async (req, res) => {
+      try {
+        if (req.user && req.user.userId !== req.params.userId) {
+          throw new ForbiddenException(`Different user ids found`)
+        }
+
+        const simulations = await fetchPublicPollSimulations(req)
+
+        return res.status(StatusCodes.OK).json(simulations)
+      } catch (err) {
+        if (err instanceof EntityNotFoundException) {
+          return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
+        }
+
+        if (err instanceof ForbiddenException) {
+          return res.status(StatusCodes.FORBIDDEN).send(err.message).end()
+        }
+
+        logger.error('Public poll simulations fetch failed', err)
+
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
+      }
+    }
+  )
+
+/**
+ * Returns poll dashboard for public or administrator users following authentication
+ */
+router
+  .route('/v1/:userId/public-polls/:pollIdOrSlug/dashboard')
+  .get(
+    validateRequest(OrganisationPublicPollDashboardValidator),
+    async (req, res) => {
+      try {
+        const dashboard = await fetchPublicPollDashboard(req)
+
+        return res.status(StatusCodes.OK).json(dashboard)
+      } catch (err) {
+        if (err instanceof EntityNotFoundException) {
+          return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
+        }
+
+        logger.error('Public poll dashboard fetch failed', err)
 
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
       }

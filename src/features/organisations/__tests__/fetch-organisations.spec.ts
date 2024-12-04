@@ -14,13 +14,14 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = FETCH_ORGANISATIONS_ROUTE
 
-  afterEach(() =>
-    Promise.all([
+  afterEach(async () => {
+    await prisma.organisationAdministrator.deleteMany()
+    await Promise.all([
       prisma.organisation.deleteMany(),
       prisma.verifiedUser.deleteMany(),
       prisma.verificationCode.deleteMany(),
     ])
-  )
+  })
 
   describe('And logged out', () => {
     describe('When fetching his organisations', () => {
@@ -83,12 +84,12 @@ describe('Given a NGC user', () => {
 
         beforeEach(() => {
           jest
-            .spyOn(prisma.organisation, 'findMany')
+            .spyOn(prisma, '$transaction')
             .mockRejectedValueOnce(databaseError)
         })
 
         afterEach(() => {
-          jest.spyOn(prisma.organisation, 'findMany').mockRestore()
+          jest.spyOn(prisma, '$transaction').mockRestore()
         })
 
         test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {

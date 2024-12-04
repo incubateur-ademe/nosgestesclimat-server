@@ -33,6 +33,10 @@ describe('Given a NGC user', () => {
   })
 
   afterEach(async () => {
+    await Promise.all([
+      prisma.groupAdministrator.deleteMany(),
+      prisma.groupParticipant.deleteMany(),
+    ])
     await Promise.all([prisma.user.deleteMany(), prisma.group.deleteMany()])
     jest.restoreAllMocks()
   })
@@ -103,6 +107,8 @@ describe('Given a NGC user', () => {
       const payload = {
         simulation: {
           id: faker.string.uuid(),
+          computedResults: {},
+          progression: 1,
         },
         userId: faker.string.uuid(),
       }
@@ -117,18 +123,17 @@ describe('Given a NGC user', () => {
         },
       })
 
-      // dates are not instance of Date due to jest
       expect(simulation).toEqual({
         actionChoices: {},
-        computedResults: null,
-        createdAt: expect.anything(),
-        date: expect.anything(),
+        computedResults: {},
+        createdAt: expect.any(Date),
+        date: expect.any(Date),
         foldedSteps: [],
         id: simulationId,
-        progression: null,
+        progression: 1,
         savedViaEmail: false,
         situation: {},
-        updatedAt: null,
+        updatedAt: expect.any(Date),
         userEmail: null,
         userId: expect.any(String),
       })

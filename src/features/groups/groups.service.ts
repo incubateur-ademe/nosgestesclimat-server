@@ -17,8 +17,7 @@ import {
   deleteUserGroup,
   fetchUserGroup,
   fetchUserGroups,
-  findGroupById,
-  findGroupParticipantById,
+  findGroupAndParticipantById,
   updateUserGroup,
 } from './groups.repository'
 import type {
@@ -58,6 +57,8 @@ const participantToDto = (
     id,
     simulation,
     user: { id: userId, ...rest },
+    createdAt,
+    updatedAt,
   }: Omit<Awaited<ReturnType<typeof createParticipantAndUser>>, 'group'>,
   connectedUser: string
 ) => ({
@@ -67,6 +68,8 @@ const participantToDto = (
         simulation,
         userId,
         ...rest,
+        createdAt,
+        updatedAt,
       }
     : {
         id,
@@ -75,23 +78,12 @@ const participantToDto = (
       }),
 })
 
-const findGroup = async (groupId: string) => {
+const findGroupAndParticipant = async (params: UserGroupParticipantParams) => {
   try {
-    return await findGroupById(groupId)
+    return await findGroupAndParticipantById(params)
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
-      throw new EntityNotFoundException('Group not found')
-    }
-    throw e
-  }
-}
-
-const findGroupParticipant = async (groupId: string) => {
-  try {
-    return await findGroupParticipantById(groupId)
-  } catch (e) {
-    if (isPrismaErrorNotFound(e)) {
-      throw new EntityNotFoundException('GroupParticipant not found')
+      throw new EntityNotFoundException('Group or participant not found')
     }
     throw e
   }
@@ -214,10 +206,10 @@ export const createParticipant = async ({
 
 export const removeParticipant = async (params: UserGroupParticipantParams) => {
   try {
-    const [{ administrator: admin }, participant] = await Promise.all([
-      findGroup(params.groupId),
-      findGroupParticipant(params.participantId),
-    ])
+    const {
+      group: { administrator: admin },
+      ...participant
+    } = await findGroupAndParticipant(params)
 
     const administratorId = admin?.userId
     const isConnectedUserGroupAdmin = params.userId === administratorId
