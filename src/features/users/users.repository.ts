@@ -47,7 +47,7 @@ export const transferOwnershipToUser = (
     })
 
     const userIds = usersToMigrate.map(({ id }) => id)
-    const [newUserGroups, oldUsersGroups] = await Promise.all([
+    const [newUserGroupIds, oldUsersGroups] = await Promise.all([
       prismaSession.groupParticipant
         .findMany({
           where: {
@@ -77,10 +77,10 @@ export const transferOwnershipToUser = (
     const participantsToUpdate = new Set<string>()
     const participantsToDelete = new Set<string>()
     oldUsersGroups.forEach(({ groupId, userId }) => {
-      if (newUserGroups.has(groupId)) {
+      if (newUserGroupIds.has(groupId)) {
         participantsToDelete.add(userId)
       } else {
-        newUserGroups.add(groupId)
+        newUserGroupIds.add(groupId)
         participantsToUpdate.add(userId)
       }
     })
