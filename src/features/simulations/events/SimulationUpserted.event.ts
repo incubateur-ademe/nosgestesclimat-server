@@ -14,6 +14,7 @@ export class SimulationUpsertedEvent extends EventBusEvent<
       administrator?: undefined
       organisation?: undefined
       newsletters: SimulationCreateNewsletterList
+      sendEmail: boolean
     }
   | {
       origin: string
@@ -26,6 +27,7 @@ export class SimulationUpsertedEvent extends EventBusEvent<
       administrator: Pick<User, 'id'>
       organisation?: undefined
       newsletters?: undefined
+      sendEmail: boolean
     }
   | {
       origin: string
@@ -38,5 +40,6 @@ export class SimulationUpsertedEvent extends EventBusEvent<
       administrator?: undefined
       organisation: Pick<Organisation, 'name' | 'slug'>
       newsletters?: undefined
+      sendEmail: boolean
     }
 > {}

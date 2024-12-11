@@ -117,6 +117,7 @@ export const createGroup = async ({
       origin,
       simulation,
       administrator,
+      sendEmail: true,
       user: administrator,
     })
 
@@ -182,6 +183,7 @@ export const createParticipant = async ({
     })
 
     const simulationUpsertedEvent = new SimulationUpsertedEvent({
+      sendEmail: true,
       administrator,
       simulation,
       origin,
