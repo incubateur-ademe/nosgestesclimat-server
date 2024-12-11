@@ -54,13 +54,20 @@ beforeAll(async () => {
 
   await connect()
 
-  const filename = path.join(
-    prismaMigrationDir,
-    '20241028134303_ngc_schema',
-    'migration.sql'
-  )
-  const migration = await readFile(filename, 'utf8')
-  await client.exec(migration)
+  const filenames = [
+    path.join(prismaMigrationDir, '20241028134303_ngc_schema', 'migration.sql'),
+    path.join(
+      prismaMigrationDir,
+      '20241211095834_simulation_user_index',
+      'migration.sql'
+    ),
+  ]
+
+  await filenames.reduce(async (promise, filename) => {
+    await promise
+    const migration = await readFile(filename, 'utf8')
+    await client.exec(migration)
+  }, Promise.resolve())
 })
 
 afterAll(async () => {

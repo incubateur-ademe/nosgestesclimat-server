@@ -5,9 +5,10 @@ import type { GroupCreatedEvent } from '../events/GroupCreated.event'
 export const syncUserDataAfterGroupCreated: Handler<GroupCreatedEvent> = ({
   attributes: {
     administrator: { id: userId, email },
+    participants: [participant],
   },
 }) => {
-  if (!email) {
+  if (!email || !!participant) {
     return
   }
 
