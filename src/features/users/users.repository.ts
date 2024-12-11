@@ -46,36 +46,84 @@ export const transferOwnershipToUser = (
       },
     })
 
-    await Promise.all(
-      usersToMigrate.map(({ id }) =>
-        Promise.all([
-          prismaSession.groupAdministrator.updateMany({
-            where: {
-              userId: id,
-            },
-            data: {
-              userId,
-            },
-          }),
-          prismaSession.groupParticipant.updateMany({
-            where: {
-              userId: id,
-            },
-            data: {
-              userId,
-            },
-          }),
-          prismaSession.simulation.updateMany({
-            where: {
-              userId: id,
-            },
-            data: {
-              userId,
-            },
-          }),
-        ])
-      )
-    )
+    const userIds = usersToMigrate.map(({ id }) => id)
+    const [newUserGroups, oldUsersGroups] = await Promise.all([
+      prismaSession.groupParticipant
+        .findMany({
+          where: {
+            userId,
+          },
+          select: {
+            groupId: true,
+          },
+        })
+        .then(
+          (groupParticipants) =>
+            new Set(groupParticipants.map(({ groupId }) => groupId))
+        ),
+      prismaSession.groupParticipant.findMany({
+        where: {
+          userId: {
+            in: userIds,
+          },
+        },
+        select: {
+          groupId: true,
+          userId: true,
+        },
+      }),
+    ])
+
+    const participantsToUpdate = new Set<string>()
+    const participantsToDelete = new Set<string>()
+    oldUsersGroups.forEach(({ groupId, userId }) => {
+      if (newUserGroups.has(groupId)) {
+        participantsToDelete.add(userId)
+      } else {
+        newUserGroups.add(groupId)
+        participantsToUpdate.add(userId)
+      }
+    })
+
+    await Promise.all([
+      prismaSession.groupAdministrator.updateMany({
+        where: {
+          userId: {
+            in: userIds,
+          },
+        },
+        data: {
+          userId,
+        },
+      }),
+      prismaSession.simulation.updateMany({
+        where: {
+          userId: {
+            in: userIds,
+          },
+        },
+        data: {
+          userId,
+        },
+      }),
+      prismaSession.groupParticipant.updateMany({
+        where: {
+          userId: {
+            in: Array.from(participantsToUpdate),
+          },
+        },
+        data: {
+          userId,
+        },
+      }),
+      prismaSession.groupParticipant.deleteMany({
+        where: {
+          userId: {
+            in: Array.from(participantsToDelete),
+          },
+        },
+      }),
+    ])
 
     const oldPollsSimulations = await prismaSession.simulationPoll.findMany({
       skip: 1,
