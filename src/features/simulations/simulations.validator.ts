@@ -215,6 +215,7 @@ export const SimulationCreateValidator = {
   query: z
     .object({
       newsletters: SimulationCreateNewsletterList,
+      sendEmail: z.coerce.boolean().optional(),
     })
     .strict()
     .optional(),

@@ -9,9 +9,9 @@ import type { SimulationUpsertedEvent } from '../events/SimulationUpserted.event
 
 export const sendSimulationUpserted: Handler<SimulationUpsertedEvent> = ({
   attributes,
-  attributes: { origin, user, organisation, simulation },
+  attributes: { origin, user, organisation, simulation, sendEmail },
 }) => {
-  if (!user.email) {
+  if (!user.email || !sendEmail) {
     return
   }
 

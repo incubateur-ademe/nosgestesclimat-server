@@ -213,10 +213,6 @@ export const createSimulation = async ({
       .reply(400, { code: 'invalid_parameter' })
       .post('/v3/contacts/lists/36/contacts/remove')
       .reply(400, { code: 'invalid_parameter' })
-
-    if (payload.progression === 1) {
-      scope.post('/v3/smtp/email').reply(200)
-    }
   }
 
   const response = await agent

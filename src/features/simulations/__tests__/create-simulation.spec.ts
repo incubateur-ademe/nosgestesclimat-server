@@ -180,8 +180,6 @@ describe('Given a NGC user', () => {
         }
 
         nock(process.env.BREVO_URL!)
-          .post('/v3/smtp/email')
-          .reply(200)
           .post('/v3/contacts')
           .reply(200)
           .post('/v3/contacts/lists/35/contacts/remove')
@@ -274,8 +272,6 @@ describe('Given a NGC user', () => {
                 'api-key': process.env.BREVO_API_KEY!,
               },
             })
-              .post('/v3/smtp/email')
-              .reply(200)
               .post('/v3/contacts', {
                 email,
                 attributes: {
@@ -397,6 +393,7 @@ describe('Given a NGC user', () => {
             await agent
               .post(url.replace(':userId', faker.string.uuid()))
               .send(payload)
+              .query({ sendEmail: true })
               .expect(StatusCodes.CREATED)
 
             expect(scope.isDone()).toBeTruthy()
@@ -454,6 +451,7 @@ describe('Given a NGC user', () => {
               await agent
                 .post(url.replace(':userId', faker.string.uuid()))
                 .send(payload)
+                .query({ sendEmail: true })
                 .set('origin', 'https://preprod.nosgestesclimat.fr')
                 .expect(StatusCodes.CREATED)
 
@@ -484,8 +482,6 @@ describe('Given a NGC user', () => {
                   'api-key': process.env.BREVO_API_KEY!,
                 },
               })
-                .post('/v3/smtp/email')
-                .reply(200)
                 .post('/v3/contacts', {
                   email,
                   listIds: [22, 32, 36],
@@ -570,8 +566,6 @@ describe('Given a NGC user', () => {
                 'api-key': process.env.BREVO_API_KEY!,
               },
             })
-              .post('/v3/smtp/email')
-              .reply(200)
               .post('/v3/contacts', {
                 email,
                 listIds: [35],
@@ -627,6 +621,7 @@ describe('Given a NGC user', () => {
             await agent
               .post(url.replace(':userId', faker.string.uuid()))
               .send(payload)
+              .query({ sendEmail: true })
               .expect(StatusCodes.CREATED)
 
             expect(scope.isDone()).toBeTruthy()
