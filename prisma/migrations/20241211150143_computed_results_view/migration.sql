@@ -5,6 +5,6 @@ SELECT id,
     "computedResults",
     "createdAt",
     "updatedAt",
-    "computedResults"->'eau'->'bilan' as bilanEau,
-    "computedResults"->'carbone'->'bilan' as bilanCarbone
+    "computedResults"->'eau'->>'bilan' as bilanEau,
+    "computedResults"->'carbone'->>'bilan' as bilanCarbone
 FROM ngc."Simulation"
