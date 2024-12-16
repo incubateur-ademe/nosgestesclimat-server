@@ -63,7 +63,7 @@ beforeAll(async () => {
     ),
     path.join(
       prismaMigrationDir,
-      '20241211100000_20241211150143_computed_results_view',
+      '20241211150143_computed_results_view',
       'migration.sql'
     ),
   ]
