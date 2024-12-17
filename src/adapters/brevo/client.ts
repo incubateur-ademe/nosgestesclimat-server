@@ -8,6 +8,7 @@ import type {
 import type { AxiosError } from 'axios'
 import axios, { isAxiosError } from 'axios'
 import axiosRetry from 'axios-retry'
+import { z } from 'zod'
 import { config } from '../../config'
 import { isNetworkOrTimeoutOrRetryableError } from '../../core/typeguards/isRetryableAxiosError'
 import type {
@@ -89,8 +90,18 @@ type ContactDto = {
   statistics: unknown
 }
 
-export const fetchContact = (email: string) => {
-  return brevo.get<ContactDto>(`/v3/contacts/${encodeURIComponent(email)}`)
+const BrevoContactDtoSchema = z.object({
+  id: z.number(),
+  email: z.string(),
+  listIds: z.array(z.number()),
+})
+
+export const fetchContact = async (email: string) => {
+  const { data } = await brevo.get<ContactDto>(
+    `/v3/contacts/${encodeURIComponent(email)}`
+  )
+
+  return BrevoContactDtoSchema.parse(data)
 }
 
 const sendEmail = ({
@@ -342,6 +353,49 @@ export const addOrUpdateContactAfterLogin = ({
     email,
     attributes,
   })
+}
+
+export const addOrUpdateContactAndNewsLetterSubscriptions = async ({
+  user,
+  email,
+  listIds,
+}: {
+  user: {
+    id: string
+    name?: string | null
+  }
+  email: string
+  listIds: ListIds[]
+}) => {
+  const attributes = {
+    [Attributes.USER_ID]: user.id,
+    [Attributes.PRENOM]: user.name,
+  }
+
+  await addOrUpdateContact({
+    email,
+    attributes,
+    listIds,
+  })
+
+  const wantedListIds = new Set(listIds)
+  const contact = await fetchContact(email)
+
+  await contact.listIds.reduce(async (promise, listId) => {
+    await promise
+
+    if (!wantedListIds.has(listId)) {
+      await unsubscribeContactFromList({
+        email,
+        listId,
+      })
+    }
+  }, Promise.resolve())
+
+  // Spare fetch request again
+  contact.listIds = listIds
+
+  return contact
 }
 
 export const addOrUpdateContactAfterOrganisationChange = async ({
