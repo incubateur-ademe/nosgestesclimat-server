@@ -53,11 +53,13 @@ const simulationToDto = (
 export const createSimulation = async ({
   simulationDto,
   newsletters,
+  sendEmail,
   params,
   origin,
 }: {
   simulationDto: SimulationCreateDto
   newsletters: SimulationCreateNewsletterList
+  sendEmail: boolean
   params: UserParams
   origin: string
 }) => {
@@ -67,6 +69,7 @@ export const createSimulation = async ({
   const simulationUpsertedEvent = new SimulationUpsertedEvent({
     newsletters,
     simulation,
+    sendEmail,
     origin,
     user,
   })
@@ -120,6 +123,7 @@ export const createPollSimulation = async ({
     })
 
     const simulationUpsertedEvent = new SimulationUpsertedEvent({
+      sendEmail: true,
       organisation,
       simulation,
       origin,

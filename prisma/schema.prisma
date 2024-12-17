@@ -5,8 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
-  previewFeatures = ["multiSchema", "driverAdapters"]
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema", "driverAdapters", "views"]
 }
 
 datasource db {
@@ -205,6 +205,7 @@ model Simulation {
   createdAt                  DateTime                             @default(now())
   updatedAt                  DateTime                             @updatedAt
 
+  @@index([userId])
   @@schema("ngc")
 }
 
@@ -287,6 +288,26 @@ model VerifiedUser {
   simulations              Simulation[]
   createdAt                DateTime                    @default(now())
   updatedAt                DateTime                    @updatedAt
+
+  @@schema("ngc")
+}
+
+view ComputedResultsView {
+  id                  String   @id @default(uuid()) @db.Uuid
+  date                DateTime
+  progression         Float    @db.Real
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  bilanCarbone        Float
+  transportCarbone    Float
+  alimentationCarbone Float
+  logementCarbone     Float
+  diversCarbone       Float
+  bilanEauJour        Float
+  transportEauJour    Float
+  alimentationEauJour Float
+  logementEauJour     Float
+  diversEauJour       Float
 
   @@schema("ngc")
 }

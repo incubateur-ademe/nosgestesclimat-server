@@ -41,6 +41,7 @@ router
         newsletters: SimulationCreateNewsletterList.parse(
           req.query?.newsletters || []
         ),
+        sendEmail: !!req.query?.sendEmail,
         params: req.params,
         origin: req.get('origin') || config.origin,
       })

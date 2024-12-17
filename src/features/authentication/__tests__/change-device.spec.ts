@@ -352,6 +352,72 @@ describe('Given a ngc user', () => {
         })
       })
     })
+
+    describe(`And he/she joins the same group on device 2 not leaving his/her email`, () => {
+      let participantDevice2: Awaited<ReturnType<typeof joinGroup>>
+      let simulationDevice2: Awaited<ReturnType<typeof createSimulation>>
+      let userIdDevice2: string
+
+      beforeEach(async () => {
+        participantDevice2 = await joinGroup({
+          agent,
+          participant: {
+            name,
+          },
+          groupId: groupDevice1.id,
+        })
+        ;({ userId: userIdDevice2, simulation: simulationDevice2 } =
+          participantDevice2)
+      })
+
+      describe(`And he/she leaves his/her email posting a simulation`, () => {
+        beforeEach(async () => {
+          await createSimulation({
+            agent,
+            simulation: {
+              ...simulationDevice2,
+              user: {
+                ...simulationDevice2.user,
+                email,
+              },
+            },
+            userId: userIdDevice2,
+          })
+        })
+
+        describe('When fetching his/her groups', () => {
+          const url = FETCH_USER_GROUPS_ROUTE
+
+          test('Then it returns updated group created on device 1', async () => {
+            const response = await agent
+              .get(url.replace(':userId', userIdDevice2))
+              .expect(StatusCodes.OK)
+
+            expect(response.body).toEqual([
+              {
+                ...groupDevice1,
+                administrator: {
+                  ...groupDevice1.administrator,
+                  id: userIdDevice2,
+                },
+                participants: [
+                  {
+                    ...participantDevice2,
+                    simulation: {
+                      ...simulationDevice2,
+                      updatedAt: expect.any(String),
+                    },
+                    email,
+                    userId: userIdDevice2,
+                    updatedAt: expect.any(String),
+                  },
+                ],
+              },
+            ])
+          })
+        })
+      })
+    })
   })
 
   describe('And he/she creates a simulation leaving his/her email on device 1', () => {
