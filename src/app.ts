@@ -26,6 +26,9 @@ import removeParticipantRoute from './routes/groups/removeParticipant'
 // Integrations routes
 import integrationsController from './features/integrations/integrations.controller'
 
+// Newsletters routes
+import newslettersController from './features/newsletter/newsletter.controller'
+
 // Organisation routes
 import organisationController from './features/organisations/organisations.controller'
 import createOrganisationRoute from './routes/organisations/create'
@@ -120,7 +123,7 @@ app.use('/groups', groupsController)
 app.use('/group/fetch-groups', fetchGroupsRoute)
 app.use('/group/remove-participant', removeParticipantRoute)
 
-//Integrations routes
+// Integrations routes
 app.use('/integrations', integrationsController)
 
 // Organisation routes
@@ -161,13 +164,16 @@ app.use(
 )
 app.use('/polls/update-custom-questions', updateCustomQuestionsRoute)
 
-// quizz-answers routes
+// Quizz-answers routes
 app.use('/quizz-answers', quizzAnswersController)
 app.use('/quiz/answers/create', createQuizAnswerRoute)
 
-// northstar-ratings routes
+// Northstar-ratings routes
 app.use('/northstar-ratings', northstarRatingsController)
 app.use('/northstar/ratings/create', createNorthstarRatingRoute)
+
+// Newsletters routes
+app.use('/newsletters', newslettersController)
 
 // Settings route
 app.use('/update-settings', updateSettingsRoute)

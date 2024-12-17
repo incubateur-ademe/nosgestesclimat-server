@@ -5,9 +5,9 @@ import type {
   User,
   VerifiedUser,
 } from '@prisma/client'
+import type { AxiosError } from 'axios'
 import axios, { isAxiosError } from 'axios'
 import axiosRetry from 'axios-retry'
-import { StatusCodes } from 'http-status-codes'
 import { config } from '../../config'
 import { isNetworkOrTimeoutOrRetryableError } from '../../core/typeguards/isRetryableAxiosError'
 import type {
@@ -17,6 +17,7 @@ import type {
 import {
   AllNewsletters,
   Attributes,
+  ClientErrors,
   ListIds,
   MATOMO_CAMPAIGN_EMAIL_AUTOMATISE,
   MATOMO_CAMPAIGN_KEY,
@@ -38,6 +39,43 @@ axiosRetry(brevo, {
   retryDelay: () => 200,
   shouldResetTimeout: true,
 })
+
+const isBrevoClientError =
+  <Error extends ClientErrors>({ code, status }: Error) =>
+  (
+    error: AxiosError
+  ): error is AxiosError & {
+    response: { status: Error['status']; data: { code: Error['code'] } }
+  } => {
+    return (
+      error.response?.status === status &&
+      !!error.response.data &&
+      typeof error.response.data === 'object' &&
+      'code' in error.response.data &&
+      error.response.data.code === code
+    )
+  }
+
+export const isBadRequest = isBrevoClientError(ClientErrors.BAD_REQUEST)
+
+export const isNotFound = isBrevoClientError(ClientErrors.NOT_FOUND)
+
+type NewsletterDto = {
+  id: number
+  name: string
+  startDate: string
+  endDate: string
+  totalBlacklisted: number
+  totalSubscribers: number
+  uniqueSubscribers: number
+  folderId: number
+  createdAt: string
+  dynamicList: boolean
+}
+
+export const fetchNewsletter = (listId: number) => {
+  return brevo.get<NewsletterDto>(`/v3/contacts/lists/${listId}`)
+}
 
 const sendEmail = ({
   email,
@@ -267,12 +305,7 @@ const unsubscribeContactFromList = async ({
     })
   } catch (e) {
     // Brevo raises if not subscribed...
-    if (
-      !isAxiosError(e) ||
-      !e.response ||
-      e.response.status !== StatusCodes.BAD_REQUEST ||
-      e.response.data.code !== 'invalid_parameter'
-    ) {
+    if (!isAxiosError(e) || !isBadRequest(e)) {
       throw e
     }
   }

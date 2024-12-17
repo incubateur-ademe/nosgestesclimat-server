@@ -60,3 +60,5 @@ export type ModelToDto<T> = {
 }
 
 export type Metric = 'carbone' | 'eau'
+
+export type ValueOf<T> = T[keyof T]
