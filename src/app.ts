@@ -67,6 +67,9 @@ import createQuizAnswerRoute from './routes/quiz/create'
 import northstarRatingsController from './features/northstar-ratings/northstar-ratings.controller'
 import createNorthstarRatingRoute from './routes/northstar/create'
 
+// Users routes
+import usersController from './features/users/users.controller'
+
 // Settings route
 import getNewsletterSubscriptions from './routes/settings/getNewsletterSubscriptions'
 import updateSettingsRoute from './routes/settings/updateSettings'
@@ -174,6 +177,9 @@ app.use('/northstar/ratings/create', createNorthstarRatingRoute)
 
 // Newsletters routes
 app.use('/newsletters', newslettersController)
+
+// Users routes
+app.use('/users', usersController)
 
 // Settings route
 app.use('/update-settings', updateSettingsRoute)

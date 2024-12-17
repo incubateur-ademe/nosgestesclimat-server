@@ -3,20 +3,9 @@ import { StatusCodes } from 'http-status-codes'
 import nock from 'nock'
 import supertest from 'supertest'
 import { ZodError } from 'zod'
+import { formatBrevoDate } from '../../../adapters/brevo/__tests__/fixtures/formatBrevoDate'
 import app from '../../../app'
 import logger from '../../../logger'
-
-// Brevo are evil
-const formatBrevoDate = (date: Date) => {
-  const timezoneOffset = -date.getTimezoneOffset()
-  const sign = timezoneOffset >= 0 ? '+' : '-'
-  const hours = Math.floor(Math.abs(timezoneOffset) / 60)
-    .toString()
-    .padStart(2, '0')
-  const minutes = (Math.abs(timezoneOffset) % 60).toString().padStart(2, '0')
-
-  return `${date.toISOString().slice(0, -1)}${sign}${hours}:${minutes}`
-}
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)

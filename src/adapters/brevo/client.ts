@@ -77,6 +77,22 @@ export const fetchNewsletter = (listId: number) => {
   return brevo.get<NewsletterDto>(`/v3/contacts/lists/${listId}`)
 }
 
+type ContactDto = {
+  email: string
+  id: number
+  emailBlacklisted: boolean
+  smsBlacklisted: boolean
+  createdAt: string
+  modifiedAt: string
+  attributes: Record<string, string | number | boolean>
+  listIds: number[]
+  statistics: unknown
+}
+
+export const fetchContact = (email: string) => {
+  return brevo.get<ContactDto>(`/v3/contacts/${encodeURIComponent(email)}`)
+}
+
 const sendEmail = ({
   email,
   templateId,
