@@ -23,6 +23,7 @@ describe(`Given an existing NGC user organisation`, () => {
   })
 
   afterEach(async () => {
+    await prisma.organisationAdministrator.deleteMany()
     await Promise.all([
       prisma.organisation.deleteMany(),
       prisma.verifiedUser.deleteMany(),
