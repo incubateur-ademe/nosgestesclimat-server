@@ -5,9 +5,10 @@ import type {
   User,
   VerifiedUser,
 } from '@prisma/client'
+import type { AxiosError } from 'axios'
 import axios, { isAxiosError } from 'axios'
 import axiosRetry from 'axios-retry'
-import { StatusCodes } from 'http-status-codes'
+import { z } from 'zod'
 import { config } from '../../config'
 import { isNetworkOrTimeoutOrRetryableError } from '../../core/typeguards/isRetryableAxiosError'
 import type {
@@ -17,6 +18,7 @@ import type {
 import {
   AllNewsletters,
   Attributes,
+  ClientErrors,
   ListIds,
   MATOMO_CAMPAIGN_EMAIL_AUTOMATISE,
   MATOMO_CAMPAIGN_KEY,
@@ -38,6 +40,69 @@ axiosRetry(brevo, {
   retryDelay: () => 200,
   shouldResetTimeout: true,
 })
+
+const isBrevoClientError =
+  <Error extends ClientErrors>({ code, status }: Error) =>
+  (
+    error: AxiosError
+  ): error is AxiosError & {
+    response: { status: Error['status']; data: { code: Error['code'] } }
+  } => {
+    return (
+      error.response?.status === status &&
+      !!error.response.data &&
+      typeof error.response.data === 'object' &&
+      'code' in error.response.data &&
+      error.response.data.code === code
+    )
+  }
+
+export const isBadRequest = isBrevoClientError(ClientErrors.BAD_REQUEST)
+
+export const isNotFound = isBrevoClientError(ClientErrors.NOT_FOUND)
+
+type NewsletterDto = {
+  id: number
+  name: string
+  startDate: string
+  endDate: string
+  totalBlacklisted: number
+  totalSubscribers: number
+  uniqueSubscribers: number
+  folderId: number
+  createdAt: string
+  dynamicList: boolean
+}
+
+export const fetchNewsletter = (listId: number) => {
+  return brevo.get<NewsletterDto>(`/v3/contacts/lists/${listId}`)
+}
+
+type ContactDto = {
+  email: string
+  id: number
+  emailBlacklisted: boolean
+  smsBlacklisted: boolean
+  createdAt: string
+  modifiedAt: string
+  attributes: Record<string, string | number | boolean>
+  listIds: number[]
+  statistics: unknown
+}
+
+const BrevoContactDtoSchema = z.object({
+  id: z.number(),
+  email: z.string(),
+  listIds: z.array(z.number()),
+})
+
+export const fetchContact = async (email: string) => {
+  const { data } = await brevo.get<ContactDto>(
+    `/v3/contacts/${encodeURIComponent(email)}`
+  )
+
+  return BrevoContactDtoSchema.parse(data)
+}
 
 const sendEmail = ({
   email,
@@ -267,12 +332,7 @@ const unsubscribeContactFromList = async ({
     })
   } catch (e) {
     // Brevo raises if not subscribed...
-    if (
-      !isAxiosError(e) ||
-      !e.response ||
-      e.response.status !== StatusCodes.BAD_REQUEST ||
-      e.response.data.code !== 'invalid_parameter'
-    ) {
+    if (!isAxiosError(e) || !isBadRequest(e)) {
       throw e
     }
   }
@@ -293,6 +353,49 @@ export const addOrUpdateContactAfterLogin = ({
     email,
     attributes,
   })
+}
+
+export const addOrUpdateContactAndNewsLetterSubscriptions = async ({
+  user,
+  email,
+  listIds,
+}: {
+  user: {
+    id: string
+    name?: string | null
+  }
+  email: string
+  listIds: ListIds[]
+}) => {
+  const attributes = {
+    [Attributes.USER_ID]: user.id,
+    [Attributes.PRENOM]: user.name,
+  }
+
+  await addOrUpdateContact({
+    email,
+    attributes,
+    listIds,
+  })
+
+  const wantedListIds = new Set(listIds)
+  const contact = await fetchContact(email)
+
+  await contact.listIds.reduce(async (promise, listId) => {
+    await promise
+
+    if (!wantedListIds.has(listId)) {
+      await unsubscribeContactFromList({
+        email,
+        listId,
+      })
+    }
+  }, Promise.resolve())
+
+  // Spare fetch request again
+  contact.listIds = listIds
+
+  return contact
 }
 
 export const addOrUpdateContactAfterOrganisationChange = async ({
