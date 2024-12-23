@@ -6,7 +6,7 @@ import mongoose from 'mongoose'
 import nock from 'nock'
 import path from 'path'
 import { PrismaPGlite } from 'pglite-prisma-adapter'
-import connect from './src/helpers/db/initDatabase'
+import connect from './src/utils/initDatabase'
 
 const client = new PGlite()
 const adapter = new PrismaPGlite(client)

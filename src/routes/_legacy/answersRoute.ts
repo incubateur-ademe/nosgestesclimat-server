@@ -2,9 +2,9 @@ import express from 'express'
 import fs from 'fs'
 import { Parser } from 'json2csv'
 import yaml from 'yaml'
-import connectdb from '../../helpers/db/initDatabase'
 import Answers from '../../schemas/_legacy/AnswerSchema'
 import Surveys from '../../schemas/_legacy/SurveySchema'
+import connectdb from '../../utils/initDatabase'
 
 const router = express.Router()
 

@@ -4,10 +4,10 @@ import { Server as SocketIOServer } from 'socket.io'
 import { prisma } from './adapters/prisma/client'
 import app from './app'
 import { config, origin } from './config'
-import connect from './helpers/db/initDatabase'
 import type { LeanAnswerType } from './schemas/_legacy/AnswerSchema'
 import Answer from './schemas/_legacy/AnswerSchema'
 import type { ModelToDto } from './types/types'
+import connect from './utils/initDatabase'
 
 const server = new HttpServer(app)
 

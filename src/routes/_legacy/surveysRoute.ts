@@ -1,8 +1,8 @@
 import express from 'express'
 import { prisma } from '../../adapters/prisma/client'
-import connectdb from '../../helpers/db/initDatabase'
 import logger from '../../logger'
 import Survey from '../../schemas/_legacy/SurveySchema'
+import connectdb from '../../utils/initDatabase'
 
 const router = express.Router()
 

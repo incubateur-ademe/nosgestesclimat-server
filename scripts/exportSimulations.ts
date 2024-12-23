@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { DottedName } from '@incubateur-ademe/nosgestesclimat'
 import fs from 'fs'
-import connectdb from '../src/helpers/db/initDatabase'
 import type { SimulationType } from '../src/schemas/SimulationSchema'
 import { Simulation } from '../src/schemas/SimulationSchema'
+import connectdb from '../src/utils/initDatabase'
 
 type SimulationWithData = SimulationType & {
   data: any
