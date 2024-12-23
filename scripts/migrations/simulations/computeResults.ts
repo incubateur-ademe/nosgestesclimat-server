@@ -1,15 +1,13 @@
 import type { DottedName, NGCRuleNode } from '@incubateur-ademe/nosgestesclimat'
 import rules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
 import type Engine from 'publicodes'
-import type {
-  EvaluatedNode,
-  ParsedRules,
-  PublicodesExpression,
-} from 'publicodes'
+import type { EvaluatedNode, PublicodesExpression } from 'publicodes'
 import { utils } from 'publicodes'
 import { carbonMetric, waterMetric } from '../../../src/constants/ngc'
 import { engine } from '../../../src/constants/publicode'
 import type { Metric, Situation } from '../../../src/types/types'
+
+type ParsedRules = ReturnType<Engine['getParsedRules']>
 
 function safeEvaluate({
   engine,
@@ -100,10 +98,7 @@ const categories = [
   'services sociétaux',
 ] as const
 
-const computeMetricResults = (
-  metric: Metric,
-  parsedRules: ParsedRules<DottedName>
-) => ({
+const computeMetricResults = (metric: Metric, parsedRules: ParsedRules) => ({
   bilan: Number(
     safeEvaluate({ engine, expr: 'bilan', metric })?.nodeValue ?? 0
   ),
