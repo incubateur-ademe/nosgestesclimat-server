@@ -1,3 +1,6 @@
+import { StatusCodes } from 'http-status-codes'
+import type { ValueOf } from '../../types/types'
+
 export enum TemplateIds {
   SIMULATION_COMPLETED = 55,
   GROUP_CREATED = 57,
@@ -67,3 +70,16 @@ export const MATOMO_KEYWORDS = {
   [TemplateIds.ORGANISATION_CREATED]: 'orga-admin-creation',
   [TemplateIds.ORGANISATION_JOINED]: 'orga-invite-campagne',
 } as const
+
+export const ClientErrors = {
+  BAD_REQUEST: {
+    code: 'invalid_parameter',
+    status: StatusCodes.BAD_REQUEST,
+  },
+  NOT_FOUND: {
+    code: 'document_not_found',
+    status: StatusCodes.NOT_FOUND,
+  },
+} as const
+
+export type ClientErrors = ValueOf<typeof ClientErrors>
