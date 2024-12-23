@@ -4,10 +4,10 @@ import { migrateSituation } from '@publicodes/tools/migration'
 import type { AnyBulkWriteOperation } from 'mongodb'
 import mongoose from 'mongoose'
 import { config } from '../../../src/config'
-import { computeResults } from '../../../src/helpers/simulation/computeResults'
 import { Poll } from '../../../src/schemas/PollSchema'
 import type { LeanSimulationType } from '../../../src/schemas/SimulationSchema'
 import { Simulation } from '../../../src/schemas/SimulationSchema'
+import { computeResults } from './computeResults'
 
 /**
  * This script find all polls simulations without computedResults

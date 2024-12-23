@@ -1,8 +1,59 @@
 import mongoose from 'mongoose'
+import { prisma } from '../../src/adapters/prisma/client'
 import { config } from '../../src/config'
-import { createOrUpdateUser } from '../../src/helpers/queries/createOrUpdateUser'
+import { isValidEmail } from '../../src/core/typeguards/isValidEmail'
+import logger from '../../src/logger'
 import { Group } from '../../src/schemas/GroupSchema'
 import { Simulation } from '../../src/schemas/SimulationSchema'
+import { User } from '../../src/schemas/UserSchema'
+
+type Props = {
+  userId: string
+  email?: string
+  name?: string
+}
+
+async function createOrUpdateUser({ userId, email, name }: Props) {
+  // If there is no userId we can't create a user
+  if (!userId) {
+    return
+  }
+
+  const emailUpdate = email && isValidEmail(email) ? { email } : {}
+  const nameUpdate = typeof name === 'string' ? { name } : {}
+
+  const userDocument = await User.findOneAndUpdate(
+    { userId },
+    {
+      userId,
+      ...emailUpdate,
+      ...nameUpdate,
+    },
+    { upsert: true, new: true }
+  )
+
+  try {
+    await prisma.user.upsert({
+      where: {
+        id: userId,
+      },
+      create: {
+        id: userId,
+        ...emailUpdate,
+        ...nameUpdate,
+      },
+      update: {
+        id: userId,
+        ...emailUpdate,
+        ...nameUpdate,
+      },
+    })
+  } catch (error) {
+    logger.error('postgre Users replication failed', error)
+  }
+
+  return userDocument
+}
 
 async function migrate() {
   console.log('In migrate function...')

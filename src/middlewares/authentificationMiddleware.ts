@@ -4,9 +4,12 @@ import type { JwtPayload } from 'jsonwebtoken'
 import jwt from 'jsonwebtoken'
 import { prisma } from '../adapters/prisma/client'
 import { config } from '../config'
-import { COOKIE_NAME } from '../features/authentication/authentication.service'
+import {
+  COOKIE_MAX_AGE,
+  COOKIE_NAME,
+  COOKIES_OPTIONS,
+} from '../features/authentication/authentication.service'
 import { syncUserData } from '../features/users/users.service'
-import { generateAndSetNewToken } from '../helpers/authentification/generateAndSetNewToken'
 import logger from '../logger'
 
 const isValidResult = (
@@ -76,7 +79,11 @@ export const authentificationMiddleware =
       }
 
       // Generate a new token
-      generateAndSetNewToken(res, req.user)
+      const newToken = jwt.sign({ email, userId }, config.security.jwt.secret, {
+        expiresIn: COOKIE_MAX_AGE,
+      })
+
+      res.cookie(COOKIE_NAME, newToken, COOKIES_OPTIONS)
 
       next()
     })

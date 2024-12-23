@@ -4,14 +4,118 @@ import z, { ZodError } from 'zod'
 import { prisma } from '../../src/adapters/prisma/client'
 import { config } from '../../src/config'
 import { isPrismaErrorInconsistentColumnData } from '../../src/core/typeguards/isPrismaError'
-import {
-  findVerifiedUser,
-  getSimulationAdditionalQuestionsAnswers,
-} from '../../src/helpers/queries/createOrUpdateSimulation'
+import type { AdditionalQuestionsAnswersSchema } from '../../src/features/simulations/simulations.validator'
+import { SimulationAdditionalQuestionAnswerType } from '../../src/features/simulations/simulations.validator'
 import logger from '../../src/logger'
 import { Poll } from '../../src/schemas/PollSchema'
 import { Simulation } from '../../src/schemas/SimulationSchema'
 import '../../src/schemas/UserSchema'
+
+type AditionalQuestionAnswer = {
+  type: 'default' | 'custom'
+  key: string
+  answer: string
+}
+
+const findVerifiedUser = async (
+  userId: string,
+  simulationId: string
+): Promise<{
+  email?: string | null | undefined
+}> => {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: {
+      email: true,
+    },
+  })
+
+  if (!user) {
+    logger.warn(
+      `Could not find user for userId ${userId}. Trying in Verified users`
+    )
+  }
+
+  const { email } = user || {}
+
+  if (email) {
+    const verifiedUser = await prisma.verifiedUser.findUnique({
+      where: {
+        email,
+      },
+      select: {
+        email: true,
+      },
+    })
+
+    return verifiedUser ? verifiedUser : {}
+  }
+  const verifiedUsers = await prisma.verifiedUser.findMany({
+    where: {
+      id: userId,
+    },
+    select: {
+      email: true,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  })
+
+  if (!verifiedUsers.length) {
+    return {}
+  }
+
+  if (verifiedUsers.length > 1) {
+    logger.warn(
+      `Found more than one user for userId ${userId}, simulation ${simulationId}. Taking first one`
+    )
+  }
+
+  const [verifiedUser] = verifiedUsers
+
+  return verifiedUser
+}
+
+const getSimulationAdditionalQuestionsAnswers = ({
+  defaultAdditionalQuestionsAnswers = {},
+  customAdditionalQuestionsAnswers = {},
+}: {
+  defaultAdditionalQuestionsAnswers?: {
+    birthdate?: string
+    postalCode?: string
+  }
+  customAdditionalQuestionsAnswers?: Record<string, string>
+}) => {
+  return [
+    ...Object.entries(defaultAdditionalQuestionsAnswers).reduce(
+      (acc: AditionalQuestionAnswer[], [key, value]) => {
+        acc.push({
+          type: SimulationAdditionalQuestionAnswerType.default,
+          key,
+          answer: value?.toString() || '',
+        })
+
+        return acc
+      },
+      []
+    ),
+    ...Object.entries(customAdditionalQuestionsAnswers).reduce(
+      (acc: AditionalQuestionAnswer[], [key, value]) => {
+        acc.push({
+          type: SimulationAdditionalQuestionAnswerType.custom,
+          key,
+          answer: value?.toString() || '',
+        })
+
+        return acc
+      },
+      []
+    ),
+  ] as AdditionalQuestionsAnswersSchema
+}
 
 const categories = [
   'services sociétaux',

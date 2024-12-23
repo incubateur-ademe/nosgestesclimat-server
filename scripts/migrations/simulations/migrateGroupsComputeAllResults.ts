@@ -3,10 +3,10 @@ import migrationInstructionsJSON from '@incubateur-ademe/nosgestesclimat/public/
 import { migrateSituation } from '@publicodes/tools/migration'
 import mongoose from 'mongoose'
 import { config } from '../../../src/config'
-import { fullComputeResults } from '../../../src/helpers/simulation/computeResults'
 import { Group } from '../../../src/schemas/GroupSchema'
 import type { LeanSimulationType } from '../../../src/schemas/SimulationSchema'
 import { Simulation } from '../../../src/schemas/SimulationSchema'
+import { fullComputeResults } from './computeResults'
 
 /**
  * This script find all group simulations without carbon subcategories and without water computedResults
