@@ -7,6 +7,7 @@ const main = async () => {
   const scripts = [
     await import('./scripts/grant-roles'),
     await import('./scripts/add-integrations-api-scopes'),
+    await import('./scripts/add-integrations-email-whitelist'),
   ]
 
   try {
