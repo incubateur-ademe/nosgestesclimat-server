@@ -65,6 +65,35 @@ describe('Given a NGC user', () => {
         expect(scope.isDone()).toBeTruthy()
       })
 
+      describe(`And agir interface changes`, () => {
+        test(`Then it raises an exception`, async () => {
+          nock(process.env.AGIR_URL!).post('/bilan/importFromNGC').reply(200, {
+            foo: 'bar',
+          })
+
+          await agent
+            .post(url.replace(':externalService', serviceName))
+            .send(situation)
+            .expect(StatusCodes.INTERNAL_SERVER_ERROR)
+        })
+
+        test(`Then it logs the exception`, async () => {
+          nock(process.env.AGIR_URL!).post('/bilan/importFromNGC').reply(200, {
+            foo: 'bar',
+          })
+
+          await agent
+            .post(url.replace(':externalService', serviceName))
+            .send(situation)
+            .expect(StatusCodes.INTERNAL_SERVER_ERROR)
+
+          expect(logger.error).toHaveBeenCalledWith(
+            'Situation export failed',
+            expect.any(ZodError)
+          )
+        })
+      })
+
       describe(`And service is down`, () => {
         test(`Then it retries several times and then raises the exception`, async () => {
           nock(process.env.AGIR_URL!)

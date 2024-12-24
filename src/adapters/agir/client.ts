@@ -1,5 +1,6 @@
 import axios from 'axios'
 import axiosRetry from 'axios-retry'
+import { z } from 'zod'
 import { config } from '../../config'
 import { isNetworkOrTimeoutOrRetryableError } from '../../core/typeguards/isRetryableAxiosError'
 import type { SituationExportQueryParamsSchema } from '../../features/integrations/integrations.validator'
@@ -19,17 +20,24 @@ axiosRetry(agir, {
   shouldResetTimeout: true,
 })
 
+const AgirResponseSchema = z
+  .object({
+    redirect_url: z.string(),
+  })
+  .strict()
+
 export const exportSituation = async (
   situation: SituationSchema,
   _: SituationExportQueryParamsSchema
 ) => {
-  const {
-    data: { redirect_url },
-  } = await agir.post<{ redirect_url: string }>('/bilan/importFromNGC', {
-    situation,
-  })
+  const { data } = await agir.post<{ redirect_url: string }>(
+    '/bilan/importFromNGC',
+    {
+      situation,
+    }
+  )
 
   return {
-    redirectUrl: redirect_url,
+    redirectUrl: AgirResponseSchema.parse(data).redirect_url,
   }
 }
