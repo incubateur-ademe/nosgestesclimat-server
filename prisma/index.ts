@@ -3,7 +3,11 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 const main = async () => {
-  const scripts = [await import('./scripts/grant-roles')]
+  // Order matters here
+  const scripts = [
+    await import('./scripts/grant-roles'),
+    await import('./scripts/add-integrations-api-scopes'),
+  ]
 
   try {
     await scripts.reduce(
