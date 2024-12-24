@@ -43,6 +43,10 @@ export const config = {
     sentry: {
       dsn: ensureEnvVar(process.env.SENTRY_DSN, ''),
     },
+    twoTons: {
+      url: ensureEnvVar(process.env.TWO_TONS_URL, ''),
+      bearerToken: ensureEnvVar(process.env.TWO_TONS_BEARER_TOKEN, ''),
+    },
   },
   mongo: {
     url: ensureEnvVar(process.env.MONGO_URL, 'mongodb://127.0.0.1:27017/ngc'),
