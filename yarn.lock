@@ -2639,6 +2639,16 @@
   dependencies:
     defer-to-connect "^2.0.0"
 
+"@ts-rest/core@^3.51.0":
+  version "3.51.0"
+  resolved "https://registry.yarnpkg.com/@ts-rest/core/-/core-3.51.0.tgz#7e56fbae7abc4037a84396fb098a7eb24759d4a8"
+  integrity sha512-v6lnWEcpZj1UgN9wb84XQ+EORP1QEtncFumoXMJjno5ZUV6vdjKze3MYcQN0C6vjBpIJPQEaI/gab2jr4/0KzQ==
+
+"@ts-rest/express@^3.51.0":
+  version "3.51.0"
+  resolved "https://registry.yarnpkg.com/@ts-rest/express/-/express-3.51.0.tgz#9cddf7d2f07512aacd367b9719960cccbc360ece"
+  integrity sha512-osOo040EHoCMNMFBbEwZ6XheeEhG/zJGF4k3FOYUtaYSdxxYp5XkP8jQoV6I+Lu+O5jopnOQWoCpmNrrraIO8g==
+
 "@tsconfig/node10@^1.0.7":
   version "1.0.11"
   resolved "https://registry.yarnpkg.com/@tsconfig/node10/-/node10-1.0.11.tgz#6ee46400685f130e278128c7b38b7e031ff5b2f2"
