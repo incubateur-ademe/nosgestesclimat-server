@@ -126,17 +126,36 @@ const sendEmail = ({
 }
 
 export const sendVerificationCodeEmail = ({
+  origin,
+  userId,
   email,
   code,
 }: Readonly<{
+  origin: string
   email: string
   code: string
+  userId?: string | null
 }>) => {
+  if (userId) {
+    return sendEmail({
+      email,
+      templateId: TemplateIds.VERIFICATION_CODE,
+      params: {
+        VERIFICATION_CODE: code,
+      },
+    })
+  }
+
+  const apiTokenUrl = new URL(`${origin}/integrations-api/v1/tokens`)
+  const { searchParams } = apiTokenUrl
+  searchParams.append('code', code)
+  searchParams.append('email', email)
+
   return sendEmail({
     email,
-    templateId: TemplateIds.VERIFICATION_CODE,
+    templateId: TemplateIds.API_VERIFICATION_CODE,
     params: {
-      VERIFICATION_CODE: code,
+      API_TOKEN_URL: apiTokenUrl.toString(),
     },
   })
 }

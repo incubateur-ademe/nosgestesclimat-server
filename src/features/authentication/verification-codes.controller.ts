@@ -1,6 +1,7 @@
 import express from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { validateRequest } from 'zod-express-middleware'
+import { config } from '../../config'
 import { EventBus } from '../../core/event-bus/event-bus'
 import logger from '../../logger'
 import { VerificationCodeCreatedEvent } from './events/VerificationCodeCreated.event'
@@ -21,7 +22,10 @@ router
   .route('/v1/')
   .post(validateRequest(VerificationCodeCreateValidator), async (req, res) => {
     try {
-      const verificationCode = await createVerificationCode(req.body)
+      const verificationCode = await createVerificationCode({
+        verificationCodeDto: req.body,
+        origin: req.get('origin') || config.origin,
+      })
 
       return res.status(StatusCodes.CREATED).json(verificationCode)
     } catch (err) {

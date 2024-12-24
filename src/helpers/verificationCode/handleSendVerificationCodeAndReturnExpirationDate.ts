@@ -4,9 +4,11 @@ import { sendVerificationCodeEmail } from '../email/sendVerificationCodeEmail'
 
 type Props = {
   email: string
+  userId: string
 }
 
 export async function handleSendVerificationCodeAndReturnExpirationDate({
+  userId,
   email,
 }: Props) {
   // Generate a random code
@@ -24,6 +26,7 @@ export async function handleSendVerificationCodeAndReturnExpirationDate({
   // Send the code by email
   await sendVerificationCodeEmail({
     email,
+    userId,
     verificationCode: code,
   })
 
