@@ -20,6 +20,23 @@ const GenerateAPITokenResponseDto = z.object({
   message: z.string(),
 })
 
+const RecoverApiTokenQuery = z
+  .object({
+    code: z.string().regex(/^\d{6}$/),
+    email: z
+      .string()
+      .regex(EMAIL_REGEX)
+      .transform((email) => email.toLocaleLowerCase()),
+  })
+  .strict()
+
+export type RecoverApiTokenQuery = z.infer<typeof RecoverApiTokenQuery>
+
+const RecoverApiTokenResponseDto = z.object({
+  token: z.string(),
+  refreshToken: z.string(),
+})
+
 const c = initContract()
 
 const contract = c.router({
@@ -35,6 +52,18 @@ const contract = c.router({
       [StatusCodes.INTERNAL_SERVER_ERROR as number]: z.object({}).strict(),
     },
     summary: 'Ask for an API token for the given email',
+  },
+  recoverApiToken: {
+    method: 'GET',
+    path: '/integrations-api/v1/tokens',
+    query: RecoverApiTokenQuery,
+    pathParams: z.object({}).strict(),
+    responses: {
+      [StatusCodes.OK as number]: RecoverApiTokenResponseDto,
+      [StatusCodes.BAD_REQUEST as number]: ZodErrorSchema,
+      [StatusCodes.INTERNAL_SERVER_ERROR as number]: z.object({}).strict(),
+    },
+    summary: 'Recover an API token from the given email',
   },
 })
 

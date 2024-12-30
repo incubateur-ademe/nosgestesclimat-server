@@ -7,11 +7,14 @@ import { prisma } from '../../../../../adapters/prisma/client'
 import app from '../../../../../app'
 import logger from '../../../../../logger'
 import * as authenticationService from '../../../../authentication/authentication.service'
-import { createIntegrationEmailWhitelist } from './fixtures/authentication.fixtures'
+import {
+  createIntegrationEmailWhitelist,
+  GENERATE_API_TOKEN_ROUTE,
+} from './fixtures/authentication.fixtures'
 
 describe('Given a NGC integrations API user', () => {
   const agent = supertest(app)
-  const url = '/integrations-api/v1/tokens'
+  const url = GENERATE_API_TOKEN_ROUTE
 
   afterEach(async () => {
     await prisma.integrationWhitelist.deleteMany()

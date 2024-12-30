@@ -17,6 +17,7 @@ export const findIntegrationWhitelist = (
         },
         select: {
           emailPattern: true,
+          apiScopeName: true,
         },
       }),
     session
