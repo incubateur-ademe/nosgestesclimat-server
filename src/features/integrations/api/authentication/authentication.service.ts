@@ -1,6 +1,11 @@
-import jwt from 'jsonwebtoken'
+import { ApiScopeName } from '@prisma/client'
+import type { Request, RequestHandler } from 'express'
+import { StatusCodes } from 'http-status-codes'
+import type { JwtPayload } from 'jsonwebtoken'
+import jwt, { TokenExpiredError } from 'jsonwebtoken'
 import { config } from '../../../../config'
 import { EntityNotFoundException } from '../../../../core/errors/EntityNotFoundException'
+import { UnauthorizedException } from '../../../../core/errors/UnauthorizedException'
 import { isPrismaErrorNotFound } from '../../../../core/typeguards/isPrismaError'
 import { findUserVerificationCode } from '../../../authentication/verification-codes.repository'
 import { createVerificationCode } from '../../../authentication/verification-codes.service'
@@ -15,6 +20,85 @@ export const TOKEN_MAX_AGE = 1000 * 60 * 15 // 15 minutes
 export const REFRESH_TOKEN_MAX_AGE = 1000 * 60 * 60 * 24 * 61 // 2 months
 
 export const REFRESH_TOKEN_SCOPE = 'refresh-token' as const
+
+export const generateAuthenticationMiddleware =
+  ({ passIfExpired }: { passIfExpired?: true } = {}): RequestHandler =>
+  (req, res, next) => {
+    const [, token] = (req.get('authorization') || '').split(' ')
+
+    jwt.verify(token, config.security.jwt.secret, (err, parsedToken) => {
+      try {
+        const shouldPassIfExpired =
+          !!passIfExpired && err instanceof TokenExpiredError
+        const user = parsedToken || jwt.decode(token)
+
+        if (!isValidParsedToken(user) || (err && !shouldPassIfExpired)) {
+          throw new UnauthorizedException()
+        }
+
+        const userScopes = new Set(user.scopes)
+
+        req.apiUser = {
+          scopes: userScopes.has(ApiScopeName.ngc)
+            ? new Set(Object.values(ApiScopeName))
+            : userScopes,
+          email: user.email,
+        }
+
+        return next()
+      } catch (err) {
+        return res.status(StatusCodes.UNAUTHORIZED).send(err.message).end()
+      }
+    })
+  }
+
+export const isValidParsedToken = (
+  parsedToken?: string | JwtPayload | null
+): parsedToken is JwtPayload & { email: string; scopes: string[] } =>
+  typeof parsedToken === 'object' &&
+  !!parsedToken &&
+  'email' in parsedToken &&
+  'scopes' in parsedToken &&
+  Array.isArray(parsedToken.scopes) &&
+  parsedToken.scopes.every((scope) => typeof scope === 'string')
+
+const isValidParsedRefreshToken = (
+  parsedToken?: string | JwtPayload | null
+): parsedToken is JwtPayload & { email: string; scopes: string[] } =>
+  isValidParsedToken(parsedToken) &&
+  new Set(parsedToken.scopes).has(REFRESH_TOKEN_SCOPE)
+
+export const isValidRefreshToken = async (refreshToken: string) => {
+  return new Promise((res) => {
+    jwt.verify(refreshToken, config.security.jwt.secret, (err, parsedToken) =>
+      err || !isValidParsedRefreshToken(parsedToken) ? res(false) : res(true)
+    )
+  })
+}
+
+const signTokens = async (email: string) => {
+  const [, emailDomain] = email.split('@')
+  const emailWhitelist = await findIntegrationWhitelist({ emailDomain })
+
+  const scopes = new Set(emailWhitelist.map(({ apiScopeName }) => apiScopeName))
+
+  return {
+    token: jwt.sign(
+      { email, scopes: Array.from(scopes) },
+      config.security.jwt.secret,
+      {
+        expiresIn: TOKEN_MAX_AGE,
+      }
+    ),
+    refreshToken: jwt.sign(
+      { email, scopes: [REFRESH_TOKEN_SCOPE] },
+      config.security.jwt.secret,
+      {
+        expiresIn: REFRESH_TOKEN_MAX_AGE,
+      }
+    ),
+  }
+}
 
 export const generateApiToken = async ({
   generateApiTokenDto: { email },
@@ -49,29 +133,19 @@ export const exchangeCredentialsForToken = async (
       userId: null,
     })
 
-    const [, emailDomain] = email.split('@')
-    const emailWhitelist = await findIntegrationWhitelist({ emailDomain })
-
-    const scopes = Array.from(
-      new Set(emailWhitelist.map(({ apiScopeName }) => apiScopeName))
-    )
-
-    return {
-      token: jwt.sign({ email, scopes }, config.security.jwt.secret, {
-        expiresIn: TOKEN_MAX_AGE,
-      }),
-      refreshToken: jwt.sign(
-        { email, scopes: [REFRESH_TOKEN_SCOPE] },
-        config.security.jwt.secret,
-        {
-          expiresIn: REFRESH_TOKEN_MAX_AGE,
-        }
-      ),
-    }
+    return signTokens(email)
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('VerificationCode not found')
     }
     throw e
   }
+}
+
+export const refreshApiToken = ({
+  apiUser,
+}: {
+  apiUser: NonNullable<Request['apiUser']>
+}) => {
+  return signTokens(apiUser.email)
 }

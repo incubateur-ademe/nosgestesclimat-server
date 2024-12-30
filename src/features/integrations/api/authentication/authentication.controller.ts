@@ -1,12 +1,17 @@
 import { StatusCodes } from 'http-status-codes'
 import { config } from '../../../../config'
 import { EntityNotFoundException } from '../../../../core/errors/EntityNotFoundException'
+import { asyncValidateRequestBody } from '../../../../core/middlewares/asyncValidateRequestBody'
 import { tsRestServer } from '../../../../core/ts-rest'
 import logger from '../../../../logger'
-import authenticationContract from './authentication.contract'
+import authenticationContract, {
+  AsyncRefreshApiTokenRequestDto,
+} from './authentication.contract'
 import {
   exchangeCredentialsForToken,
   generateApiToken,
+  generateAuthenticationMiddleware,
+  refreshApiToken,
 } from './authentication.service'
 
 const router = tsRestServer.router(authenticationContract, {
@@ -52,6 +57,20 @@ const router = tsRestServer.router(authenticationContract, {
         status: StatusCodes.INTERNAL_SERVER_ERROR,
       }
     }
+  },
+  refreshApiToken: {
+    middleware: [
+      generateAuthenticationMiddleware({
+        passIfExpired: true,
+      }),
+      asyncValidateRequestBody(AsyncRefreshApiTokenRequestDto),
+    ],
+    handler: async ({ req }) => {
+      return {
+        body: await refreshApiToken({ apiUser: req.apiUser! }),
+        status: StatusCodes.OK,
+      }
+    },
   },
 })
 

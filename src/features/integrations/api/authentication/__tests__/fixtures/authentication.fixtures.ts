@@ -17,6 +17,8 @@ export const GENERATE_API_TOKEN_ROUTE = '/integrations-api/v1/tokens'
 
 export const RECOVER_API_TOKEN_ROUTE = '/integrations-api/v1/tokens'
 
+export const REFRESH_API_TOKEN_ROUTE = '/integrations-api/v1/tokens/refresh'
+
 export const createIntegrationEmailWhitelist = ({
   prisma,
   apiScope = {},
@@ -110,6 +112,39 @@ export const generateApiToken = async ({
   return {
     ...response.body,
     ...payload,
+    code,
+  }
+}
+
+export const recoverApiToken = async ({
+  apiScope,
+  prisma,
+  agent,
+  email: userEmail,
+}: {
+  email?: string
+  apiScope?: Partial<IntegrationApiScope>
+  prisma: PrismaClient
+  agent: TestAgent
+}) => {
+  const { code, email } = await generateApiToken({
+    apiScope,
+    prisma,
+    agent,
+    email: userEmail,
+  })
+
+  const response = await agent
+    .get(RECOVER_API_TOKEN_ROUTE)
+    .query({
+      email,
+      code,
+    })
+    .expect(StatusCodes.OK)
+
+  return {
+    ...response.body,
+    email,
     code,
   }
 }

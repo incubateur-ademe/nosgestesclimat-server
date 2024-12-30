@@ -109,14 +109,14 @@ describe('Given a NGC integrations API user', () => {
           })
           .expect(StatusCodes.OK)
 
-        expect(jwt.decode(token!)).toEqual({
+        expect(jwt.decode(token)).toEqual({
           scopes: [ApiScopeName.ngc],
           email,
           exp: expect.any(Number),
           iat: expect.any(Number),
         })
 
-        expect(jwt.decode(refreshToken!)).toEqual({
+        expect(jwt.decode(refreshToken)).toEqual({
           scopes: ['refresh-token'],
           email,
           exp: expect.any(Number),
