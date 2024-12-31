@@ -1,6 +1,6 @@
+import type { NorthstarRatingType } from '@prisma/client'
 import express from 'express'
 import { prisma } from '../../adapters/prisma/client'
-import type { NorthstarRatingTypeEnum } from '../../features/northstar-ratings/northstar-ratings.validator'
 import logger from '../../logger'
 import { NorthstarRating } from '../../schemas/NorthstarRatingSchema'
 import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
@@ -15,7 +15,7 @@ const router = express.Router()
 router.route('/').post(async (req, res) => {
   const simulationId = req.body.simulationId
   const value = req.body.value
-  const type: NorthstarRatingTypeEnum = req.body.type
+  const type: NorthstarRatingType = req.body.type
 
   // If no simulationId, value or type is provided, we return an error
   if (!simulationId) {

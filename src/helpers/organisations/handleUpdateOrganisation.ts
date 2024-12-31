@@ -1,3 +1,4 @@
+import { OrganisationType } from '@prisma/client'
 import type { Types } from 'mongoose'
 import { prisma } from '../../adapters/prisma/client'
 import logger from '../../logger'
@@ -27,31 +28,31 @@ export const getOrganisationType = (type?: string) => {
   switch (type) {
     case 'Association':
     case 'Asociación':
-      return 'association'
+      return OrganisationType.association
     case 'Autre':
     case 'Other':
     case 'Otros':
-      return 'other'
+      return OrganisationType.other
     case 'Company':
     case 'Entreprise':
     case 'Empresa':
-      return 'company'
+      return OrganisationType.company
     case 'Coopérative':
     case 'Cooperative':
     case 'Cooperativa':
-      return 'cooperative'
+      return OrganisationType.cooperative
     case "Groupe d'amis":
     case 'Group of friends':
     case 'Grupo de amigos':
-      return 'groupOfFriends'
+      return OrganisationType.groupOfFriends
     case 'Public ou collectivité territoriale':
     case 'Public or local authority':
     case 'Autoridad pública o local':
-      return 'publicOrRegionalAuthority'
+      return OrganisationType.publicOrRegionalAuthority
     case 'Université ou école':
     case 'University or school':
     case 'Universidad o escuela':
-      return 'universityOrSchool'
+      return OrganisationType.universityOrSchool
     default:
       throw new Error(`unknown organisation type ${type}`)
   }

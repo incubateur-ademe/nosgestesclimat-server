@@ -1,3 +1,4 @@
+import { QuizzAnswerIsAnswerCorrect } from '@prisma/client'
 import mongoose from 'mongoose'
 import z from 'zod'
 import { prisma } from '../../src/adapters/prisma/client'
@@ -9,11 +10,7 @@ const QuizzAnswerSchema = z
   .object({
     _id: z.instanceof(mongoose.Types.ObjectId),
     simulationId: z.string(),
-    isAnswerCorrect: z.union([
-      z.literal('correct'),
-      z.literal('almost'),
-      z.literal('wrong'),
-    ]),
+    isAnswerCorrect: z.nativeEnum(QuizzAnswerIsAnswerCorrect),
     answer: z.string(),
     createdAt: z.instanceof(Date),
     updatedAt: z.instanceof(Date),
@@ -36,7 +33,8 @@ const migrateQuizzAnswerToPg = async () => {
       const answer = quizzAnswer.answer!
       const update = {
         simulationId,
-        isAnswerCorrect: quizzAnswer.isAnswerCorrect as 'correct',
+        isAnswerCorrect:
+          quizzAnswer.isAnswerCorrect as typeof QuizzAnswerIsAnswerCorrect.correct,
         answer,
         createdAt: quizzAnswer.createdAt,
         updatedAt,

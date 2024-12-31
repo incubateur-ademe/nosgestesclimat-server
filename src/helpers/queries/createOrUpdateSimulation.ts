@@ -1,9 +1,7 @@
+import { SimulationAdditionalQuestionAnswerType } from '@prisma/client'
 import type { Types } from 'mongoose'
 import { prisma } from '../../adapters/prisma/client'
-import {
-  SimulationAdditionalQuestionAnswerType,
-  type AdditionalQuestionsAnswersSchema,
-} from '../../features/simulations/simulations.validator'
+import type { AdditionalQuestionsAnswersSchema } from '../../features/simulations/simulations.validator'
 import logger from '../../logger'
 import type { LeanSimulationType } from '../../schemas/SimulationSchema'
 import { Simulation } from '../../schemas/SimulationSchema'
@@ -82,7 +80,7 @@ export const findVerifiedUser = async (
 }
 
 type AditionalQuestionAnswer = {
-  type: 'default' | 'custom'
+  type: SimulationAdditionalQuestionAnswerType
   key: string
   answer: string
 }

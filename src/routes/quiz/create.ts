@@ -1,3 +1,4 @@
+import type { QuizzAnswerIsAnswerCorrect } from '@prisma/client'
 import express from 'express'
 import { prisma } from '../../adapters/prisma/client'
 import logger from '../../logger'
@@ -14,8 +15,7 @@ const router = express.Router()
 router.route('/').post(async (req, res) => {
   const simulationId = req.body.simulationId
   const answer = req.body.answer
-  const isAnswerCorrect: 'correct' | 'almost' | 'wrong' =
-    req.body.isAnswerCorrect
+  const isAnswerCorrect: QuizzAnswerIsAnswerCorrect = req.body.isAnswerCorrect
 
   // If no simulationId, answer or isAnswerCorrect is provided, we return an error
   if (!simulationId) {
