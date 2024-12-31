@@ -5,7 +5,11 @@ import type { VerificationCodeCreatedEvent } from '../events/VerificationCodeCre
 
 export const updateBrevoContact: Handler<
   LoginEvent | VerificationCodeCreatedEvent
-> = ({ attributes: { email, userId } }) => {
+> = ({
+  attributes: {
+    verificationCode: { email, userId },
+  },
+}) => {
   if (userId) {
     return addOrUpdateContactAfterLogin({ email, userId })
   }

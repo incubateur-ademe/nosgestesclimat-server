@@ -47,9 +47,12 @@ export const exchangeCredentialsForToken = async (loginDto: LoginDto) => {
 }
 
 export const login = async (loginDto: LoginDto) => {
-  const { email, token, userId } = await exchangeCredentialsForToken(loginDto)
+  const { token, ...verificationCode } =
+    await exchangeCredentialsForToken(loginDto)
 
-  const loginEvent = new LoginEvent({ email, userId })
+  const loginEvent = new LoginEvent({
+    verificationCode,
+  })
 
   EventBus.emit(loginEvent)
 

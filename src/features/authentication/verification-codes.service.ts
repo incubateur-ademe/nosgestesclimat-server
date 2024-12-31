@@ -16,8 +16,10 @@ export const createVerificationCode = async (
   })
 
   const verificationCodeCreatedEvent = new VerificationCodeCreatedEvent({
-    ...verificationCode,
-    code,
+    verificationCode: {
+      ...verificationCode,
+      code,
+    },
   })
 
   EventBus.emit(verificationCodeCreatedEvent)
