@@ -1,10 +1,8 @@
+import { PollDefaultAdditionalQuestionType } from '@prisma/client'
 import z from 'zod'
 import { ListIds } from '../../adapters/brevo/constant'
 import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail'
-import {
-  PollDefaultAdditionalQuestionTypeEnum,
-  PublicPollParams,
-} from '../organisations/organisations.validator'
+import { PublicPollParams } from '../organisations/organisations.validator'
 import { UserParams } from '../users/users.validator'
 
 const SimulationParams = z
@@ -64,10 +62,7 @@ const AdditionalQuestionsAnswersSchema = z.array(
     }),
     z.object({
       type: z.literal(SimulationAdditionalQuestionAnswerType.default),
-      key: z.enum([
-        PollDefaultAdditionalQuestionTypeEnum.birthdate,
-        PollDefaultAdditionalQuestionTypeEnum.postalCode,
-      ]),
+      key: z.nativeEnum(PollDefaultAdditionalQuestionType),
       answer: z.string(),
     }),
   ])

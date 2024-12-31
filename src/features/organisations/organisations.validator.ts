@@ -1,3 +1,4 @@
+import { PollDefaultAdditionalQuestionType } from '@prisma/client'
 import z from 'zod'
 import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail'
 import { UserParams } from '../users/users.validator'
@@ -133,11 +134,6 @@ export const OrganisationFetchValidator = {
   query: z.object({}).strict().optional(),
 }
 
-export enum PollDefaultAdditionalQuestionTypeEnum {
-  birthdate = 'birthdate',
-  postalCode = 'postalCode',
-}
-
 const OrganisationPollCreateCustomAdditionalQuestion = z
   .object({
     question: z.string(),
@@ -152,12 +148,7 @@ const OrganisationPollCreateDto = z
     name: z.string().min(1).max(150),
     expectedNumberOfParticipants: z.number().optional().nullable(),
     defaultAdditionalQuestions: z
-      .array(
-        z.enum([
-          PollDefaultAdditionalQuestionTypeEnum.birthdate,
-          PollDefaultAdditionalQuestionTypeEnum.postalCode,
-        ])
-      )
+      .array(z.nativeEnum(PollDefaultAdditionalQuestionType))
       .optional()
       .nullable(),
     customAdditionalQuestions: z

@@ -1,11 +1,11 @@
 import { faker } from '@faker-js/faker'
+import { PollDefaultAdditionalQuestionType } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import nock from 'nock'
 import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
 import logger from '../../../logger'
-import type { PollDefaultAdditionalQuestionTypeEnum } from '../../organisations/organisations.validator'
 import type {
   SimulationAdditionalQuestionAnswerType,
   SimulationCreateInputDto,
@@ -169,7 +169,7 @@ describe('Given a NGC user', () => {
             },
             {
               type: 'default' as SimulationAdditionalQuestionAnswerType.default,
-              key: 'postalCode' as PollDefaultAdditionalQuestionTypeEnum.postalCode,
+              key: PollDefaultAdditionalQuestionType.postalCode,
               answer: '00001',
             },
           ],
