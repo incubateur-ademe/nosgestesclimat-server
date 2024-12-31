@@ -1,4 +1,7 @@
-import { PollDefaultAdditionalQuestionType } from '@prisma/client'
+import {
+  PollDefaultAdditionalQuestionType,
+  SimulationAdditionalQuestionAnswerType,
+} from '@prisma/client'
 import z from 'zod'
 import { ListIds } from '../../adapters/brevo/constant'
 import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail'
@@ -47,11 +50,6 @@ export const ComputedResultSchema = z
   .strict()
 
 export type ComputedResultSchema = z.infer<typeof ComputedResultSchema>
-
-export enum SimulationAdditionalQuestionAnswerType {
-  custom = 'custom',
-  default = 'default',
-}
 
 const AdditionalQuestionsAnswersSchema = z.array(
   z.union([

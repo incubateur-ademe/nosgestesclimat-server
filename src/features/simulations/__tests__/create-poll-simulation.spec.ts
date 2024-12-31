@@ -1,5 +1,8 @@
 import { faker } from '@faker-js/faker'
-import { PollDefaultAdditionalQuestionType } from '@prisma/client'
+import {
+  PollDefaultAdditionalQuestionType,
+  SimulationAdditionalQuestionAnswerType,
+} from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import nock from 'nock'
 import supertest from 'supertest'
@@ -12,10 +15,7 @@ import {
   createOrganisation,
   createOrganisationPoll,
 } from '../../organisations/__tests__/fixtures/organisations.fixture'
-import type {
-  SimulationAdditionalQuestionAnswerType,
-  SimulationCreateInputDto,
-} from '../simulations.validator'
+import type { SimulationCreateInputDto } from '../simulations.validator'
 import { getRandomTestCase } from './fixtures/simulations.fixtures'
 
 describe('Given a NGC user', () => {
@@ -257,12 +257,12 @@ describe('Given a NGC user', () => {
             foldedSteps: [],
             additionalQuestionsAnswers: [
               {
-                type: 'custom' as SimulationAdditionalQuestionAnswerType.custom,
+                type: SimulationAdditionalQuestionAnswerType.custom,
                 key: 'myKey',
                 answer: 'myAnswer',
               },
               {
-                type: 'default' as SimulationAdditionalQuestionAnswerType.default,
+                type: SimulationAdditionalQuestionAnswerType.default,
                 key: PollDefaultAdditionalQuestionType.postalCode,
                 answer: '00001',
               },
