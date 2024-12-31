@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
-import type { NodeValue } from '@incubateur-ademe/nosgestesclimat'
+import type { DottedName } from '@incubateur-ademe/nosgestesclimat'
+import type { Situation as PublicodesSituation } from 'publicodes'
 import type { Document, InferSchemaType, Types } from 'mongoose'
 import type { CustomAdditionalQuestionType } from '../schemas/PollSchema'
 
@@ -28,9 +29,7 @@ type OrganisationInfo = {
   slug?: string
 }
 
-export type Situation = {
-  [key: string]: NodeValue
-}
+export type Situation = PublicodesSituation<DottedName>
 
 type WithRequiredProperty<Type, Keys extends keyof Type> = Type & {
   [Property in Keys]-?: Type[Property]
