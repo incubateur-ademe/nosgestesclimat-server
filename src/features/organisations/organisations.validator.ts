@@ -1,4 +1,7 @@
-import { PollDefaultAdditionalQuestionType } from '@prisma/client'
+import {
+  OrganisationType,
+  PollDefaultAdditionalQuestionType,
+} from '@prisma/client'
 import z from 'zod'
 import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail'
 import { UserParams } from '../users/users.validator'
@@ -27,26 +30,6 @@ export const PublicPollParams = UserParams.merge(PollParams)
 
 export type PublicPollParams = z.infer<typeof PublicPollParams>
 
-export enum OrganisationTypeEnum {
-  association = 'association',
-  company = 'company',
-  cooperative = 'cooperative',
-  groupOfFriends = 'groupOfFriends',
-  other = 'other',
-  publicOrRegionalAuthority = 'publicOrRegionalAuthority',
-  universityOrSchool = 'universityOrSchool',
-}
-
-const OrganisationType = z.enum([
-  OrganisationTypeEnum.association,
-  OrganisationTypeEnum.company,
-  OrganisationTypeEnum.cooperative,
-  OrganisationTypeEnum.groupOfFriends,
-  OrganisationTypeEnum.other,
-  OrganisationTypeEnum.publicOrRegionalAuthority,
-  OrganisationTypeEnum.universityOrSchool,
-])
-
 const OrganisationCreateAdministrator = z
   .object({
     name: z.string().optional().nullable(),
@@ -63,7 +46,7 @@ export type OrganisationCreateAdministrator = z.infer<
 const OrganisationCreateDto = z
   .object({
     name: z.string().min(1).max(100),
-    type: OrganisationType.optional().nullable(),
+    type: z.nativeEnum(OrganisationType).optional().nullable(),
     administrators: z.tuple([OrganisationCreateAdministrator]).optional(),
     numberOfCollaborators: z.number().optional().nullable(),
   })
