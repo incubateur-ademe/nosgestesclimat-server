@@ -66,6 +66,11 @@ beforeAll(async () => {
       '20241211150143_computed_results_view',
       'migration.sql'
     ),
+    path.join(
+      prismaMigrationDir,
+      '20241230121128_optional_verification_code_user',
+      'migration.sql'
+    ),
   ]
 
   await filenames.reduce(async (promise, filename) => {

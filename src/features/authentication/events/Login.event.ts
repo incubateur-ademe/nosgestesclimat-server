@@ -1,6 +1,6 @@
+import type { VerificationCode } from '@prisma/client'
 import { EventBusEvent } from '../../../core/event-bus/event'
 
 export class LoginEvent extends EventBusEvent<{
-  email: string
-  userId: string
+  verificationCode: Pick<VerificationCode, 'email' | 'userId'>
 }> {}
