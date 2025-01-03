@@ -8,6 +8,7 @@ import emailWhitelistContract from './email-whitelist.contract'
 import {
   createEmailWhitelist,
   deleteEmailWhitelist,
+  fetchEmailWhitelists,
 } from './email-whitelist.service'
 
 const router = tsRestServer.router(emailWhitelistContract, {
@@ -66,6 +67,26 @@ const router = tsRestServer.router(emailWhitelistContract, {
         }
 
         logger.error('Email Whitelist deletion failed', err)
+        return {
+          body: {},
+          status: StatusCodes.INTERNAL_SERVER_ERROR,
+        }
+      }
+    },
+  },
+  fetchEmailWhitelists: {
+    middleware: [generateAuthenticationMiddleware()],
+    handler: async ({ query, req }) => {
+      try {
+        return {
+          body: await fetchEmailWhitelists({
+            query,
+            userScopes: req.apiUser!.scopes,
+          }),
+          status: StatusCodes.OK,
+        }
+      } catch (err) {
+        logger.error('Email Whitelists fetch failed', err)
         return {
           body: {},
           status: StatusCodes.INTERNAL_SERVER_ERROR,

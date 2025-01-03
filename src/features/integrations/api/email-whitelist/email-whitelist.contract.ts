@@ -33,6 +33,20 @@ const EmailWhitelistParams = z
 
 export type EmailWhitelistParams = z.infer<typeof EmailWhitelistParams>
 
+const EmailWhitelistsFetchQuery = z
+  .object({
+    emailPattern: z
+      .string()
+      .regex(EMAIL_REGEX)
+      .transform((emailPattern) => emailPattern.toLocaleLowerCase())
+      .optional(),
+  })
+  .strict()
+
+export type EmailWhitelistsFetchQuery = z.infer<
+  typeof EmailWhitelistsFetchQuery
+>
+
 const c = initContract()
 
 const contract = c.router({
@@ -73,6 +87,25 @@ const contract = c.router({
       [StatusCodes.INTERNAL_SERVER_ERROR as number]: z.object({}).strict(),
     },
     summary: 'Deletes an email whitelist for the given id',
+    metadata: {
+      security: [
+        {
+          bearerAuth: [],
+        },
+      ],
+    },
+  },
+  fetchEmailWhitelists: {
+    method: 'GET',
+    path: '/integrations-api/v1/email-whitelists',
+    query: EmailWhitelistsFetchQuery,
+    pathParams: z.object({}).strict(),
+    responses: {
+      [StatusCodes.OK as number]: z.array(EmailWhitelistDto),
+      [StatusCodes.UNAUTHORIZED as number]: z.string(),
+      [StatusCodes.INTERNAL_SERVER_ERROR as number]: z.object({}).strict(),
+    },
+    summary: 'Fetch email whitelists for the token scope and filters',
     metadata: {
       security: [
         {

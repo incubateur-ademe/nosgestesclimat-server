@@ -4,8 +4,13 @@ import { isPrismaErrorNotFound } from '../../../../core/typeguards/isPrismaError
 import type {
   EmailWhitelistCreateDto,
   EmailWhitelistParams,
+  EmailWhitelistsFetchQuery,
 } from './email-whitelist.contract'
-import { createWhitelist, deleteWhitelist } from './email-whitelist.repository'
+import {
+  createWhitelist,
+  deleteWhitelist,
+  fetchWhitelists,
+} from './email-whitelist.repository'
 
 const whitelistToDto = ({
   apiScopeName,
@@ -55,4 +60,16 @@ export const deleteEmailWhitelist = async ({
     }
     throw e
   }
+}
+
+export const fetchEmailWhitelists = async ({
+  query,
+  userScopes,
+}: {
+  query: EmailWhitelistsFetchQuery
+  userScopes: Set<string>
+}) => {
+  const whitelists = await fetchWhitelists(query, userScopes)
+
+  return whitelists.map(whitelistToDto)
 }
