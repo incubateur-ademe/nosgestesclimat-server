@@ -9,11 +9,14 @@ import app from '../../../../../app'
 import { config } from '../../../../../config'
 import logger from '../../../../../logger'
 import { recoverApiToken } from '../../authentication/__tests__/fixtures/authentication.fixtures'
-import { randomApiScopeName } from './fixtures/email-whitelist.fixture'
+import {
+  CREATE_EMAIL_WHITELIST_ROUTE,
+  randomApiScopeName,
+} from './fixtures/email-whitelist.fixture'
 
 describe('Given a NGC integrations API user', () => {
   const agent = supertest(app)
-  const url = `/integrations-api/v1/email-whitelists`
+  const url = CREATE_EMAIL_WHITELIST_ROUTE
 
   afterEach(async () => {
     await prisma.integrationWhitelist.deleteMany()

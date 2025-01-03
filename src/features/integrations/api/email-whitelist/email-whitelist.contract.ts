@@ -25,6 +25,14 @@ const EmailWhitelistDto = z
   })
   .strict()
 
+const EmailWhitelistParams = z
+  .object({
+    whitelistId: z.string().uuid(),
+  })
+  .strict()
+
+export type EmailWhitelistParams = z.infer<typeof EmailWhitelistParams>
+
 const c = initContract()
 
 const contract = c.router({
@@ -43,6 +51,28 @@ const contract = c.router({
       [StatusCodes.INTERNAL_SERVER_ERROR as number]: z.object({}).strict(),
     },
     summary: 'Creates an email whitelist for the given API scope',
+    metadata: {
+      security: [
+        {
+          bearerAuth: [],
+        },
+      ],
+    },
+  },
+  deleteEmailWhitelist: {
+    method: 'DELETE',
+    path: '/integrations-api/v1/email-whitelists/:whitelistId',
+    query: z.object({}).strict(),
+    pathParams: EmailWhitelistParams,
+    body: z.object({}).strict().optional(),
+    responses: {
+      [StatusCodes.NO_CONTENT as number]: z.object({}).strict(),
+      [StatusCodes.BAD_REQUEST as number]: ZodErrorSchema,
+      [StatusCodes.UNAUTHORIZED as number]: z.string(),
+      [StatusCodes.NOT_FOUND as number]: z.string(),
+      [StatusCodes.INTERNAL_SERVER_ERROR as number]: z.object({}).strict(),
+    },
+    summary: 'Deletes an email whitelist for the given id',
     metadata: {
       security: [
         {

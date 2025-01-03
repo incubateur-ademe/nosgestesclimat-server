@@ -1,8 +1,11 @@
 import { EntityNotFoundException } from '../../../../core/errors/EntityNotFoundException'
 import { ForbiddenException } from '../../../../core/errors/ForbiddenException'
 import { isPrismaErrorNotFound } from '../../../../core/typeguards/isPrismaError'
-import type { EmailWhitelistCreateDto } from './email-whitelist.contract'
-import { createWhitelist } from './email-whitelist.repository'
+import type {
+  EmailWhitelistCreateDto,
+  EmailWhitelistParams,
+} from './email-whitelist.contract'
+import { createWhitelist, deleteWhitelist } from './email-whitelist.repository'
 
 const whitelistToDto = ({
   apiScopeName,
@@ -32,6 +35,23 @@ export const createEmailWhitelist = async ({
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('ApiScope not found')
+    }
+    throw e
+  }
+}
+
+export const deleteEmailWhitelist = async ({
+  params,
+  userScopes,
+}: {
+  params: EmailWhitelistParams
+  userScopes: Set<string>
+}) => {
+  try {
+    await deleteWhitelist(params, userScopes)
+  } catch (e) {
+    if (isPrismaErrorNotFound(e)) {
+      throw new EntityNotFoundException('Email Whitelist not found')
     }
     throw e
   }

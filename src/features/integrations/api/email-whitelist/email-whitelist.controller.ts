@@ -5,7 +5,10 @@ import { tsRestServer } from '../../../../core/ts-rest'
 import logger from '../../../../logger'
 import { generateAuthenticationMiddleware } from '../authentication/authentication.service'
 import emailWhitelistContract from './email-whitelist.contract'
-import { createEmailWhitelist } from './email-whitelist.service'
+import {
+  createEmailWhitelist,
+  deleteEmailWhitelist,
+} from './email-whitelist.service'
 
 const router = tsRestServer.router(emailWhitelistContract, {
   createEmailWhitelist: {
@@ -35,6 +38,34 @@ const router = tsRestServer.router(emailWhitelistContract, {
         }
 
         logger.error('Email Whitelist creation failed', err)
+        return {
+          body: {},
+          status: StatusCodes.INTERNAL_SERVER_ERROR,
+        }
+      }
+    },
+  },
+  deleteEmailWhitelist: {
+    middleware: [generateAuthenticationMiddleware()],
+    handler: async ({ params, req }) => {
+      try {
+        await deleteEmailWhitelist({
+          params,
+          userScopes: req.apiUser!.scopes,
+        })
+        return {
+          body: {},
+          status: StatusCodes.NO_CONTENT,
+        }
+      } catch (err) {
+        if (err instanceof EntityNotFoundException) {
+          return {
+            body: err.message,
+            status: StatusCodes.NOT_FOUND,
+          }
+        }
+
+        logger.error('Email Whitelist deletion failed', err)
         return {
           body: {},
           status: StatusCodes.INTERNAL_SERVER_ERROR,
