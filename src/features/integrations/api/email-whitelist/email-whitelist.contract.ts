@@ -47,6 +47,20 @@ export type EmailWhitelistsFetchQuery = z.infer<
   typeof EmailWhitelistsFetchQuery
 >
 
+const EmailWhitelistUpdateDto = z
+  .object({
+    scope: z.nativeEnum(ApiScopeName),
+    emailPattern: z
+      .string()
+      .regex(EMAIL_REGEX)
+      .transform((emailPattern) => emailPattern.toLocaleLowerCase()),
+    description: z.string().min(10),
+  })
+  .strict()
+  .partial()
+
+export type EmailWhitelistUpdateDto = z.infer<typeof EmailWhitelistUpdateDto>
+
 const c = initContract()
 
 const contract = c.router({
@@ -65,6 +79,28 @@ const contract = c.router({
       [StatusCodes.INTERNAL_SERVER_ERROR as number]: z.object({}).strict(),
     },
     summary: 'Creates an email whitelist for the given API scope',
+    metadata: {
+      security: [
+        {
+          bearerAuth: [],
+        },
+      ],
+    },
+  },
+  updateEmailWhitelist: {
+    method: 'PUT',
+    path: '/integrations-api/v1/email-whitelists/:whitelistId',
+    query: z.object({}).strict(),
+    pathParams: EmailWhitelistParams,
+    body: EmailWhitelistUpdateDto,
+    responses: {
+      [StatusCodes.OK as number]: EmailWhitelistDto,
+      [StatusCodes.BAD_REQUEST as number]: ZodErrorSchema,
+      [StatusCodes.UNAUTHORIZED as number]: z.string(),
+      [StatusCodes.NOT_FOUND as number]: z.string(),
+      [StatusCodes.INTERNAL_SERVER_ERROR as number]: z.object({}).strict(),
+    },
+    summary: 'Updates an email whitelist for the given id',
     metadata: {
       security: [
         {

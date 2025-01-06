@@ -11,6 +11,9 @@ export const CREATE_EMAIL_WHITELIST_ROUTE =
 export const DELETE_EMAIL_WHITELIST_ROUTE =
   '/integrations-api/v1/email-whitelists/:whitelistId'
 
+export const UPDATE_EMAIL_WHITELIST_ROUTE =
+  '/integrations-api/v1/email-whitelists/:whitelistId'
+
 export const FETCH_EMAIL_WHITELISTS_ROUTE =
   '/integrations-api/v1/email-whitelists'
 

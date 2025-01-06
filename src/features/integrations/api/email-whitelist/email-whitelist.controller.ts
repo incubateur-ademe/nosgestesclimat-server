@@ -9,6 +9,7 @@ import {
   createEmailWhitelist,
   deleteEmailWhitelist,
   fetchEmailWhitelists,
+  updateEmailWhitelist,
 } from './email-whitelist.service'
 
 const router = tsRestServer.router(emailWhitelistContract, {
@@ -39,6 +40,34 @@ const router = tsRestServer.router(emailWhitelistContract, {
         }
 
         logger.error('Email Whitelist creation failed', err)
+        return {
+          body: {},
+          status: StatusCodes.INTERNAL_SERVER_ERROR,
+        }
+      }
+    },
+  },
+  updateEmailWhitelist: {
+    middleware: [generateAuthenticationMiddleware()],
+    handler: async ({ params, req, body }) => {
+      try {
+        return {
+          body: await updateEmailWhitelist({
+            params,
+            userScopes: req.apiUser!.scopes,
+            emailWhitelistDto: body,
+          }),
+          status: StatusCodes.OK,
+        }
+      } catch (err) {
+        if (err instanceof EntityNotFoundException) {
+          return {
+            body: err.message,
+            status: StatusCodes.NOT_FOUND,
+          }
+        }
+
+        logger.error('Email Whitelist update failed', err)
         return {
           body: {},
           status: StatusCodes.INTERNAL_SERVER_ERROR,

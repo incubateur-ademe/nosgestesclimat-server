@@ -6,6 +6,7 @@ import type {
   EmailWhitelistCreateDto,
   EmailWhitelistParams,
   EmailWhitelistsFetchQuery,
+  EmailWhitelistUpdateDto,
 } from './email-whitelist.contract'
 
 const getEmailDomainName = (email: string) => {
@@ -37,6 +38,42 @@ export const createWhitelist = (
         },
         update: {
           description,
+        },
+        select: defaultEmailWhitelistSelection,
+      }),
+    session
+  )
+}
+
+export const updateWhitelist = (
+  { whitelistId }: EmailWhitelistParams,
+  { description, emailPattern, scope }: EmailWhitelistUpdateDto,
+  scopes: Set<string>,
+  { session }: { session?: Session } = {}
+) => {
+  return transaction(
+    async (prismaSession) =>
+      prismaSession.integrationWhitelist.update({
+        where: {
+          id: whitelistId,
+          apiScope: {
+            name: {
+              in: [...scopes] as ApiScopeName[],
+            },
+          },
+        },
+        data: {
+          emailPattern,
+          description,
+          ...(scope
+            ? {
+                apiScope: {
+                  connect: {
+                    name: scope,
+                  },
+                },
+              }
+            : {}),
         },
         select: defaultEmailWhitelistSelection,
       }),

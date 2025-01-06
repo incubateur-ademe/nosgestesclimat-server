@@ -5,11 +5,13 @@ import type {
   EmailWhitelistCreateDto,
   EmailWhitelistParams,
   EmailWhitelistsFetchQuery,
+  EmailWhitelistUpdateDto,
 } from './email-whitelist.contract'
 import {
   createWhitelist,
   deleteWhitelist,
   fetchWhitelists,
+  updateWhitelist,
 } from './email-whitelist.repository'
 
 const whitelistToDto = ({
@@ -40,6 +42,31 @@ export const createEmailWhitelist = async ({
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('ApiScope not found')
+    }
+    throw e
+  }
+}
+
+export const updateEmailWhitelist = async ({
+  params,
+  userScopes,
+  emailWhitelistDto,
+}: {
+  params: EmailWhitelistParams
+  userScopes: Set<string>
+  emailWhitelistDto: EmailWhitelistUpdateDto
+}) => {
+  try {
+    const whitelist = await updateWhitelist(
+      params,
+      emailWhitelistDto,
+      userScopes
+    )
+
+    return whitelistToDto(whitelist)
+  } catch (e) {
+    if (isPrismaErrorNotFound(e)) {
+      throw new EntityNotFoundException('Email Whitelist not found')
     }
     throw e
   }
