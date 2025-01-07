@@ -4,9 +4,13 @@ import { VerificationCodeCreatedEvent } from './events/VerificationCodeCreated.e
 import { createUserVerificationCode } from './verification-codes.repository'
 import type { VerificationCodeCreateDto } from './verification-codes.validator'
 
-export const createVerificationCode = async (
-  verificationCodeDto: VerificationCodeCreateDto
-) => {
+export const createVerificationCode = async ({
+  verificationCodeDto,
+  origin,
+}: {
+  verificationCodeDto: Pick<VerificationCodeCreateDto, 'email'>
+  origin: string
+}) => {
   const { code, expirationDate } = generateVerificationCodeAndExpiration()
 
   const verificationCode = await createUserVerificationCode({
@@ -20,6 +24,7 @@ export const createVerificationCode = async (
       ...verificationCode,
       code,
     },
+    origin,
   })
 
   EventBus.emit(verificationCodeCreatedEvent)

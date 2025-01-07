@@ -1,11 +1,16 @@
 import express from 'express'
 import morgan from 'morgan'
 
+import { createExpressEndpoints } from '@ts-rest/express'
+import { generateOpenApi } from '@ts-rest/open-api'
 import cors from 'cors'
+import swaggerUi from 'swagger-ui-express'
 import { origin } from './config'
 import authenticationController from './features/authentication/authentication.controller'
 import verificationCodeController from './features/authentication/verification-codes.controller'
 import groupsController from './features/groups/groups.controller'
+import integrationsApiContract from './features/integrations/api/api.contract'
+import integrationsApiController from './features/integrations/api/api.controller'
 import integrationsController from './features/integrations/integrations.controller'
 import newslettersController from './features/newsletter/newsletter.controller'
 import northstarRatingsController from './features/northstar-ratings/northstar-ratings.controller'
@@ -138,5 +143,46 @@ app.use('/quizz-answers', quizzAnswersController)
 app.use('/simulations', simulationController)
 app.use('/users', usersController)
 app.use('/verification-codes', verificationCodeController)
+
+createExpressEndpoints(
+  integrationsApiContract,
+  integrationsApiController,
+  app,
+  {
+    logInitialization: false,
+  }
+)
+
+const integrationsOpenApiDocument = generateOpenApi(
+  integrationsApiContract,
+  {
+    info: {
+      title: 'Integrations API',
+      version: '1.0.0',
+    },
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+    },
+  },
+  {
+    setOperationId: true,
+    operationMapper: (operation, appRoute) => ({
+      ...operation,
+      ...(appRoute.metadata || {}),
+    }),
+  }
+)
+
+app.use(
+  '/integrations-api/docs',
+  swaggerUi.serve,
+  swaggerUi.setup(integrationsOpenApiDocument)
+)
 
 export default app

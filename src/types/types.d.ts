@@ -7,6 +7,7 @@ declare global {
   namespace Express {
     export interface Request {
       user?: { userId: string; email: string }
+      apiUser?: { scopes: Set<string>; email: string }
     }
   }
 }

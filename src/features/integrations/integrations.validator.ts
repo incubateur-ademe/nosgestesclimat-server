@@ -1,9 +1,19 @@
 import z from 'zod'
 import { SituationSchema } from '../simulations/simulations.validator'
 
+export enum ExternalServiceTypeEnum {
+  agir = 'agir',
+  '2-tonnes' = '2-tonnes',
+}
+
+const ExternalServiceType = z.enum([
+  ExternalServiceTypeEnum.agir,
+  ExternalServiceTypeEnum['2-tonnes'],
+])
+
 const SituationExportParamsSchema = z
   .object({
-    externalService: z.enum(['agir', '2-tonnes']),
+    externalService: ExternalServiceType,
   })
   .strict()
 

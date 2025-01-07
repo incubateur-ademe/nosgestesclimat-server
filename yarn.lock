@@ -10,6 +10,13 @@
     "@jridgewell/gen-mapping" "^0.3.5"
     "@jridgewell/trace-mapping" "^0.3.24"
 
+"@anatine/zod-openapi@^1.12.0":
+  version "1.14.2"
+  resolved "https://registry.yarnpkg.com/@anatine/zod-openapi/-/zod-openapi-1.14.2.tgz#ba5d2b0732bbb7b2bebb009e6312adfdc159d148"
+  integrity sha512-q0qHfnuNYVKu0Swrnnvfj9971AEyW7c8v9jCOZGCl5ZbyGMNG4RPyJkRcMi/JC8CRfdOe0IDfNm1nNsi2avprg==
+  dependencies:
+    ts-deepmerge "^6.0.3"
+
 "@artilleryio/int-commons@2.2.0":
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/@artilleryio/int-commons/-/int-commons-2.2.0.tgz#f2785679e55c546bfcd578610b3b798ec572d0b3"
@@ -2039,6 +2046,11 @@
     publicodes "^1.3.3"
     yaml "^2.4.5"
 
+"@scarf/scarf@=1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@scarf/scarf/-/scarf-1.4.0.tgz#3bbb984085dbd6d982494538b523be1ce6562972"
+  integrity sha512-xxeapPiUXdZAE3che6f3xogoJPeZgig6omHEy1rIY5WVsB3H2BHNnZH+gHG6x91SCWyQCzWGsuL2Hh3ClO5/qQ==
+
 "@sentry/core@8.26.0":
   version "8.26.0"
   resolved "https://registry.yarnpkg.com/@sentry/core/-/core-8.26.0.tgz#0673a9e2c5b699cf1bde1ed073a345cc393577da"
@@ -2639,6 +2651,24 @@
   dependencies:
     defer-to-connect "^2.0.0"
 
+"@ts-rest/core@^3.51.0":
+  version "3.51.0"
+  resolved "https://registry.yarnpkg.com/@ts-rest/core/-/core-3.51.0.tgz#7e56fbae7abc4037a84396fb098a7eb24759d4a8"
+  integrity sha512-v6lnWEcpZj1UgN9wb84XQ+EORP1QEtncFumoXMJjno5ZUV6vdjKze3MYcQN0C6vjBpIJPQEaI/gab2jr4/0KzQ==
+
+"@ts-rest/express@^3.51.0":
+  version "3.51.0"
+  resolved "https://registry.yarnpkg.com/@ts-rest/express/-/express-3.51.0.tgz#9cddf7d2f07512aacd367b9719960cccbc360ece"
+  integrity sha512-osOo040EHoCMNMFBbEwZ6XheeEhG/zJGF4k3FOYUtaYSdxxYp5XkP8jQoV6I+Lu+O5jopnOQWoCpmNrrraIO8g==
+
+"@ts-rest/open-api@^3.51.0":
+  version "3.51.0"
+  resolved "https://registry.yarnpkg.com/@ts-rest/open-api/-/open-api-3.51.0.tgz#8f30e9a6d679143b199bc08fc9350b8b5f0ba4ae"
+  integrity sha512-fvpvRr6HIbAMNZR//QQQi75z5qTxMEBMRtmbaBXVi5e1WVVwOK7P6YBaGWTQp6DXSvsZVULX5VZXmsDd1Z1dew==
+  dependencies:
+    "@anatine/zod-openapi" "^1.12.0"
+    openapi3-ts "^2.0.2"
+
 "@tsconfig/node10@^1.0.7":
   version "1.0.11"
   resolved "https://registry.yarnpkg.com/@tsconfig/node10/-/node10-1.0.11.tgz#6ee46400685f130e278128c7b38b7e031ff5b2f2"
@@ -2991,6 +3021,14 @@
   dependencies:
     "@types/methods" "^1.1.4"
     "@types/superagent" "^8.1.0"
+
+"@types/swagger-ui-express@^4.1.7":
+  version "4.1.7"
+  resolved "https://registry.yarnpkg.com/@types/swagger-ui-express/-/swagger-ui-express-4.1.7.tgz#a7b6d8cfc6b1c35723e92284507cf230ad22266a"
+  integrity sha512-ovLM9dNincXkzH4YwyYpll75vhzPBlWx6La89wwvYH7mHjVpf0X0K/vR/aUM7SRxmr5tt9z7E5XJcjQ46q+S3g==
+  dependencies:
+    "@types/express" "*"
+    "@types/serve-static" "*"
 
 "@types/triple-beam@^1.3.2":
   version "1.3.5"
@@ -7755,6 +7793,13 @@ onetime@^7.0.0:
   dependencies:
     mimic-function "^5.0.0"
 
+openapi3-ts@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/openapi3-ts/-/openapi3-ts-2.0.2.tgz#a200dd838bf24c9086c8eedcfeb380b7eb31e82a"
+  integrity sha512-TxhYBMoqx9frXyOgnRHufjQfPXomTIHYKhSKJ6jHfj13kS8OEIhvmE8CTuQyKtjjWttAjX5DPxM1vmalEpo8Qw==
+  dependencies:
+    yaml "^1.10.2"
+
 opentelemetry-instrumentation-fetch-node@1.2.3:
   version "1.2.3"
   resolved "https://registry.yarnpkg.com/opentelemetry-instrumentation-fetch-node/-/opentelemetry-instrumentation-fetch-node-1.2.3.tgz#beb24048bdccb1943ba2a5bbadca68020e448ea7"
@@ -9141,6 +9186,20 @@ supports-preserve-symlinks-flag@^1.0.0:
   resolved "https://registry.yarnpkg.com/supports-preserve-symlinks-flag/-/supports-preserve-symlinks-flag-1.0.0.tgz#6eda4bd344a3c94aea376d4cc31bc77311039e09"
   integrity sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==
 
+swagger-ui-dist@>=5.0.0:
+  version "5.18.2"
+  resolved "https://registry.yarnpkg.com/swagger-ui-dist/-/swagger-ui-dist-5.18.2.tgz#62013074374d272c04ed3030704b88db5aa8c0b7"
+  integrity sha512-J+y4mCw/zXh1FOj5wGJvnAajq6XgHOyywsa9yITmwxIlJbMqITq3gYRZHaeqLVH/eV/HOPphE6NjF+nbSNC5Zw==
+  dependencies:
+    "@scarf/scarf" "=1.4.0"
+
+swagger-ui-express@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/swagger-ui-express/-/swagger-ui-express-5.0.1.tgz#fb8c1b781d2793a6bd2f8a205a3f4bd6fa020dd8"
+  integrity sha512-SrNU3RiBGTLLmFU8GIJdOdanJTl4TOmT27tt3bWWHppqYmAZ6IDuEuBvMU6nZq0zLEe6b/1rACXCgLZqO6ZfrA==
+  dependencies:
+    swagger-ui-dist ">=5.0.0"
+
 synckit@^0.9.1:
   version "0.9.1"
   resolved "https://registry.yarnpkg.com/synckit/-/synckit-0.9.1.tgz#febbfbb6649979450131f64735aa3f6c14575c88"
@@ -9300,6 +9359,11 @@ ts-api-utils@^1.3.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/ts-api-utils/-/ts-api-utils-1.3.0.tgz#4b490e27129f1e8e686b45cc4ab63714dc60eea1"
   integrity sha512-UQMIo7pb8WRomKR1/+MFVLTroIvDVtMX3K6OUir8ynLyzB8Jeriont2bTAtmNPa1ekAgN7YPDyf6V+ygrdU+eQ==
+
+ts-deepmerge@^6.0.3:
+  version "6.2.1"
+  resolved "https://registry.yarnpkg.com/ts-deepmerge/-/ts-deepmerge-6.2.1.tgz#4d564b44bc2a69e35a0b08bfa904ef176372e7dd"
+  integrity sha512-8CYSLazCyj0DJDpPIxOFzJG46r93uh6EynYjuey+bxcLltBeqZL7DMfaE5ZPzZNFlav7wx+2TDa/mBl8gkTYzw==
 
 ts-node@^10.9.1, ts-node@^10.9.2:
   version "10.9.2"
@@ -9809,6 +9873,11 @@ yaml-js@^0.2.3:
   version "0.2.3"
   resolved "https://registry.yarnpkg.com/yaml-js/-/yaml-js-0.2.3.tgz#f4cf6c1b3c784f59f55547d7dfcdd06418303291"
   integrity sha512-6xUQtVKl1qcd0EXtTEzUDVJy9Ji1fYa47LtkDtYKlIjhibPE9knNPmoRyf6SGREFHlOAUyDe9OdYqRP4DuSi5Q==
+
+yaml@^1.10.2:
+  version "1.10.2"
+  resolved "https://registry.yarnpkg.com/yaml/-/yaml-1.10.2.tgz#2301c5ffbf12b467de8da2333a459e29e7920e4b"
+  integrity sha512-r3vXyErRCYJ7wg28yvBY5VSoAF8ZvlcW9/BwUzEtUsjvX/DKs24dIkuwjtuprwJJHsbyUbLApepYTR1BN4uHrg==
 
 yaml@^2.0.1:
   version "2.4.2"
