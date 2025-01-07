@@ -18,6 +18,7 @@ router
       const externalServiceRedirection = await exportSituation({
         externalService: req.params.externalService,
         situation: SituationSchema.parse(req.body),
+        params: req.query,
       })
 
       return res.status(StatusCodes.OK).json(externalServiceRedirection)

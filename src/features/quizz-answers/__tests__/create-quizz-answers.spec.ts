@@ -1,11 +1,11 @@
 import { faker } from '@faker-js/faker'
+import { QuizzAnswerIsAnswerCorrect } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
 import logger from '../../../logger'
 import type { QuizzAnswerCreateDto } from '../quizz-answers.validator'
-import { QuizzAnswerIsAnswerCorrectEnum } from '../quizz-answers.validator'
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)
@@ -27,7 +27,7 @@ describe('Given a NGC user', () => {
           .send({
             simulationId: faker.string.alpha(34),
             answer: 'transport . voiture',
-            isAnswerCorrect: QuizzAnswerIsAnswerCorrectEnum.correct,
+            isAnswerCorrect: QuizzAnswerIsAnswerCorrect.correct,
           })
           .expect(StatusCodes.BAD_REQUEST)
       })
@@ -39,7 +39,7 @@ describe('Given a NGC user', () => {
           .post(url)
           .send({
             simulationId: faker.string.uuid(),
-            isAnswerCorrect: QuizzAnswerIsAnswerCorrectEnum.correct,
+            isAnswerCorrect: QuizzAnswerIsAnswerCorrect.correct,
           })
           .expect(StatusCodes.BAD_REQUEST)
       })
@@ -62,7 +62,7 @@ describe('Given a NGC user', () => {
       const payload = {
         simulationId: faker.string.uuid(),
         answer: 'transport . voiture',
-        isAnswerCorrect: QuizzAnswerIsAnswerCorrectEnum.correct,
+        isAnswerCorrect: QuizzAnswerIsAnswerCorrect.correct,
       }
 
       const response = await agent
@@ -82,7 +82,7 @@ describe('Given a NGC user', () => {
       const payload: QuizzAnswerCreateDto = {
         simulationId: faker.string.uuid(),
         answer: 'transport . voiture',
-        isAnswerCorrect: QuizzAnswerIsAnswerCorrectEnum.correct,
+        isAnswerCorrect: QuizzAnswerIsAnswerCorrect.correct,
       }
 
       await agent.post(url).send(payload)
@@ -119,7 +119,7 @@ describe('Given a NGC user', () => {
           .send({
             simulationId: faker.string.uuid(),
             answer: 'transport . voiture',
-            isAnswerCorrect: QuizzAnswerIsAnswerCorrectEnum.correct,
+            isAnswerCorrect: QuizzAnswerIsAnswerCorrect.correct,
           })
           .expect(StatusCodes.INTERNAL_SERVER_ERROR)
       })
@@ -128,7 +128,7 @@ describe('Given a NGC user', () => {
         await agent.post(url).send({
           simulationId: faker.string.uuid(),
           answer: 'transport . voiture',
-          isAnswerCorrect: QuizzAnswerIsAnswerCorrectEnum.correct,
+          isAnswerCorrect: QuizzAnswerIsAnswerCorrect.correct,
         })
 
         expect(logger.error).toHaveBeenCalledWith(

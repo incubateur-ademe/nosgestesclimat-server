@@ -1,10 +1,10 @@
 {
   "name": "nosgestesclimat-server",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "The server part of the website nosgestesclimat.fr",
   "main": "./dist/index.js",
   "engines": {
-    "node": "20"
+    "node": ">=22"
   },
   "scripts": {
     "prebuild": "yarn clean",
@@ -21,12 +21,13 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
     "test:load:spike": "artillery run ./tests/load/spike-test.yml",
-    "test:load:soak": "artillery run ./tests/load/soak-test.yml"
+    "test:load:soak": "artillery run ./tests/load/soak-test.yml",
+    "prepare": "husky"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@incubateur-ademe/nosgestesclimat": "^3.3.4",
+    "@incubateur-ademe/nosgestesclimat": "^3.4.3",
     "@prisma/client": "^6.0.0",
     "@publicodes/tools": "^1.2.5",
     "@sentry/node": "^8.26.0",
@@ -80,7 +81,9 @@
     "eslint-plugin-n": "^15.0.0",
     "eslint-plugin-prettier": "^5.2.1",
     "eslint-plugin-promise": "^6.0.0",
+    "husky": "^9.1.7",
     "jest": "^29.7.0",
+    "lint-staged": "^15.2.11",
     "mongodb-memory-server": "^10.0.0",
     "nock": "^13.5.4",
     "pglite-prisma-adapter": "^0.3.0",
@@ -110,5 +113,13 @@
     },
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "lint-staged": {
+    "*.{js,ts,md,json}": [
+      "prettier --write"
+    ],
+    "*.{js,ts}": [
+      "eslint --fix"
+    ]
   }
 }

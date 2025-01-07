@@ -267,7 +267,7 @@ model User {
 
 model VerificationCode {
   id             String   @id @default(uuid()) @db.Uuid
-  userId         String   @db.Uuid
+  userId         String?  @db.Uuid
   email          String
   code           String   @db.VarChar(6)
   expirationDate DateTime

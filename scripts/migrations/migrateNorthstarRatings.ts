@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { NorthstarRatingType } from '@prisma/client'
 import mongoose from 'mongoose'
 import { config } from '../../src/config'
 import { NorthstarRating } from '../../src/schemas/NorthstarRatingSchema'
@@ -22,10 +23,12 @@ async function migrateNorthstarRatings() {
 
     for (const simulation of simulationWithData) {
       if (simulation.data?.ratings) {
-        const type = simulation.data.ratings.learned ? 'learned' : 'actions'
+        const type = simulation.data.ratings.learned
+          ? NorthstarRatingType.learned
+          : NorthstarRatingType.actions
 
         const value =
-          type === 'learned'
+          type === NorthstarRatingType.learned
             ? simulation.data.ratings.learned
             : simulation.data.ratings.actions
 

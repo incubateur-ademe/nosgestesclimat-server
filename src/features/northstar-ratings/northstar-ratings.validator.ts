@@ -1,19 +1,10 @@
+import { NorthstarRatingType } from '@prisma/client'
 import z from 'zod'
-
-export enum NorthstarRatingTypeEnum {
-  actions = 'actions',
-  learned = 'learned',
-}
-
-const NorthstarRatingType = z.enum([
-  NorthstarRatingTypeEnum.actions,
-  NorthstarRatingTypeEnum.learned,
-])
 
 export const NorthstarRatingCreateDto = z.object({
   simulationId: z.string().uuid(),
   value: z.number().min(0).max(5),
-  type: NorthstarRatingType,
+  type: z.nativeEnum(NorthstarRatingType),
 })
 
 export type NorthstarRatingCreateDto = z.infer<typeof NorthstarRatingCreateDto>

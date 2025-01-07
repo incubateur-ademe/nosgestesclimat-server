@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker'
+import { PollDefaultAdditionalQuestionType } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import nock from 'nock'
 import supertest from 'supertest'
@@ -7,10 +8,7 @@ import app from '../../../app'
 import logger from '../../../logger'
 import { login } from '../../authentication/__tests__/fixtures/login.fixture'
 import { COOKIE_NAME } from '../../authentication/authentication.service'
-import type {
-  OrganisationPollUpdateDto,
-  PollDefaultAdditionalQuestionTypeEnum,
-} from '../organisations.validator'
+import type { OrganisationPollUpdateDto } from '../organisations.validator'
 import {
   createOrganisation,
   createOrganisationPoll,
@@ -352,7 +350,7 @@ describe('Given a NGC user', () => {
           test(`Then it returns a ${StatusCodes.OK} response with the updated group`, async () => {
             const payload: OrganisationPollUpdateDto = {
               defaultAdditionalQuestions: [
-                'postalCode' as PollDefaultAdditionalQuestionTypeEnum,
+                PollDefaultAdditionalQuestionType.postalCode,
               ],
             }
 
@@ -379,7 +377,7 @@ describe('Given a NGC user', () => {
             })
 
             payload.defaultAdditionalQuestions = [
-              'birthdate' as PollDefaultAdditionalQuestionTypeEnum,
+              PollDefaultAdditionalQuestionType.birthdate,
             ]
 
             nock(process.env.BREVO_URL!)

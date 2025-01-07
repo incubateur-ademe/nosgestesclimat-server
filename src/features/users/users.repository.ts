@@ -1,6 +1,9 @@
+import type { User } from '@prisma/client'
 import type { Request } from 'express'
+import { defaultUserSelection } from '../../adapters/prisma/selection'
 import type { Session } from '../../adapters/prisma/transaction'
 import { transaction } from '../../adapters/prisma/transaction'
+import type { UserParams } from './users.validator'
 
 export const transferOwnershipToUser = (
   { userId, email }: NonNullable<Request['user']>,
@@ -160,4 +163,40 @@ export const transferOwnershipToUser = (
       }),
     ])
   }, session)
+}
+
+export const fetchUser = (
+  { userId }: UserParams,
+  { session }: { session?: Session } = {}
+) => {
+  return transaction(
+    (prismaSession) =>
+      prismaSession.user.findUniqueOrThrow({
+        where: {
+          id: userId,
+        },
+        select: defaultUserSelection,
+      }),
+    session
+  )
+}
+
+export const updateUser = (
+  { userId }: UserParams,
+  { email }: Pick<User, 'email'>,
+  { session }: { session?: Session } = {}
+) => {
+  return transaction(
+    (prismaSession) =>
+      prismaSession.user.update({
+        where: {
+          id: userId,
+        },
+        data: {
+          email,
+        },
+        select: defaultUserSelection,
+      }),
+    session
+  )
 }

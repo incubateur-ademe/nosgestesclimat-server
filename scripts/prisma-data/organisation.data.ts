@@ -1,3 +1,4 @@
+import { PollDefaultAdditionalQuestionType } from '@prisma/client'
 import mongoose from 'mongoose'
 import slugify from 'slugify'
 import z, { ZodError } from 'zod'
@@ -47,7 +48,7 @@ const PollSchema = z
     name: z.string().max(150).optional(),
     slug: z.string().max(155).optional(),
     defaultAdditionalQuestions: z
-      .array(z.union([z.literal('birthdate'), z.literal('postalCode')]))
+      .array(z.nativeEnum(PollDefaultAdditionalQuestionType))
       .optional(),
     customAdditionalQuestions: z
       .array(

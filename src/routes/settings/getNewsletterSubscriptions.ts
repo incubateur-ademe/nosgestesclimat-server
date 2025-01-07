@@ -1,7 +1,7 @@
 import express from 'express'
-import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 import { getContactLists } from '../../helpers/brevo/getContactLists'
 import { formatEmail } from '../../utils/formatting/formatEmail'
+import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
 
 const router = express.Router()
 
@@ -27,4 +27,7 @@ router.route('/').get(async (req, res) => {
   }
 })
 
+/**
+ * @deprecated should use features/newsletters instead
+ */
 export default router

@@ -1,13 +1,11 @@
 import { faker } from '@faker-js/faker'
+import { NorthstarRatingType } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
 import logger from '../../../logger'
-import {
-  NorthstarRatingTypeEnum,
-  type NorthstarRatingCreateDto,
-} from '../northstar-ratings.validator'
+import type { NorthstarRatingCreateDto } from '../northstar-ratings.validator'
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)
@@ -29,7 +27,7 @@ describe('Given a NGC user', () => {
           .send({
             simulationId: faker.string.alpha(34),
             value: 5,
-            type: NorthstarRatingTypeEnum.learned,
+            type: NorthstarRatingType.learned,
           })
           .expect(StatusCodes.BAD_REQUEST)
       })
@@ -42,7 +40,7 @@ describe('Given a NGC user', () => {
           .send({
             simulationId: faker.string.uuid(),
             value: 42,
-            type: NorthstarRatingTypeEnum.learned,
+            type: NorthstarRatingType.learned,
           })
           .expect(StatusCodes.BAD_REQUEST)
       })
@@ -65,7 +63,7 @@ describe('Given a NGC user', () => {
       const payload = {
         simulationId: faker.string.uuid(),
         value: 5,
-        type: NorthstarRatingTypeEnum.learned,
+        type: NorthstarRatingType.learned,
       }
 
       const response = await agent
@@ -85,7 +83,7 @@ describe('Given a NGC user', () => {
       const payload: NorthstarRatingCreateDto = {
         simulationId: faker.string.uuid(),
         value: 5,
-        type: NorthstarRatingTypeEnum.learned,
+        type: NorthstarRatingType.learned,
       }
 
       await agent.post(url).send(payload)
@@ -121,7 +119,7 @@ describe('Given a NGC user', () => {
           .send({
             simulationId: faker.string.uuid(),
             value: 5,
-            type: NorthstarRatingTypeEnum.learned,
+            type: NorthstarRatingType.learned,
           })
           .expect(StatusCodes.INTERNAL_SERVER_ERROR)
       })
@@ -130,7 +128,7 @@ describe('Given a NGC user', () => {
         await agent.post(url).send({
           simulationId: faker.string.uuid(),
           value: 5,
-          type: NorthstarRatingTypeEnum.learned,
+          type: NorthstarRatingType.learned,
         })
 
         expect(logger.error).toHaveBeenCalledWith(

@@ -1,12 +1,13 @@
 import type { DottedName } from '@incubateur-ademe/nosgestesclimat'
 import rules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
-import type { ParsedRules } from 'publicodes'
 import { carbonMetric, waterMetric } from '../../constants/ngc'
 import { engine } from '../../constants/publicode'
 import type { Metric, Situation } from '../../types/types'
 import { getSubcategories } from '../publicodes/getSubcategories'
 import { safeEvaluate } from '../publicodes/safeEvaluate'
 import { safeGetSituation } from '../situation/safeGetSituation'
+
+type ParsedRules = ReturnType<(typeof engine)['getParsedRules']>
 
 const everyRules = new Set<DottedName>(Object.keys(rules) as DottedName[])
 
@@ -18,10 +19,7 @@ const categories = [
   'services sociétaux',
 ] as const
 
-const computeMetricResults = (
-  metric: Metric,
-  parsedRules: ParsedRules<DottedName>
-) => ({
+const computeMetricResults = (metric: Metric, parsedRules: ParsedRules) => ({
   bilan: Number(
     safeEvaluate({ engine, expr: 'bilan', metric })?.nodeValue ?? 0
   ),

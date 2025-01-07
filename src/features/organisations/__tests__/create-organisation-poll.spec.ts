@@ -1,6 +1,7 @@
 import { faker } from '@faker-js/faker'
 import { StatusCodes } from 'http-status-codes'
 
+import { PollDefaultAdditionalQuestionType } from '@prisma/client'
 import nock from 'nock'
 import slugify from 'slugify'
 import supertest from 'supertest'
@@ -9,7 +10,6 @@ import app from '../../../app'
 import logger from '../../../logger'
 import { login } from '../../authentication/__tests__/fixtures/login.fixture'
 import { COOKIE_NAME } from '../../authentication/authentication.service'
-import type { PollDefaultAdditionalQuestionTypeEnum } from '../organisations.validator'
 import { type OrganisationPollCreateDto } from '../organisations.validator'
 import {
   CREATE_ORGANISATION_POLL_ROUTE,
@@ -147,7 +147,9 @@ describe('Given a NGC user', () => {
             .set('cookie', cookie)
             .send({
               name: faker.company.buzzNoun(),
-              defaultAdditionalQuestions: ['birthdate'],
+              defaultAdditionalQuestions: [
+                PollDefaultAdditionalQuestionType.birthdate,
+              ],
               customAdditionalQuestions: [{}],
             })
             .expect(StatusCodes.BAD_REQUEST)
@@ -162,7 +164,9 @@ describe('Given a NGC user', () => {
             .set('cookie', cookie)
             .send({
               name: faker.company.buzzNoun(),
-              defaultAdditionalQuestions: ['postalCode'],
+              defaultAdditionalQuestions: [
+                PollDefaultAdditionalQuestionType.postalCode,
+              ],
               customAdditionalQuestions: [
                 {
                   question: 'Question 1',
@@ -266,7 +270,7 @@ describe('Given a NGC user', () => {
           const payload: OrganisationPollCreateDto = {
             name: faker.company.buzzNoun(),
             defaultAdditionalQuestions: [
-              'postalCode' as PollDefaultAdditionalQuestionTypeEnum,
+              PollDefaultAdditionalQuestionType.postalCode,
             ],
             customAdditionalQuestions: [
               {
@@ -328,7 +332,7 @@ describe('Given a NGC user', () => {
           const payload: OrganisationPollCreateDto = {
             name: faker.company.buzzNoun(),
             defaultAdditionalQuestions: [
-              'postalCode' as PollDefaultAdditionalQuestionTypeEnum,
+              PollDefaultAdditionalQuestionType.postalCode,
             ],
             customAdditionalQuestions: [
               {
@@ -435,7 +439,7 @@ describe('Given a NGC user', () => {
           const payload: OrganisationPollCreateDto = {
             name: faker.company.buzzNoun(),
             defaultAdditionalQuestions: [
-              'postalCode' as PollDefaultAdditionalQuestionTypeEnum,
+              PollDefaultAdditionalQuestionType.postalCode,
             ],
             customAdditionalQuestions: [
               {

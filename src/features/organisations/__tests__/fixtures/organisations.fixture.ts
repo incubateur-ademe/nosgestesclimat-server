@@ -1,6 +1,7 @@
 import type supertest from 'supertest'
 
 import { faker } from '@faker-js/faker'
+import { OrganisationType } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import nock from 'nock'
 import { baseURL } from '../../../../adapters/connect/client'
@@ -11,7 +12,6 @@ import type {
   OrganisationCreateDto,
   OrganisationPollCreateDto,
 } from '../../organisations.validator'
-import { OrganisationTypeEnum } from '../../organisations.validator'
 
 export const CREATE_ORGANISATION_ROUTE = '/organisations/v1'
 
@@ -52,15 +52,7 @@ export const FETCH_ORGANISATION_PUBLIC_POLL_DASHBOARD_ROUTE =
 
 type TestAgent = ReturnType<typeof supertest>
 
-const organisationTypes = [
-  OrganisationTypeEnum.association,
-  OrganisationTypeEnum.company,
-  OrganisationTypeEnum.cooperative,
-  OrganisationTypeEnum.groupOfFriends,
-  OrganisationTypeEnum.other,
-  OrganisationTypeEnum.publicOrRegionalAuthority,
-  OrganisationTypeEnum.universityOrSchool,
-]
+const organisationTypes = Object.values(OrganisationType)
 
 export const randomOrganisationType = () =>
   organisationTypes[Math.floor(Math.random() * organisationTypes.length)]

@@ -1,3 +1,4 @@
+import { NorthstarRatingType } from '@prisma/client'
 import mongoose from 'mongoose'
 import z from 'zod'
 import { prisma } from '../../src/adapters/prisma/client'
@@ -9,7 +10,7 @@ const NorthstarRatingSchema = z
   .object({
     _id: z.instanceof(mongoose.Types.ObjectId),
     simulationId: z.string(),
-    type: z.literal('learned'),
+    type: z.literal(NorthstarRatingType.learned),
     value: z.coerce.number().min(0).max(5).optional().nullable(),
     createdAt: z.instanceof(Date),
     updatedAt: z.instanceof(Date),
