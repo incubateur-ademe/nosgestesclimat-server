@@ -7,11 +7,13 @@ import { prisma } from '../../../../../adapters/prisma/client'
 import app from '../../../../../app'
 import { config } from '../../../../../config'
 import logger from '../../../../../logger'
-import { recoverApiToken } from '../../authentication/__tests__/fixtures/authentication.fixtures'
+import {
+  randomApiScopeName,
+  recoverApiToken,
+} from '../../authentication/__tests__/fixtures/authentication.fixtures'
 import {
   createEmailWhitelist,
   DELETE_EMAIL_WHITELIST_ROUTE,
-  randomApiScopeName,
 } from './fixtures/email-whitelist.fixture'
 
 describe('Given a NGC integrations API user', () => {

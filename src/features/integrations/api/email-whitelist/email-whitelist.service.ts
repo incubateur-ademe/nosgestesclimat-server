@@ -96,7 +96,10 @@ export const fetchEmailWhitelists = async ({
   query: EmailWhitelistsFetchQuery
   userScopes: Set<string>
 }) => {
-  const whitelists = await fetchWhitelists(query, userScopes)
+  const whitelists = await fetchWhitelists({
+    ...query,
+    scopes: userScopes,
+  })
 
   return whitelists.map(whitelistToDto)
 }

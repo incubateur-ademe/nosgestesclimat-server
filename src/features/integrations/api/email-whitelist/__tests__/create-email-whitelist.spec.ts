@@ -8,11 +8,11 @@ import { defaultEmailWhitelistSelection } from '../../../../../adapters/prisma/s
 import app from '../../../../../app'
 import { config } from '../../../../../config'
 import logger from '../../../../../logger'
-import { recoverApiToken } from '../../authentication/__tests__/fixtures/authentication.fixtures'
 import {
-  CREATE_EMAIL_WHITELIST_ROUTE,
   randomApiScopeName,
-} from './fixtures/email-whitelist.fixture'
+  recoverApiToken,
+} from '../../authentication/__tests__/fixtures/authentication.fixtures'
+import { CREATE_EMAIL_WHITELIST_ROUTE } from './fixtures/email-whitelist.fixture'
 
 describe('Given a NGC integrations API user', () => {
   const agent = supertest(app)

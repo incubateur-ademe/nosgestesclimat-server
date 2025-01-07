@@ -19,6 +19,11 @@ export const RECOVER_API_TOKEN_ROUTE = '/integrations-api/v1/tokens'
 
 export const REFRESH_API_TOKEN_ROUTE = '/integrations-api/v1/tokens/refresh'
 
+const apiScopeNames = Object.values(ApiScopeName)
+
+export const randomApiScopeName = (scopes = apiScopeNames) =>
+  scopes[Math.floor(Math.random() * scopes.length)]
+
 export const createIntegrationEmailWhitelist = ({
   prisma,
   apiScope = {},

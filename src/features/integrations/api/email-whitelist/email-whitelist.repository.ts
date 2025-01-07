@@ -106,19 +106,27 @@ export const deleteWhitelist = (
 }
 
 export const fetchWhitelists = (
-  { emailPattern }: EmailWhitelistsFetchQuery,
-  scopes: Set<string>,
+  {
+    emailPattern,
+    scopes,
+  }:
+    | (Required<EmailWhitelistsFetchQuery> & { scopes?: Set<string> })
+    | (EmailWhitelistsFetchQuery & { scopes: Set<string> }),
   { session }: { session?: Session } = {}
 ) => {
   return transaction(
     (prismaSession) =>
       prismaSession.integrationWhitelist.findMany({
         where: {
-          apiScope: {
-            name: {
-              in: [...scopes] as ApiScopeName[],
-            },
-          },
+          ...(scopes
+            ? {
+                apiScope: {
+                  name: {
+                    in: [...scopes] as ApiScopeName[],
+                  },
+                },
+              }
+            : {}),
           ...(emailPattern
             ? {
                 OR: [

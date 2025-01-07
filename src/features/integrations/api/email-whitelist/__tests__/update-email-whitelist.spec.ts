@@ -7,10 +7,12 @@ import { prisma } from '../../../../../adapters/prisma/client'
 import app from '../../../../../app'
 import { config } from '../../../../../config'
 import logger from '../../../../../logger'
-import { recoverApiToken } from '../../authentication/__tests__/fixtures/authentication.fixtures'
+import {
+  randomApiScopeName,
+  recoverApiToken,
+} from '../../authentication/__tests__/fixtures/authentication.fixtures'
 import {
   createEmailWhitelist,
-  randomApiScopeName,
   UPDATE_EMAIL_WHITELIST_ROUTE,
 } from './fixtures/email-whitelist.fixture'
 
