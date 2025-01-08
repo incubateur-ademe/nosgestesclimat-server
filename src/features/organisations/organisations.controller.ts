@@ -425,6 +425,7 @@ router
 router
   .route('/v1/:userId/public-polls/:pollIdOrSlug/dashboard')
   .get(
+    authentificationMiddleware({ passIfUnauthorized: true }),
     validateRequest(OrganisationPublicPollDashboardValidator),
     async (req, res) => {
       try {
