@@ -83,7 +83,28 @@ describe('Given a NGC user', () => {
               .expect(StatusCodes.OK)
 
             expect(response.body).toEqual({
-              funFacts: expect.any(Object),
+              funFacts: {
+                percentageOfBicycleUsers: null,
+                percentageOfVegetarians: null,
+                percentageOfCarOwners: null,
+                percentageOfPlaneUsers: null,
+                percentageOfLongPlaneUsers: null,
+                averageOfCarKilometers: 0,
+                averageOfTravelers: 0,
+                percentageOfElectricHeating: null,
+                percentageOfGasHeating: null,
+                percentageOfFuelHeating: null,
+                percentageOfWoodHeating: null,
+                averageOfElectricityConsumption: 0,
+                percentageOfCoolingSystem: null,
+                percentageOfVegan: null,
+                percentageOfRedMeat: null,
+                percentageOfLocalAndSeasonal: null,
+                percentageOfBottledWater: null,
+                percentageOfZeroWaste: null,
+                amountOfClothing: 0,
+                percentageOfStreaming: null,
+              },
             })
           })
         })
@@ -189,6 +210,160 @@ describe('Given a NGC user', () => {
             'Public poll dashboard fetch failed',
             databaseError
           )
+        })
+      })
+    })
+  })
+
+  describe('And logged in on his organisation space', () => {
+    let cookie: string
+    let userId: string
+
+    beforeEach(async () => {
+      ;({ cookie, userId } = await login({ agent }))
+    })
+
+    describe('And poll does exist', () => {
+      let pollId: string
+
+      beforeEach(async () => {
+        const { id: organisationId } = await createOrganisation({
+          agent,
+          cookie,
+        })
+        ;({ id: pollId } = await createOrganisationPoll({
+          agent,
+          cookie,
+          organisationId,
+        }))
+      })
+
+      test(`Then it returns a ${StatusCodes.OK} response with the dashboard`, async () => {
+        const response = await agent
+          .get(url.replace(':pollIdOrSlug', pollId).replace(':userId', userId))
+          .set('cookie', cookie)
+          .expect(StatusCodes.OK)
+
+        expect(response.body).toEqual({
+          funFacts: {
+            percentageOfBicycleUsers: null,
+            percentageOfVegetarians: null,
+            percentageOfCarOwners: null,
+            percentageOfPlaneUsers: null,
+            percentageOfLongPlaneUsers: null,
+            averageOfCarKilometers: 0,
+            averageOfTravelers: 0,
+            percentageOfElectricHeating: null,
+            percentageOfGasHeating: null,
+            percentageOfFuelHeating: null,
+            percentageOfWoodHeating: null,
+            averageOfElectricityConsumption: 0,
+            percentageOfCoolingSystem: null,
+            percentageOfVegan: null,
+            percentageOfRedMeat: null,
+            percentageOfLocalAndSeasonal: null,
+            percentageOfBottledWater: null,
+            percentageOfZeroWaste: null,
+            amountOfClothing: 0,
+            percentageOfStreaming: null,
+          },
+        })
+      })
+
+      describe('And participants do their simulation', () => {
+        beforeEach(async () => {
+          await Promise.all([
+            createOrganisationPollSimulation({
+              agent,
+              pollId,
+            }),
+            createOrganisationPollSimulation({
+              agent,
+              pollId,
+            }),
+            createOrganisationPollSimulation({
+              agent,
+              pollId,
+            }),
+          ])
+        })
+
+        test(`Then it returns a ${StatusCodes.OK} response with the dashboard`, async () => {
+          const response = await agent
+            .get(
+              url.replace(':pollIdOrSlug', pollId).replace(':userId', userId)
+            )
+            .set('cookie', cookie)
+            .expect(StatusCodes.OK)
+
+          expect(response.body).toEqual({
+            funFacts: expect.any(Object),
+          })
+        })
+      })
+    })
+  })
+
+  describe('And logged in on his organisation space with a different userId', () => {
+    let cookie: string
+    let email: string
+    let userId: string
+
+    describe('And poll does exist', () => {
+      let organisation: Awaited<ReturnType<typeof createOrganisation>>
+      let poll: Awaited<ReturnType<typeof createOrganisationPoll>>
+      let pollId: string
+
+      beforeEach(async () => {
+        ;({ cookie, userId, email } = await login({ agent }))
+
+        organisation = await createOrganisation({
+          agent,
+          cookie,
+        })
+        const { id: organisationId } = organisation
+        poll = await createOrganisationPoll({
+          agent,
+          cookie,
+          organisationId,
+        })
+        ;({ id: pollId } = poll)
+      })
+
+      describe('And participants do their simulation', () => {
+        beforeEach(async () => {
+          ;({ cookie, userId } = await login({
+            agent,
+            verificationCode: { email },
+          }))
+
+          await Promise.all([
+            createOrganisationPollSimulation({
+              agent,
+              pollId,
+            }),
+            createOrganisationPollSimulation({
+              agent,
+              pollId,
+            }),
+            createOrganisationPollSimulation({
+              agent,
+              pollId,
+            }),
+          ])
+        })
+
+        test(`Then it returns a ${StatusCodes.OK} response with the dashboard`, async () => {
+          const response = await agent
+            .get(
+              url.replace(':pollIdOrSlug', pollId).replace(':userId', userId)
+            )
+            .set('cookie', cookie)
+            .expect(StatusCodes.OK)
+
+          expect(response.body).toEqual({
+            funFacts: expect.any(Object),
+          })
         })
       })
     })
