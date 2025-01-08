@@ -1,9 +1,11 @@
 import {
   DeleteObjectCommand,
+  GetObjectCommand,
   HeadObjectCommand,
   ObjectCannedACL,
   PutObjectCommand,
 } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { ApiScopeName } from '@prisma/client'
 import { client } from '../../../../adapters/scaleway/client'
 import { config } from '../../../../config'
@@ -96,6 +98,45 @@ export const deleteMappingFile = async ({
     )
 
     return `File ${filePath} deleted successfully`
+  } catch (err) {
+    if (isScalewayErrorNotFound(err)) {
+      throw new EntityNotFoundException('Mapping File not found')
+    }
+    throw err
+  }
+}
+
+export const fetchMappingFile = async ({
+  params,
+  params: { partner },
+  userScopes,
+}: {
+  params: MappingFileParams
+  userScopes: Set<string>
+}) => {
+  try {
+    if (!SCOPES_FOR_PARTNERS[partner].some((scope) => userScopes.has(scope))) {
+      throw new ForbiddenException(`Forbidden ! Delete file for ${partner}`)
+    }
+
+    const filePath = getFilePath(params)
+    const key = getKey(filePath)
+
+    await client.send(
+      new HeadObjectCommand({
+        Bucket: bucket,
+        Key: key,
+      })
+    )
+
+    return await getSignedUrl(
+      client,
+      new GetObjectCommand({
+        Bucket: bucket,
+        Key: key,
+      }),
+      { expiresIn: 60 }
+    )
   } catch (err) {
     if (isScalewayErrorNotFound(err)) {
       throw new EntityNotFoundException('Mapping File not found')

@@ -114,6 +114,28 @@ const contract = c.router({
       ],
     },
   },
+  fetchMappingFile: {
+    method: 'GET',
+    path: '/integrations-api/v1/mapping-files/:partner/:kind',
+    query: z.object({}).strict(),
+    pathParams: MappingFileParams,
+    responses: {
+      [StatusCodes.MOVED_TEMPORARILY as number]: z.void(),
+      [StatusCodes.BAD_REQUEST as number]: ZodErrorSchema,
+      [StatusCodes.UNAUTHORIZED as number]: z.string(),
+      [StatusCodes.FORBIDDEN as number]: z.string(),
+      [StatusCodes.NOT_FOUND as number]: z.string(),
+      [StatusCodes.INTERNAL_SERVER_ERROR as number]: z.object({}).strict(),
+    },
+    summary: 'Fetches a configuration file',
+    metadata: {
+      security: [
+        {
+          bearerAuth: [],
+        },
+      ],
+    },
+  },
 })
 
 export default contract

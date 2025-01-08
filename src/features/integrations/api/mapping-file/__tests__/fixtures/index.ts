@@ -5,6 +5,8 @@ export const CREATE_MAPPING_FILE_ROUTE = `/integrations-api/v1/mapping-files`
 
 export const DELETE_MAPPING_FILE_ROUTE = `/integrations-api/v1/mapping-files/:partner/:kind`
 
+export const FETCH_MAPPING_FILE_ROUTE = `/integrations-api/v1/mapping-files/:partner/:kind`
+
 const mappingFileKinds = Object.values(MappingFileKind)
 
 export const randomMappingFileKind = (kinds = mappingFileKinds) =>
