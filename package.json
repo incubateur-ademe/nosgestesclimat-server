@@ -27,7 +27,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@incubateur-ademe/nosgestesclimat": "^3.4.3",
+    "@incubateur-ademe/nosgestesclimat": "^3.5.0",
     "@prisma/client": "^6.0.0",
     "@publicodes/tools": "^1.2.5",
     "@sentry/node": "^8.26.0",
