@@ -1,6 +1,5 @@
-import type { Prisma } from '@prisma/client'
+import type { Prisma, VerificationCode } from '@prisma/client'
 import { transaction } from '../../adapters/prisma/transaction'
-import type { LoginDto } from './authentication.validator'
 
 export const createUserVerificationCode = (
   data: Prisma.VerificationCodeCreateInput
@@ -22,7 +21,11 @@ export const createUserVerificationCode = (
   )
 }
 
-export const findUserVerificationCode = ({ userId, email, code }: LoginDto) => {
+export const findUserVerificationCode = ({
+  userId,
+  email,
+  code,
+}: Pick<VerificationCode, 'email' | 'code' | 'userId'>) => {
   return transaction((prismaSession) =>
     prismaSession.verificationCode.findFirstOrThrow({
       where: {

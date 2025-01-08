@@ -4,6 +4,13 @@ import type { VerificationCodeCreatedEvent } from '../events/VerificationCodeCre
 
 export const sendVerificationCode: Handler<VerificationCodeCreatedEvent> = ({
   attributes: {
-    verificationCode: { code, email },
+    verificationCode: { userId, code, email },
+    origin,
   },
-}) => sendVerificationCodeEmail({ code, email })
+}) =>
+  sendVerificationCodeEmail({
+    userId,
+    origin,
+    email,
+    code,
+  })

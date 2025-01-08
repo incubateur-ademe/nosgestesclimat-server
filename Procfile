@@ -1,1 +1,1 @@
-postdeploy: yarn db:migrate && yarn db:grant-roles
+postdeploy: yarn db:migrate && yarn db:post-migrate

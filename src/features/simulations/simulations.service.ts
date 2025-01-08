@@ -6,6 +6,7 @@ import type {
 import modelRules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
 import modelFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRules.json'
 import type { JsonValue } from '@prisma/client/runtime/library'
+import type { Request } from 'express'
 import { engine } from '../../constants/publicode'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
 import { EventBus } from '../../core/event-bus/event-bus'
@@ -146,11 +147,16 @@ export const createPollSimulation = async ({
 
 export const fetchPublicPollSimulations = async ({
   params,
+  user,
 }: {
   params: PublicPollParams
+  user?: Request['user']
 }) => {
   try {
-    const simulations = await fetchPollSimulations(params)
+    const simulations = await fetchPollSimulations({
+      params,
+      user,
+    })
 
     return simulations.map((s) => simulationToDto(s, params.userId))
   } catch (e) {
@@ -283,11 +289,13 @@ const getSimulationsFunFacts = (simulations: FunFactsSimulations) => {
 
 export const fetchPublicPollDashboard = async ({
   params,
+  user,
 }: {
   params: PublicPollParams
+  user?: Request['user']
 }) => {
   try {
-    const simulations = await fetchPollSimulations(params)
+    const simulations = await fetchPollSimulations({ params, user })
 
     const validSimulations = simulations.filter(isValidSimulation)
 

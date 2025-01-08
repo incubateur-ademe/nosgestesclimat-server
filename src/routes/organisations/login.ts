@@ -24,7 +24,10 @@ router.route('/').post(async (req, res) => {
     }
 
     const verificationCodeObject =
-      await handleSendVerificationCodeAndReturnExpirationDate({ email })
+      await handleSendVerificationCodeAndReturnExpirationDate({
+        email,
+        userId: organisationFound.administrators[0].userId!,
+      })
 
     setSuccessfulJSONResponse(res)
 

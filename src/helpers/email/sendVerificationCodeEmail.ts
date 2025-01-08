@@ -5,12 +5,13 @@ import { createOrUpdateContact } from './createOrUpdateContact'
 type Props = {
   email: string
   verificationCode: string
-  userId?: string
+  userId: string
 }
 
 export async function sendVerificationCodeEmail({
-  email,
   verificationCode,
+  userId,
+  email,
 }: Props) {
   try {
     // Add contact to the list or update it
@@ -24,6 +25,8 @@ export async function sendVerificationCodeEmail({
 
     await sendBrevoVerificationCodeEmail({
       code: verificationCode.toString(),
+      origin: '',
+      userId,
       email,
     })
   } catch (error) {
