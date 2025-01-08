@@ -434,4 +434,78 @@ describe('Given a NGC user', () => {
       })
     })
   })
+
+  describe.only('And logged in on his organisation space with a different userId', () => {
+    let cookie: string
+    let email: string
+    let userId: string
+
+    describe('And poll does exist', () => {
+      let organisation: Awaited<ReturnType<typeof createOrganisation>>
+      let poll: Awaited<ReturnType<typeof createOrganisationPoll>>
+      let pollId: string
+
+      beforeEach(async () => {
+        ;({ cookie, userId, email } = await login({ agent }))
+
+        organisation = await createOrganisation({
+          agent,
+          cookie,
+        })
+        const { id: organisationId } = organisation
+        poll = await createOrganisationPoll({
+          agent,
+          cookie,
+          organisationId,
+        })
+        ;({ id: pollId } = poll)
+      })
+
+      describe('And participants do their simulation', () => {
+        let simulations: Awaited<
+          ReturnType<typeof createOrganisationPollSimulation>
+        >[]
+
+        beforeEach(async () => {
+          ;({ cookie, userId } = await login({
+            agent,
+            verificationCode: { email },
+          }))
+
+          simulations = await Promise.all([
+            createOrganisationPollSimulation({
+              agent,
+              pollId,
+            }),
+            createOrganisationPollSimulation({
+              agent,
+              pollId,
+            }),
+            createOrganisationPollSimulation({
+              agent,
+              pollId,
+            }),
+          ])
+        })
+
+        test(`Then it returns a ${StatusCodes.OK} response with the simulations list`, async () => {
+          const response = await agent
+            .get(
+              url.replace(':pollIdOrSlug', pollId).replace(':userId', userId)
+            )
+            .set('cookie', cookie)
+            .expect(StatusCodes.OK)
+
+          expect(response.body).toEqual(
+            expect.arrayContaining(
+              simulations.map(({ polls: _polls, ...simulation }) => ({
+                ...simulation,
+                user: { name: null },
+              }))
+            )
+          )
+        })
+      })
+    })
+  })
 })
