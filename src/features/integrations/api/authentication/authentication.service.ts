@@ -9,11 +9,11 @@ import { UnauthorizedException } from '../../../../core/errors/UnauthorizedExcep
 import { isPrismaErrorNotFound } from '../../../../core/typeguards/isPrismaError'
 import { findUserVerificationCode } from '../../../authentication/verification-codes.repository'
 import { createVerificationCode } from '../../../authentication/verification-codes.service'
+import { fetchWhitelists } from '../email-whitelist/email-whitelist.repository'
 import type {
   GenerateAPITokenRequestDto,
   RecoverApiTokenQuery,
 } from './authentication.contract'
-import { findIntegrationWhitelist } from './authentication.repository'
 
 export const TOKEN_MAX_AGE = 1000 * 60 * 15 // 15 minutes
 
@@ -77,8 +77,7 @@ export const isValidRefreshToken = async (refreshToken: string) => {
 }
 
 const signTokens = async (email: string) => {
-  const [, emailDomain] = email.split('@')
-  const emailWhitelist = await findIntegrationWhitelist({ emailDomain })
+  const emailWhitelist = await fetchWhitelists({ emailPattern: email })
 
   const scopes = new Set(emailWhitelist.map(({ apiScopeName }) => apiScopeName))
 
@@ -107,14 +106,9 @@ export const generateApiToken = async ({
   generateApiTokenDto: GenerateAPITokenRequestDto
   origin: string
 }) => {
-  const [, emailDomain] = email.split('@')
-  const emailWhitelist = await findIntegrationWhitelist({ emailDomain })
-  const isValidEmail = emailWhitelist.some(
-    ({ emailPattern }) =>
-      emailPattern === email || emailPattern === `*@${emailDomain}`
-  )
+  const emailWhitelist = await fetchWhitelists({ emailPattern: email })
 
-  if (isValidEmail) {
+  if (emailWhitelist.length) {
     await createVerificationCode({
       verificationCodeDto: {
         email,
