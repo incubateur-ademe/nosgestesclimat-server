@@ -260,13 +260,20 @@ export const getIncompleteSimulationsCount = (user: {
   })
 }
 
-export const fetchPollSimulations = (params: PublicPollParams) => {
+export const fetchPollSimulations = ({
+  params,
+  user,
+}: {
+  params: PublicPollParams
+  user?: { email: string }
+}) => {
   return transaction(async (prismaSession) => {
     const { id } = await findOrganisationPublicPollBySlugOrId(
       { params },
       { session: prismaSession }
     )
 
+    const email = user?.email
     const { userId } = params
 
     return prismaSession.simulation.findMany({
@@ -275,28 +282,27 @@ export const fetchPollSimulations = (params: PublicPollParams) => {
           some: {
             poll: {
               id,
-              OR: [
-                {
-                  organisation: {
-                    administrators: {
-                      some: {
-                        user: {
-                          id: userId,
+              ...(email
+                ? {
+                    organisation: {
+                      administrators: {
+                        some: {
+                          user: {
+                            email,
+                          },
                         },
                       },
                     },
-                  },
-                },
-                {
-                  simulations: {
-                    some: {
-                      simulation: {
-                        userId,
+                  }
+                : {
+                    simulations: {
+                      some: {
+                        simulation: {
+                          userId,
+                        },
                       },
                     },
-                  },
-                },
-              ],
+                  }),
             },
           },
         },

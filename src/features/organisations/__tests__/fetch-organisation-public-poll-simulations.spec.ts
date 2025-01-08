@@ -435,7 +435,7 @@ describe('Given a NGC user', () => {
     })
   })
 
-  describe.only('And logged in on his organisation space with a different userId', () => {
+  describe('And logged in on his organisation space with a different userId', () => {
     let cookie: string
     let email: string
     let userId: string
