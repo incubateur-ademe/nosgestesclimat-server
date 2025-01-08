@@ -1,6 +1,10 @@
 import { ExternalServiceTypeEnum } from '../../../../integrations.validator'
 import { MappingFileKind } from '../../mapping-file.contract'
 
+export const CREATE_MAPPING_FILE_ROUTE = `/integrations-api/v1/mapping-files`
+
+export const DELETE_MAPPING_FILE_ROUTE = `/integrations-api/v1/mapping-files/:partner/:kind`
+
 const mappingFileKinds = Object.values(MappingFileKind)
 
 export const randomMappingFileKind = (kinds = mappingFileKinds) =>

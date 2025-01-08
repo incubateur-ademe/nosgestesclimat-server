@@ -3,12 +3,13 @@ import { StatusCodes } from 'http-status-codes'
 import multer from 'multer'
 import yaml from 'yaml'
 import { ZodError } from 'zod'
+import { EntityNotFoundException } from '../../../../core/errors/EntityNotFoundException'
 import { ForbiddenException } from '../../../../core/errors/ForbiddenException'
 import { tsRestServer } from '../../../../core/ts-rest'
 import logger from '../../../../logger'
 import { generateAuthenticationMiddleware } from '../authentication/authentication.service'
 import mappingFileContract, { MappingFile } from './mapping-file.contract'
-import { uploadMappingFile } from './mapping-file.service'
+import { deleteMappingFile, uploadMappingFile } from './mapping-file.service'
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -55,6 +56,40 @@ const router = tsRestServer.router(mappingFileContract, {
         }
 
         logger.error('Mapping File upload failed', err)
+        return {
+          body: {},
+          status: StatusCodes.INTERNAL_SERVER_ERROR,
+        }
+      }
+    },
+  },
+  deleteMappingFile: {
+    middleware: [generateAuthenticationMiddleware()],
+    handler: async ({ params, req }) => {
+      try {
+        return {
+          body: await deleteMappingFile({
+            params,
+            userScopes: req.apiUser!.scopes,
+          }),
+          status: StatusCodes.NO_CONTENT,
+        }
+      } catch (err) {
+        if (err instanceof ForbiddenException) {
+          return {
+            body: err.message,
+            status: StatusCodes.FORBIDDEN,
+          }
+        }
+
+        if (err instanceof EntityNotFoundException) {
+          return {
+            body: err.message,
+            status: StatusCodes.NOT_FOUND,
+          }
+        }
+
+        logger.error('Mapping File deletion failed', err)
         return {
           body: {},
           status: StatusCodes.INTERNAL_SERVER_ERROR,

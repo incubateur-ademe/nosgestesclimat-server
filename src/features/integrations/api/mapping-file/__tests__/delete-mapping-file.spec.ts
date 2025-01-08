@@ -1,10 +1,12 @@
-import { ObjectCannedACL, PutObjectCommand } from '@aws-sdk/client-s3'
+import {
+  DeleteObjectCommand,
+  HeadObjectCommand,
+  NotFound,
+} from '@aws-sdk/client-s3'
 import { faker } from '@faker-js/faker'
 import { ApiScopeName } from '@prisma/client'
-import { readFile } from 'fs/promises'
 import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
-import path from 'path'
 import supertest from 'supertest'
 import { prisma } from '../../../../../adapters/prisma/client'
 import { client } from '../../../../../adapters/scaleway/client'
@@ -15,14 +17,14 @@ import { ExternalServiceTypeEnum } from '../../../integrations.validator'
 import { recoverApiToken } from '../../authentication/__tests__/fixtures/authentication.fixtures'
 import { SCOPES_FOR_PARTNERS } from '../mapping-file.service'
 import {
-  CREATE_MAPPING_FILE_ROUTE,
+  DELETE_MAPPING_FILE_ROUTE,
   randomMappingFileKind,
   randomPartner,
 } from './fixtures'
 
 describe('Given a NGC integrations API user', () => {
   const agent = supertest(app)
-  const url = CREATE_MAPPING_FILE_ROUTE
+  const url = DELETE_MAPPING_FILE_ROUTE
 
   afterEach(async () => {
     await prisma.integrationWhitelist.deleteMany()
@@ -32,17 +34,17 @@ describe('Given a NGC integrations API user', () => {
     ])
   })
 
-  describe('When uploading a mapping file', () => {
+  describe('When deleting a mapping file', () => {
     describe('And not authenticated', () => {
       test(`Then it returns a ${StatusCodes.UNAUTHORIZED} error`, async () => {
-        await agent.put(url).expect(StatusCodes.UNAUTHORIZED)
+        await agent.delete(url).expect(StatusCodes.UNAUTHORIZED)
       })
     })
 
     describe('And invalid token', () => {
       test(`Then it returns a ${StatusCodes.UNAUTHORIZED} error`, async () => {
         await agent
-          .put(url)
+          .delete(url)
           .set('authorization', `Bearer invalid token`)
           .expect(StatusCodes.UNAUTHORIZED)
       })
@@ -59,7 +61,7 @@ describe('Given a NGC integrations API user', () => {
         )
 
         await agent
-          .put(url)
+          .delete(url)
           .set('authorization', `Bearer ${token}`)
           .expect(StatusCodes.UNAUTHORIZED)
       })
@@ -73,15 +75,26 @@ describe('Given a NGC integrations API user', () => {
       let token: string
 
       beforeEach(async () => {
-        jest.spyOn(client, 'send').mockImplementationOnce((command) => {
-          if (!(command instanceof PutObjectCommand)) {
-            throw command
-          }
+        jest
+          .spyOn(client, 'send')
+          .mockImplementationOnce((command) => {
+            if (!(command instanceof HeadObjectCommand)) {
+              throw command
+            }
 
-          return Promise.resolve({
-            $metadata: {},
+            return Promise.resolve({
+              $metadata: {},
+            })
           })
-        })
+          .mockImplementationOnce((command) => {
+            if (!(command instanceof DeleteObjectCommand)) {
+              throw command
+            }
+
+            return Promise.resolve({
+              $metadata: {},
+            })
+          })
         ;({ token } = await recoverApiToken({
           apiScope: { name: scope },
           prisma,
@@ -104,10 +117,11 @@ describe('Given a NGC integrations API user', () => {
       )('And forbidden $forbiddenPartner partner', ({ forbiddenPartner }) => {
         test(`Then it returns a ${StatusCodes.FORBIDDEN} error`, async () => {
           await agent
-            .put(url)
-            .attach('file', path.join(__dirname, 'fixtures', 'valid.yml'))
-            .field('kind', randomMappingFileKind())
-            .field('partner', forbiddenPartner)
+            .delete(
+              url
+                .replace(':kind', randomMappingFileKind())
+                .replace(':partner', forbiddenPartner)
+            )
             .set('authorization', `Bearer ${token}`)
             .expect(StatusCodes.FORBIDDEN)
         })
@@ -122,14 +136,15 @@ describe('Given a NGC integrations API user', () => {
           )
           .map((allowedPartner) => ({ allowedPartner }))
       )('And allowed $allowedPartner partner', ({ allowedPartner }) => {
-        test(`Then it return a ${StatusCodes.CREATED} response`, async () => {
+        test(`Then it return a ${StatusCodes.NO_CONTENT} response`, async () => {
           await agent
-            .put(url)
-            .attach('file', path.join(__dirname, 'fixtures', 'valid.yml'))
-            .field('kind', randomMappingFileKind())
-            .field('partner', allowedPartner)
+            .delete(
+              url
+                .replace(':kind', randomMappingFileKind())
+                .replace(':partner', allowedPartner)
+            )
             .set('authorization', `Bearer ${token}`)
-            .expect(StatusCodes.CREATED)
+            .expect(StatusCodes.NO_CONTENT)
         })
       })
     })
@@ -138,15 +153,6 @@ describe('Given a NGC integrations API user', () => {
       let token: string
 
       beforeEach(async () => {
-        jest.spyOn(client, 'send').mockImplementationOnce((command) => {
-          if (!(command instanceof PutObjectCommand)) {
-            throw command
-          }
-
-          return Promise.resolve({
-            $metadata: {},
-          })
-        })
         ;({ token } = await recoverApiToken({
           prisma,
           agent,
@@ -157,57 +163,14 @@ describe('Given a NGC integrations API user', () => {
         jest.spyOn(client, 'send').mockRestore()
       })
 
-      describe('And no data provided', () => {
-        test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
-          await agent
-            .put(url)
-            .set('authorization', `Bearer ${token}`)
-            .expect(StatusCodes.BAD_REQUEST)
-        })
-      })
-
-      describe('And no file provided', () => {
-        test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
-          await agent
-            .put(url)
-            .field('kind', randomMappingFileKind())
-            .field('partner', randomPartner())
-            .set('authorization', `Bearer ${token}`)
-            .expect(StatusCodes.BAD_REQUEST)
-        })
-      })
-
-      describe('And invalid file provided', () => {
-        test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
-          await agent
-            .put(url)
-            .attach('file', path.join(__dirname, 'fixtures', 'invalid.png'))
-            .field('kind', randomMappingFileKind())
-            .field('partner', randomPartner())
-            .set('authorization', `Bearer ${token}`)
-            .expect(StatusCodes.BAD_REQUEST)
-        })
-      })
-
-      describe('And invalid yaml file provided', () => {
-        test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
-          await agent
-            .put(url)
-            .attach('file', path.join(__dirname, 'fixtures', 'invalid.yml'))
-            .field('kind', randomMappingFileKind())
-            .field('partner', randomPartner())
-            .set('authorization', `Bearer ${token}`)
-            .expect(StatusCodes.BAD_REQUEST)
-        })
-      })
-
       describe('And invalid kind provided', () => {
         test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
           await agent
-            .put(url)
-            .attach('file', path.join(__dirname, 'fixtures', 'invalid.yml'))
-            .field('kind', 'MyKind')
-            .field('partner', randomPartner())
+            .delete(
+              url
+                .replace(':kind', 'MyKind')
+                .replace(':partner', randomPartner())
+            )
             .set('authorization', `Bearer ${token}`)
             .expect(StatusCodes.BAD_REQUEST)
         })
@@ -216,48 +179,103 @@ describe('Given a NGC integrations API user', () => {
       describe('And invalid partner provided', () => {
         test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
           await agent
-            .put(url)
-            .attach('file', path.join(__dirname, 'fixtures', 'invalid.yml'))
-            .field('kind', randomMappingFileKind())
-            .field('partner', 'MyPartner')
+            .delete(
+              url
+                .replace(':kind', randomMappingFileKind())
+                .replace(':partner', 'MyPartner')
+            )
             .set('authorization', `Bearer ${token}`)
             .expect(StatusCodes.BAD_REQUEST)
         })
       })
 
-      test(`Then it returns a ${StatusCodes.CREATED} response`, async () => {
-        await agent
-          .put(url)
-          .attach('file', path.join(__dirname, 'fixtures', 'valid.yml'))
-          .field('kind', randomMappingFileKind())
-          .field('partner', randomPartner())
-          .set('authorization', `Bearer ${token}`)
-          .expect(StatusCodes.CREATED)
+      describe('And file does not exist', () => {
+        beforeEach(async () => {
+          jest.spyOn(client, 'send').mockImplementationOnce((command) => {
+            if (!(command instanceof HeadObjectCommand)) {
+              throw command
+            }
+
+            return Promise.reject(
+              new NotFound({
+                message: 'NotFound: UnknownError',
+                $metadata: {
+                  httpStatusCode: StatusCodes.NOT_FOUND,
+                },
+              })
+            )
+          })
+          ;({ token } = await recoverApiToken({
+            prisma,
+            agent,
+          }))
+        })
+
+        test(`Then it returns a ${StatusCodes.NOT_FOUND} error`, async () => {
+          await agent
+            .delete(
+              url
+                .replace(':kind', randomMappingFileKind())
+                .replace(':partner', randomPartner())
+            )
+            .set('authorization', `Bearer ${token}`)
+            .expect(StatusCodes.NOT_FOUND)
+        })
       })
 
-      test(`Then it uploads the file`, async () => {
-        const kind = randomMappingFileKind()
-        const partner = randomPartner()
-        await agent
-          .put(url)
-          .attach('file', path.join(__dirname, 'fixtures', 'valid.yml'))
-          .field('kind', kind)
-          .field('partner', partner)
-          .set('authorization', `Bearer ${token}`)
-          .expect(StatusCodes.CREATED)
+      describe('And file does exist', () => {
+        beforeEach(async () => {
+          jest
+            .spyOn(client, 'send')
+            .mockImplementationOnce((command) => {
+              if (!(command instanceof HeadObjectCommand)) {
+                throw command
+              }
 
-        expect(client.send).toHaveBeenCalledWith(
-          expect.objectContaining({
-            input: {
-              Bucket: process.env.SCALEWAY_BUCKET,
-              Key: `${process.env.SCALEWAY_ROOT_PATH}/mapping-files/${partner}/${kind}.yml`,
-              Body: await readFile(
-                path.join(__dirname, 'fixtures', 'valid.yml')
-              ),
-              ACL: ObjectCannedACL.private,
-            },
-          })
-        )
+              return Promise.resolve({
+                $metadata: {},
+              })
+            })
+            .mockImplementationOnce((command) => {
+              if (!(command instanceof DeleteObjectCommand)) {
+                throw command
+              }
+
+              return Promise.resolve({
+                $metadata: {},
+              })
+            })
+        })
+
+        test(`Then it returns a ${StatusCodes.NO_CONTENT} response`, async () => {
+          await agent
+            .delete(
+              url
+                .replace(':kind', randomMappingFileKind())
+                .replace(':partner', randomPartner())
+            )
+            .set('authorization', `Bearer ${token}`)
+            .expect(StatusCodes.NO_CONTENT)
+        })
+
+        test(`Then it deletes the file`, async () => {
+          const kind = randomMappingFileKind()
+          const partner = randomPartner()
+          await agent
+            .delete(url.replace(':kind', kind).replace(':partner', partner))
+            .set('authorization', `Bearer ${token}`)
+            .expect(StatusCodes.NO_CONTENT)
+
+          expect(client.send).toHaveBeenCalledTimes(2)
+          expect(client.send).toHaveBeenCalledWith(
+            expect.objectContaining({
+              input: {
+                Bucket: process.env.SCALEWAY_BUCKET,
+                Key: `${process.env.SCALEWAY_ROOT_PATH}/mapping-files/${partner}/${kind}.yml`,
+              },
+            })
+          )
+        })
       })
 
       describe('And bucket failure', () => {
@@ -266,31 +284,32 @@ describe('Given a NGC integrations API user', () => {
         beforeEach(() => {
           jest
             .spyOn(client, 'send')
-            .mockReset()
             .mockImplementationOnce(() => Promise.reject(bucketError))
         })
 
         test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
           await agent
-            .put(url)
-            .attach('file', path.join(__dirname, 'fixtures', 'valid.yml'))
-            .field('kind', randomMappingFileKind())
-            .field('partner', randomPartner())
+            .delete(
+              url
+                .replace(':kind', randomMappingFileKind())
+                .replace(':partner', randomPartner())
+            )
             .set('authorization', `Bearer ${token}`)
             .expect(StatusCodes.INTERNAL_SERVER_ERROR)
         })
 
         test(`Then it logs the exception`, async () => {
           await agent
-            .put(url)
-            .attach('file', path.join(__dirname, 'fixtures', 'valid.yml'))
-            .field('kind', randomMappingFileKind())
-            .field('partner', randomPartner())
+            .delete(
+              url
+                .replace(':kind', randomMappingFileKind())
+                .replace(':partner', randomPartner())
+            )
             .set('authorization', `Bearer ${token}`)
             .expect(StatusCodes.INTERNAL_SERVER_ERROR)
 
           expect(logger.error).toHaveBeenCalledWith(
-            'Mapping File upload failed',
+            'Mapping File deletion failed',
             bucketError
           )
         })

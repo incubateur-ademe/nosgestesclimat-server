@@ -14,14 +14,14 @@ export const MappingFileKind = {
 
 export type MappingFileKind = ValueOf<typeof MappingFileKind>
 
-const MappingFileCreateDto = z
+const MappingFileParams = z
   .object({
     kind: z.nativeEnum(MappingFileKind),
     partner: z.nativeEnum(ExternalServiceTypeEnum),
   })
   .strict()
 
-export type MappingFileCreateDto = z.infer<typeof MappingFileCreateDto>
+export type MappingFileParams = z.infer<typeof MappingFileParams>
 
 export const MappingFile = z
   .object({
@@ -49,7 +49,7 @@ const contract = c.router({
     contentType: 'multipart/form-data',
     query: z.object({}).strict(),
     pathParams: z.object({}).strict(),
-    body: MappingFileCreateDto,
+    body: MappingFileParams,
     responses: {
       [StatusCodes.CREATED as number]: z.string(),
       [StatusCodes.BAD_REQUEST as number]: ZodErrorSchema,
@@ -89,6 +89,29 @@ const contract = c.router({
           },
         },
       },
+    },
+  },
+  deleteMappingFile: {
+    method: 'DELETE',
+    path: '/integrations-api/v1/mapping-files/:partner/:kind',
+    query: z.object({}).strict(),
+    pathParams: MappingFileParams,
+    body: z.object({}).strict(),
+    responses: {
+      [StatusCodes.NO_CONTENT as number]: z.string(),
+      [StatusCodes.BAD_REQUEST as number]: ZodErrorSchema,
+      [StatusCodes.UNAUTHORIZED as number]: z.string(),
+      [StatusCodes.FORBIDDEN as number]: z.string(),
+      [StatusCodes.NOT_FOUND as number]: z.string(),
+      [StatusCodes.INTERNAL_SERVER_ERROR as number]: z.object({}).strict(),
+    },
+    summary: 'Deletes a configuration file',
+    metadata: {
+      security: [
+        {
+          bearerAuth: [],
+        },
+      ],
     },
   },
 })
