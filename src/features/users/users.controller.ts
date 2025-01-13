@@ -6,22 +6,22 @@ import { EventBus } from '../../core/event-bus/event-bus'
 import logger from '../../logger'
 import { UserUpdatedEvent } from './events/UserUpdated.event'
 import { addOrUpdateBrevoContact } from './handlers/add-or-update-brevo-contact'
-import { fetchUserBrevoContact, updateUserAndContact } from './users.service'
+import { fetchUserContact, updateUserAndContact } from './users.service'
 import {
-  FetchUserBrevoContactValidator,
+  FetchUserContactValidator,
   UpdateUserValidator,
 } from './users.validator'
 
 const router = express.Router()
 
 /**
- * Returns brevo contact for given user id
+ * Returns user contact for given user id
  */
 router
-  .route('/v1/:userId/brevo-contact')
-  .get(validateRequest(FetchUserBrevoContactValidator), async (req, res) => {
+  .route('/v1/:userId/contact')
+  .get(validateRequest(FetchUserContactValidator), async (req, res) => {
     try {
-      const contact = await fetchUserBrevoContact(req.params)
+      const contact = await fetchUserContact(req.params)
 
       return res.status(StatusCodes.OK).json(contact)
     } catch (err) {
@@ -29,7 +29,7 @@ router
         return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
       }
 
-      logger.error('User brevo contact fetch failed', err)
+      logger.error('User contact fetch failed', err)
 
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
     }

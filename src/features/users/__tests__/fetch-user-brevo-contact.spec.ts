@@ -12,7 +12,7 @@ import { createSimulation } from '../../simulations/__tests__/fixtures/simulatio
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)
-  const url = '/users/v1/:userId/brevo-contact'
+  const url = '/users/v1/:userId/contact'
 
   afterEach(() => prisma.user.deleteMany())
 
@@ -72,7 +72,7 @@ describe('Given a NGC user', () => {
           listIds = [faker.number.int(), faker.number.int()]
         })
 
-        test(`Then it returns a ${StatusCodes.OK} response with the mapped brevo contact`, async () => {
+        test(`Then it returns a ${StatusCodes.OK} response with the mapped user contact`, async () => {
           const scope = nock(process.env.BREVO_URL!, {
             reqheaders: {
               'api-key': process.env.BREVO_API_KEY!,
@@ -105,8 +105,8 @@ describe('Given a NGC user', () => {
           expect(scope.isDone()).toBeTruthy()
         })
 
-        describe('And brevo contact does not exist', () => {
-          it(`Then it returns a ${StatusCodes.NOT_FOUND} error`, async () => {
+        describe('And user contact does not exist', () => {
+          test(`Then it returns a ${StatusCodes.NOT_FOUND} error`, async () => {
             const scope = nock(process.env.BREVO_URL!, {
               reqheaders: {
                 'api-key': process.env.BREVO_API_KEY!,
@@ -127,7 +127,7 @@ describe('Given a NGC user', () => {
         })
 
         describe('And network error', () => {
-          it(`Then it returns a ${StatusCodes.NOT_FOUND} response`, async () => {
+          test(`Then it returns a ${StatusCodes.NOT_FOUND} response`, async () => {
             const scope = nock(process.env.BREVO_URL!, {
               reqheaders: {
                 'api-key': process.env.BREVO_API_KEY!,
@@ -149,7 +149,7 @@ describe('Given a NGC user', () => {
         })
 
         describe('And brevo is down', () => {
-          it(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} response after retries and logs the exception`, async () => {
+          test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} response after retries and logs the exception`, async () => {
             const scope = nock(process.env.BREVO_URL!, {
               reqheaders: {
                 'api-key': process.env.BREVO_API_KEY!,
@@ -171,14 +171,14 @@ describe('Given a NGC user', () => {
             expect(body).toEqual({})
             expect(scope.isDone()).toBeTruthy()
             expect(logger.error).toHaveBeenCalledWith(
-              'User brevo contact fetch failed',
+              'User contact fetch failed',
               expect.any(AxiosError)
             )
           })
         })
 
         describe('And brevo interface changes', () => {
-          it(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} response and logs the exception`, async () => {
+          test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} response and logs the exception`, async () => {
             const scope = nock(process.env.BREVO_URL!, {
               reqheaders: {
                 'api-key': process.env.BREVO_API_KEY!,
@@ -194,7 +194,7 @@ describe('Given a NGC user', () => {
             expect(body).toEqual({})
             expect(scope.isDone()).toBeTruthy()
             expect(logger.error).toHaveBeenCalledWith(
-              'User brevo contact fetch failed',
+              'User contact fetch failed',
               expect.any(ZodError)
             )
           })

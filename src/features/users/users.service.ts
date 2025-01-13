@@ -22,7 +22,7 @@ export const syncUserData = (user: NonNullable<Request['user']>) => {
   return transferOwnershipToUser(user)
 }
 
-export const fetchUserBrevoContact = async (params: UserParams) => {
+export const fetchUserContact = async (params: UserParams) => {
   try {
     const user = await fetchUser(params)
 

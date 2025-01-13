@@ -10,7 +10,7 @@ export const UserParams = z
 
 export type UserParams = z.infer<typeof UserParams>
 
-export const FetchUserBrevoContactValidator = {
+export const FetchUserContactValidator = {
   body: z.object({}).strict().optional(),
   params: UserParams,
   query: z.object({}).strict().optional(),
