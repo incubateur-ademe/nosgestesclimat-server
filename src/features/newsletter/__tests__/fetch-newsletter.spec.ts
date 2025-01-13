@@ -17,7 +17,7 @@ describe('Given a NGC user', () => {
     const newsletterTotalSubscribers = faker.number.int()
 
     describe('And invalid newsletterId', () => {
-      it(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent
           .get(url.replace(':newsletterId', 'invalid-newsletterId'))
           .expect(StatusCodes.BAD_REQUEST)
@@ -28,7 +28,7 @@ describe('Given a NGC user', () => {
       })
     })
 
-    it(`Then it returns a ${StatusCodes.OK} response with the mapped brevo response`, async () => {
+    test(`Then it returns a ${StatusCodes.OK} response with the mapped brevo response`, async () => {
       const scope = nock(process.env.BREVO_URL!, {
         reqheaders: {
           'api-key': process.env.BREVO_API_KEY!,
@@ -62,7 +62,7 @@ describe('Given a NGC user', () => {
     })
 
     describe('And newsletter does not exists', () => {
-      it(`Then it returns a ${StatusCodes.NOT_FOUND} response with the mapped brevo response`, async () => {
+      test(`Then it returns a ${StatusCodes.NOT_FOUND} response with the mapped brevo response`, async () => {
         const scope = nock(process.env.BREVO_URL!, {
           reqheaders: {
             'api-key': process.env.BREVO_API_KEY!,
@@ -87,7 +87,7 @@ describe('Given a NGC user', () => {
     })
 
     describe('And network error', () => {
-      it(`Then it returns a ${StatusCodes.NOT_FOUND} response`, async () => {
+      test(`Then it returns a ${StatusCodes.NOT_FOUND} response`, async () => {
         const scope = nock(process.env.BREVO_URL!, {
           reqheaders: {
             'api-key': process.env.BREVO_API_KEY!,
@@ -109,7 +109,7 @@ describe('Given a NGC user', () => {
     })
 
     describe('And brevo is down', () => {
-      it(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} response after retries`, async () => {
+      test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} response after retries`, async () => {
         const scope = nock(process.env.BREVO_URL!, {
           reqheaders: {
             'api-key': process.env.BREVO_API_KEY!,
@@ -134,7 +134,7 @@ describe('Given a NGC user', () => {
     })
 
     describe('And brevo interface changes', () => {
-      it(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} response and logs the exception`, async () => {
+      test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} response and logs the exception`, async () => {
         const scope = nock(process.env.BREVO_URL!, {
           reqheaders: {
             'api-key': process.env.BREVO_API_KEY!,

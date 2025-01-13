@@ -183,7 +183,7 @@ export const fetchUser = (
 
 export const updateUser = (
   { userId }: UserParams,
-  { email }: Pick<User, 'email'>,
+  { email, name }: Partial<Pick<User, 'email' | 'name'>>,
   { session }: { session?: Session } = {}
 ) => {
   return transaction(
@@ -194,6 +194,7 @@ export const updateUser = (
         },
         data: {
           email,
+          name,
         },
         select: defaultUserSelection,
       }),
