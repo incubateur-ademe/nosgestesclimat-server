@@ -144,3 +144,24 @@ export const fetchMappingFile = async ({
     throw err
   }
 }
+
+export const getMappingFile = async (params: MappingFileParams) => {
+  try {
+    const filePath = getFilePath(params)
+    const key = getKey(filePath)
+
+    const { Body } = await client.send(
+      new GetObjectCommand({
+        Bucket: bucket,
+        Key: key,
+      })
+    )
+
+    return Body?.transformToString()
+  } catch (err) {
+    if (isScalewayErrorNotFound(err)) {
+      throw new EntityNotFoundException('Mapping File not found')
+    }
+    throw err
+  }
+}
