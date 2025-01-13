@@ -384,7 +384,7 @@ export const addOrUpdateContactAndNewsLetterSubscriptions = async ({
     name?: string | null
   }
   email: string
-  listIds: ListIds[]
+  listIds?: ListIds[]
 }) => {
   const attributes = {
     [Attributes.USER_ID]: user.id,
@@ -397,24 +397,21 @@ export const addOrUpdateContactAndNewsLetterSubscriptions = async ({
     listIds,
   })
 
-  const wantedListIds = new Set(listIds)
-  const contact = await fetchContact(email)
+  if (listIds) {
+    const wantedListIds = new Set(listIds)
+    const contact = await fetchContact(email)
 
-  await contact.listIds.reduce(async (promise, listId) => {
-    await promise
+    await contact.listIds.reduce(async (promise, listId) => {
+      await promise
 
-    if (!wantedListIds.has(listId)) {
-      await unsubscribeContactFromList({
-        email,
-        listId,
-      })
-    }
-  }, Promise.resolve())
-
-  // Spare fetch request again
-  contact.listIds = listIds
-
-  return contact
+      if (!wantedListIds.has(listId)) {
+        await unsubscribeContactFromList({
+          email,
+          listId,
+        })
+      }
+    }, Promise.resolve())
+  }
 }
 
 export const addOrUpdateContactAfterOrganisationChange = async ({

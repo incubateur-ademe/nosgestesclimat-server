@@ -1,18 +1,22 @@
 import { isAxiosError } from 'axios'
 import type { Request } from 'express'
-import {
-  addOrUpdateContactAndNewsLetterSubscriptions,
-  fetchContact,
-  isNotFound,
-} from '../../adapters/brevo/client'
+import { fetchContact, isNotFound } from '../../adapters/brevo/client'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
+import { EventBus } from '../../core/event-bus/event-bus'
 import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError'
+import { UserUpdatedEvent } from './events/UserUpdated.event'
 import {
   fetchUser,
   transferOwnershipToUser,
   updateUser,
 } from './users.repository'
-import type { UserBrevoContactUpdateDto, UserParams } from './users.validator'
+import type { UserParams, UserUpdateDto } from './users.validator'
+
+const userToDto = (
+  user: Awaited<ReturnType<typeof updateUser>> & {
+    contact?: Awaited<ReturnType<typeof fetchContact>>
+  }
+) => user
 
 export const syncUserData = (user: NonNullable<Request['user']>) => {
   return transferOwnershipToUser(user)
@@ -40,22 +44,29 @@ export const fetchUserBrevoContact = async (params: UserParams) => {
   }
 }
 
-export const updateUserBrevoContact = async ({
+export const updateUserAndContact = async ({
   params,
-  contactDto,
+  userDto,
 }: {
   params: UserParams
-  contactDto: UserBrevoContactUpdateDto
+  userDto: UserUpdateDto
 }) => {
   try {
-    const user = await updateUser(params, contactDto)
+    const user = await updateUser(params, userDto)
 
-    const contact = await addOrUpdateContactAndNewsLetterSubscriptions({
-      ...contactDto,
+    const userUpdatedEvent = new UserUpdatedEvent({
+      listIds: userDto.contact?.listIds,
       user,
     })
 
-    return contact
+    EventBus.emit(userUpdatedEvent)
+
+    await EventBus.once(userUpdatedEvent)
+
+    return userToDto({
+      ...user,
+      ...(user.email ? { contact: await fetchContact(user.email) } : {}),
+    })
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('User not found')
