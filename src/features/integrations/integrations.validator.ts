@@ -6,10 +6,7 @@ export enum ExternalServiceTypeEnum {
   '2-tonnes' = '2-tonnes',
 }
 
-const ExternalServiceType = z.enum([
-  ExternalServiceTypeEnum.agir,
-  ExternalServiceTypeEnum['2-tonnes'],
-])
+const ExternalServiceType = z.nativeEnum(ExternalServiceTypeEnum)
 
 const SituationExportParamsSchema = z
   .object({

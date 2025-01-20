@@ -40,6 +40,17 @@ export const config = {
       url: ensureEnvVar(process.env.MATOMO_URL, 'https://stats.data.gouv.fr'),
       token: ensureEnvVar(process.env.MATOMO_TOKEN, ''),
     },
+    scaleway: {
+      accessKeyId: ensureEnvVar(process.env.SCALEWAY_ACCESS_KEY_ID, ''),
+      secretAccessKey: ensureEnvVar(process.env.SCALEWAY_SECRET_ACCESS_KEY, ''),
+      bucket: ensureEnvVar(process.env.SCALEWAY_BUCKET, ''),
+      endpoint: ensureEnvVar(
+        process.env.SCALEWAY_ENDPOINT,
+        'https://s3.fr-par.scw.cloud'
+      ),
+      region: ensureEnvVar(process.env.SCALEWAY_REGION, 'fr-par'),
+      rootPath: ensureEnvVar(process.env.SCALEWAY_ROOT_PATH, 'ngc'),
+    },
     sentry: {
       dsn: ensureEnvVar(process.env.SENTRY_DSN, ''),
     },
