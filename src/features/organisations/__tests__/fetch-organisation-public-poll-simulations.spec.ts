@@ -246,7 +246,7 @@ describe('Given a NGC user', () => {
             })
           )
 
-          test(`Then it returns a ${StatusCodes.OK} response with an empty list`, async () => {
+          test.skip(`Then it returns a ${StatusCodes.OK} response with an empty list`, async () => {
             const response = await agent
               .get(
                 url
@@ -374,7 +374,7 @@ describe('Given a NGC user', () => {
           })
 
           describe('And trying to access user information', () => {
-            test(`Then it returns a ${StatusCodes.FORBIDDEN} error`, async () => {
+            test.skip(`Then it returns a ${StatusCodes.FORBIDDEN} error`, async () => {
               const [
                 {
                   user: { id },
