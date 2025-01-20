@@ -189,3 +189,12 @@ export const defaultSimulationSelection = {
   ...defaultSimulationSelectionWithoutUser,
   ...defaultSimulationSelectionWithoutPoll,
 }
+
+export const defaultEmailWhitelistSelection = {
+  id: true,
+  emailPattern: true,
+  description: true,
+  apiScopeName: true,
+  createdAt: true,
+  updatedAt: true,
+}

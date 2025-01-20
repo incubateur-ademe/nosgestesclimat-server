@@ -19,6 +19,11 @@ export const RECOVER_API_TOKEN_ROUTE = '/integrations-api/v1/tokens'
 
 export const REFRESH_API_TOKEN_ROUTE = '/integrations-api/v1/tokens/refresh'
 
+const apiScopeNames = Object.values(ApiScopeName)
+
+export const randomApiScopeName = (scopes = apiScopeNames) =>
+  scopes[Math.floor(Math.random() * scopes.length)]
+
 export const createIntegrationEmailWhitelist = ({
   prisma,
   apiScope = {},
@@ -46,8 +51,13 @@ export const createIntegrationEmailWhitelist = ({
     data: {
       ...integrationEmailWhitelistData,
       apiScope: {
-        create: {
-          ...apiScopeData,
+        connectOrCreate: {
+          where: {
+            name: apiScopeData.name,
+          },
+          create: {
+            ...apiScopeData,
+          },
         },
       },
     },
@@ -84,7 +94,7 @@ export const generateApiToken = async ({
   code = code || faker.number.int({ min: 100000, max: 999999 }).toString()
   expirationDate = expirationDate || dayjs().add(1, 'hour').toDate()
 
-  const { emailPattern } =
+  const emailWhitelist =
     await createIntegrationEmailWhitelist(emailWhiteListParams)
 
   jest
@@ -95,7 +105,7 @@ export const generateApiToken = async ({
     })
 
   const payload = {
-    email: email || emailPattern,
+    email: email || emailWhitelist.emailPattern,
   }
 
   nock(process.env.BREVO_URL!).post('/v3/smtp/email').reply(200)
@@ -110,6 +120,7 @@ export const generateApiToken = async ({
     .generateVerificationCodeAndExpiration.mockRestore()
 
   return {
+    emailWhitelist,
     ...response.body,
     ...payload,
     code,
@@ -127,7 +138,7 @@ export const recoverApiToken = async ({
   prisma: PrismaClient
   agent: TestAgent
 }) => {
-  const { code, email } = await generateApiToken({
+  const { code, email, emailWhitelist } = await generateApiToken({
     apiScope,
     prisma,
     agent,
@@ -144,6 +155,7 @@ export const recoverApiToken = async ({
 
   return {
     ...response.body,
+    emailWhitelist,
     email,
     code,
   }

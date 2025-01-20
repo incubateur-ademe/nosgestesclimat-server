@@ -10,28 +10,32 @@ export const UserParams = z
 
 export type UserParams = z.infer<typeof UserParams>
 
-export const FetchUserBrevoContactValidator = {
+export const FetchUserContactValidator = {
   body: z.object({}).strict().optional(),
   params: UserParams,
   query: z.object({}).strict().optional(),
 }
 
-const UserBrevoContactUpdateDto = z
+const UserUpdateDto = z
   .object({
     email: z
       .string()
       .regex(EMAIL_REGEX)
       .transform((email) => email.toLocaleLowerCase()),
-    listIds: z.array(z.nativeEnum(ListIds)),
+    name: z.string(),
+    contact: z
+      .object({
+        listIds: z.array(z.nativeEnum(ListIds)),
+      })
+      .strict(),
   })
   .strict()
+  .partial()
 
-export type UserBrevoContactUpdateDto = z.infer<
-  typeof UserBrevoContactUpdateDto
->
+export type UserUpdateDto = z.infer<typeof UserUpdateDto>
 
-export const UpdateUserBrevoContactValidator = {
-  body: UserBrevoContactUpdateDto,
+export const UpdateUserValidator = {
+  body: UserUpdateDto,
   params: UserParams,
   query: z.object({}).strict().optional(),
 }
