@@ -396,9 +396,9 @@ router
     validateRequest(OrganisationPublicPollSimulationsFetchValidator),
     async (req, res) => {
       try {
-        if (req.user && req.user.userId !== req.params.userId) {
-          throw new ForbiddenException(`Different user ids found`)
-        }
+        // if (req.user && req.user.userId !== req.params.userId) {
+        //   throw new ForbiddenException(`Different user ids found`)
+        // }
 
         const simulations = await fetchPublicPollSimulations(req)
 
