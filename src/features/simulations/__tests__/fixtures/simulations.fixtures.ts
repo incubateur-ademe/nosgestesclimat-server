@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker'
 import type { DottedName, NGCRuleNode } from '@incubateur-ademe/nosgestesclimat'
+import { version as modelVersion } from '@incubateur-ademe/nosgestesclimat/package.json'
 import personas from '@incubateur-ademe/nosgestesclimat/public/personas-fr.json'
 import { StatusCodes } from 'http-status-codes'
 import nock from 'nock'
@@ -158,6 +159,7 @@ export const getRandomTestCase = () => {
 export const getSimulationPayload = ({
   id,
   date,
+  model,
   situation,
   foldedSteps,
   progression,
@@ -169,10 +171,12 @@ export const getSimulationPayload = ({
   situation = situation || getRandomPersonaSituation()
   computedResults =
     computedResults || getComputedResults(SituationSchema.parse(situation))
+  model = model || `FR-fr-${modelVersion}`
 
   return {
     id: id || faker.string.uuid(),
     date,
+    model,
     situation,
     foldedSteps,
     progression: progression || 1,

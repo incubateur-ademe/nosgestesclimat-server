@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker'
+import { version as modelVersion } from '@incubateur-ademe/nosgestesclimat/package.json'
 import {
   PollDefaultAdditionalQuestionType,
   SimulationAdditionalQuestionAnswerType,
@@ -119,6 +120,7 @@ describe('Given a NGC user', () => {
         const userId = faker.string.uuid()
         const payload: SimulationCreateInputDto = {
           id: faker.string.uuid(),
+          model: `FR-fr-${modelVersion}`,
           situation,
           computedResults,
           progression: 1,
