@@ -8,6 +8,8 @@ import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail'
 import { PublicPollParams } from '../organisations/organisations.validator'
 import { UserParams } from '../users/users.validator'
 
+const MODEL_REGEX = /^[A-Z]+-[a-z]+-\d+\.\d+\.\d+$/
+
 const SimulationParams = z
   .object({
     simulationId: z.string().uuid(),
@@ -155,6 +157,7 @@ export type SimulationCreateUser = z.infer<typeof SimulationCreateUser>
 export const SimulationParticipantCreateDto = z.object({
   id: z.string().uuid(),
   date: z.coerce.date().default(() => new Date()),
+  model: z.string().regex(MODEL_REGEX).optional(),
   progression: z.number(),
   savedViaEmail: z.boolean().default(false),
   computedResults: ComputedResultSchema,
