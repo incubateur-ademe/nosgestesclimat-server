@@ -1598,10 +1598,10 @@
   resolved "https://registry.yarnpkg.com/@humanwhocodes/object-schema/-/object-schema-2.0.3.tgz#4a2868d75d6d6963e423bcf90b7fd1be343409d3"
   integrity sha512-93zYdMES/c1D69yZiKDBj0V24vqNzB/koF26KPaagAfd3P/4gUlh3Dys5ogAK+Exi9QyzlD8x/08Zt7wIKcDcA==
 
-"@incubateur-ademe/nosgestesclimat@^3.5.0":
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/@incubateur-ademe/nosgestesclimat/-/nosgestesclimat-3.5.0.tgz#d1332e5eb104bd9db4363241299cfaf61ccd61d5"
-  integrity sha512-eCGovtumU/WZixVMNORA4f7GgCK0NHbXzxQdDyqa2XGySVH9fGRZMrH7USB2khdkCFTncElqK0Gf1rrmdowFsA==
+"@incubateur-ademe/nosgestesclimat@^3.5.1":
+  version "3.5.1"
+  resolved "https://registry.yarnpkg.com/@incubateur-ademe/nosgestesclimat/-/nosgestesclimat-3.5.1.tgz#4c156b558aa1a79d3cce9192e3525963390d965f"
+  integrity sha512-OrlU6gVZKQerGl+8NknOghr7upOe7EgZT4cY18+b/Di40D8jtnXiqZqsHT3Jz8b6xpBruyTgHU38ztnek5hYHg==
 
 "@isaacs/cliui@^8.0.2":
   version "8.0.2"
