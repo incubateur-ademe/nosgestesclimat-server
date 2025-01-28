@@ -1,6 +1,3 @@
-export const sleep = (milliseconds: number) =>
-  new Promise<void>((resolve) => setTimeout(resolve, milliseconds))
-
 type DefaultEnsureEnvVar = <T extends primitive | primitive[]>(
   envVar: string | undefined,
   transformerOrDefaultValue?: T | ((envVar: string) => T),

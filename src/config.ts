@@ -59,9 +59,6 @@ export const config = {
       bearerToken: ensureEnvVar(process.env.TWO_TONS_BEARER_TOKEN, ''),
     },
   },
-  mongo: {
-    url: ensureEnvVar(process.env.MONGO_URL, 'mongodb://127.0.0.1:27017/ngc'),
-  },
   connect: {
     url: ensureEnvVar(process.env.CONNECT_URL, ''),
     clientId: ensureEnvVar(process.env.CONNECT_CLIENT_ID, ''),

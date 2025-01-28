@@ -321,7 +321,7 @@ export const sendPollSimulationUpsertedEmail = async ({
   })
 }
 
-const addOrUpdateContact = ({
+export const addOrUpdateContact = ({
   email,
   listIds,
   attributes,
