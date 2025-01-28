@@ -68,6 +68,7 @@ export const createParticipantSimulation = <
       actionChoices,
       computedResults,
       date,
+      model,
       foldedSteps,
       progression,
       situation,
@@ -89,6 +90,7 @@ export const createParticipantSimulation = <
     create: {
       id,
       date,
+      model,
       userId,
       situation,
       foldedSteps,
@@ -115,6 +117,7 @@ export const createParticipantSimulation = <
     update: {
       id,
       date,
+      model,
       userId,
       situation,
       foldedSteps,

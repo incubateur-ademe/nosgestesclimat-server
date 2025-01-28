@@ -222,6 +222,7 @@ describe('Given a NGC user', () => {
           expect(response.body).toEqual({
             ...payload,
             date: expect.any(String),
+            model: 'FR-fr-0.0.0',
             savedViaEmail: false,
             createdAt: expect.any(String),
             updatedAt: expect.any(String),
@@ -424,6 +425,7 @@ describe('Given a NGC user', () => {
             expect(response.body).toEqual({
               ...payload,
               date: expect.any(String),
+              model: 'FR-fr-0.0.0',
               savedViaEmail: false,
               createdAt: expect.any(String),
               updatedAt: expect.any(String),

@@ -143,6 +143,7 @@ export const defaultPollSelection = {
 export const defaultSimulationSelectionWithoutUserAndPoll = {
   id: true,
   date: true,
+  model: true,
   situation: true,
   foldedSteps: true,
   progression: true,

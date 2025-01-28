@@ -222,6 +222,7 @@ model Simulation {
   id                         String                               @id @default(uuid()) @db.Uuid
   date                       DateTime
   progression                Float                                @db.Real
+  model                      String                               @default("FR-fr-0.0.0")
   savedViaEmail              Boolean
   computedResults            Json
   actionChoices              Json

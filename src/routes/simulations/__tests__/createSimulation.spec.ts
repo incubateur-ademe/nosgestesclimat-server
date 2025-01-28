@@ -133,6 +133,7 @@ describe('Given a NGC user', () => {
         progression: 1,
         savedViaEmail: false,
         situation: {},
+        model: 'FR-fr-0.0.0',
         updatedAt: expect.any(Date),
         userEmail: null,
         userId: expect.any(String),
