@@ -1,11 +1,9 @@
 import axios from 'axios'
 import express from 'express'
+import { addOrUpdateContact, fetchContact } from '../../adapters/brevo/client'
+import { Attributes } from '../../adapters/brevo/constant'
 import { axiosConf } from '../../constants/axios'
-import { getContactLists } from '../../helpers/brevo/getContactLists'
-import { createOrUpdateContact } from '../../helpers/email/createOrUpdateContact'
-import { createOrUpdateUser } from '../../helpers/queries/createOrUpdateUser'
-import { formatEmail } from '../../utils/formatting/formatEmail'
-import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
+import { createOrUpdateUser } from './createOrUpdateUser'
 
 const router = express.Router()
 
@@ -13,7 +11,10 @@ const router = express.Router()
  * Updates the user and newsletter settings
  */
 router.route('/').post(async (req, res) => {
-  const email = formatEmail(req.body.email)
+  const email =
+    typeof req.query.email === 'string'
+      ? req.query.email.toLowerCase().trim()
+      : ''
   const userId = req.body.userId
 
   const newsletterIds: Record<string, boolean> = req.body.newsletterIds
@@ -29,7 +30,7 @@ router.route('/').post(async (req, res) => {
       let currentListIds: number[]
 
       try {
-        currentListIds = await getContactLists(email)
+        ;({ listIds: currentListIds } = await fetchContact(email))
       } catch (e) {
         console.warn(e)
         // The contact does not exist in Brevo
@@ -53,15 +54,15 @@ router.route('/').post(async (req, res) => {
         }
       })
 
-      const updates: Record<string, string | number[]> = {}
-
-      if (name) updates.name = name
-
-      if (listsAdded.length > 0) updates.listIds = listsAdded
-
       // Update Brevo contact
       if (name || listsAdded.length > 0) {
-        await createOrUpdateContact({ email, ...updates })
+        await addOrUpdateContact({
+          email,
+          listIds: listsAdded,
+          attributes: {
+            [Attributes.PRENOM]: name,
+          },
+        })
       }
 
       // Update DB User document
@@ -83,9 +84,7 @@ router.route('/').post(async (req, res) => {
       }
     }
 
-    setSuccessfulJSONResponse(res)
-
-    return res.send('Settings successfully updated.')
+    return res.status(200).send('Settings successfully updated.')
   } catch (error) {
     return res.status(500).send('Error updating settings: ' + error)
   }
