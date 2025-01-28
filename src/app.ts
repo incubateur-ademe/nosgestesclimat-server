@@ -1,3 +1,4 @@
+import cors from 'cors'
 import type { Request } from 'express'
 import express from 'express'
 import type { TokenCallbackFn } from 'morgan'
@@ -6,7 +7,6 @@ import requestIp from 'request-ip'
 
 import { createExpressEndpoints } from '@ts-rest/express'
 import { generateOpenApi } from '@ts-rest/open-api'
-import cors from 'cors'
 import swaggerUi from 'swagger-ui-express'
 import { origin } from './config'
 import authenticationController from './features/authentication/authentication.controller'
@@ -23,8 +23,6 @@ import quizzAnswersController from './features/quizz-answers/quizz-answers.contr
 import simulationController from './features/simulations/simulations.controller'
 import usersController from './features/users/users.controller'
 import logger from './logger'
-import getNewsletterSubscriptions from './routes/settings/getNewsletterSubscriptions'
-import updateSettingsRoute from './routes/settings/updateSettings'
 import statsRoute from './routes/stats/statsRoute'
 
 const app = express()
@@ -62,10 +60,6 @@ app.use(
 
 // Legacy routes
 app.use('/get-stats', statsRoute)
-
-// Deprecated routes
-app.use('/update-settings', updateSettingsRoute)
-app.use('/get-newsletter-subscriptions', getNewsletterSubscriptions)
 
 // new API routes
 app.use('/authentication', authenticationController)
