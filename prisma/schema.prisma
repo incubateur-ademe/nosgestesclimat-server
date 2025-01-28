@@ -141,7 +141,7 @@ model Organisation {
   id                    String                      @id @default(cuid())
   name                  String                      @db.VarChar(100)
   slug                  String                      @unique @db.VarChar(105)
-  type                  OrganisationType?
+  type                  OrganisationType            @default(other)
   administrators        OrganisationAdministrator[]
   numberOfCollaborators Int?                        @db.Integer
   polls                 Poll[]
