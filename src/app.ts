@@ -56,13 +56,8 @@ import updateSettingsRoute from './routes/settings/updateSettings'
 import createSimulationRoute from './routes/simulations/create'
 import fetchSimulationRoute from './routes/simulations/fetchSimulation'
 import statsRoute from './routes/stats/statsRoute'
-import { initSentry, setupErrorHandler } from './sentry'
 
 const app = express()
-
-if (process.env.SENTRY_DSN) {
-  initSentry()
-}
 
 app.use(express.json())
 
@@ -189,9 +184,5 @@ app.use(
   swaggerUi.serve,
   swaggerUi.setup(integrationsOpenApiDocument)
 )
-
-if (process.env.SENTRY_DSN) {
-  setupErrorHandler(app)
-}
 
 export default app
