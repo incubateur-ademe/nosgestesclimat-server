@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker'
+import { OrganisationType } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import nock from 'nock'
 import slugify from 'slugify'
@@ -105,7 +106,6 @@ describe('Given a NGC user', () => {
       test(`Then it returns a ${StatusCodes.CREATED} response with the created organisation`, async () => {
         const payload = {
           name: faker.company.name(),
-          type: randomOrganisationType(),
         }
 
         nock(process.env.BREVO_URL!)
@@ -125,6 +125,7 @@ describe('Given a NGC user', () => {
 
         expect(response.body).toEqual({
           ...payload,
+          type: OrganisationType.other,
           id: expect.any(String),
           slug: slugify(payload.name.toLowerCase(), { strict: true }),
           hasCustomQuestionEnabled: false,

@@ -161,13 +161,13 @@ export const fetchUserSimulations = ({ userId }: UserParams) => {
 
 export const fetchUserSimulation = ({
   simulationId,
-  userId,
+  // userId,
 }: UserSimulationParams) => {
   return transaction((prismaSession) =>
     prismaSession.simulation.findUniqueOrThrow({
       where: {
         id: simulationId,
-        userId,
+        // userId,
       },
       select: defaultSimulationSelection,
     })

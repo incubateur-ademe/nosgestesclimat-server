@@ -1,12 +1,9 @@
 import { PGlite } from '@electric-sql/pglite'
 import { Prisma, PrismaClient } from '@prisma/client'
 import { readFile, readdir } from 'fs/promises'
-import { MongoMemoryServer } from 'mongodb-memory-server'
-import mongoose from 'mongoose'
 import nock from 'nock'
 import path from 'path'
 import { PrismaPGlite } from 'pglite-prisma-adapter'
-import connect from './src/helpers/db/initDatabase'
 
 const client = new PGlite()
 const adapter = new PrismaPGlite(client)
@@ -38,22 +35,7 @@ const models = Prisma.dmmf.datamodel.models
     delegate: prisma[delegateKey],
   }))
 
-let mongod: MongoMemoryServer | undefined
-
 beforeAll(async () => {
-  const mongoUrl = new URL(process.env.MONGO_URL || '')
-
-  mongod = await MongoMemoryServer.create({
-    instance: {
-      port: +mongoUrl.port,
-    },
-    binary: {
-      // version: '4.0.3', // Should be activated
-    },
-  })
-
-  await connect()
-
   const migrationPaths = await readdir(prismaMigrationDir)
 
   await migrationPaths
@@ -66,11 +48,6 @@ beforeAll(async () => {
       const migration = await readFile(filename, 'utf8')
       await client.exec(migration)
     }, Promise.resolve())
-})
-
-afterAll(async () => {
-  await mongoose.disconnect()
-  await mongod?.stop()
 })
 
 beforeEach(() => nock.cleanAll())

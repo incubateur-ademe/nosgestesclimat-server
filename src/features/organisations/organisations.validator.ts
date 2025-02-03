@@ -46,7 +46,7 @@ export type OrganisationCreateAdministrator = z.infer<
 const OrganisationCreateDto = z
   .object({
     name: z.string().min(1).max(100),
-    type: z.nativeEnum(OrganisationType).optional().nullable(),
+    type: z.nativeEnum(OrganisationType).optional(),
     administrators: z.tuple([OrganisationCreateAdministrator]).optional(),
     numberOfCollaborators: z.number().optional().nullable(),
   })

@@ -1,7 +1,5 @@
 import express from 'express'
-import { getContactLists } from '../../helpers/brevo/getContactLists'
-import { formatEmail } from '../../utils/formatting/formatEmail'
-import { setSuccessfulJSONResponse } from '../../utils/setSuccessfulResponse'
+import { fetchContact } from '../../adapters/brevo/client'
 
 const router = express.Router()
 
@@ -9,7 +7,10 @@ const router = express.Router()
  * Updates the user and newsletter settings
  */
 router.route('/').get(async (req, res) => {
-  const email = formatEmail(req.query.email as string)
+  const email =
+    typeof req.query.email === 'string'
+      ? req.query.email.toLowerCase().trim()
+      : ''
 
   // Check if all required fields are provided
   if (!email) {
@@ -17,13 +18,11 @@ router.route('/').get(async (req, res) => {
   }
 
   try {
-    const listIds = await getContactLists(email)
-
-    setSuccessfulJSONResponse(res)
-
-    return res.json(listIds)
+    const { listIds } = await fetchContact(email)
+    return res.status(200).json(listIds)
   } catch (error) {
-    return res.status(500).send('Error updating settings: ' + error)
+    console.warn(error)
+    return res.status(200).json([])
   }
 })
 
