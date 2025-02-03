@@ -12,8 +12,8 @@ const router = express.Router()
  */
 router.route('/').post(async (req, res) => {
   const email =
-    typeof req.query.email === 'string'
-      ? req.query.email.toLowerCase().trim()
+    typeof req.body.email === 'string'
+      ? req.body.email.toLowerCase().trim()
       : ''
   const userId = req.body.userId
 
