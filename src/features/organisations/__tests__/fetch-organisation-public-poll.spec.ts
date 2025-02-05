@@ -398,6 +398,69 @@ describe('Given a NGC user', () => {
         })
       })
 
+      describe('And fetching another administrator poll', () => {
+        let organisation: Awaited<ReturnType<typeof createOrganisation>>
+        let poll: Awaited<ReturnType<typeof createOrganisationPoll>>
+        let pollId: string
+        let pollSlug: string
+
+        beforeEach(async () => {
+          const { cookie } = await login({ agent })
+
+          organisation = await createOrganisation({
+            agent,
+            cookie,
+          })
+          const { id: organisationId } = organisation
+          poll = await createOrganisationPoll({
+            agent,
+            cookie,
+            organisationId,
+          })
+          ;({ id: pollId, slug: pollSlug } = poll)
+        })
+
+        test(`Then it returns a ${StatusCodes.OK} response with the public poll data`, async () => {
+          const response = await agent
+            .get(
+              url.replace(':pollIdOrSlug', pollId).replace(':userId', userId)
+            )
+            .set('cookie', cookie)
+            .expect(StatusCodes.OK)
+
+          expect(response.body).toEqual({
+            ...poll,
+            organisation: {
+              id: organisation.id,
+              name: organisation.name,
+              slug: organisation.slug,
+            },
+          })
+        })
+
+        describe('And using poll slug', () => {
+          test(`Then it returns a ${StatusCodes.OK} response with the public poll data`, async () => {
+            const response = await agent
+              .get(
+                url
+                  .replace(':pollIdOrSlug', pollSlug)
+                  .replace(':userId', userId)
+              )
+              .set('cookie', cookie)
+              .expect(StatusCodes.OK)
+
+            expect(response.body).toEqual({
+              ...poll,
+              organisation: {
+                id: organisation.id,
+                name: organisation.name,
+                slug: organisation.slug,
+              },
+            })
+          })
+        })
+      })
+
       describe('And database failure', () => {
         const databaseError = new Error('Something went wrong')
 
