@@ -199,7 +199,7 @@ describe('Given a NGC user', () => {
             },
           })
             .post(
-              `/api/v1/ngc-carbon-form-answers?partner-token=token&partner-boolean=true&partner-id=42&partner-object=${JSON.stringify({ foo: 'bar' })}`,
+              `/api/v1/ngc-carbon-form-answers?token=token&boolean=true&id=42&object=${JSON.stringify({ foo: 'bar' })}`,
               { situation }
             )
             .reply(200, {

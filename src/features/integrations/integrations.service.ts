@@ -12,6 +12,18 @@ const externalServicesMap = {
   },
 } as const
 
+const PARTNER_PREFIX = /^partner-/
+
+const removePartnerPrefix = (
+  params: SituationExportQueryParamsSchema
+): SituationExportQueryParamsSchema =>
+  Object.fromEntries(
+    Object.entries(params).map(([key, val]) => [
+      key.replace(PARTNER_PREFIX, ''),
+      val,
+    ])
+  )
+
 export const exportSituation = ({
   externalService,
   situation,
@@ -21,5 +33,8 @@ export const exportSituation = ({
   externalService: keyof typeof externalServicesMap
   params: SituationExportQueryParamsSchema
 }) => {
-  return externalServicesMap[externalService].exportSituation(situation, params)
+  return externalServicesMap[externalService].exportSituation(
+    situation,
+    removePartnerPrefix(params)
+  )
 }
