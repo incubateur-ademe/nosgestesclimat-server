@@ -118,6 +118,7 @@ export const defaultPollSelection = {
   organisation: {
     select: defaultOrganisationSelectionWithoutPolls,
   },
+  funFacts: true,
   defaultAdditionalQuestions: true,
   customAdditionalQuestions: true,
   expectedNumberOfParticipants: true,

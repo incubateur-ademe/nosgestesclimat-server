@@ -167,6 +167,7 @@ model Poll {
   id                           String                          @id @default(cuid())
   name                         String                          @db.VarChar(150)
   slug                         String                          @unique @db.VarChar(155)
+  funFacts                     Json?
   expectedNumberOfParticipants Int?                            @db.Integer
   customAdditionalQuestions    Json
   defaultAdditionalQuestions   PollDefaultAdditionalQuestion[]
