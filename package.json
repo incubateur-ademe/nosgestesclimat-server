@@ -18,6 +18,7 @@
     "lint": "prettier --check \"**/*.{js,ts,md,json}\" && eslint . --ext .js,.ts",
     "run-script": "ts-node --project tsconfig.json",
     "start": "NODE_OPTIONS=--max-old-space-size=8192 node ./dist/src/index.js",
+    "start:worker": "NODE_OPTIONS=--max-old-space-size=8192 node ./dist/src/worker.js",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
     "test:load:spike": "artillery run ./tests/load/spike-test.yml",
