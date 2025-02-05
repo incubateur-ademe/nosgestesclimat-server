@@ -207,24 +207,35 @@ export const fetchOrganisation = async ({
   }
 }
 
+type PublicPoll = Poll &
+  Partial<Awaited<ReturnType<typeof fetchOrganisationPoll>>>
+
+const isOrganisationAdmin = (
+  organisation: NonNullable<PublicPoll['organisation']>,
+  connectedUser?: NonNullable<Request['user']> | string
+): connectedUser is NonNullable<Request['user']> =>
+  typeof connectedUser === 'object' &&
+  organisation.administrators.some(
+    ({ user }) => user.id === connectedUser.userId
+  )
+
 const pollToDto = ({
   poll: { organisationId: _, organisation, simulations, ...poll },
   user,
 }: {
-  poll: Poll & Partial<Awaited<ReturnType<typeof fetchOrganisationPoll>>>
+  poll: PublicPoll
   user?: NonNullable<Request['user']> | string
 }) => ({
   ...poll,
   ...(organisation
     ? {
-        organisation:
-          typeof user === 'object'
-            ? organisationToDto(organisation, user.userId)
-            : {
-                id: organisation.id,
-                name: organisation.name,
-                slug: organisation.slug,
-              },
+        organisation: isOrganisationAdmin(organisation, user)
+          ? organisationToDto(organisation, user.userId)
+          : {
+              id: organisation.id,
+              name: organisation.name,
+              slug: organisation.slug,
+            },
       }
     : {}),
   defaultAdditionalQuestions: poll.defaultAdditionalQuestions?.map(
