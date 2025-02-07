@@ -7,11 +7,9 @@ import modelRules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-la
 import modelFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRules.json'
 import type { JsonValue } from '@prisma/client/runtime/library'
 import type { Request } from 'express'
-import { engine } from '../../constants/publicode'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
 import { EventBus } from '../../core/event-bus/event-bus'
 import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError'
-import logger from '../../logger'
 import { PollUpdatedEvent } from '../organisations/events/PollUpdated.event'
 import type { PublicPollParams } from '../organisations/organisations.validator'
 import type { UserParams } from '../users/users.validator'
@@ -24,16 +22,15 @@ import {
   fetchUserSimulations,
 } from './simulations.repository'
 import type {
+  SimulationCreateDto,
   SimulationCreateNewsletterList,
   UserSimulationParams,
 } from './simulations.validator'
-import {
-  ComputedResultSchema,
-  SituationSchema,
-  type SimulationCreateDto,
-} from './simulations.validator'
+import { ComputedResultSchema, SituationSchema } from './simulations.validator'
+import type { Rules } from './situation/situation.service'
+import { getSituationDottedNameValue } from './situation/situation.service'
 
-const rules = modelRules as Record<DottedName, NGCRule | string | null>
+const frRules = modelRules as Record<DottedName, NGCRule | string | null>
 const funFactsRules = modelFunFacts as { [k in keyof FunFacts]: DottedName }
 
 const simulationToDto = (
@@ -205,41 +202,18 @@ type FunFactsSimulations = Array<{
   situation: SituationSchema
 }>
 
-const getSituationDottedNameValue = (
-  situation: SituationSchema,
+const getFunFactValue = ({
+  dottedName,
+  simulations,
+  rules,
+}: {
   dottedName: DottedName
-): number => {
-  try {
-    engine.setSituation(situation)
-
-    const value = engine.evaluate(dottedName).nodeValue
-
-    if (typeof value === 'number' && !!value) {
-      return value
-    }
-
-    if (value === true) {
-      return 1
-    }
-
-    return 0
-  } catch (error) {
-    logger.error(`Cannot evaluate dottedName ${dottedName}`, {
-      situation,
-      error,
-    })
-
-    return 0
-  }
-}
-
-const getFunFactValue = (
-  dottedName: DottedName,
   simulations: FunFactsSimulations
-): number =>
+  rules: Rules
+}): number =>
   simulations.reduce(
     (acc, { situation }) =>
-      acc + getSituationDottedNameValue(situation, dottedName),
+      acc + getSituationDottedNameValue({ dottedName, situation, rules }),
     0
   )
 
@@ -252,10 +226,10 @@ const specialAverageKeys = new Set<string>(<(keyof FunFacts)[]>[
 const getSimulationsFunFacts = (simulations: FunFactsSimulations) => {
   return Object.fromEntries(
     Object.entries(funFactsRules).map(([key, dottedName]) => {
-      if (dottedName in rules) {
-        let value = getFunFactValue(dottedName, simulations)
+      if (dottedName in frRules) {
+        let value = getFunFactValue({ dottedName, simulations, rules: frRules })
 
-        const rule = rules[dottedName]
+        const rule = frRules[dottedName]
         if (
           !!rule &&
           typeof rule === 'object' &&
