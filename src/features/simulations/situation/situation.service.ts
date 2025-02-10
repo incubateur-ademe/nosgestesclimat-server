@@ -4,13 +4,73 @@ import type { SituationSchema } from '../simulations.validator'
 
 export type Rules = Record<DottedName, NGCRule | string | null>
 
-const safeEvaluateSituationDottedName = (
-  situation: SituationSchema,
-  dottedName: unknown
-): number => {
-  const value = typeof dottedName === 'string' ? situation[dottedName] : 0
+const isDottedName = (dottedName: unknown): dottedName is DottedName =>
+  typeof dottedName === 'string'
 
-  return typeof value === 'object' ? 0 : Number.isNaN(+value) ? 0 : +value
+const safeEvaluateSituationDottedNameDefaultValue = ({
+  dottedName,
+  situation,
+  rules,
+}: {
+  situation: SituationSchema
+  dottedName: DottedName
+  rules: Rules
+}): number => {
+  const rule = rules[dottedName]
+
+  if (!rule || typeof rule !== 'object') {
+    return 0
+  }
+
+  if (
+    'applicable si' in rule &&
+    !checkIfConditionIsTrue({
+      conditionDottedName: [
+        ...dottedName.split(' . ').slice(0, -1),
+        rule['applicable si'],
+      ].join(' . '),
+      situation,
+      rules,
+    })
+  ) {
+    return 0
+  }
+
+  if ('par défaut' in rule && typeof rule['par défaut'] === 'number') {
+    return rule['par défaut']
+  }
+
+  return 0
+}
+
+const safeEvaluateSituationDottedName = ({
+  dottedName,
+  situation,
+  rules,
+}: {
+  situation: SituationSchema
+  dottedName: unknown
+  rules: Rules
+}): number => {
+  if (!isDottedName(dottedName)) {
+    return 0
+  }
+
+  const rawValue = situation[dottedName]
+
+  return typeof rawValue === 'object'
+    ? safeEvaluateSituationDottedNameDefaultValue({
+        dottedName,
+        situation,
+        rules,
+      })
+    : Number.isNaN(+rawValue)
+      ? safeEvaluateSituationDottedNameDefaultValue({
+          dottedName,
+          situation,
+          rules,
+        })
+      : +rawValue
 }
 
 type Operator = '<' | '>' | '='
@@ -36,15 +96,24 @@ const evaluateConditions = (
   }
 }
 
-const checkIfConditionIsTrue = (
-  condition: string,
+const checkIfConditionIsTrue = ({
+  conditionDottedName,
+  situation,
+  rules,
+}: {
   situation: SituationSchema
-): boolean => {
-  const [dottedName, operator, value] = condition
+  conditionDottedName: unknown
+  rules: Rules
+}): boolean => {
+  if (!isDottedName(conditionDottedName)) {
+    return false
+  }
+
+  const [dottedName, operator, value] = conditionDottedName
     .split(/(\s*[=<>]\s*)/)
     .map((s) => s.trim())
 
-  if (!dottedName || !Object.keys(situation).includes(dottedName)) {
+  if (!dottedName) {
     return false
   }
 
@@ -52,7 +121,14 @@ const checkIfConditionIsTrue = (
     return situation[dottedName] === 'oui'
   }
 
-  const left = situation[dottedName]
+  const left =
+    typeof situation[dottedName] === 'string'
+      ? situation[dottedName]
+      : safeEvaluateSituationDottedName({
+          dottedName,
+          situation,
+          rules,
+        })
   if (isOperator(operator) && value) {
     if (Number.isNaN(+value)) {
       return typeof left === 'string'
@@ -92,13 +168,22 @@ export const getSituationDottedNameValue = ({
 
     if ('moyenne' in formule && Array.isArray(formule.moyenne)) {
       const [moyenneDottedName] = formule.moyenne
-      return safeEvaluateSituationDottedName(situation, moyenneDottedName)
+      return safeEvaluateSituationDottedName({
+        situation,
+        dottedName: moyenneDottedName,
+        rules,
+      })
     }
 
     if ('somme' in formule && Array.isArray(formule.somme)) {
       return formule.somme.reduce(
         (acc, sommeDottedName) =>
-          acc + safeEvaluateSituationDottedName(situation, sommeDottedName),
+          acc +
+          safeEvaluateSituationDottedName({
+            situation,
+            dottedName: sommeDottedName,
+            rules,
+          }),
         0
       )
     }
@@ -107,10 +192,12 @@ export const getSituationDottedNameValue = ({
       'une de ces conditions' in formule &&
       Array.isArray(formule['une de ces conditions'])
     ) {
-      return formule['une de ces conditions'].some((cond) =>
-        typeof cond === 'string'
-          ? checkIfConditionIsTrue(cond, situation)
-          : false
+      return formule['une de ces conditions'].some((conditionDottedName) =>
+        checkIfConditionIsTrue({
+          conditionDottedName,
+          situation,
+          rules,
+        })
       )
         ? 1
         : 0
@@ -120,10 +207,12 @@ export const getSituationDottedNameValue = ({
       'toutes ces conditions' in formule &&
       Array.isArray(formule['toutes ces conditions'])
     ) {
-      return formule['toutes ces conditions'].every((cond) =>
-        typeof cond === 'string'
-          ? checkIfConditionIsTrue(cond, situation)
-          : false
+      return formule['toutes ces conditions'].every((conditionDottedName) =>
+        checkIfConditionIsTrue({
+          conditionDottedName,
+          situation,
+          rules,
+        })
       )
         ? 1
         : 0

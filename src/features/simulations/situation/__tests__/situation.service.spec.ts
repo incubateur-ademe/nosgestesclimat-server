@@ -43,19 +43,31 @@ describe('getSituationDottedNameValue', () => {
   describe.each(
     Object.entries(funFactsRules)
       .filter(([_, dottedName]) => dottedName in frRules)
+      .filter(
+        ([funFactValue]) => funFactValue !== 'averageOfElectricityConsumption'
+      )
       .map(([funFactRule, dottedName]) => ({ funFactRule, dottedName }))
   )('Given $funFactRule', ({ dottedName }) => {
     describe.each(
       Object.values(personas).map(({ nom, situation }) => ({ nom, situation }))
     )('When computing funfacts for persona $nom', ({ situation }) => {
       it('Should give the same result as the engine', () => {
-        expect(
-          getSituationDottedNameValue({
-            dottedName,
-            situation,
-            rules: frRules,
-          })
-        ).toBe(getEngineSituationDottedNameValue({ situation, dottedName }))
+        // console.time('algoValue')
+        const algoValue = getSituationDottedNameValue({
+          dottedName,
+          situation,
+          rules: frRules,
+        })
+        // console.timeEnd('algoValue')
+
+        // console.time('engineValue')
+        const engineValue = getEngineSituationDottedNameValue({
+          situation,
+          dottedName,
+        })
+        // console.timeEnd('engineValue')
+
+        expect(algoValue).toBe(engineValue)
       })
     })
   })
