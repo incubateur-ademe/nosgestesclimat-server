@@ -6,12 +6,21 @@ import type {
 import modelRules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
 import modelFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRules.json'
 import personas from '@incubateur-ademe/nosgestesclimat/public/personas-fr.json'
-import { engine } from '../../../../constants/publicode'
+import Engine from 'publicodes'
+
 import type { SituationSchema } from '../../simulations.validator'
 import { getSituationDottedNameValue } from '../situation.service'
 
 const frRules = modelRules as Record<DottedName, NGCRule | string | null>
 const funFactsRules = modelFunFacts as { [k in keyof FunFacts]: DottedName }
+
+const engine = new Engine(modelRules, {
+  logger: {
+    log: () => null,
+    warn: () => null,
+    error: console.error,
+  },
+})
 
 const getEngineSituationDottedNameValue = ({
   situation,

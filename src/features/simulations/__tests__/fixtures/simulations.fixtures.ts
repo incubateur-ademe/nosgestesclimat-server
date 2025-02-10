@@ -1,14 +1,15 @@
 import { faker } from '@faker-js/faker'
 import type { DottedName, NGCRuleNode } from '@incubateur-ademe/nosgestesclimat'
 import { version as modelVersion } from '@incubateur-ademe/nosgestesclimat/package.json'
+import rules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
 import personas from '@incubateur-ademe/nosgestesclimat/public/personas-fr.json'
 import { StatusCodes } from 'http-status-codes'
 import nock from 'nock'
 import type { ParsedRules, PublicodesExpression } from 'publicodes'
-import { utils } from 'publicodes'
+import Engine, { utils } from 'publicodes'
 import type supertest from 'supertest'
 import { carbonMetric, waterMetric } from '../../../../constants/ngc'
-import { engine } from '../../../../constants/publicode'
+
 import type { Metric } from '../../../../types/types'
 import type {
   SimulationCreateInputDto,
@@ -24,6 +25,14 @@ export const FETCH_USER_SIMULATIONS_ROUTE = '/simulations/v1/:userId'
 
 export const FETCH_USER_SIMULATION_ROUTE =
   '/simulations/v1/:userId/:simulationId'
+
+const engine = new Engine(rules, {
+  logger: {
+    log: () => null,
+    warn: () => null,
+    error: console.error,
+  },
+})
 
 const categories = [
   'transport',
