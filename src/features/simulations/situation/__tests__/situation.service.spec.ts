@@ -52,9 +52,6 @@ describe('getSituationDottedNameValue', () => {
   describe.each(
     Object.entries(funFactsRules)
       .filter(([_, dottedName]) => dottedName in frRules)
-      .filter(
-        ([funFactValue]) => funFactValue !== 'averageOfElectricityConsumption'
-      )
       .map(([funFactRule, dottedName]) => ({ funFactRule, dottedName }))
   )('Given $funFactRule', ({ dottedName }) => {
     describe.each(
