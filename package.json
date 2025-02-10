@@ -1,6 +1,6 @@
 {
   "name": "nosgestesclimat-server",
-  "version": "1.9.1",
+  "version": "1.9.2",
   "description": "The server part of the website nosgestesclimat.fr",
   "main": "./dist/index.js",
   "engines": {
@@ -29,7 +29,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.723.0",
     "@aws-sdk/s3-request-presigner": "^3.723.0",
-    "@incubateur-ademe/nosgestesclimat": "^3.5.1",
+    "@incubateur-ademe/nosgestesclimat": "^3.5.3",
     "@prisma/client": "^6.0.0",
     "@publicodes/tools": "^1.2.5",
     "@sentry/node": "^8.26.0",
