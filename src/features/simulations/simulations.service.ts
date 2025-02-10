@@ -217,37 +217,14 @@ const getFunFactValue = ({
     0
   )
 
-const specialAverageKeys = new Set<string>(<(keyof FunFacts)[]>[
-  'averageOfCarKilometers',
-  'averageOfTravelers',
-  'averageOfElectricityConsumption',
-])
-
 const getSimulationsFunFacts = (simulations: FunFactsSimulations) => {
   return Object.fromEntries(
     Object.entries(funFactsRules).map(([key, dottedName]) => {
       if (dottedName in frRules) {
         let value = getFunFactValue({ dottedName, simulations, rules: frRules })
 
-        const rule = frRules[dottedName]
-        if (
-          !!rule &&
-          typeof rule === 'object' &&
-          specialAverageKeys.has(key) &&
-          typeof rule.formule === 'object' &&
-          Array.isArray(rule.formule?.moyenne)
-        ) {
-          const [moyenneDottedName] = rule.formule.moyenne
-          if (typeof moyenneDottedName === 'string') {
-            const totalAnswers = simulations.reduce(
-              (acc, { situation }) =>
-                acc + (moyenneDottedName in situation ? 1 : 0),
-              0
-            )
-            if (totalAnswers > 0) {
-              value = value / totalAnswers
-            }
-          }
+        if (key.startsWith('average')) {
+          value = value / simulations.length
         }
 
         if (key.startsWith('percentage')) {
