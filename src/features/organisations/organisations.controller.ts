@@ -363,9 +363,9 @@ router
     validateRequest(OrganisationPublicPollFetchValidator),
     async (req, res) => {
       try {
-        if (req.user && req.user.userId !== req.params.userId) {
-          throw new ForbiddenException(`Different user ids found`)
-        }
+        // if (req.user && req.user.userId !== req.params.userId) {
+        //   throw new ForbiddenException(`Different user ids found`)
+        // }
 
         const poll = await fetchPublicPoll(req)
 
@@ -429,12 +429,19 @@ router
     validateRequest(OrganisationPublicPollDashboardValidator),
     async (req, res) => {
       try {
+        // if (req.user && req.user.userId !== req.params.userId) {
+        //   throw new ForbiddenException(`Different user ids found`)
+        // }
         const dashboard = await fetchPublicPollDashboard(req)
 
         return res.status(StatusCodes.OK).json(dashboard)
       } catch (err) {
         if (err instanceof EntityNotFoundException) {
           return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
+        }
+
+        if (err instanceof ForbiddenException) {
+          return res.status(StatusCodes.FORBIDDEN).send(err.message).end()
         }
 
         logger.error('Public poll dashboard fetch failed', err)

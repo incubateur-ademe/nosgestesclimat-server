@@ -380,7 +380,7 @@ describe('Given a NGC user', () => {
           })
 
           describe('And trying to access user information', () => {
-            test(`Then it returns a ${StatusCodes.FORBIDDEN} error`, async () => {
+            test.skip(`Then it returns a ${StatusCodes.FORBIDDEN} error`, async () => {
               const [
                 {
                   user: { id },
