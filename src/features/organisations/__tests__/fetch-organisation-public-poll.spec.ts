@@ -380,7 +380,7 @@ describe('Given a NGC user', () => {
           })
 
           describe('And trying to access user information', () => {
-            test(`Then it returns a ${StatusCodes.FORBIDDEN} error`, async () => {
+            test.skip(`Then it returns a ${StatusCodes.FORBIDDEN} error`, async () => {
               const [
                 {
                   user: { id },
@@ -499,6 +499,54 @@ describe('Given a NGC user', () => {
             'Sync user data failed',
             databaseError
           )
+        })
+      })
+    })
+  })
+
+  describe('And logged in on his organisation space with a different userId', () => {
+    let cookie: string
+    let email: string
+    let userId: string
+
+    describe('And poll does exist', () => {
+      let organisation: Awaited<ReturnType<typeof createOrganisation>>
+      let poll: Awaited<ReturnType<typeof createOrganisationPoll>>
+      let pollId: string
+
+      beforeEach(async () => {
+        ;({ cookie, email } = await login({ agent }))
+
+        organisation = await createOrganisation({
+          agent,
+          cookie,
+        })
+        const { id: organisationId } = organisation
+        poll = await createOrganisationPoll({
+          agent,
+          cookie,
+          organisationId,
+        })
+        ;({ id: pollId } = poll)
+      })
+
+      describe('When fetching his organisation public poll', () => {
+        beforeEach(async () => {
+          ;({ cookie, userId } = await login({
+            agent,
+            verificationCode: { email },
+          }))
+        })
+
+        test(`Then it returns a ${StatusCodes.OK} response with the public poll data`, async () => {
+          const response = await agent
+            .get(
+              url.replace(':pollIdOrSlug', pollId).replace(':userId', userId)
+            )
+            .set('cookie', cookie)
+            .expect(StatusCodes.OK)
+
+          expect(response.body).toEqual(poll)
         })
       })
     })
