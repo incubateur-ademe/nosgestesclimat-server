@@ -1,10 +1,15 @@
 import { GetObjectCommand, NotFound } from '@aws-sdk/client-s3'
+import { faker } from '@faker-js/faker'
 import { readFile } from 'fs/promises'
 import { StatusCodes } from 'http-status-codes'
 import path from 'path'
 import supertest from 'supertest'
 import { client } from '../../../../../adapters/scaleway/client'
 import app from '../../../../../app'
+import {
+  MAPPING_CASES,
+  MAPPING_CASES_FUNC,
+} from '../../../../../constants/change-case'
 import logger from '../../../../../logger'
 import { getRandomPersonaSituation } from '../../../../simulations/__tests__/fixtures/simulations.fixtures'
 import type { SituationSchema } from '../../../../simulations/simulations.validator'
@@ -112,6 +117,26 @@ describe('Given a NGC integrations API user', () => {
 
         expect(body).toEqual({
           myRule: 1,
+        })
+      })
+
+      describe(`And a special mapping case`, () => {
+        test(`Then it return a ${StatusCodes.OK} response with mapped object`, async () => {
+          const mappingCase = faker.helpers.enumValue(MAPPING_CASES)
+          partner = randomPartner()
+          situation = getRandomPersonaSituation()
+
+          const { body } = await agent
+            .put(url.replace(':partner', partner))
+            .query({ mappingCase })
+            .send({ situation })
+            .expect(StatusCodes.OK)
+
+          expect(body).toEqual(
+            MAPPING_CASES_FUNC[mappingCase]({
+              myRule: 1,
+            })
+          )
         })
       })
     })
