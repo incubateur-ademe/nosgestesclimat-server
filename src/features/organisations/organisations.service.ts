@@ -38,7 +38,7 @@ import type {
 const organisationToDto = (
   organisation: Organisation &
     Partial<Awaited<ReturnType<typeof fetchUserOrganisation>>>,
-  connectedUser: string
+  connectedUserEmail: string
 ) => ({
   ...organisation,
   hasCustomQuestionEnabled:
@@ -49,7 +49,7 @@ const organisationToDto = (
       user: {
         id: userId,
         name,
-        email,
+        email: userEmail,
         createdAt,
         optedInForCommunications,
         position,
@@ -57,12 +57,12 @@ const organisationToDto = (
         updatedAt,
       },
     }) => ({
-      ...(userId === connectedUser
+      ...(userEmail === connectedUserEmail
         ? {
             id,
             userId,
             name,
-            email,
+            email: userEmail,
             position,
             telephone,
             optedInForCommunications,
@@ -103,7 +103,7 @@ export const createOrganisation = async ({
 
     await EventBus.once(organisationCreatedEvent)
 
-    return organisationToDto(organisation, user.userId)
+    return organisationToDto(organisation, user.email)
   } catch (e) {
     if (isPrismaErrorUniqueConstraintFailed(e)) {
       throw new ForbiddenException(
@@ -163,7 +163,7 @@ export const updateOrganisation = async ({
 
     return {
       token,
-      organisation: organisationToDto(organisation, user.userId),
+      organisation: organisationToDto(organisation, user.email),
     }
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
@@ -184,7 +184,7 @@ export const fetchOrganisations = async (
   const organisations = await fetchUserOrganisations(user)
 
   return organisations.map((organisation) =>
-    organisationToDto(organisation, user.userId)
+    organisationToDto(organisation, user.email)
   )
 }
 
@@ -198,7 +198,7 @@ export const fetchOrganisation = async ({
   try {
     const organisation = await fetchUserOrganisation(params, user)
 
-    return organisationToDto(organisation, user.userId)
+    return organisationToDto(organisation, user.email)
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('Organisation not found')
@@ -216,7 +216,7 @@ const isOrganisationAdmin = (
 ): connectedUser is NonNullable<Request['user']> =>
   typeof connectedUser === 'object' &&
   organisation.administrators.some(
-    ({ user }) => user.id === connectedUser.userId
+    ({ user }) => user.email === connectedUser.email
   )
 
 const pollToDto = ({
@@ -230,7 +230,7 @@ const pollToDto = ({
   ...(organisation
     ? {
         organisation: isOrganisationAdmin(organisation, user)
-          ? organisationToDto(organisation, user.userId)
+          ? organisationToDto(organisation, user.email)
           : {
               id: organisation.id,
               name: organisation.name,
