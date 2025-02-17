@@ -1,6 +1,7 @@
 import { initContract, ZodErrorSchema } from '@ts-rest/core'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
+import { MAPPING_CASES } from '../../../../constants/change-case'
 import { SituationSchema } from '../../../simulations/simulations.validator'
 import { ExternalServiceTypeEnum } from '../../integrations.validator'
 
@@ -12,21 +13,32 @@ const MappingSituationParams = z
 
 export type MappingSituationParams = z.infer<typeof MappingSituationParams>
 
+const MappingSituationQuery = z
+  .object({
+    mappingCase: z
+      .nativeEnum(MAPPING_CASES)
+      .optional()
+      .default(MAPPING_CASES.camelCase),
+  })
+  .strict()
+
+export type MappingSituationQuery = z.infer<typeof MappingSituationQuery>
+
 const MappingSituationDto = z
   .object({
     situation: SituationSchema,
   })
   .strict()
 
-const c = initContract()
-
 export type MappingSituationDto = z.infer<typeof MappingSituationDto>
+
+const c = initContract()
 
 const contract = c.router({
   mapSituation: {
     method: 'PUT',
     path: '/integrations-api/v1/mapping-situation/:partner',
-    query: z.object({}).strict(),
+    query: MappingSituationQuery,
     pathParams: MappingSituationParams,
     body: MappingSituationDto,
     responses: {

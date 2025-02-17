@@ -5,10 +5,11 @@ import mappingSituationContract from './mapping-situation.contract'
 import { mapPartnerSituation } from './mapping-situation.service'
 
 const router = tsRestServer.router(mappingSituationContract, {
-  mapSituation: async ({ params, body }) => {
+  mapSituation: async ({ params, body, query }) => {
     try {
       return {
         body: await mapPartnerSituation({
+          query,
           partner: params.partner,
           mappingSituationDto: body,
         }),

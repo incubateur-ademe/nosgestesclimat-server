@@ -1,6 +1,7 @@
 import NGCRules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
 import Engine from 'publicodes'
 import yaml from 'yaml'
+import { MAPPING_CASES_FUNC } from '../../../../constants/change-case'
 import { EntityNotFoundException } from '../../../../core/errors/EntityNotFoundException'
 import type { ExternalServiceTypeEnum } from '../../integrations.validator'
 import {
@@ -8,7 +9,10 @@ import {
   type MappingFileParams,
 } from '../mapping-file/mapping-file.contract'
 import { getMappingFile } from '../mapping-file/mapping-file.service'
-import type { MappingSituationDto } from './mapping-situation.contract'
+import type {
+  MappingSituationDto,
+  MappingSituationQuery,
+} from './mapping-situation.contract'
 
 const fetchPartnerMappingFile = async (params: MappingFileParams) => {
   try {
@@ -51,9 +55,11 @@ const isPartnerCustomMapping = (
   customMapping.every((value) => 'ngcValue' in value && 'mapsTo' in value)
 
 export const mapPartnerSituation = async ({
+  query,
   partner,
   mappingSituationDto: { situation },
 }: {
+  query: MappingSituationQuery
   partner: ExternalServiceTypeEnum
   mappingSituationDto: MappingSituationDto
 }) => {
@@ -96,7 +102,7 @@ export const mapPartnerSituation = async ({
 
   const partnerSituation: Record<string, unknown> = {}
 
-  return Object.keys(partnerRules).reduce((acc, rule) => {
+  const mappedSituation = Object.keys(partnerRules).reduce((acc, rule) => {
     if (rule.startsWith('utils')) {
       return acc
     }
@@ -118,4 +124,6 @@ export const mapPartnerSituation = async ({
 
     return acc
   }, partnerSituation)
+
+  return MAPPING_CASES_FUNC[query.mappingCase](mappedSituation)
 }
