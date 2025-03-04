@@ -42,4 +42,6 @@ export class SimulationUpsertedEvent extends EventBusEvent<
       newsletters?: undefined
       sendEmail: boolean
     }
-> {}
+> {
+  name = 'SimulationUpsertedEvent'
+}

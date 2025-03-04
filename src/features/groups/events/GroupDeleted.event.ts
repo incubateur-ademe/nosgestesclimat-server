@@ -5,4 +5,6 @@ export class GroupDeletedEvent extends EventBusEvent<{
   administrator: Pick<User, 'id' | 'name' | 'email'>
   participants: Array<{ user: Pick<User, 'id' | 'email'> }>
   participantUser?: undefined
-}> {}
+}> {
+  name = 'GroupDeletedEvent'
+}
