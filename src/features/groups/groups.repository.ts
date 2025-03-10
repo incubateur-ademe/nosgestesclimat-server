@@ -171,6 +171,17 @@ export const createParticipantAndUser = async (
       )
     }
 
+    const existingParticipant = await prismaSession.groupParticipant.findUnique(
+      {
+        where: {
+          groupId_userId: {
+            groupId,
+            userId,
+          },
+        },
+      }
+    )
+
     // upsert user
     await prismaSession.user.upsert({
       where: {
@@ -222,8 +233,12 @@ export const createParticipantAndUser = async (
     ])
 
     return {
-      ...participant,
-      simulation,
+      participant: {
+        ...participant,
+        simulation,
+      },
+      created: !existingParticipant,
+      updated: !!existingParticipant,
     }
   }, session)
 }
