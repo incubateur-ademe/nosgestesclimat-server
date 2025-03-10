@@ -223,4 +223,25 @@ export const EventBus = {
         .map(({ value }) => value),
     })) as EventBusResult<FinishedEvent>[]
   },
+
+  /**
+   * Returns a Promise that resolves when all the events are finished
+   * Use with care ! EventBus is static for all the requests
+   *
+   * @returns Promise<void>
+   */
+  async flush() {
+    return new Promise<void>((res) => {
+      const check = () => {
+        const nextEvent = eventsMap.values().next()
+        if (!nextEvent.value) {
+          return res()
+        }
+
+        nextEvent.value.then(check)
+      }
+
+      check()
+    })
+  },
 }

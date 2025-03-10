@@ -137,4 +137,37 @@ describe('EventBus', () => {
       )
     })
   })
+
+  describe('When flushed', () => {
+    it('Should callback if no event', async () => {
+      await expect(EventBus.flush()).resolves.toBeUndefined()
+    })
+
+    it('Should callback after handlers resolve', async () => {
+      const spy = jest.fn()
+      const handler = async (event: Event1 | Event2) =>
+        new Promise<void>((res) =>
+          setTimeout(() => {
+            spy(event.attributes)
+            return res()
+          })
+        )
+
+      subscriptions.push(
+        EventBus.on(Event1, handler),
+        EventBus.on(Event2, handler)
+      )
+
+      const event1 = new Event1({ event: 'testEvent' })
+      EventBus.emit(event1)
+
+      const event2 = new Event2({ event: 'testEvent' })
+      EventBus.emit(event2)
+
+      await EventBus.flush()
+
+      expect(spy).toHaveBeenCalledWith(event1.attributes)
+      expect(spy).toHaveBeenCalledWith(event2.attributes)
+    })
+  })
 })
