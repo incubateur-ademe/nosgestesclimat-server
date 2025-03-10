@@ -714,11 +714,7 @@ describe('Given a NGC user', () => {
               } = simulation
               const { id: _4, name: _5, ...userPayload } = user
 
-              const scope = nock(process.env.BREVO_URL!, {
-                reqheaders: {
-                  'api-key': process.env.BREVO_API_KEY!,
-                },
-              })
+              const scope = nock(process.env.BREVO_URL!)
                 .post('/v3/contacts')
                 .reply(200)
                 .post('/v3/contacts/lists/27/contacts/remove')
@@ -741,6 +737,43 @@ describe('Given a NGC user', () => {
                 .expect(StatusCodes.CREATED)
 
               expect(scope.isDone()).toBeTruthy()
+            })
+
+            describe('And from another device', () => {
+              it(`Then it does not send email twice`, async () => {
+                const {
+                  createdAt: _1,
+                  updatedAt: _2,
+                  polls: _3,
+                  user,
+                  ...payload
+                } = simulation
+                const { id: _4, name: _5, ...userPayload } = user
+
+                const scope = nock(process.env.BREVO_URL!)
+                  .post('/v3/contacts')
+                  .reply(200)
+                  .post('/v3/contacts/lists/27/contacts/remove')
+                  .reply(200)
+                  .post('/v3/contacts')
+                  .reply(200)
+                  .post('/v3/contacts/lists/35/contacts/remove')
+                  .reply(200)
+
+                await agent
+                  .post(
+                    url
+                      .replace(':userId', user.id)
+                      .replace(':pollIdOrSlug', pollId)
+                  )
+                  .send({
+                    ...payload,
+                    user: userPayload,
+                  })
+                  .expect(StatusCodes.CREATED)
+
+                expect(scope.isDone()).toBeTruthy()
+              })
             })
           })
         })

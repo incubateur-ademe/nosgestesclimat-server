@@ -203,6 +203,16 @@ export const createPollUserSimulation = (
       },
     })
 
+    const existingParticipation = await prismaSession.simulationPoll.findFirst({
+      where: {
+        pollId,
+        simulation: {
+          user: email ? { email } : { id: userId },
+        },
+      },
+      select: { id: true },
+    })
+
     const { id: simulationId } = await createUserSimulation(
       params,
       simulationDto,
@@ -245,7 +255,12 @@ export const createPollUserSimulation = (
       )
     }
 
-    return { simulation, poll }
+    return {
+      simulation,
+      poll,
+      created: !existingParticipation,
+      updated: !!existingParticipation,
+    }
   }, session)
 }
 

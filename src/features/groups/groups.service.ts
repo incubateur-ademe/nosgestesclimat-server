@@ -49,6 +49,8 @@ const groupToDto = (
   ),
 })
 
+type PopulatedParticipant = Awaited<ReturnType<typeof createParticipantAndUser>>
+
 /**
  * Maps a database participant to a dto for the UI
  */
@@ -59,7 +61,7 @@ const participantToDto = (
     user: { id: userId, ...rest },
     createdAt,
     updatedAt,
-  }: Omit<Awaited<ReturnType<typeof createParticipantAndUser>>, 'group'>,
+  }: Partial<PopulatedParticipant> & { user: PopulatedParticipant['user'] },
   connectedUser: string
 ) => ({
   ...(userId === connectedUser
