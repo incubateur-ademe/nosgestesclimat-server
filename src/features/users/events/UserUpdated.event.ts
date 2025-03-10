@@ -5,4 +5,6 @@ import { EventBusEvent } from '../../../core/event-bus/event'
 export class UserUpdatedEvent extends EventBusEvent<{
   user: Pick<User, 'id' | 'name' | 'email'>
   listIds?: ListIds[]
-}> {}
+}> {
+  name = 'UserUpdatedEvent'
+}
