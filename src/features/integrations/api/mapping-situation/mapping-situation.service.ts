@@ -1,3 +1,4 @@
+import type { DottedName, NGCRule } from '@incubateur-ademe/nosgestesclimat'
 import NGCRules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
 import Engine from 'publicodes'
 import yaml from 'yaml'
@@ -76,7 +77,7 @@ export const mapPartnerSituation = async ({
   const rules = {
     ...NGCRules,
     ...partnerRules,
-  }
+  } as Record<DottedName, NGCRule | string | null>
 
   const partnerDefaultValues: Record<string, unknown> = isPartnerRecord(
     partnerDefault
