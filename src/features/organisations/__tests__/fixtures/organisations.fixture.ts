@@ -191,9 +191,23 @@ export const createOrganisationPollSimulation = async ({
     .reply(400, { code: 'invalid_parameter' })
 
   if (payload.user?.email) {
+    const existingParticipation = await prisma.simulationPoll.findFirst({
+      where: {
+        pollId,
+        simulation: {
+          user: {
+            email: payload.user.email,
+          },
+        },
+      },
+      select: { id: true },
+    })
+
+    if (!existingParticipation) {
+      scope.post('/v3/smtp/email').reply(200)
+    }
+
     scope
-      .post('/v3/smtp/email')
-      .reply(200)
       .post('/v3/contacts')
       .reply(200)
       .post('/v3/contacts/lists/35/contacts/remove')
