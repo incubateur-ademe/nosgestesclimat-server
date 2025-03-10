@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker'
+import modelFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRules.json'
 import {
   PollDefaultAdditionalQuestionType,
   SimulationAdditionalQuestionAnswerType,
@@ -400,6 +401,48 @@ describe('Given a NGC user', () => {
           await EventBus.flush()
 
           expect(scope.isDone()).toBeTruthy()
+        })
+
+        test(`Then it updates poll fun facts`, async () => {
+          const payload: SimulationCreateInputDto = {
+            id: faker.string.uuid(),
+            situation,
+            computedResults,
+            progression: 1,
+          }
+
+          nock(process.env.BREVO_URL!)
+            .post('/v3/contacts')
+            .reply(200)
+            .post('/v3/contacts/lists/27/contacts/remove')
+            .reply(200)
+
+          await agent
+            .post(
+              url.replace(':userId', userId).replace(':pollIdOrSlug', pollId)
+            )
+            .send(payload)
+            .expect(StatusCodes.CREATED)
+
+          await EventBus.flush()
+
+          const { funFacts } = await prisma.poll.findUniqueOrThrow({
+            where: {
+              id: pollId,
+            },
+            select: {
+              funFacts: true,
+            },
+          })
+
+          expect(funFacts).toEqual(
+            Object.fromEntries(
+              Object.entries(modelFunFacts).map(([k]) => [
+                k,
+                expect.any(Number),
+              ])
+            )
+          )
         })
 
         describe('And using organisation and poll slugs', () => {
