@@ -85,7 +85,7 @@ export const joinGroup = async ({
 
   const scope = nock(process.env.BREVO_URL!)
 
-  const [existingUser, group] = await Promise.all([
+  const [existingUser, group, existingParticipant] = await Promise.all([
     prisma.user.findFirst({
       where: {
         id: payload.userId,
@@ -120,10 +120,28 @@ export const joinGroup = async ({
         },
       },
     }),
+    ...(email
+      ? [
+          prisma.groupParticipant.findFirst({
+            where: {
+              user: {
+                email,
+              },
+            },
+            select: {
+              id: true,
+            },
+          }),
+        ]
+      : []),
   ])
 
   if (email || existingUser?.email) {
-    scope.post('/v3/smtp/email').reply(200).post('/v3/contacts').reply(200)
+    if (!existingParticipant) {
+      scope.post('/v3/smtp/email').reply(200)
+    }
+
+    scope.post('/v3/contacts').reply(200)
 
     if (payload.simulation.progression === 1) {
       scope
