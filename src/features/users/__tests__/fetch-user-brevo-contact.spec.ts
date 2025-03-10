@@ -7,6 +7,7 @@ import { ZodError } from 'zod'
 import { formatBrevoDate } from '../../../adapters/brevo/__tests__/fixtures/formatBrevoDate'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
+import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 import { createSimulation } from '../../simulations/__tests__/fixtures/simulations.fixtures'
 
@@ -97,6 +98,8 @@ describe('Given a NGC user', () => {
             .get(url.replace(':userId', userId))
             .expect(StatusCodes.OK)
 
+          await EventBus.flush()
+
           expect(body).toEqual({
             id: contactId,
             email,
@@ -122,6 +125,8 @@ describe('Given a NGC user', () => {
               .get(url.replace(':userId', userId))
               .expect(StatusCodes.NOT_FOUND)
 
+            await EventBus.flush()
+
             expect(scope.isDone()).toBeTruthy()
           })
         })
@@ -142,6 +147,8 @@ describe('Given a NGC user', () => {
             const { body } = await agent
               .get(url.replace(':userId', userId))
               .expect(StatusCodes.INTERNAL_SERVER_ERROR)
+
+            await EventBus.flush()
 
             expect(body).toEqual({})
             expect(scope.isDone()).toBeTruthy()
@@ -168,6 +175,8 @@ describe('Given a NGC user', () => {
               .get(url.replace(':userId', userId))
               .expect(StatusCodes.INTERNAL_SERVER_ERROR)
 
+            await EventBus.flush()
+
             expect(body).toEqual({})
             expect(scope.isDone()).toBeTruthy()
             expect(logger.error).toHaveBeenCalledWith(
@@ -190,6 +199,8 @@ describe('Given a NGC user', () => {
             const { body } = await agent
               .get(url.replace(':userId', userId))
               .expect(StatusCodes.INTERNAL_SERVER_ERROR)
+
+            await EventBus.flush()
 
             expect(body).toEqual({})
             expect(scope.isDone()).toBeTruthy()

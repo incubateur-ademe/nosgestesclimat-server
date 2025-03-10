@@ -7,6 +7,7 @@ import nock from 'nock'
 import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
+import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 import { LOGIN_ROUTE } from './fixtures/login.fixture'
 import { createVerificationCode } from './fixtures/verification-codes.fixture'
@@ -130,6 +131,8 @@ describe('Given a NGC user', () => {
           .reply(200)
 
         await agent.post(url).send(payload).expect(StatusCodes.OK)
+
+        await EventBus.flush()
 
         expect(scope.isDone()).toBeTruthy()
       })

@@ -5,6 +5,7 @@ import nock from 'nock'
 import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
+import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 import * as authenticationService from '../authentication.service'
 import type { VerificationCodeCreateDto } from '../verification-codes.validator'
@@ -153,6 +154,8 @@ describe('Given a NGC user', () => {
         email,
       })
 
+      await EventBus.flush()
+
       expect(scope.isDone()).toBeTruthy()
     })
 
@@ -180,6 +183,8 @@ describe('Given a NGC user', () => {
         userId,
         email,
       })
+
+      await EventBus.flush()
 
       expect(scope.isDone()).toBeTruthy()
     })

@@ -9,6 +9,7 @@ import nock from 'nock'
 import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
+import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 import type { SimulationCreateInputDto } from '../simulations.validator'
 import {
@@ -200,6 +201,8 @@ describe('Given a NGC user', () => {
           .send(payload)
           .expect(StatusCodes.CREATED)
 
+        await EventBus.flush()
+
         const createdSimulation = await prisma.simulation.findUnique({
           where: {
             id,
@@ -341,6 +344,8 @@ describe('Given a NGC user', () => {
               .send(payload)
               .expect(StatusCodes.CREATED)
 
+            await EventBus.flush()
+
             expect(scope.isDone()).toBeTruthy()
           })
 
@@ -397,6 +402,8 @@ describe('Given a NGC user', () => {
               .send(payload)
               .query({ sendEmail: true })
               .expect(StatusCodes.CREATED)
+
+            await EventBus.flush()
 
             expect(scope.isDone()).toBeTruthy()
           })
@@ -456,6 +463,8 @@ describe('Given a NGC user', () => {
                 .query({ sendEmail: true })
                 .set('origin', 'https://preprod.nosgestesclimat.fr')
                 .expect(StatusCodes.CREATED)
+
+              await EventBus.flush()
 
               expect(scope.isDone()).toBeTruthy()
             })
@@ -543,6 +552,8 @@ describe('Given a NGC user', () => {
                 .send(payload)
                 .expect(StatusCodes.CREATED)
 
+              await EventBus.flush()
+
               expect(scope.isDone()).toBeTruthy()
             })
           })
@@ -577,6 +588,8 @@ describe('Given a NGC user', () => {
                 updateEnabled: true,
               })
               .reply(200)
+
+            await EventBus.flush()
 
             await agent
               .post(url.replace(':userId', userId))
@@ -619,6 +632,8 @@ describe('Given a NGC user', () => {
               .reply(200)
               .post('/v3/contacts')
               .reply(200)
+
+            await EventBus.flush()
 
             await agent
               .post(url.replace(':userId', faker.string.uuid()))

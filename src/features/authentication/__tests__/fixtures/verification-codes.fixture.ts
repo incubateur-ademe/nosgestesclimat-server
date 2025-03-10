@@ -3,6 +3,7 @@ import dayjs from 'dayjs'
 import { StatusCodes } from 'http-status-codes'
 import nock from 'nock'
 import type supertest from 'supertest'
+import { EventBus } from '../../../../core/event-bus/event-bus'
 import * as authenticationService from '../../authentication.service'
 import type { VerificationCodeCreateDto } from '../../verification-codes.validator'
 
@@ -46,6 +47,10 @@ export const createVerificationCode = async ({
     .post(CREATE_VERIFICATION_CODE_ROUTE)
     .send(payload)
     .expect(StatusCodes.CREATED)
+
+  await EventBus.flush()
+
+  expect(nock.isDone()).toBeTruthy()
 
   jest
     .mocked(authenticationService)

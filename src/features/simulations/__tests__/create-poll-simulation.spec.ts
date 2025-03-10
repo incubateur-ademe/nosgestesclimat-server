@@ -8,6 +8,7 @@ import nock from 'nock'
 import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
+import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 import { login } from '../../authentication/__tests__/fixtures/login.fixture'
 import {
@@ -396,6 +397,8 @@ describe('Given a NGC user', () => {
             .send(payload)
             .expect(StatusCodes.CREATED)
 
+          await EventBus.flush()
+
           expect(scope.isDone()).toBeTruthy()
         })
 
@@ -530,6 +533,8 @@ describe('Given a NGC user', () => {
               .send(payload)
               .expect(StatusCodes.CREATED)
 
+            await EventBus.flush()
+
             expect(scope.isDone()).toBeTruthy()
           })
 
@@ -580,6 +585,8 @@ describe('Given a NGC user', () => {
               .send(payload)
               .expect(StatusCodes.CREATED)
 
+            await EventBus.flush()
+
             expect(scope.isDone()).toBeTruthy()
           })
 
@@ -627,6 +634,8 @@ describe('Given a NGC user', () => {
                 )
                 .send(payload)
                 .expect(StatusCodes.CREATED)
+
+              await EventBus.flush()
 
               expect(scope.isDone()).toBeTruthy()
             })
@@ -683,6 +692,8 @@ describe('Given a NGC user', () => {
                 .send(payload)
                 .expect(StatusCodes.CREATED)
 
+              await EventBus.flush()
+
               expect(scope.isDone()).toBeTruthy()
             })
           })
@@ -736,6 +747,8 @@ describe('Given a NGC user', () => {
                 })
                 .expect(StatusCodes.CREATED)
 
+              await EventBus.flush()
+
               expect(scope.isDone()).toBeTruthy()
             })
 
@@ -771,6 +784,8 @@ describe('Given a NGC user', () => {
                     user: userPayload,
                   })
                   .expect(StatusCodes.CREATED)
+
+                await EventBus.flush()
 
                 expect(scope.isDone()).toBeTruthy()
               })
@@ -852,6 +867,8 @@ describe('Given a NGC user', () => {
             )
             .send(payload)
             .expect(StatusCodes.CREATED)
+
+          await EventBus.flush()
 
           expect(scope.isDone()).toBeTruthy()
         })

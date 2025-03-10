@@ -16,6 +16,7 @@ import type {
   SimulationParticipantCreateInputDto,
 } from '../../simulations.validator'
 import { SituationSchema } from '../../simulations.validator'
+import { EventBus } from '../../../../core/event-bus/event-bus'
 
 type TestAgent = ReturnType<typeof supertest>
 
@@ -232,6 +233,8 @@ export const createSimulation = async ({
     .post(CREATE_SIMULATION_ROUTE.replace(':userId', userId))
     .send(payload)
     .expect(StatusCodes.CREATED)
+
+  await EventBus.flush()
 
   expect(nock.isDone()).toBeTruthy()
 

@@ -4,6 +4,7 @@ import nock from 'nock'
 import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
+import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 import { getSimulationPayload } from '../../simulations/__tests__/fixtures/simulations.fixtures'
 import type { GroupUpdateDto } from '../groups.validator'
@@ -184,6 +185,8 @@ describe('Given a NGC user', () => {
           )
           .send(payload)
           .expect(StatusCodes.OK)
+
+        await EventBus.flush()
 
         expect(scope.isDone()).toBeTruthy()
       })

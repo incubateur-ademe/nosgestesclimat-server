@@ -2,6 +2,7 @@ import { faker } from '@faker-js/faker'
 import type { PrismaClient } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import type TestAgent from 'supertest/lib/agent'
+import { EventBus } from '../../../../../../core/event-bus/event-bus'
 import { randomApiScopeName } from '../../../authentication/__tests__/fixtures/authentication.fixtures'
 import type { EmailWhitelistCreateDto } from '../../email-whitelist.contract'
 
@@ -58,6 +59,8 @@ export const createEmailWhitelist = async ({
     .set('authorization', `Bearer ${token}`)
     .send(emailWhitelist)
     .expect(StatusCodes.CREATED)
+
+  await EventBus.flush()
 
   return response.body
 }

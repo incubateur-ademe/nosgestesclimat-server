@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes'
 import nock from 'nock'
 import type supertest from 'supertest'
 import { prisma } from '../../../../adapters/prisma/client'
+import { EventBus } from '../../../../core/event-bus/event-bus'
 import { getSimulationPayload } from '../../../simulations/__tests__/fixtures/simulations.fixtures'
 import type {
   GroupCreateInputDto,
@@ -61,6 +62,8 @@ export const createGroup = async ({
     .post(CREATE_GROUP_ROUTE)
     .send(payload)
     .expect(StatusCodes.CREATED)
+
+  await EventBus.flush()
 
   expect(nock.isDone()).toBeTruthy()
 
@@ -164,6 +167,8 @@ export const joinGroup = async ({
     .post(CREATE_PARTICIPANT_ROUTE.replace(':groupId', groupId))
     .send(payload)
     .expect(StatusCodes.CREATED)
+
+  await EventBus.flush()
 
   expect(nock.isDone()).toBeTruthy()
 

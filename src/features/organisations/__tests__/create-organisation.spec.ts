@@ -7,6 +7,7 @@ import supertest from 'supertest'
 import { baseURL } from '../../../adapters/connect/client'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
+import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 import { login } from '../../authentication/__tests__/fixtures/login.fixture'
 import { COOKIE_NAME } from '../../authentication/authentication.service'
@@ -269,6 +270,8 @@ describe('Given a NGC user', () => {
           .send(payload)
           .expect(StatusCodes.CREATED)
 
+        await EventBus.flush()
+
         expect(scope.isDone()).toBeTruthy()
       })
 
@@ -312,6 +315,8 @@ describe('Given a NGC user', () => {
           .set('cookie', cookie)
           .send(payload)
           .expect(StatusCodes.CREATED)
+
+        await EventBus.flush()
 
         expect(scope.isDone()).toBeTruthy()
       })
@@ -360,6 +365,8 @@ describe('Given a NGC user', () => {
             .set('cookie', cookie)
             .send(payload)
             .expect(StatusCodes.CREATED)
+
+          await EventBus.flush()
 
           expect(scope.isDone()).toBeTruthy()
         })
@@ -413,6 +420,8 @@ describe('Given a NGC user', () => {
             .send(payload)
             .expect(StatusCodes.CREATED)
 
+          await EventBus.flush()
+
           expect(scope.isDone()).toBeTruthy()
         })
       })
@@ -459,6 +468,8 @@ describe('Given a NGC user', () => {
             .set('origin', 'https://preprod.nosgestesclimat.preprod.fr')
             .send(payload)
             .expect(StatusCodes.CREATED)
+
+          await EventBus.flush()
 
           expect(scope.isDone()).toBeTruthy()
         })
