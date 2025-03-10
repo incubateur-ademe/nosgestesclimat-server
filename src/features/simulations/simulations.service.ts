@@ -7,10 +7,12 @@ import modelRules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-la
 import modelFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRules.json'
 import type { JsonValue } from '@prisma/client/runtime/library'
 import type { Request } from 'express'
+import { transaction } from '../../adapters/prisma/transaction'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
 import { EventBus } from '../../core/event-bus/event-bus'
 import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError'
 import { PollUpdatedEvent } from '../organisations/events/PollUpdated.event'
+import { findOrganisationPublicPollBySlugOrId } from '../organisations/organisations.repository'
 import type { PublicPollParams } from '../organisations/organisations.validator'
 import type { UserParams } from '../users/users.validator'
 import { SimulationUpsertedEvent } from './events/SimulationUpserted.event'
@@ -150,12 +152,17 @@ export const fetchPublicPollSimulations = async ({
   user?: Request['user']
 }) => {
   try {
-    const simulations = await fetchPollSimulations({
-      params,
-      user,
-    })
+    return await transaction(async (prismaSession) => {
+      const { id } = await findOrganisationPublicPollBySlugOrId(
+        { params },
+        { session: prismaSession }
+      )
+      const simulations = await fetchPollSimulations(id, user, {
+        session: prismaSession,
+      })
 
-    return simulations.map((s) => simulationToDto(s, params.userId))
+      return simulations.map((s) => simulationToDto(s, params.userId))
+    })
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('Poll not found')
@@ -246,13 +253,21 @@ export const fetchPublicPollDashboard = async ({
   user?: Request['user']
 }) => {
   try {
-    const simulations = await fetchPollSimulations({ params, user })
+    return await transaction(async (prismaSession) => {
+      const { id } = await findOrganisationPublicPollBySlugOrId(
+        { params },
+        { session: prismaSession }
+      )
+      const simulations = await fetchPollSimulations(id, user, {
+        session: prismaSession,
+      })
 
-    const validSimulations = simulations.filter(isValidSimulation)
+      const validSimulations = simulations.filter(isValidSimulation)
 
-    return {
-      funFacts: getSimulationsFunFacts(validSimulations),
-    }
+      return {
+        funFacts: getSimulationsFunFacts(validSimulations),
+      }
+    })
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('Poll not found')
