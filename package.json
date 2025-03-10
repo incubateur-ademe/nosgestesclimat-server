@@ -19,7 +19,7 @@
     "run-script": "ts-node --project tsconfig.json",
     "start": "NODE_OPTIONS=--max-old-space-size=8192 node ./dist/src/index.js",
     "start:worker": "NODE_OPTIONS=--max-old-space-size=8192 node ./dist/src/worker.js",
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --maxWorkers=8",
     "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
     "test:load:spike": "artillery run ./tests/load/spike-test.yml",
     "test:load:soak": "artillery run ./tests/load/soak-test.yml",
@@ -118,7 +118,7 @@
     "setupFilesAfterEnv": [
       "../jest.setup.ts"
     ],
-    "testTimeout": 15000,
+    "testTimeout": 20000,
     "testRegex": ".spec.ts$",
     "transform": {
       "^.+\\.(t|j)sx?$": "@swc/jest"

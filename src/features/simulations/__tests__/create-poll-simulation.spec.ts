@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker'
+import modelFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRules.json'
 import {
   PollDefaultAdditionalQuestionType,
   SimulationAdditionalQuestionAnswerType,
@@ -8,6 +9,7 @@ import nock from 'nock'
 import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
+import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 import { login } from '../../authentication/__tests__/fixtures/login.fixture'
 import {
@@ -396,7 +398,51 @@ describe('Given a NGC user', () => {
             .send(payload)
             .expect(StatusCodes.CREATED)
 
+          await EventBus.flush()
+
           expect(scope.isDone()).toBeTruthy()
+        })
+
+        test(`Then it updates poll fun facts`, async () => {
+          const payload: SimulationCreateInputDto = {
+            id: faker.string.uuid(),
+            situation,
+            computedResults,
+            progression: 1,
+          }
+
+          nock(process.env.BREVO_URL!)
+            .post('/v3/contacts')
+            .reply(200)
+            .post('/v3/contacts/lists/27/contacts/remove')
+            .reply(200)
+
+          await agent
+            .post(
+              url.replace(':userId', userId).replace(':pollIdOrSlug', pollId)
+            )
+            .send(payload)
+            .expect(StatusCodes.CREATED)
+
+          await EventBus.flush()
+
+          const { funFacts } = await prisma.poll.findUniqueOrThrow({
+            where: {
+              id: pollId,
+            },
+            select: {
+              funFacts: true,
+            },
+          })
+
+          expect(funFacts).toEqual(
+            Object.fromEntries(
+              Object.entries(modelFunFacts).map(([k]) => [
+                k,
+                expect.any(Number),
+              ])
+            )
+          )
         })
 
         describe('And using organisation and poll slugs', () => {
@@ -530,6 +576,8 @@ describe('Given a NGC user', () => {
               .send(payload)
               .expect(StatusCodes.CREATED)
 
+            await EventBus.flush()
+
             expect(scope.isDone()).toBeTruthy()
           })
 
@@ -580,6 +628,8 @@ describe('Given a NGC user', () => {
               .send(payload)
               .expect(StatusCodes.CREATED)
 
+            await EventBus.flush()
+
             expect(scope.isDone()).toBeTruthy()
           })
 
@@ -627,6 +677,8 @@ describe('Given a NGC user', () => {
                 )
                 .send(payload)
                 .expect(StatusCodes.CREATED)
+
+              await EventBus.flush()
 
               expect(scope.isDone()).toBeTruthy()
             })
@@ -683,6 +735,8 @@ describe('Given a NGC user', () => {
                 .send(payload)
                 .expect(StatusCodes.CREATED)
 
+              await EventBus.flush()
+
               expect(scope.isDone()).toBeTruthy()
             })
           })
@@ -736,6 +790,8 @@ describe('Given a NGC user', () => {
                 })
                 .expect(StatusCodes.CREATED)
 
+              await EventBus.flush()
+
               expect(scope.isDone()).toBeTruthy()
             })
 
@@ -771,6 +827,8 @@ describe('Given a NGC user', () => {
                     user: userPayload,
                   })
                   .expect(StatusCodes.CREATED)
+
+                await EventBus.flush()
 
                 expect(scope.isDone()).toBeTruthy()
               })
@@ -852,6 +910,8 @@ describe('Given a NGC user', () => {
             )
             .send(payload)
             .expect(StatusCodes.CREATED)
+
+          await EventBus.flush()
 
           expect(scope.isDone()).toBeTruthy()
         })

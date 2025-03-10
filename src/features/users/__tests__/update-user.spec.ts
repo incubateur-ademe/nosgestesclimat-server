@@ -7,6 +7,7 @@ import { ListIds } from '../../../adapters/brevo/constant'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
 import { EventBusError } from '../../../core/event-bus/error'
+import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 import { createSimulation } from '../../simulations/__tests__/fixtures/simulations.fixtures'
 
@@ -166,6 +167,8 @@ describe('Given a NGC user', () => {
             },
           })
 
+          await EventBus.flush()
+
           expect(body).toEqual({
             contact: {
               id: contactId,
@@ -278,6 +281,8 @@ describe('Given a NGC user', () => {
             })
             .expect(StatusCodes.OK)
 
+          await EventBus.flush()
+
           expect(body).toEqual({
             contact: {
               id: contactId,
@@ -347,6 +352,8 @@ describe('Given a NGC user', () => {
               })
               .expect(StatusCodes.OK)
 
+            await EventBus.flush()
+
             expect(body).toEqual({
               contact: {
                 id: contactId,
@@ -386,6 +393,8 @@ describe('Given a NGC user', () => {
               })
               .expect(StatusCodes.INTERNAL_SERVER_ERROR)
 
+            await EventBus.flush()
+
             expect(body).toEqual({})
             expect(scope.isDone()).toBeTruthy()
             expect(logger.error).toHaveBeenCalledWith(
@@ -421,6 +430,8 @@ describe('Given a NGC user', () => {
               })
               .expect(StatusCodes.INTERNAL_SERVER_ERROR)
 
+            await EventBus.flush()
+
             expect(body).toEqual({})
             expect(scope.isDone()).toBeTruthy()
             expect(logger.error).toHaveBeenCalledWith(
@@ -451,6 +462,8 @@ describe('Given a NGC user', () => {
                 },
               })
               .expect(StatusCodes.INTERNAL_SERVER_ERROR)
+
+            await EventBus.flush()
 
             expect(body).toEqual({})
             expect(scope.isDone()).toBeTruthy()

@@ -6,6 +6,7 @@ import supertest from 'supertest'
 import { baseURL } from '../../../adapters/connect/client'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
+import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 import { login } from '../../authentication/__tests__/fixtures/login.fixture'
 import { createVerificationCode } from '../../authentication/__tests__/fixtures/verification-codes.fixture'
@@ -233,6 +234,8 @@ describe('Given a NGC user', () => {
               .send(payload)
               .expect(StatusCodes.OK)
 
+            await EventBus.flush()
+
             expect(scope.isDone()).toBeTruthy()
           })
         })
@@ -278,6 +281,8 @@ describe('Given a NGC user', () => {
               .set('cookie', cookie)
               .send(payload)
               .expect(StatusCodes.OK)
+
+            await EventBus.flush()
 
             expect(scope.isDone()).toBeTruthy()
           })
@@ -555,6 +560,8 @@ describe('Given a NGC user', () => {
             })
             .send(payload)
             .expect(StatusCodes.OK)
+
+          await EventBus.flush()
 
           expect(scope.isDone()).toBeTruthy()
         })

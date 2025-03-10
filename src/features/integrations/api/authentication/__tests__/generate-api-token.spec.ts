@@ -5,6 +5,7 @@ import nock from 'nock'
 import supertest from 'supertest'
 import { prisma } from '../../../../../adapters/prisma/client'
 import app from '../../../../../app'
+import { EventBus } from '../../../../../core/event-bus/event-bus'
 import logger from '../../../../../logger'
 import * as authenticationService from '../../../../authentication/authentication.service'
 import {
@@ -139,6 +140,8 @@ describe('Given a NGC integrations API user', () => {
           })
           .expect(StatusCodes.CREATED)
 
+        await EventBus.flush()
+
         expect(scope.isDone()).toBeTruthy()
       })
 
@@ -170,6 +173,8 @@ describe('Given a NGC integrations API user', () => {
               email,
             })
             .expect(StatusCodes.CREATED)
+
+          await EventBus.flush()
 
           expect(scope.isDone()).toBeTruthy()
         })

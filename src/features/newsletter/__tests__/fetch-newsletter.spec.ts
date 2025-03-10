@@ -5,6 +5,7 @@ import supertest from 'supertest'
 import { ZodError } from 'zod'
 import { formatBrevoDate } from '../../../adapters/brevo/__tests__/fixtures/formatBrevoDate'
 import app from '../../../app'
+import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 
 describe('Given a NGC user', () => {
@@ -53,6 +54,8 @@ describe('Given a NGC user', () => {
         .get(url.replace(':newsletterId', newsletterId))
         .expect(StatusCodes.OK)
 
+      await EventBus.flush()
+
       expect(body).toEqual({
         id: +newsletterId,
         name: newsletterName,
@@ -77,6 +80,8 @@ describe('Given a NGC user', () => {
         const { body } = await agent
           .get(url.replace(':newsletterId', newsletterId))
           .expect(StatusCodes.NOT_FOUND)
+
+        await EventBus.flush()
 
         expect(body).toEqual({
           code: 'document_not_found',
@@ -103,6 +108,8 @@ describe('Given a NGC user', () => {
           .get(url.replace(':newsletterId', newsletterId))
           .expect(StatusCodes.INTERNAL_SERVER_ERROR)
 
+        await EventBus.flush()
+
         expect(body).toEqual({})
         expect(scope.isDone()).toBeTruthy()
       })
@@ -128,6 +135,8 @@ describe('Given a NGC user', () => {
           .get(url.replace(':newsletterId', newsletterId))
           .expect(StatusCodes.INTERNAL_SERVER_ERROR)
 
+        await EventBus.flush()
+
         expect(body).toEqual({})
         expect(scope.isDone()).toBeTruthy()
       })
@@ -146,6 +155,8 @@ describe('Given a NGC user', () => {
         const { body } = await agent
           .get(url.replace(':newsletterId', newsletterId))
           .expect(StatusCodes.INTERNAL_SERVER_ERROR)
+
+        await EventBus.flush()
 
         expect(body).toEqual({})
         expect(scope.isDone()).toBeTruthy()

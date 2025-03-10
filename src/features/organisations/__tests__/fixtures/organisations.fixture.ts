@@ -6,6 +6,7 @@ import { StatusCodes } from 'http-status-codes'
 import nock from 'nock'
 import { baseURL } from '../../../../adapters/connect/client'
 import { prisma } from '../../../../adapters/prisma/client'
+import { EventBus } from '../../../../core/event-bus/event-bus'
 import { getSimulationPayload } from '../../../simulations/__tests__/fixtures/simulations.fixtures'
 import type { SimulationCreateInputDto } from '../../../simulations/simulations.validator'
 import type {
@@ -95,6 +96,8 @@ export const createOrganisation = async ({
     .send(payload)
     .expect(StatusCodes.CREATED)
 
+  await EventBus.flush()
+
   expect(nock.isDone()).toBeTruthy()
 
   return response.body
@@ -161,6 +164,8 @@ export const createOrganisationPoll = async ({
     .send(payload)
     .expect(StatusCodes.CREATED)
 
+  await EventBus.flush()
+
   expect(nock.isDone()).toBeTruthy()
 
   return response.body
@@ -223,6 +228,8 @@ export const createOrganisationPollSimulation = async ({
     )
     .send(payload)
     .expect(StatusCodes.CREATED)
+
+  await EventBus.flush()
 
   expect(nock.isDone()).toBeTruthy()
 

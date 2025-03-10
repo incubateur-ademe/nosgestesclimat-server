@@ -1,4 +1,5 @@
 import type { Prisma } from '@prisma/client'
+import type { Request } from 'express'
 import { prisma } from '../../adapters/prisma/client'
 import {
   defaultOrganisationSelectionWithoutPolls,
@@ -9,7 +10,6 @@ import {
 } from '../../adapters/prisma/selection'
 import type { Session } from '../../adapters/prisma/transaction'
 import { transaction } from '../../adapters/prisma/transaction'
-import { findOrganisationPublicPollBySlugOrId } from '../organisations/organisations.repository'
 import type { PublicPollParams } from '../organisations/organisations.validator'
 import { transferOwnershipToUser } from '../users/users.repository'
 import type { UserParams } from '../users/users.validator'
@@ -278,21 +278,19 @@ export const getIncompleteSimulationsCount = (user: {
   })
 }
 
-export const fetchPollSimulations = ({
-  params,
-  // user,
-}: {
-  params: PublicPollParams
-  user?: { email: string }
-}) => {
+export const fetchPollSimulations = (
+  {
+    id,
+    user: _user = {},
+  }: {
+    id: string
+    user?: Partial<(UserParams & { email?: undefined }) | Request['user']>
+  },
+  { session }: { session?: Session } = {}
+) => {
   return transaction(async (prismaSession) => {
-    const { id } = await findOrganisationPublicPollBySlugOrId(
-      { params },
-      { session: prismaSession }
-    )
-
-    // const email = user?.email
-    // const { userId } = params
+    // TODO should filter according connectedUser at some point
+    // const { email, userId } = _user
 
     return prismaSession.simulation.findMany({
       where: {
@@ -327,5 +325,5 @@ export const fetchPollSimulations = ({
       },
       select: defaultSimulationSelectionWithoutPoll,
     })
-  })
+  }, session)
 }

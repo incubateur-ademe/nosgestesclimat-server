@@ -7,6 +7,7 @@ import slugify from 'slugify'
 import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
+import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 import { login } from '../../authentication/__tests__/fixtures/login.fixture'
 import { COOKIE_NAME } from '../../authentication/authentication.service'
@@ -258,6 +259,7 @@ describe('Given a NGC user', () => {
             expectedNumberOfParticipants: null,
             createdAt: expect.any(String),
             updatedAt: expect.any(String),
+            funFacts: null,
             simulations: {
               count: 0,
               finished: 0,
@@ -309,6 +311,7 @@ describe('Given a NGC user', () => {
                   type: true,
                 },
               },
+              funFacts: true,
               organisationId: true,
               expectedNumberOfParticipants: true,
               createdAt: true,
@@ -318,6 +321,7 @@ describe('Given a NGC user', () => {
           expect(createdPoll).toEqual({
             ...payload,
             id,
+            funFacts: null,
             slug: slugify(payload.name.toLowerCase(), { strict: true }),
             organisationId,
             createdAt: expect.any(Date),
@@ -370,6 +374,8 @@ describe('Given a NGC user', () => {
             .send(payload)
             .expect(StatusCodes.CREATED)
 
+          await EventBus.flush()
+
           expect(scope.isDone()).toBeTruthy()
         })
 
@@ -401,6 +407,7 @@ describe('Given a NGC user', () => {
               expectedNumberOfParticipants: null,
               createdAt: expect.any(String),
               updatedAt: expect.any(String),
+              funFacts: null,
               simulations: {
                 count: 0,
                 finished: 0,
@@ -476,6 +483,8 @@ describe('Given a NGC user', () => {
             .send(payload)
             .expect(StatusCodes.CREATED)
 
+          await EventBus.flush()
+
           expect(scope.isDone()).toBeTruthy()
         })
       })
@@ -529,6 +538,7 @@ describe('Given a NGC user', () => {
             expectedNumberOfParticipants: null,
             createdAt: expect.any(String),
             updatedAt: expect.any(String),
+            funFacts: null,
             simulations: {
               count: 0,
               finished: 0,

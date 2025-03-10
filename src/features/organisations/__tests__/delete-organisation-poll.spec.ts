@@ -4,6 +4,7 @@ import nock from 'nock'
 import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
+import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 import { login } from '../../authentication/__tests__/fixtures/login.fixture'
 import { COOKIE_NAME } from '../../authentication/authentication.service'
@@ -160,6 +161,8 @@ describe('Given a NGC user', () => {
             .set('cookie', cookie)
             .expect(StatusCodes.NO_CONTENT)
 
+          await EventBus.flush()
+
           expect(scope.isDone()).toBeTruthy()
         })
 
@@ -243,6 +246,8 @@ describe('Given a NGC user', () => {
             )
             .set('cookie', cookie)
             .expect(StatusCodes.NO_CONTENT)
+
+          await EventBus.flush()
 
           expect(scope.isDone()).toBeTruthy()
         })

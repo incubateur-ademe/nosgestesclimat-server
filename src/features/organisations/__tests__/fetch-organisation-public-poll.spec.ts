@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker'
+import modelFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRules.json'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
@@ -134,6 +135,13 @@ describe('Given a NGC user', () => {
                 finished: 1,
                 hasParticipated: true,
               },
+              funFacts: Object.fromEntries(
+                Object.entries(modelFunFacts).map(([k]) => [
+                  k,
+                  expect.any(Number),
+                ])
+              ),
+              updatedAt: expect.any(String),
             })
           })
 
@@ -159,6 +167,13 @@ describe('Given a NGC user', () => {
                   finished: 1,
                   hasParticipated: true,
                 },
+                funFacts: Object.fromEntries(
+                  Object.entries(modelFunFacts).map(([k]) => [
+                    k,
+                    expect.any(Number),
+                  ])
+                ),
+                updatedAt: expect.any(String),
               })
             })
           })
@@ -376,6 +391,13 @@ describe('Given a NGC user', () => {
                 finished: 3,
                 hasParticipated: false,
               },
+              funFacts: Object.fromEntries(
+                Object.entries(modelFunFacts).map(([k]) => [
+                  k,
+                  expect.any(Number),
+                ])
+              ),
+              updatedAt: expect.any(String),
             })
           })
 

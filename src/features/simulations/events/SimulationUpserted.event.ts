@@ -1,8 +1,9 @@
 import type { Group, Organisation, Simulation, User } from '@prisma/client'
 import { EventBusEvent } from '../../../core/event-bus/event'
+import type { ModelToDto } from '../../../types/types'
 import type { SimulationCreateNewsletterList } from '../simulations.validator'
 
-export class SimulationUpsertedEvent extends EventBusEvent<
+type SimulationAttributes =
   | {
       origin: string
       user: Pick<User, 'id' | 'name' | 'email'>
@@ -42,6 +43,13 @@ export class SimulationUpsertedEvent extends EventBusEvent<
       newsletters?: undefined
       sendEmail: boolean
     }
-> {
+
+export class SimulationUpsertedEvent extends EventBusEvent<SimulationAttributes> {
   name = 'SimulationUpsertedEvent'
+}
+
+export class SimulationUpsertedAsyncEvent extends EventBusEvent<
+  SimulationAttributes | ModelToDto<SimulationAttributes>
+> {
+  name = 'SimulationUpsertedAsyncEvent'
 }

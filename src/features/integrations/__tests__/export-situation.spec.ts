@@ -3,6 +3,7 @@ import nock from 'nock'
 import supertest from 'supertest'
 import { ZodError } from 'zod'
 import app from '../../../app'
+import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 import { getRandomPersonaSituation } from '../../simulations/__tests__/fixtures/simulations.fixtures'
 import type { SituationSchema } from '../../simulations/simulations.validator'
@@ -61,6 +62,8 @@ describe('Given a NGC user', () => {
           .post(url.replace(':externalService', serviceName))
           .send(situation)
           .expect(StatusCodes.OK)
+
+        await EventBus.flush()
 
         expect(scope.isDone()).toBeTruthy()
       })
@@ -188,6 +191,8 @@ describe('Given a NGC user', () => {
           .send(situation)
           .expect(StatusCodes.OK)
 
+        await EventBus.flush()
+
         expect(scope.isDone()).toBeTruthy()
       })
 
@@ -216,6 +221,8 @@ describe('Given a NGC user', () => {
             })
             .send(situation)
             .expect(StatusCodes.OK)
+
+          await EventBus.flush()
 
           expect(scope.isDone()).toBeTruthy()
         })

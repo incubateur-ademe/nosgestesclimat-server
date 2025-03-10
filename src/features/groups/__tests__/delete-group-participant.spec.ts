@@ -4,6 +4,7 @@ import nock from 'nock'
 import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
+import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 import { getSimulationPayload } from '../../simulations/__tests__/fixtures/simulations.fixtures'
 import {
@@ -187,6 +188,8 @@ describe('Given a NGC user', () => {
             )
             .expect(StatusCodes.NO_CONTENT)
 
+          await EventBus.flush()
+
           expect(scope.isDone()).toBeTruthy()
         })
       })
@@ -262,6 +265,8 @@ describe('Given a NGC user', () => {
                 .replace(':userId', userId)
             )
             .expect(StatusCodes.NO_CONTENT)
+
+          await EventBus.flush()
 
           expect(scope.isDone()).toBeTruthy()
         })

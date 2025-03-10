@@ -5,6 +5,7 @@ import nock from 'nock'
 import supertest from 'supertest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
+import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 import { getSimulationPayload } from '../../simulations/__tests__/fixtures/simulations.fixtures'
 import type { GroupCreateInputDto } from '../groups.validator'
@@ -544,6 +545,8 @@ describe('Given a NGC user', () => {
 
           await agent.post(url).send(payload).expect(StatusCodes.CREATED)
 
+          await EventBus.flush()
+
           expect(scope.isDone()).toBeTruthy()
         })
 
@@ -643,6 +646,8 @@ describe('Given a NGC user', () => {
 
           await agent.post(url).send(payload).expect(StatusCodes.CREATED)
 
+          await EventBus.flush()
+
           expect(scope.isDone()).toBeTruthy()
         })
 
@@ -709,6 +714,8 @@ describe('Given a NGC user', () => {
             .reply(200)
 
           await agent.post(url).send(payload).expect(StatusCodes.CREATED)
+
+          await EventBus.flush()
 
           expect(scope.isDone()).toBeTruthy()
         })
@@ -781,6 +788,8 @@ describe('Given a NGC user', () => {
               .set('origin', 'https://preprod.nosgestesclimat.fr')
               .send(payload)
               .expect(StatusCodes.CREATED)
+
+            await EventBus.flush()
 
             expect(scope.isDone()).toBeTruthy()
           })
