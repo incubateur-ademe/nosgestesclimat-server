@@ -36,15 +36,13 @@ app.use(
   })
 )
 
-// serve static context files
-app.use(express.static('contextes-sondage'))
-
 morgan.token('params', ((req: Request) =>
   JSON.stringify({
     body: req.body,
     query: req.query,
     params: req.params,
   })) as unknown as TokenCallbackFn)
+
 app.use(
   morgan(
     ':method :url :params :status :res[content-length] - :response-time ms',
