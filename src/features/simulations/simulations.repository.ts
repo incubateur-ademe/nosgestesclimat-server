@@ -279,13 +279,18 @@ export const getIncompleteSimulationsCount = (user: {
 }
 
 export const fetchPollSimulations = (
-  id: string,
-  _user: Partial<(UserParams & { email?: undefined }) | Request['user']> = {},
+  {
+    id,
+    user: _user = {},
+  }: {
+    id: string
+    user?: Partial<(UserParams & { email?: undefined }) | Request['user']>
+  },
   { session }: { session?: Session } = {}
 ) => {
   return transaction(async (prismaSession) => {
     // TODO should filter according connectedUser at some point
-    // const { email, userId } = user
+    // const { email, userId } = _user
 
     return prismaSession.simulation.findMany({
       where: {

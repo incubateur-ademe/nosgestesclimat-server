@@ -1,3 +1,4 @@
+import type { FunFacts } from '@incubateur-ademe/nosgestesclimat'
 import type { Prisma } from '@prisma/client'
 import type { Request } from 'express'
 import slugify from 'slugify'
@@ -10,6 +11,7 @@ import {
 } from '../../adapters/prisma/selection'
 import type { Session } from '../../adapters/prisma/transaction'
 import { transaction } from '../../adapters/prisma/transaction'
+import type { SimulationParams } from '../simulations/simulations.validator'
 import type {
   OrganisationCreateDto,
   OrganisationParams,
@@ -556,4 +558,46 @@ export const getLastPollParticipantsCount = async (organisationId: string) => {
   }
 
   return count
+}
+
+export const findSimulationPoll = (
+  { simulationId }: SimulationParams,
+  { session }: { session?: Session } = {}
+) => {
+  return transaction(
+    (prismaSession) =>
+      prismaSession.simulationPoll.findFirst({
+        where: {
+          simulationId,
+        },
+        select: {
+          pollId: true,
+          simulationId: true,
+        },
+      }),
+    session
+  )
+}
+
+export const setPollFunFacts = (
+  id: string,
+  funFacts: FunFacts,
+  { session }: { session?: Session } = {}
+) => {
+  return transaction(
+    (prismaSession) =>
+      prismaSession.poll.update({
+        where: {
+          id,
+        },
+        data: {
+          funFacts,
+        },
+        select: {
+          id: true,
+          funFacts: true,
+        },
+      }),
+    session
+  )
 }

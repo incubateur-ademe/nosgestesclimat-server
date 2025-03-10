@@ -7,6 +7,8 @@ import modelRules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-la
 import modelFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRules.json'
 import type { JsonValue } from '@prisma/client/runtime/library'
 import type { Request } from 'express'
+import Engine from 'publicodes'
+import type { Session } from '../../adapters/prisma/transaction'
 import { transaction } from '../../adapters/prisma/transaction'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
 import { EventBus } from '../../core/event-bus/event-bus'
@@ -30,7 +32,10 @@ import type {
 } from './simulations.validator'
 import { ComputedResultSchema, SituationSchema } from './simulations.validator'
 import type { Rules } from './situation/situation.service'
-import { getSituationDottedNameValue } from './situation/situation.service'
+import {
+  getSituationDottedNameValue,
+  getSituationDottedNameValueWithEngine,
+} from './situation/situation.service'
 
 const frRules = modelRules as Record<DottedName, NGCRule | string | null>
 const funFactsRules = modelFunFacts as { [k in keyof FunFacts]: DottedName }
@@ -157,9 +162,12 @@ export const fetchPublicPollSimulations = async ({
         { params },
         { session: prismaSession }
       )
-      const simulations = await fetchPollSimulations(id, user, {
-        session: prismaSession,
-      })
+      const simulations = await fetchPollSimulations(
+        { id, user },
+        {
+          session: prismaSession,
+        }
+      )
 
       return simulations.map((s) => simulationToDto(s, params.userId))
     })
@@ -245,6 +253,65 @@ const getSimulationsFunFacts = (simulations: FunFactsSimulations) => {
   ) as FunFacts
 }
 
+const getFunFactValueWithEngine = ({
+  dottedName,
+  simulations,
+  engine,
+}: {
+  dottedName: DottedName
+  simulations: FunFactsSimulations
+  engine: Engine
+}): number =>
+  simulations.reduce(
+    (acc, { situation }) =>
+      acc +
+      getSituationDottedNameValueWithEngine({ dottedName, situation, engine }),
+    0
+  )
+
+export const getSimulationsFunFactsWithEngine = (
+  simulations: FunFactsSimulations
+) => {
+  const engine = new Engine(frRules)
+
+  return Object.fromEntries(
+    Object.entries(funFactsRules).map(([key, dottedName]) => {
+      if (dottedName in frRules) {
+        let value = getFunFactValueWithEngine({
+          dottedName,
+          simulations,
+          engine,
+        })
+
+        if (key.startsWith('average')) {
+          value = value / simulations.length
+        }
+
+        if (key.startsWith('percentage')) {
+          value = (value / simulations.length) * 100
+        }
+
+        return [key, value]
+      }
+      return [key, 0]
+    })
+  ) as FunFacts
+}
+
+export const fetchPollValidSimulations = async (
+  { id, user }: { id: string; user?: Request['user'] },
+  { session }: { session: Session }
+) => {
+  const simulations = await fetchPollSimulations(
+    { id, user },
+    {
+      session,
+    }
+  )
+
+  return simulations.filter(isValidSimulation)
+}
+
 export const fetchPublicPollDashboard = async ({
   params,
   user,
@@ -258,14 +325,14 @@ export const fetchPublicPollDashboard = async ({
         { params },
         { session: prismaSession }
       )
-      const simulations = await fetchPollSimulations(id, user, {
-        session: prismaSession,
-      })
 
-      const validSimulations = simulations.filter(isValidSimulation)
+      const simulations = await fetchPollValidSimulations(
+        { id, user },
+        { session: prismaSession }
+      )
 
       return {
-        funFacts: getSimulationsFunFacts(validSimulations),
+        funFacts: getSimulationsFunFacts(simulations),
       }
     })
   } catch (e) {
