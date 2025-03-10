@@ -2,7 +2,7 @@ import winston from 'winston'
 import SentryTransport from 'winston-transport-sentry-node'
 import { config } from './config'
 
-const { combine, colorize, timestamp, json, errors } = winston.format
+const { combine, timestamp, json, errors } = winston.format
 
 const transports: winston.transport[] = [new winston.transports.Console()]
 
@@ -25,12 +25,7 @@ const logger = winston.createLogger({
   defaultMeta: {
     service: 'server',
   },
-  format: combine(
-    colorize({ all: true }),
-    timestamp(),
-    json(),
-    errors({ stack: true })
-  ),
+  format: combine(timestamp(), json(), errors({ stack: true })),
   transports,
 })
 

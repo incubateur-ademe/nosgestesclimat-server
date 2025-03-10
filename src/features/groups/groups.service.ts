@@ -49,6 +49,10 @@ const groupToDto = (
   ),
 })
 
+type PopulatedParticipant = Awaited<
+  ReturnType<typeof createParticipantAndUser>
+>['participant']
+
 /**
  * Maps a database participant to a dto for the UI
  */
@@ -59,7 +63,7 @@ const participantToDto = (
     user: { id: userId, ...rest },
     createdAt,
     updatedAt,
-  }: Omit<Awaited<ReturnType<typeof createParticipantAndUser>>, 'group'>,
+  }: Partial<PopulatedParticipant> & { user: PopulatedParticipant['user'] },
   connectedUser: string
 ) => ({
   ...(userId === connectedUser
@@ -167,7 +171,10 @@ export const createParticipant = async ({
   participantDto: ParticipantCreateDto
 }) => {
   try {
-    const participant = await createParticipantAndUser(params, participantDto)
+    const { participant, created } = await createParticipantAndUser(
+      params,
+      participantDto
+    )
     const {
       user,
       group,
@@ -183,7 +190,7 @@ export const createParticipant = async ({
     })
 
     const simulationUpsertedEvent = new SimulationUpsertedEvent({
-      sendEmail: true,
+      sendEmail: created,
       administrator,
       simulation,
       origin,

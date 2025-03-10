@@ -5,4 +5,6 @@ export class OrganisationCreatedEvent extends EventBusEvent<{
   organisation: Organisation & { administrators: Array<{ user: VerifiedUser }> }
   administrator: VerifiedUser
   origin: string
-}> {}
+}> {
+  name = 'OrganisationCreatedEvent'
+}

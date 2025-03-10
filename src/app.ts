@@ -1,4 +1,6 @@
+import type { Request } from 'express'
 import express from 'express'
+import type { TokenCallbackFn } from 'morgan'
 import morgan from 'morgan'
 
 import { createExpressEndpoints } from '@ts-rest/express'
@@ -37,12 +39,21 @@ app.use(
 // serve static context files
 app.use(express.static('contextes-sondage'))
 
+morgan.token('params', ((req: Request) =>
+  JSON.stringify({
+    body: req.body,
+    query: req.query,
+    params: req.params,
+  })) as unknown as TokenCallbackFn)
 app.use(
-  morgan(':method :url :status :res[content-length] - :response-time ms', {
-    stream: {
-      write: (message) => logger.info(message.trim()),
-    },
-  })
+  morgan(
+    ':method :url :params :status :res[content-length] - :response-time ms',
+    {
+      stream: {
+        write: (message) => logger.info(message.trim()),
+      },
+    }
+  )
 )
 
 // Legacy routes

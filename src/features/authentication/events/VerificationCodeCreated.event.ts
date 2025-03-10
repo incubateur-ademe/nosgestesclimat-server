@@ -4,4 +4,6 @@ import { EventBusEvent } from '../../../core/event-bus/event'
 export class VerificationCodeCreatedEvent extends EventBusEvent<{
   verificationCode: VerificationCode
   origin: string
-}> {}
+}> {
+  name = 'VerificationCodeCreatedEvent'
+}

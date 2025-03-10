@@ -10,6 +10,7 @@ import type { ParticipantInputCreateDto } from '../groups.validator'
 import {
   CREATE_PARTICIPANT_ROUTE,
   createGroup,
+  joinGroup,
 } from './fixtures/groups.fixture'
 
 describe('Given a NGC user', () => {
@@ -432,6 +433,67 @@ describe('Given a NGC user', () => {
               .expect(StatusCodes.CREATED)
 
             expect(scope.isDone()).toBeTruthy()
+          })
+        })
+
+        describe('And joining twice', () => {
+          let participant: Awaited<ReturnType<typeof joinGroup>>
+
+          beforeEach(async () => {
+            participant = await joinGroup({
+              agent,
+              groupId,
+              participant: {
+                email: faker.internet.email(),
+              },
+            })
+          })
+
+          it(`Then it does not send email twice`, async () => {
+            const {
+              id: _1,
+              createdAt: _2,
+              updatedAt: _3,
+              ...payload
+            } = participant
+
+            const scope = nock(process.env.BREVO_URL!)
+              .post('/v3/contacts')
+              .reply(200)
+              .post('/v3/contacts/lists/35/contacts/remove')
+              .reply(200)
+
+            await agent
+              .post(url.replace(':groupId', groupId))
+              .send(payload)
+              .expect(StatusCodes.CREATED)
+
+            expect(scope.isDone()).toBeTruthy()
+          })
+
+          describe('And from another device', () => {
+            it(`Then it does not send email twice`, async () => {
+              const { email } = participant
+              const payload = {
+                email,
+                userId: faker.string.uuid(),
+                name: faker.person.fullName(),
+                simulation: getSimulationPayload(),
+              }
+
+              const scope = nock(process.env.BREVO_URL!)
+                .post('/v3/contacts')
+                .reply(200)
+                .post('/v3/contacts/lists/35/contacts/remove')
+                .reply(200)
+
+              await agent
+                .post(url.replace(':groupId', groupId))
+                .send(payload)
+                .expect(StatusCodes.CREATED)
+
+              expect(scope.isDone()).toBeTruthy()
+            })
           })
         })
       })

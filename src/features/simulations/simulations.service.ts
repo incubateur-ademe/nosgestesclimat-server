@@ -108,7 +108,7 @@ export const createPollSimulation = async ({
   simulationDto: SimulationCreateDto
 }) => {
   try {
-    const { poll, simulation } = await createPollUserSimulation(
+    const { poll, simulation, created } = await createPollUserSimulation(
       params,
       simulationDto
     )
@@ -121,7 +121,7 @@ export const createPollSimulation = async ({
     })
 
     const simulationUpsertedEvent = new SimulationUpsertedEvent({
-      sendEmail: true,
+      sendEmail: created,
       organisation,
       simulation,
       origin,

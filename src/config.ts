@@ -40,6 +40,9 @@ export const config = {
       url: ensureEnvVar(process.env.MATOMO_URL, 'https://stats.data.gouv.fr'),
       token: ensureEnvVar(process.env.MATOMO_TOKEN, ''),
     },
+    redis: {
+      url: ensureEnvVar(process.env.REDIS_URL, 'redis://localhost:6379'),
+    },
     scaleway: {
       accessKeyId: ensureEnvVar(process.env.SCALEWAY_ACCESS_KEY_ID, ''),
       secretAccessKey: ensureEnvVar(process.env.SCALEWAY_SECRET_ACCESS_KEY, ''),
