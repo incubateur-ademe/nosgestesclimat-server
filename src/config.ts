@@ -77,17 +77,11 @@ export const config = {
 
 export const origin =
   config.env === 'development'
-    ? [
-        'http://localhost:8080',
-        'http://localhost:8888',
-        'http://localhost:3000',
-      ]
+    ? ['http://localhost:3000']
     : [
-        'https://nosgestesclimat.fr',
-        /\.vercel\.app$/,
         'http://localhost:3000',
-        'https://sondages.nosgestesclimat.fr',
+        'https://nosgestesclimat.fr',
         'https://preprod.nosgestesclimat.fr',
-        'https://nosgestesclimat.vercel.app',
-        'https://nosgestesclimat-git-preprod-nos-gestes-climat.vercel.app',
+        /\.osc-fr1\.scalingo\.io$/,
+        /\.vercel\.app$/,
       ]
