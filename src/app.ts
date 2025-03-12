@@ -2,6 +2,7 @@ import type { Request } from 'express'
 import express from 'express'
 import type { TokenCallbackFn } from 'morgan'
 import morgan from 'morgan'
+import requestIp from 'request-ip'
 
 import { createExpressEndpoints } from '@ts-rest/express'
 import { generateOpenApi } from '@ts-rest/open-api'
@@ -36,6 +37,8 @@ app.use(
   })
 )
 
+app.use(requestIp.mw())
+
 morgan.token('params', ((req: Request) =>
   JSON.stringify({
     body: req.body,
@@ -43,9 +46,11 @@ morgan.token('params', ((req: Request) =>
     params: req.params,
   })) as unknown as TokenCallbackFn)
 
+morgan.token('ip', (req: Request) => JSON.stringify(req.clientIp))
+
 app.use(
   morgan(
-    ':method :url :params :status :res[content-length] - :response-time ms',
+    '{"method":":method","url":":url","ip"::ip,"params"::params,"status":":status","resContentLength":":res[content-length]","reponseTime":":response-time ms"}',
     {
       stream: {
         write: (message) => logger.info(message.trim()),
