@@ -16,7 +16,7 @@ const parsePatterns = ({
     apiScopeName,
   })) || []
 
-export const exec = async (prisma: PrismaClient) => {
+export const exec = async ({ prisma }: { prisma: PrismaClient }) => {
   try {
     const whitelistPatterns = [
       ...parsePatterns({
