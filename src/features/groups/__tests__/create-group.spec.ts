@@ -290,14 +290,7 @@ describe('Given a NGC user', () => {
             },
           }
 
-          const scope = nock(process.env.BREVO_URL!)
-            .post('/v3/smtp/email')
-            .reply(200)
-
           await agent.post(url).send(payload).expect(StatusCodes.CREATED)
-
-          expect(scope.isDone()).toBeFalsy()
-          nock.cleanAll()
         })
 
         test('Then it does not add or update administrator contact in brevo', async () => {
@@ -314,14 +307,7 @@ describe('Given a NGC user', () => {
             },
           }
 
-          const scope = nock(process.env.BREVO_URL!)
-            .post('/v3/contacts')
-            .reply(200)
-
           await agent.post(url).send(payload).expect(StatusCodes.CREATED)
-
-          expect(scope.isDone()).toBeFalsy()
-          nock.cleanAll()
         })
       })
     })

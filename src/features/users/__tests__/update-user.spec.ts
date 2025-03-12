@@ -116,7 +116,7 @@ describe('Given a NGC user', () => {
         })
 
         test(`Then it sets the email and returns a ${StatusCodes.OK} response with the user`, async () => {
-          const email = faker.internet.email()
+          const email = faker.internet.email().toLocaleLowerCase()
           const name = faker.person.fullName()
           const contactId = faker.number.int()
 

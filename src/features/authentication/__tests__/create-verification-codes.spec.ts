@@ -71,7 +71,7 @@ describe('Given a NGC user', () => {
     test(`Then it returns a ${StatusCodes.CREATED} response with the created verification code`, async () => {
       const payload = {
         userId: faker.string.uuid(),
-        email: faker.internet.email(),
+        email: faker.internet.email().toLocaleLowerCase(),
       }
 
       nock(process.env.BREVO_URL!)
@@ -97,7 +97,7 @@ describe('Given a NGC user', () => {
     test('Then it stores a verification code in database', async () => {
       const payload: VerificationCodeCreateDto = {
         userId: faker.string.uuid(),
-        email: faker.internet.email(),
+        email: faker.internet.email().toLocaleLowerCase(),
       }
 
       nock(process.env.BREVO_URL!)
@@ -126,7 +126,7 @@ describe('Given a NGC user', () => {
     })
 
     test('Then it sends an email with the code', async () => {
-      const email = faker.internet.email()
+      const email = faker.internet.email().toLocaleLowerCase()
 
       const scope = nock(process.env.BREVO_URL!, {
         reqheaders: {
@@ -160,7 +160,7 @@ describe('Given a NGC user', () => {
     })
 
     test('Then it updates brevo contact', async () => {
-      const email = faker.internet.email()
+      const email = faker.internet.email().toLocaleLowerCase()
       const userId = faker.string.uuid()
 
       const scope = nock(process.env.BREVO_URL!, {

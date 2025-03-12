@@ -58,8 +58,6 @@ beforeAll(async () => {
     }, Promise.resolve())
 })
 
-beforeEach(() => nock.cleanAll())
-
 afterAll(async () => {
   await prisma.$disconnect()
   await pgClient.close()

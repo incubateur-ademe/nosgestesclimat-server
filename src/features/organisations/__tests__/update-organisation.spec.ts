@@ -469,7 +469,7 @@ describe('Given a NGC user', () => {
         let code: string
 
         beforeEach(async () => {
-          email = faker.internet.email()
+          email = faker.internet.email().toLocaleLowerCase()
           ;({ code } = await createVerificationCode({
             agent,
             verificationCode: { userId, email },

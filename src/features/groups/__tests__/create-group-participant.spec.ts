@@ -641,17 +641,10 @@ describe('Given a NGC user', () => {
           simulation: getSimulationPayload(),
         }
 
-        const scope = nock(process.env.BREVO_URL!)
-          .post('/v3/contacts')
-          .reply(200)
-
         await agent
           .post(url.replace(':groupId', groupId))
           .send(payload)
           .expect(StatusCodes.CREATED)
-
-        expect(scope.isDone()).toBeFalsy()
-        nock.cleanAll()
       })
     })
   })

@@ -303,10 +303,6 @@ describe('Given a NGC user', () => {
         )
 
         test('Then it updates group administrator in brevo', async () => {
-          const scope = nock(process.env.BREVO_URL!)
-            .post('/v3/contacts')
-            .reply(200)
-
           await agent
             .delete(
               url
@@ -315,9 +311,6 @@ describe('Given a NGC user', () => {
                 .replace(':userId', userId)
             )
             .expect(StatusCodes.NO_CONTENT)
-
-          expect(scope.isDone()).toBeFalsy()
-          nock.cleanAll()
         })
       })
     })

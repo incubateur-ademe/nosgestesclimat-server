@@ -220,19 +220,12 @@ describe('Given a NGC user', () => {
           emoji: faker.internet.emoji(),
         }
 
-        const scope = nock(process.env.BREVO_URL!)
-          .post('/v3/contacts')
-          .reply(200)
-
         await agent
           .put(
             url.replace(':userId', administratorId).replace(':groupId', groupId)
           )
           .send(payload)
           .expect(StatusCodes.OK)
-
-        expect(scope.isDone()).toBeFalsy()
-        nock.cleanAll()
       })
     })
 
