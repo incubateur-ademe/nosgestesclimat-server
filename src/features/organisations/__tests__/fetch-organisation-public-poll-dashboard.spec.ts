@@ -270,20 +270,14 @@ describe('Given a NGC user', () => {
 
       describe('And participants do their simulation', () => {
         beforeEach(async () => {
-          await Promise.all([
-            createOrganisationPollSimulation({
+          let i = 0
+          while (i < 3) {
+            await createOrganisationPollSimulation({
               agent,
               pollId,
-            }),
-            createOrganisationPollSimulation({
-              agent,
-              pollId,
-            }),
-            createOrganisationPollSimulation({
-              agent,
-              pollId,
-            }),
-          ])
+            })
+            i++
+          }
         })
 
         test(`Then it returns a ${StatusCodes.OK} response with the dashboard`, async () => {
@@ -335,20 +329,14 @@ describe('Given a NGC user', () => {
             verificationCode: { email },
           }))
 
-          await Promise.all([
-            createOrganisationPollSimulation({
+          let i = 0
+          while (i < 3) {
+            await createOrganisationPollSimulation({
               agent,
               pollId,
-            }),
-            createOrganisationPollSimulation({
-              agent,
-              pollId,
-            }),
-            createOrganisationPollSimulation({
-              agent,
-              pollId,
-            }),
-          ])
+            })
+            i++
+          }
         })
 
         test(`Then it returns a ${StatusCodes.OK} response with the dashboard`, async () => {
