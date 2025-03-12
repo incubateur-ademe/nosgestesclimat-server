@@ -1,11 +1,11 @@
 import axios from 'axios'
+import type Redis from 'ioredis'
 import { createGunzip } from 'node:zlib'
 import Papa from 'papaparse'
-import { redis } from '../../src/adapters/redis/client'
 import { KEYS } from '../../src/adapters/redis/constant'
 import { converIpToNumber } from '../../src/features/geolocation/geolocation.service'
 
-export const exec = async () => {
+export const exec = async ({ redis }: { redis: Redis }) => {
   try {
     const geoipUrl = process.env.GEOIP_URL
 
@@ -47,7 +47,6 @@ export const exec = async () => {
       sortedArray.push({ ipStartNum: ipStartNumber, countryCode })
     }
 
-    await redis.connect()
     await redis.set(KEYS.geolocation, JSON.stringify(sortedArray))
     await redis.persist(KEYS.geolocation)
     console.log(`Stored ${sortedArray.length} IPs to redis`)

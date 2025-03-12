@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import { redis } from '../src/adapters/redis/client'
 
 const prisma = new PrismaClient()
 
@@ -12,10 +13,10 @@ const main = async () => {
   ]
 
   try {
-    await scripts.reduce(
-      (prom, script) => prom.then(() => script.exec(prisma)),
-      Promise.resolve()
-    )
+    await redis.connect()
+    for (const script of scripts) {
+      await script.exec({ prisma, redis })
+    }
     process.exit(0)
   } catch {
     // Errors are logged in scripts executions
