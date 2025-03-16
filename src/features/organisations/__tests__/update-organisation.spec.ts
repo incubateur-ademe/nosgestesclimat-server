@@ -1,12 +1,16 @@
 import { faker } from '@faker-js/faker'
 import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
-import nock from 'nock'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import { baseURL } from '../../../adapters/connect/client'
+import {
+  brevoRemoveFromList,
+  brevoUpdateContact,
+} from '../../../adapters/brevo/__tests__/fixtures/server.fixture'
+import { connectUpdateContact } from '../../../adapters/connect/__tests__/fixtures/server.fixture'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
+import { mswServer } from '../../../core/__tests__/fixtures/server.fixture'
 import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 import { login } from '../../authentication/__tests__/fixtures/login.fixture'
@@ -177,11 +181,7 @@ describe('Given a NGC user', () => {
             numberOfCollaborators: faker.number.int({ max: 100 }),
           }
 
-          nock(process.env.BREVO_URL!)
-            .post('/v3/contacts')
-            .reply(200)
-            .post('/v3/contacts/lists/27/contacts/remove')
-            .reply(200)
+          mswServer.use(brevoUpdateContact(), brevoRemoveFromList(27))
 
           const response = await agent
             .put(url.replace(':organisationIdOrSlug', organisationId))
@@ -209,25 +209,24 @@ describe('Given a NGC user', () => {
               ],
             }
 
-            const scope = nock(process.env.BREVO_URL!, {
-              reqheaders: {
-                'api-key': process.env.BREVO_API_KEY!,
-              },
-            })
-              .post('/v3/contacts', {
-                email,
-                listIds: [27],
-                attributes: {
-                  USER_ID: userId,
-                  IS_ORGANISATION_ADMIN: true,
-                  ORGANISATION_NAME: payload.name,
-                  ORGANISATION_SLUG: organisation.slug,
-                  LAST_POLL_PARTICIPANTS_NUMBER: 0,
-                  OPT_IN: true,
+            mswServer.use(
+              brevoUpdateContact({
+                expectBody: {
+                  email,
+                  listIds: [27],
+                  attributes: {
+                    USER_ID: userId,
+                    IS_ORGANISATION_ADMIN: true,
+                    ORGANISATION_NAME: payload.name,
+                    ORGANISATION_SLUG: organisation.slug,
+                    LAST_POLL_PARTICIPANTS_NUMBER: 0,
+                    OPT_IN: true,
+                  },
+                  updateEnabled: true,
                 },
-                updateEnabled: true,
-              })
-              .reply(200)
+              }),
+              connectUpdateContact()
+            )
 
             await agent
               .put(url.replace(':organisationIdOrSlug', organisationId))
@@ -236,8 +235,6 @@ describe('Given a NGC user', () => {
               .expect(StatusCodes.OK)
 
             await EventBus.flush()
-
-            expect(scope.isDone()).toBeTruthy()
           })
         })
 
@@ -254,28 +251,28 @@ describe('Given a NGC user', () => {
               ],
             }
 
-            const scope = nock(process.env.BREVO_URL!, {
-              reqheaders: {
-                'api-key': process.env.BREVO_API_KEY!,
-              },
-            })
-              .post('/v3/contacts', {
-                email,
-                attributes: {
-                  USER_ID: userId,
-                  IS_ORGANISATION_ADMIN: true,
-                  ORGANISATION_NAME: payload.name,
-                  ORGANISATION_SLUG: organisation.slug,
-                  LAST_POLL_PARTICIPANTS_NUMBER: 0,
-                  OPT_IN: false,
+            mswServer.use(
+              brevoUpdateContact({
+                expectBody: {
+                  email,
+                  attributes: {
+                    USER_ID: userId,
+                    IS_ORGANISATION_ADMIN: true,
+                    ORGANISATION_NAME: payload.name,
+                    ORGANISATION_SLUG: organisation.slug,
+                    LAST_POLL_PARTICIPANTS_NUMBER: 0,
+                    OPT_IN: false,
+                  },
+                  updateEnabled: true,
                 },
-                updateEnabled: true,
-              })
-              .reply(200)
-              .post('/v3/contacts/lists/27/contacts/remove', {
-                emails: [email],
-              })
-              .reply(200)
+              }),
+              brevoRemoveFromList(27, {
+                expectBody: {
+                  emails: [email],
+                },
+              }),
+              connectUpdateContact()
+            )
 
             await agent
               .put(url.replace(':organisationIdOrSlug', organisationId))
@@ -284,18 +281,12 @@ describe('Given a NGC user', () => {
               .expect(StatusCodes.OK)
 
             await EventBus.flush()
-
-            expect(scope.isDone()).toBeTruthy()
           })
         })
 
         describe('And no data in the update', () => {
           test(`Then it returns a ${StatusCodes.OK} response with the unchanged group`, async () => {
-            nock(process.env.BREVO_URL!)
-              .post('/v3/contacts')
-              .reply(200)
-              .post('/v3/contacts/lists/27/contacts/remove')
-              .reply(200)
+            mswServer.use(brevoUpdateContact(), brevoRemoveFromList(27))
 
             const response = await agent
               .put(url.replace(':organisationIdOrSlug', organisationId))
@@ -315,11 +306,7 @@ describe('Given a NGC user', () => {
               numberOfCollaborators: faker.number.int({ max: 100 }),
             }
 
-            nock(process.env.BREVO_URL!)
-              .post('/v3/contacts')
-              .reply(200)
-              .post('/v3/contacts/lists/27/contacts/remove')
-              .reply(200)
+            mswServer.use(brevoUpdateContact(), brevoRemoveFromList(27))
 
             const response = await agent
               .put(url.replace(':organisationIdOrSlug', organisationSlug))
@@ -487,8 +474,7 @@ describe('Given a NGC user', () => {
             administrators: [administratorPayload],
           }
 
-          nock(process.env.BREVO_URL!).post('/v3/contacts').reply(200)
-          nock(baseURL).post('/api/v1/personnes').reply(200)
+          mswServer.use(brevoUpdateContact(), connectUpdateContact())
 
           const response = await agent
             .put(url.replace(':organisationIdOrSlug', organisationId))
@@ -536,20 +522,17 @@ describe('Given a NGC user', () => {
             administrators: [administratorPayload],
           }
 
-          nock(process.env.BREVO_URL!).post('/v3/contacts').reply(200)
-          const scope = nock(baseURL, {
-            reqheaders: {
-              client_id: process.env.CONNECT_CLIENT_ID!,
-              client_secret: process.env.CONNECT_CLIENT_SECRET!,
-            },
-          })
-            .post('/api/v1/personnes', {
-              email,
-              nom: administratorPayload.name,
-              fonction: administratorPayload.position,
-              source: 'Nos gestes Climat',
+          mswServer.use(
+            brevoUpdateContact(),
+            connectUpdateContact({
+              expectBody: {
+                email,
+                nom: administratorPayload.name,
+                fonction: administratorPayload.position,
+                source: 'Nos gestes Climat',
+              },
             })
-            .reply(200)
+          )
 
           await agent
             .put(url.replace(':organisationIdOrSlug', organisationId))
@@ -561,8 +544,6 @@ describe('Given a NGC user', () => {
             .expect(StatusCodes.OK)
 
           await EventBus.flush()
-
-          expect(scope.isDone()).toBeTruthy()
         })
 
         describe('And Organisation does exist for the target email', () => {

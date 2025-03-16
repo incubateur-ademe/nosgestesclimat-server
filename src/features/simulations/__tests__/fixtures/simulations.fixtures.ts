@@ -4,13 +4,19 @@ import { version as modelVersion } from '@incubateur-ademe/nosgestesclimat/packa
 import rules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
 import personas from '@incubateur-ademe/nosgestesclimat/public/personas-fr.json'
 import { StatusCodes } from 'http-status-codes'
-import nock from 'nock'
 import type { ParsedRules, PublicodesExpression } from 'publicodes'
 import Engine, { utils } from 'publicodes'
 import type supertest from 'supertest'
-import { expect } from 'vitest'
 import { carbonMetric, waterMetric } from '../../../../constants/ngc'
 
+import {
+  brevoRemoveFromList,
+  brevoUpdateContact,
+} from '../../../../adapters/brevo/__tests__/fixtures/server.fixture'
+import {
+  mswServer,
+  resetMswServer,
+} from '../../../../core/__tests__/fixtures/server.fixture'
 import { EventBus } from '../../../../core/event-bus/event-bus'
 import type { Metric } from '../../../../types/types'
 import type {
@@ -214,20 +220,14 @@ export const createSimulation = async ({
     user,
   }
 
-  const scope = nock(process.env.BREVO_URL!)
-
   if (payload.user?.email) {
-    scope
-      .post('/v3/contacts')
-      .reply(200)
-      .post('/v3/contacts/lists/22/contacts/remove')
-      .reply(400, { code: 'invalid_parameter' })
-      .post('/v3/contacts/lists/32/contacts/remove')
-      .reply(400, { code: 'invalid_parameter' })
-      .post('/v3/contacts/lists/35/contacts/remove')
-      .reply(400, { code: 'invalid_parameter' })
-      .post('/v3/contacts/lists/36/contacts/remove')
-      .reply(400, { code: 'invalid_parameter' })
+    mswServer.use(
+      brevoUpdateContact(),
+      brevoRemoveFromList(22, { invalid: true }),
+      brevoRemoveFromList(32, { invalid: true }),
+      brevoRemoveFromList(35, { invalid: true }),
+      brevoRemoveFromList(36, { invalid: true })
+    )
   }
 
   const response = await agent
@@ -237,7 +237,7 @@ export const createSimulation = async ({
 
   await EventBus.flush()
 
-  expect(nock.isDone()).toBeTruthy()
+  resetMswServer()
 
   return response.body
 }

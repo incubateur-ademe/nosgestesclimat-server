@@ -1,10 +1,11 @@
 import { faker } from '@faker-js/faker'
 import { StatusCodes } from 'http-status-codes'
-import nock from 'nock'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { brevoUpdateContact } from '../../../adapters/brevo/__tests__/fixtures/server.fixture'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
+import { mswServer } from '../../../core/__tests__/fixtures/server.fixture'
 import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 import { getSimulationPayload } from '../../simulations/__tests__/fixtures/simulations.fixtures'
@@ -139,7 +140,7 @@ describe('Given a NGC user', () => {
           emoji: faker.internet.emoji(),
         }
 
-        nock(process.env.BREVO_URL!).post('/v3/contacts').reply(200)
+        mswServer.use(brevoUpdateContact())
 
         const response = await agent
           .put(
@@ -161,24 +162,22 @@ describe('Given a NGC user', () => {
           emoji: faker.internet.emoji(),
         }
 
-        const scope = nock(process.env.BREVO_URL!, {
-          reqheaders: {
-            'api-key': process.env.BREVO_API_KEY!,
-          },
-        })
-          .post('/v3/contacts', {
-            email: administratorEmail,
-            listIds: [29],
-            attributes: {
-              USER_ID: administratorId,
-              NUMBER_CREATED_GROUPS: 1,
-              LAST_GROUP_CREATION_DATE: groupCreatedAt,
-              NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT: 1,
-              PRENOM: administratorName,
+        mswServer.use(
+          brevoUpdateContact({
+            expectBody: {
+              email: administratorEmail,
+              listIds: [29],
+              attributes: {
+                USER_ID: administratorId,
+                NUMBER_CREATED_GROUPS: 1,
+                LAST_GROUP_CREATION_DATE: groupCreatedAt,
+                NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT: 1,
+                PRENOM: administratorName,
+              },
+              updateEnabled: true,
             },
-            updateEnabled: true,
           })
-          .reply(200)
+        )
 
         await agent
           .put(
@@ -188,8 +187,6 @@ describe('Given a NGC user', () => {
           .expect(StatusCodes.OK)
 
         await EventBus.flush()
-
-        expect(scope.isDone()).toBeTruthy()
       })
     })
 

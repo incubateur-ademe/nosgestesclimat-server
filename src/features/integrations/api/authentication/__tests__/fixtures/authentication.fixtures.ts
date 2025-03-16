@@ -7,9 +7,13 @@ import {
 } from '@prisma/client'
 import dayjs from 'dayjs'
 import { StatusCodes } from 'http-status-codes'
-import nock from 'nock'
 import type supertest from 'supertest'
-import { expect, vi } from 'vitest'
+import { vi } from 'vitest'
+import { brevoSendEmail } from '../../../../../../adapters/brevo/__tests__/fixtures/server.fixture'
+import {
+  mswServer,
+  resetMswServer,
+} from '../../../../../../core/__tests__/fixtures/server.fixture'
 import { EventBus } from '../../../../../../core/event-bus/event-bus'
 import * as authenticationService from '../../../../../authentication/authentication.service'
 
@@ -110,7 +114,7 @@ export const generateApiToken = async ({
     email: email || emailWhitelist.emailPattern,
   }
 
-  nock(process.env.BREVO_URL!).post('/v3/smtp/email').reply(200)
+  mswServer.use(brevoSendEmail())
 
   const response = await agent
     .post(GENERATE_API_TOKEN_ROUTE)
@@ -119,7 +123,7 @@ export const generateApiToken = async ({
 
   await EventBus.flush()
 
-  expect(nock.isDone()).toBeTruthy()
+  resetMswServer()
 
   vi.mocked(
     authenticationService

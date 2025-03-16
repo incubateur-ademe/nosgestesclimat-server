@@ -1,11 +1,12 @@
 import { faker } from '@faker-js/faker'
 import dayjs from 'dayjs'
 import { StatusCodes } from 'http-status-codes'
-import nock from 'nock'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { brevoSendEmail } from '../../../../../adapters/brevo/__tests__/fixtures/server.fixture'
 import { prisma } from '../../../../../adapters/prisma/client'
 import app from '../../../../../app'
+import { mswServer } from '../../../../../core/__tests__/fixtures/server.fixture'
 import { EventBus } from '../../../../../core/event-bus/event-bus'
 import logger from '../../../../../logger'
 import * as authenticationService from '../../../../authentication/authentication.service'
@@ -75,7 +76,7 @@ describe('Given a NGC integrations API user', () => {
       })
 
       test(`Then it returns a ${StatusCodes.CREATED} response`, async () => {
-        nock(process.env.BREVO_URL!).post('/v3/smtp/email').reply(200)
+        mswServer.use(brevoSendEmail())
 
         await agent
           .post(url)
@@ -86,7 +87,7 @@ describe('Given a NGC integrations API user', () => {
       })
 
       test(`Then it stores a verification code in database`, async () => {
-        nock(process.env.BREVO_URL!).post('/v3/smtp/email').reply(200)
+        mswServer.use(brevoSendEmail())
 
         await agent
           .post(url)
@@ -115,24 +116,22 @@ describe('Given a NGC integrations API user', () => {
       })
 
       test(`Then it sends an email to recover the API token`, async () => {
-        const scope = nock(process.env.BREVO_URL!, {
-          reqheaders: {
-            'api-key': process.env.BREVO_API_KEY!,
-          },
-        })
-          .post('/v3/smtp/email', {
-            to: [
-              {
-                name: email,
-                email,
+        mswServer.use(
+          brevoSendEmail({
+            expectBody: {
+              to: [
+                {
+                  name: email,
+                  email,
+                },
+              ],
+              templateId: 116,
+              params: {
+                API_TOKEN_URL: `https://nosgestesclimat.fr/integrations-api/v1/tokens?code=${code}&email=${encodeURIComponent(email)}`,
               },
-            ],
-            templateId: 116,
-            params: {
-              API_TOKEN_URL: `https://nosgestesclimat.fr/integrations-api/v1/tokens?code=${code}&email=${encodeURIComponent(email)}`,
             },
           })
-          .reply(200)
+        )
 
         await agent
           .post(url)
@@ -142,30 +141,26 @@ describe('Given a NGC integrations API user', () => {
           .expect(StatusCodes.CREATED)
 
         await EventBus.flush()
-
-        expect(scope.isDone()).toBeTruthy()
       })
 
       describe('And custom user origin (preprod)', () => {
         test('Then it sends a join email', async () => {
-          const scope = nock(process.env.BREVO_URL!, {
-            reqheaders: {
-              'api-key': process.env.BREVO_API_KEY!,
-            },
-          })
-            .post('/v3/smtp/email', {
-              to: [
-                {
-                  name: email,
-                  email,
+          mswServer.use(
+            brevoSendEmail({
+              expectBody: {
+                to: [
+                  {
+                    name: email,
+                    email,
+                  },
+                ],
+                templateId: 116,
+                params: {
+                  API_TOKEN_URL: `https://preprod.nosgestesclimat.fr/integrations-api/v1/tokens?code=${code}&email=${encodeURIComponent(email)}`,
                 },
-              ],
-              templateId: 116,
-              params: {
-                API_TOKEN_URL: `https://preprod.nosgestesclimat.fr/integrations-api/v1/tokens?code=${code}&email=${encodeURIComponent(email)}`,
               },
             })
-            .reply(200)
+          )
 
           await agent
             .post(url)
@@ -176,8 +171,6 @@ describe('Given a NGC integrations API user', () => {
             .expect(StatusCodes.CREATED)
 
           await EventBus.flush()
-
-          expect(scope.isDone()).toBeTruthy()
         })
       })
     })
@@ -207,7 +200,7 @@ describe('Given a NGC integrations API user', () => {
       })
 
       test(`Then it returns a ${StatusCodes.CREATED} response`, async () => {
-        nock(process.env.BREVO_URL!).post('/v3/smtp/email').reply(200)
+        mswServer.use(brevoSendEmail())
 
         await agent
           .post(url)

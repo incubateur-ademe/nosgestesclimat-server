@@ -1,11 +1,14 @@
 import { PGlite } from '@electric-sql/pglite'
 import { Prisma, PrismaClient } from '@prisma/client'
 import { readFile, readdir } from 'fs/promises'
-import nock from 'nock'
 import path from 'path'
 import { PrismaPGlite } from 'pglite-prisma-adapter'
 import redisMock from 'redis-mock'
 import { afterAll, afterEach, beforeAll, expect, vi } from 'vitest'
+import {
+  mswServer,
+  resetMswServer,
+} from './src/core/__tests__/fixtures/server.fixture'
 
 const pgClient = new PGlite()
 const adapter = new PrismaPGlite(pgClient)
@@ -62,6 +65,18 @@ const models = Prisma.dmmf.datamodel.models
   }))
 
 beforeAll(async () => {
+  mswServer.listen({
+    onUnhandledRequest(request, print) {
+      const url = new URL(request.url)
+
+      if (url.hostname === '127.0.0.1') {
+        return
+      }
+
+      print.warning()
+    },
+  })
+
   const [migrationPaths] = await Promise.all([
     readdir(prismaMigrationDir),
     // Need to subscribe to redis channels
@@ -81,13 +96,14 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
+  mswServer.close()
   await prisma.$disconnect()
   await pgClient.close()
   redis.quit()
 })
 
 afterEach(async () => {
-  expect(nock.isDone()).toBeTruthy()
+  resetMswServer()
 
   await Promise.all(
     models.map(async ({ delegate, name }) => {

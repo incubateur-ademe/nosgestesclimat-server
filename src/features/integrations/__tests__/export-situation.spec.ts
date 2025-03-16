@@ -1,9 +1,11 @@
 import { StatusCodes } from 'http-status-codes'
-import nock from 'nock'
 import supertest from 'supertest'
 import { beforeEach, describe, expect, test } from 'vitest'
 import { ZodError } from 'zod'
+import { twoTonsExportSituation } from '../../../adapters/2tonnes/__tests__/fixtures/server.fixture'
+import { agirExportSituation } from '../../../adapters/agir/__tests__/fixtures/server.fixture'
 import app from '../../../app'
+import { mswServer } from '../../../core/__tests__/fixtures/server.fixture'
 import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 import { getRandomPersonaSituation } from '../../simulations/__tests__/fixtures/simulations.fixtures'
@@ -34,9 +36,17 @@ describe('Given a NGC user', () => {
       const serviceName = 'agir'
 
       test(`Then it returns a ${StatusCodes.OK} with a redirectionUrl`, async () => {
-        nock(process.env.AGIR_URL!).post('/bilan/importFromNGC').reply(200, {
-          redirect_url: 'http://app.agir.com',
-        })
+        mswServer.use(
+          agirExportSituation({
+            customResponses: [
+              {
+                body: {
+                  redirect_url: 'http://app.agir.com',
+                },
+              },
+            ],
+          })
+        )
 
         const response = await agent
           .post(url.replace(':externalService', serviceName))
@@ -49,15 +59,18 @@ describe('Given a NGC user', () => {
       })
 
       test(`Then it sends situation on agir service`, async () => {
-        const scope = nock(process.env.AGIR_URL!, {
-          reqheaders: {
-            apikey: process.env.AGIR_API_KEY!,
-          },
-        })
-          .post(`/bilan/importFromNGC`, { situation })
-          .reply(200, {
-            redirect_url: 'http://app.agir.com',
+        mswServer.use(
+          agirExportSituation({
+            expectBody: { situation },
+            customResponses: [
+              {
+                body: {
+                  redirect_url: 'http://app.agir.com',
+                },
+              },
+            ],
           })
+        )
 
         await agent
           .post(url.replace(':externalService', serviceName))
@@ -65,15 +78,15 @@ describe('Given a NGC user', () => {
           .expect(StatusCodes.OK)
 
         await EventBus.flush()
-
-        expect(scope.isDone()).toBeTruthy()
       })
 
       describe(`And agir interface changes`, () => {
         test(`Then it raises an exception`, async () => {
-          nock(process.env.AGIR_URL!).post('/bilan/importFromNGC').reply(200, {
-            foo: 'bar',
-          })
+          mswServer.use(
+            agirExportSituation({
+              customResponses: [{ body: {} }],
+            })
+          )
 
           await agent
             .post(url.replace(':externalService', serviceName))
@@ -82,9 +95,11 @@ describe('Given a NGC user', () => {
         })
 
         test(`Then it logs the exception`, async () => {
-          nock(process.env.AGIR_URL!).post('/bilan/importFromNGC').reply(200, {
-            foo: 'bar',
-          })
+          mswServer.use(
+            agirExportSituation({
+              customResponses: [{ body: {} }],
+            })
+          )
 
           await agent
             .post(url.replace(':externalService', serviceName))
@@ -100,15 +115,16 @@ describe('Given a NGC user', () => {
 
       describe(`And service is down`, () => {
         test(`Then it retries several times and then raises the exception`, async () => {
-          nock(process.env.AGIR_URL!)
-            .post('/bilan/importFromNGC')
-            .reply(500)
-            .post('/bilan/importFromNGC')
-            .reply(500)
-            .post('/bilan/importFromNGC')
-            .reply(500)
-            .post('/bilan/importFromNGC')
-            .reply(500)
+          mswServer.use(
+            agirExportSituation({
+              customResponses: [
+                { status: StatusCodes.INTERNAL_SERVER_ERROR },
+                { status: StatusCodes.INTERNAL_SERVER_ERROR },
+                { status: StatusCodes.INTERNAL_SERVER_ERROR },
+                { status: StatusCodes.INTERNAL_SERVER_ERROR },
+              ],
+            })
+          )
 
           await agent
             .post(url.replace(':externalService', serviceName))
@@ -117,15 +133,16 @@ describe('Given a NGC user', () => {
         })
 
         test(`Then it logs the exception`, async () => {
-          nock(process.env.AGIR_URL!)
-            .post('/bilan/importFromNGC')
-            .reply(500)
-            .post('/bilan/importFromNGC')
-            .reply(500)
-            .post('/bilan/importFromNGC')
-            .reply(500)
-            .post('/bilan/importFromNGC')
-            .reply(500)
+          mswServer.use(
+            agirExportSituation({
+              customResponses: [
+                { status: StatusCodes.INTERNAL_SERVER_ERROR },
+                { status: StatusCodes.INTERNAL_SERVER_ERROR },
+                { status: StatusCodes.INTERNAL_SERVER_ERROR },
+                { status: StatusCodes.INTERNAL_SERVER_ERROR },
+              ],
+            })
+          )
 
           await agent
             .post(url.replace(':externalService', serviceName))
@@ -160,11 +177,17 @@ describe('Given a NGC user', () => {
       })
 
       test(`Then it returns a ${StatusCodes.OK} with a redirectionUrl`, async () => {
-        nock(process.env.TWO_TONS_URL!)
-          .post('/api/v1/ngc-carbon-form-answers')
-          .reply(200, {
-            redirect_url: 'http://app.2-tonnes.com',
+        mswServer.use(
+          twoTonsExportSituation({
+            customResponses: [
+              {
+                body: {
+                  redirect_url: 'http://app.2-tonnes.com',
+                },
+              },
+            ],
           })
+        )
 
         const response = await agent
           .post(url.replace(':externalService', serviceName))
@@ -177,15 +200,18 @@ describe('Given a NGC user', () => {
       })
 
       test(`Then it sends situation on 2 tonnes service`, async () => {
-        const scope = nock(process.env.TWO_TONS_URL!, {
-          reqheaders: {
-            Authorization: `Bearer ${process.env.TWO_TONS_BEARER_TOKEN}`,
-          },
-        })
-          .post(`/api/v1/ngc-carbon-form-answers`, { situation })
-          .reply(200, {
-            redirect_url: 'http://app.2-tonnes.com',
+        mswServer.use(
+          twoTonsExportSituation({
+            expectBody: { situation },
+            customResponses: [
+              {
+                body: {
+                  redirect_url: 'http://app.2-tonnes.com',
+                },
+              },
+            ],
           })
+        )
 
         await agent
           .post(url.replace(':externalService', serviceName))
@@ -193,24 +219,27 @@ describe('Given a NGC user', () => {
           .expect(StatusCodes.OK)
 
         await EventBus.flush()
-
-        expect(scope.isDone()).toBeTruthy()
       })
 
       describe('And valid external Service queryParams', () => {
         test(`Then it sends situation on 2 tonnes service`, async () => {
-          const scope = nock(process.env.TWO_TONS_URL!, {
-            reqheaders: {
-              Authorization: `Bearer ${process.env.TWO_TONS_BEARER_TOKEN}`,
-            },
-          })
-            .post(
-              `/api/v1/ngc-carbon-form-answers?token=token&boolean=true&id=42&object=${JSON.stringify({ foo: 'bar' })}`,
-              { situation }
-            )
-            .reply(200, {
-              redirect_url: 'http://app.2-tonnes.com',
+          mswServer.use(
+            twoTonsExportSituation({
+              expectParams: {
+                token: 'token',
+                boolean: 'true',
+                id: '42',
+                object: JSON.stringify({ foo: 'bar' }),
+              },
+              customResponses: [
+                {
+                  body: {
+                    redirect_url: 'http://app.2-tonnes.com',
+                  },
+                },
+              ],
             })
+          )
 
           await agent
             .post(url.replace(':externalService', serviceName))
@@ -224,18 +253,23 @@ describe('Given a NGC user', () => {
             .expect(StatusCodes.OK)
 
           await EventBus.flush()
-
-          expect(scope.isDone()).toBeTruthy()
         })
       })
 
       describe('And 2 tonnes returns handled error', () => {
         test(`Then it returns a ${StatusCodes.OK} with a redirectionUrl`, async () => {
-          nock(process.env.TWO_TONS_URL!)
-            .post('/api/v1/ngc-carbon-form-answers')
-            .reply(401, {
-              redirect_url: 'http://app.2-tonnes.com/error',
+          mswServer.use(
+            twoTonsExportSituation({
+              customResponses: [
+                {
+                  body: {
+                    redirect_url: 'http://app.2-tonnes.com/error',
+                  },
+                  status: StatusCodes.UNAUTHORIZED,
+                },
+              ],
             })
+          )
 
           const response = await agent
             .post(url.replace(':externalService', serviceName))
@@ -249,11 +283,16 @@ describe('Given a NGC user', () => {
 
         describe(`And 2 tonnes interface changes`, () => {
           test(`Then it raises the exception`, async () => {
-            nock(process.env.TWO_TONS_URL!)
-              .post('/api/v1/ngc-carbon-form-answers')
-              .reply(400, {
-                foo: 'bar',
+            mswServer.use(
+              twoTonsExportSituation({
+                customResponses: [
+                  {
+                    body: {},
+                    status: StatusCodes.BAD_REQUEST,
+                  },
+                ],
               })
+            )
 
             await agent
               .post(url.replace(':externalService', serviceName))
@@ -262,11 +301,16 @@ describe('Given a NGC user', () => {
           })
 
           test(`Then it logs the exception`, async () => {
-            nock(process.env.TWO_TONS_URL!)
-              .post('/api/v1/ngc-carbon-form-answers')
-              .reply(400, {
-                foo: 'bar',
+            mswServer.use(
+              twoTonsExportSituation({
+                customResponses: [
+                  {
+                    body: {},
+                    status: StatusCodes.BAD_REQUEST,
+                  },
+                ],
               })
+            )
 
             await agent
               .post(url.replace(':externalService', serviceName))
@@ -287,11 +331,11 @@ describe('Given a NGC user', () => {
 
       describe(`And 2 tonnes interface changes`, () => {
         test(`Then it raises the exception`, async () => {
-          nock(process.env.TWO_TONS_URL!)
-            .post('/api/v1/ngc-carbon-form-answers')
-            .reply(200, {
-              foo: 'bar',
+          mswServer.use(
+            twoTonsExportSituation({
+              customResponses: [{ body: {} }],
             })
+          )
 
           await agent
             .post(url.replace(':externalService', serviceName))
@@ -300,11 +344,11 @@ describe('Given a NGC user', () => {
         })
 
         test(`Then it logs the exception`, async () => {
-          nock(process.env.TWO_TONS_URL!)
-            .post('/api/v1/ngc-carbon-form-answers')
-            .reply(200, {
-              foo: 'bar',
+          mswServer.use(
+            twoTonsExportSituation({
+              customResponses: [{ body: {} }],
             })
+          )
 
           await agent
             .post(url.replace(':externalService', serviceName))
@@ -320,15 +364,16 @@ describe('Given a NGC user', () => {
 
       describe(`And service is down`, () => {
         test(`Then it retries several times and then raises the exception`, async () => {
-          nock(process.env.TWO_TONS_URL!)
-            .post('/api/v1/ngc-carbon-form-answers')
-            .reply(500)
-            .post('/api/v1/ngc-carbon-form-answers')
-            .reply(500)
-            .post('/api/v1/ngc-carbon-form-answers')
-            .reply(500)
-            .post('/api/v1/ngc-carbon-form-answers')
-            .reply(500)
+          mswServer.use(
+            twoTonsExportSituation({
+              customResponses: [
+                { status: StatusCodes.INTERNAL_SERVER_ERROR },
+                { status: StatusCodes.INTERNAL_SERVER_ERROR },
+                { status: StatusCodes.INTERNAL_SERVER_ERROR },
+                { status: StatusCodes.INTERNAL_SERVER_ERROR },
+              ],
+            })
+          )
 
           await agent
             .post(url.replace(':externalService', serviceName))
@@ -337,15 +382,16 @@ describe('Given a NGC user', () => {
         })
 
         test(`Then it logs the exception`, async () => {
-          nock(process.env.TWO_TONS_URL!)
-            .post('/api/v1/ngc-carbon-form-answers')
-            .reply(500)
-            .post('/api/v1/ngc-carbon-form-answers')
-            .reply(500)
-            .post('/api/v1/ngc-carbon-form-answers')
-            .reply(500)
-            .post('/api/v1/ngc-carbon-form-answers')
-            .reply(500)
+          mswServer.use(
+            twoTonsExportSituation({
+              customResponses: [
+                { status: StatusCodes.INTERNAL_SERVER_ERROR },
+                { status: StatusCodes.INTERNAL_SERVER_ERROR },
+                { status: StatusCodes.INTERNAL_SERVER_ERROR },
+                { status: StatusCodes.INTERNAL_SERVER_ERROR },
+              ],
+            })
+          )
 
           await agent
             .post(url.replace(':externalService', serviceName))

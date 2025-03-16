@@ -1,9 +1,16 @@
 import { faker } from '@faker-js/faker'
 import dayjs from 'dayjs'
 import { StatusCodes } from 'http-status-codes'
-import nock from 'nock'
 import type supertest from 'supertest'
-import { expect, vi } from 'vitest'
+import { vi } from 'vitest'
+import {
+  brevoSendEmail,
+  brevoUpdateContact,
+} from '../../../../adapters/brevo/__tests__/fixtures/server.fixture'
+import {
+  mswServer,
+  resetMswServer,
+} from '../../../../core/__tests__/fixtures/server.fixture'
 import { EventBus } from '../../../../core/event-bus/event-bus'
 import * as authenticationService from '../../authentication.service'
 import type { VerificationCodeCreateDto } from '../../verification-codes.validator'
@@ -38,11 +45,7 @@ export const createVerificationCode = async ({
     email: email || faker.internet.email(),
   }
 
-  nock(process.env.BREVO_URL!)
-    .post('/v3/smtp/email')
-    .reply(200)
-    .post('/v3/contacts')
-    .reply(200)
+  mswServer.use(brevoSendEmail(), brevoUpdateContact())
 
   const response = await agent
     .post(CREATE_VERIFICATION_CODE_ROUTE)
@@ -51,7 +54,7 @@ export const createVerificationCode = async ({
 
   await EventBus.flush()
 
-  expect(nock.isDone()).toBeTruthy()
+  resetMswServer()
 
   vi.mocked(
     authenticationService
