@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto'
 import { StatusCodes } from 'http-status-codes'
 import nock from 'nock'
 import supertest from 'supertest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
 import { EventBus } from '../../../core/event-bus/event-bus'
@@ -461,14 +462,16 @@ describe('Given a NGC user', () => {
       })
 
       describe('And leaving his/her email', () => {
+        const originalGroupCreate = prisma.group.create
+
         beforeEach(() => {
-          jest
-            .spyOn(prisma, '$transaction')
-            .mockImplementationOnce((cb) => cb(prisma))
+          vi.spyOn(prisma, '$transaction').mockImplementationOnce((cb) =>
+            cb(prisma)
+          )
         })
 
         afterEach(() => {
-          jest.spyOn(prisma, '$transaction').mockRestore()
+          vi.restoreAllMocks()
         })
 
         test('Then it adds or updates group administrator in brevo', async () => {
@@ -494,15 +497,13 @@ describe('Given a NGC user', () => {
           // Need to be sure that the group gets created with a known createdAt date
           const createdAt = new Date()
 
-          jest
-            .spyOn(prisma.group, 'create')
-            .mockImplementationOnce((params) => {
-              params.data.createdAt = createdAt
+          const stub = vi.spyOn(prisma.group, 'create')
 
-              jest.spyOn(prisma.group, 'create').mockRestore()
+          stub.mockImplementationOnce((params) => {
+            params.data.createdAt = createdAt
 
-              return prisma.group.create(params)
-            })
+            return originalGroupCreate(params)
+          })
 
           const scope = nock(process.env.BREVO_URL!, {
             reqheaders: {
@@ -561,15 +562,13 @@ describe('Given a NGC user', () => {
           // Need to be sure that the group gets created with a known createdAt date
           const createdAt = new Date()
 
-          jest
-            .spyOn(prisma.group, 'create')
-            .mockImplementationOnce((params) => {
-              params.data.createdAt = createdAt
+          const stub = vi.spyOn(prisma.group, 'create')
 
-              jest.spyOn(prisma.group, 'create').mockRestore()
+          stub.mockImplementationOnce((params) => {
+            params.data.createdAt = createdAt
 
-              return prisma.group.create(params)
-            })
+            return originalGroupCreate(params)
+          })
 
           const scope = nock(process.env.BREVO_URL!, {
             reqheaders: {
@@ -660,15 +659,13 @@ describe('Given a NGC user', () => {
           // Need to be sure that the group gets created with a known id
           const groupId = randomUUID()
 
-          jest
-            .spyOn(prisma.group, 'create')
-            .mockImplementationOnce((params) => {
-              params.data.id = groupId
+          const stub = vi.spyOn(prisma.group, 'create')
 
-              jest.spyOn(prisma.group, 'create').mockRestore()
+          stub.mockImplementationOnce((params) => {
+            params.data.id = groupId
 
-              return prisma.group.create(params)
-            })
+            return originalGroupCreate(params)
+          })
 
           const scope = nock(process.env.BREVO_URL!, {
             reqheaders: {
@@ -704,6 +701,8 @@ describe('Given a NGC user', () => {
           await EventBus.flush()
 
           expect(scope.isDone()).toBeTruthy()
+
+          stub.mockRestore()
         })
 
         describe('And custom user origin (preprod)', () => {
@@ -730,15 +729,13 @@ describe('Given a NGC user', () => {
             // Need to be sure that the group gets created with a known id
             const groupId = randomUUID()
 
-            jest
-              .spyOn(prisma.group, 'create')
-              .mockImplementationOnce((params) => {
-                params.data.id = groupId
+            const stub = vi.spyOn(prisma.group, 'create')
 
-                jest.spyOn(prisma.group, 'create').mockRestore()
+            stub.mockImplementationOnce((params) => {
+              params.data.id = groupId
 
-                return prisma.group.create(params)
-              })
+              return originalGroupCreate(params)
+            })
 
             const scope = nock(process.env.BREVO_URL!, {
               reqheaders: {
@@ -778,6 +775,8 @@ describe('Given a NGC user', () => {
             await EventBus.flush()
 
             expect(scope.isDone()).toBeTruthy()
+
+            stub.mockRestore()
           })
         })
       })
@@ -787,11 +786,11 @@ describe('Given a NGC user', () => {
       const databaseError = new Error('Something went wrong')
 
       beforeEach(() => {
-        jest.spyOn(prisma, '$transaction').mockRejectedValueOnce(databaseError)
+        vi.spyOn(prisma, '$transaction').mockRejectedValueOnce(databaseError)
       })
 
       afterEach(() => {
-        jest.spyOn(prisma, '$transaction').mockRestore()
+        vi.spyOn(prisma, '$transaction').mockRestore()
       })
 
       test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {

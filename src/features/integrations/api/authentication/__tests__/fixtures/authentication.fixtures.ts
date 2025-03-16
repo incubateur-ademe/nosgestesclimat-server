@@ -9,6 +9,7 @@ import dayjs from 'dayjs'
 import { StatusCodes } from 'http-status-codes'
 import nock from 'nock'
 import type supertest from 'supertest'
+import { expect, vi } from 'vitest'
 import { EventBus } from '../../../../../../core/event-bus/event-bus'
 import * as authenticationService from '../../../../../authentication/authentication.service'
 
@@ -98,12 +99,12 @@ export const generateApiToken = async ({
   const emailWhitelist =
     await createIntegrationEmailWhitelist(emailWhiteListParams)
 
-  jest
-    .mocked(authenticationService)
-    .generateVerificationCodeAndExpiration.mockReturnValueOnce({
-      code,
-      expirationDate,
-    })
+  vi.mocked(
+    authenticationService
+  ).generateVerificationCodeAndExpiration.mockReturnValueOnce({
+    code,
+    expirationDate,
+  })
 
   const payload = {
     email: email || emailWhitelist.emailPattern,
@@ -120,9 +121,9 @@ export const generateApiToken = async ({
 
   expect(nock.isDone()).toBeTruthy()
 
-  jest
-    .mocked(authenticationService)
-    .generateVerificationCodeAndExpiration.mockRestore()
+  vi.mocked(
+    authenticationService
+  ).generateVerificationCodeAndExpiration.mockRestore()
 
   return {
     emailWhitelist,

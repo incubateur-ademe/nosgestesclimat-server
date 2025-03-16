@@ -7,6 +7,7 @@ import {
 import { StatusCodes } from 'http-status-codes'
 import nock from 'nock'
 import supertest from 'supertest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
 import { EventBus } from '../../../core/event-bus/event-bus'
@@ -758,7 +759,7 @@ describe('Given a NGC user', () => {
               })
             })
 
-            it(`Then it does not send email twice`, async () => {
+            test(`Then it does not send email twice`, async () => {
               const {
                 createdAt: _1,
                 updatedAt: _2,
@@ -796,7 +797,7 @@ describe('Given a NGC user', () => {
             })
 
             describe('And from another device', () => {
-              it(`Then it does not send email twice`, async () => {
+              test(`Then it does not send email twice`, async () => {
                 const {
                   createdAt: _1,
                   updatedAt: _2,
@@ -921,13 +922,11 @@ describe('Given a NGC user', () => {
         const databaseError = new Error('Something went wrong')
 
         beforeEach(() => {
-          jest
-            .spyOn(prisma, '$transaction')
-            .mockRejectedValueOnce(databaseError)
+          vi.spyOn(prisma, '$transaction').mockRejectedValueOnce(databaseError)
         })
 
         afterEach(() => {
-          jest.spyOn(prisma, '$transaction').mockRestore()
+          vi.spyOn(prisma, '$transaction').mockRestore()
         })
 
         test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {

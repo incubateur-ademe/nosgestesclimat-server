@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import nock from 'nock'
 import supertest from 'supertest'
+import { beforeEach, describe, expect, test } from 'vitest'
 import { ZodError } from 'zod'
 import app from '../../../app'
 import { EventBus } from '../../../core/event-bus/event-bus'

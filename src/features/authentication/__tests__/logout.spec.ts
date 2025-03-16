@@ -1,5 +1,6 @@
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
+import { describe, expect, test } from 'vitest'
 import app from '../../../app'
 
 describe('Given a NGC user', () => {

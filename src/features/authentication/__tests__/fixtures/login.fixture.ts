@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import nock from 'nock'
 import type supertest from 'supertest'
+import { expect } from 'vitest'
 import { EventBus } from '../../../../core/event-bus/event-bus'
 import type { VerificationCodeCreateDto } from '../../verification-codes.validator'
 import { createVerificationCode } from './verification-codes.fixture'

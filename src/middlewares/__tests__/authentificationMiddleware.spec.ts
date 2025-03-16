@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken'
 
 import { faker } from '@faker-js/faker'
 import supertest from 'supertest'
+import { afterEach, describe, expect, test } from 'vitest'
 import { prisma } from '../../adapters/prisma/client'
 import { config } from '../../config'
 import { COOKIE_MAX_AGE } from '../../features/authentication/authentication.service'
@@ -17,13 +18,13 @@ describe('authentication middleware', () => {
   const agent = supertest(app)
 
   describe('With no cookie', () => {
-    it(`Should return a ${StatusCodes.UNAUTHORIZED} error`, async () => {
+    test(`Should return a ${StatusCodes.UNAUTHORIZED} error`, async () => {
       await agent.get('/').expect(StatusCodes.UNAUTHORIZED)
     })
   })
 
   describe('With incorrect cookie', () => {
-    it(`Should return a ${StatusCodes.UNAUTHORIZED} error`, async () => {
+    test(`Should return a ${StatusCodes.UNAUTHORIZED} error`, async () => {
       await agent
         .get('/')
         .set('cookie', 'NEXT_LOCALE=fr')
@@ -32,7 +33,7 @@ describe('authentication middleware', () => {
   })
 
   describe('With invalid cookie', () => {
-    it(`Should return a ${StatusCodes.UNAUTHORIZED} error`, async () => {
+    test(`Should return a ${StatusCodes.UNAUTHORIZED} error`, async () => {
       await agent
         .get('/')
         .set('cookie', 'ngcjwt=invalid cookie')
@@ -41,7 +42,7 @@ describe('authentication middleware', () => {
   })
 
   describe('With incorrect and invalid cookie', () => {
-    it(`Should return a ${StatusCodes.UNAUTHORIZED} error`, async () => {
+    test(`Should return a ${StatusCodes.UNAUTHORIZED} error`, async () => {
       const cookies = faker.helpers.arrayElements(
         ['ngcjwt=invalid cookie', 'NEXT_LOCALE=fr'],
         2
@@ -59,7 +60,7 @@ describe('authentication middleware', () => {
     let userId: string
     let email: string
 
-    it(`Should return a ${StatusCodes.NO_CONTENT} and a cookie`, async () => {
+    test(`Should return a ${StatusCodes.NO_CONTENT} and a cookie`, async () => {
       userId = faker.string.uuid()
       email = faker.internet.email()
       token = jwt.sign({ email, userId }, config.security.jwt.secret, {
@@ -84,7 +85,7 @@ describe('authentication middleware', () => {
 
     describe('And no userId present', () => {
       describe('And user does not exist in database', () => {
-        it(`Should return a ${StatusCodes.NO_CONTENT} and a cookie`, async () => {
+        test(`Should return a ${StatusCodes.NO_CONTENT} and a cookie`, async () => {
           email = faker.internet.email()
           token = jwt.sign({ email }, config.security.jwt.secret, {
             expiresIn: COOKIE_MAX_AGE,
@@ -109,7 +110,7 @@ describe('authentication middleware', () => {
       describe('And user does exist in database', () => {
         afterEach(async () => prisma.verifiedUser.deleteMany())
 
-        it(`Should return a ${StatusCodes.NO_CONTENT} and a cookie`, async () => {
+        test(`Should return a ${StatusCodes.NO_CONTENT} and a cookie`, async () => {
           email = faker.internet.email()
           ;({ id: userId } = await prisma.verifiedUser.create({
             data: {
@@ -145,7 +146,7 @@ describe('authentication middleware', () => {
   })
 
   describe('With incorrect and valid cookie', () => {
-    it(`Should return a ${StatusCodes.NO_CONTENT} and a cookie`, async () => {
+    test(`Should return a ${StatusCodes.NO_CONTENT} and a cookie`, async () => {
       const userId = faker.string.uuid()
       const email = faker.internet.email()
       const token = jwt.sign({ email, userId }, config.security.jwt.secret, {
@@ -183,7 +184,7 @@ describe('authentication middleware passIfUnauthorized: true', () => {
   const agent = supertest(app)
 
   describe('With no cookie', () => {
-    it(`Should return a ${StatusCodes.NO_CONTENT} response with no cookie`, async () => {
+    test(`Should return a ${StatusCodes.NO_CONTENT} response with no cookie`, async () => {
       const response = await agent.get('/').expect(StatusCodes.NO_CONTENT)
 
       expect(response.headers['set-cookie']).toBeUndefined()
@@ -191,7 +192,7 @@ describe('authentication middleware passIfUnauthorized: true', () => {
   })
 
   describe('With incorrect cookie', () => {
-    it(`Should return a ${StatusCodes.NO_CONTENT} response with no cookie`, async () => {
+    test(`Should return a ${StatusCodes.NO_CONTENT} response with no cookie`, async () => {
       const response = await agent
         .get('/')
         .set('cookie', 'NEXT_LOCALE=fr')
@@ -202,7 +203,7 @@ describe('authentication middleware passIfUnauthorized: true', () => {
   })
 
   describe('With invalid cookie', () => {
-    it(`Should return a ${StatusCodes.NO_CONTENT} response with no cookie`, async () => {
+    test(`Should return a ${StatusCodes.NO_CONTENT} response with no cookie`, async () => {
       const response = await agent
         .get('/')
         .set('cookie', 'ngcjwt=invalid cookie')
@@ -213,7 +214,7 @@ describe('authentication middleware passIfUnauthorized: true', () => {
   })
 
   describe('With incorrect and invalid cookie', () => {
-    it(`Should return a ${StatusCodes.NO_CONTENT} response with no cookie`, async () => {
+    test(`Should return a ${StatusCodes.NO_CONTENT} response with no cookie`, async () => {
       const cookies = faker.helpers.arrayElements(
         ['ngcjwt=invalid cookie', 'NEXT_LOCALE=fr'],
         2
@@ -233,7 +234,7 @@ describe('authentication middleware passIfUnauthorized: true', () => {
     let userId: string
     let email: string
 
-    it(`Should return a ${StatusCodes.NO_CONTENT} and a cookie`, async () => {
+    test(`Should return a ${StatusCodes.NO_CONTENT} and a cookie`, async () => {
       userId = faker.string.uuid()
       email = faker.internet.email()
       token = jwt.sign({ email, userId }, config.security.jwt.secret, {
@@ -258,7 +259,7 @@ describe('authentication middleware passIfUnauthorized: true', () => {
 
     describe('And no userId present', () => {
       describe('And user does not exist in database', () => {
-        it(`Should return a ${StatusCodes.NO_CONTENT} and a cookie`, async () => {
+        test(`Should return a ${StatusCodes.NO_CONTENT} and a cookie`, async () => {
           email = faker.internet.email()
           token = jwt.sign({ email }, config.security.jwt.secret, {
             expiresIn: COOKIE_MAX_AGE,
@@ -283,7 +284,7 @@ describe('authentication middleware passIfUnauthorized: true', () => {
       describe('And user does exist in database', () => {
         afterEach(async () => prisma.verifiedUser.deleteMany())
 
-        it(`Should return a ${StatusCodes.NO_CONTENT} and a cookie`, async () => {
+        test(`Should return a ${StatusCodes.NO_CONTENT} and a cookie`, async () => {
           email = faker.internet.email()
           ;({ id: userId } = await prisma.verifiedUser.create({
             data: {
@@ -319,7 +320,7 @@ describe('authentication middleware passIfUnauthorized: true', () => {
   })
 
   describe('With incorrect and valid cookie', () => {
-    it(`Should return a ${StatusCodes.NO_CONTENT} and a cookie`, async () => {
+    test(`Should return a ${StatusCodes.NO_CONTENT} and a cookie`, async () => {
       const userId = faker.string.uuid()
       const email = faker.internet.email()
       const token = jwt.sign({ email, userId }, config.security.jwt.secret, {

@@ -5,6 +5,7 @@ import nock from 'nock'
 import path from 'path'
 import { PrismaPGlite } from 'pglite-prisma-adapter'
 import redisMock from 'redis-mock'
+import { afterAll, afterEach, beforeAll, expect, vi } from 'vitest'
 
 const pgClient = new PGlite()
 const adapter = new PrismaPGlite(pgClient)
@@ -15,16 +16,37 @@ const prismaMigrationDir = path.join(__dirname, 'prisma', 'migrations')
 type DelegateNames = Prisma.TypeMap['meta']['modelProps']
 type DelegateName = TuplifyUnion<DelegateNames>[0]
 
-jest.mock('winston')
-jest.mock('./src/adapters/prisma/client', () => ({
+vi.mock('winston', async () => ({
+  default: {
+    ...(await vi.importActual('winston')),
+    format: {
+      combine: vi.fn(),
+      colorize: vi.fn(),
+      timestamp: vi.fn(),
+      json: vi.fn(),
+      errors: vi.fn(),
+    },
+    transports: {
+      Console: vi.fn(),
+    },
+    createLogger: vi.fn(() => ({
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    })),
+  },
+}))
+vi.mock('./src/adapters/prisma/client', () => ({
   prisma,
 }))
-jest.mock('./src/adapters/redis/client', () => ({
+vi.mock('./src/adapters/redis/client', () => ({
   redis,
 }))
-jest.mock('./src/features/authentication/authentication.service', () => ({
-  ...jest.requireActual('./src/features/authentication/authentication.service'),
-  generateVerificationCodeAndExpiration: jest.fn(),
+vi.mock('./src/features/authentication/authentication.service', async () => ({
+  ...(await vi.importActual(
+    './src/features/authentication/authentication.service'
+  )),
+  generateVerificationCodeAndExpiration: vi.fn(),
 }))
 
 const models = Prisma.dmmf.datamodel.models

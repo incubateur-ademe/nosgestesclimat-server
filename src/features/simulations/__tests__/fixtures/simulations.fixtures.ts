@@ -8,15 +8,16 @@ import nock from 'nock'
 import type { ParsedRules, PublicodesExpression } from 'publicodes'
 import Engine, { utils } from 'publicodes'
 import type supertest from 'supertest'
+import { expect } from 'vitest'
 import { carbonMetric, waterMetric } from '../../../../constants/ngc'
 
+import { EventBus } from '../../../../core/event-bus/event-bus'
 import type { Metric } from '../../../../types/types'
 import type {
   SimulationCreateInputDto,
   SimulationParticipantCreateInputDto,
 } from '../../simulations.validator'
 import { SituationSchema } from '../../simulations.validator'
-import { EventBus } from '../../../../core/event-bus/event-bus'
 
 type TestAgent = ReturnType<typeof supertest>
 

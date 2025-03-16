@@ -4,6 +4,7 @@ import { readFile } from 'fs/promises'
 import { StatusCodes } from 'http-status-codes'
 import path from 'path'
 import supertest from 'supertest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { client } from '../../../../../adapters/scaleway/client'
 import app from '../../../../../app'
 import {
@@ -22,7 +23,7 @@ const mockS3Files = (
     Record<MappingFileKind, Buffer | string | undefined>
   > = {}
 ) => {
-  jest.spyOn(client, 'send').mockImplementation((command) => {
+  vi.spyOn(client, 'send').mockImplementation((command) => {
     if (!(command instanceof GetObjectCommand)) {
       throw command
     }
@@ -78,7 +79,7 @@ describe('Given a NGC integrations API user', () => {
       beforeEach(() => mockS3Files())
 
       afterEach(() => {
-        jest.spyOn(client, 'send').mockRestore()
+        vi.spyOn(client, 'send').mockRestore()
       })
 
       test(`Then it return a ${StatusCodes.OK} response with empty object`, async () => {
@@ -103,7 +104,7 @@ describe('Given a NGC integrations API user', () => {
       )
 
       afterEach(() => {
-        jest.spyOn(client, 'send').mockRestore()
+        vi.spyOn(client, 'send').mockRestore()
       })
 
       test(`Then it return a ${StatusCodes.OK} response with mapped object`, async () => {
@@ -158,7 +159,7 @@ describe('Given a NGC integrations API user', () => {
       )
 
       afterEach(() => {
-        jest.spyOn(client, 'send').mockRestore()
+        vi.spyOn(client, 'send').mockRestore()
       })
 
       test(`Then it return a ${StatusCodes.OK} response with mapped object`, async () => {
@@ -178,8 +179,7 @@ describe('Given a NGC integrations API user', () => {
       const bucketError = new Error('Something went wrong')
 
       beforeEach(() => {
-        jest
-          .spyOn(client, 'send')
+        vi.spyOn(client, 'send')
           .mockReset()
           .mockImplementationOnce(() => Promise.reject(bucketError))
       })

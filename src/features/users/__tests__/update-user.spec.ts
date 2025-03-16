@@ -2,6 +2,7 @@ import { faker } from '@faker-js/faker'
 import { StatusCodes } from 'http-status-codes'
 import nock from 'nock'
 import supertest from 'supertest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { formatBrevoDate } from '../../../adapters/brevo/__tests__/fixtures/formatBrevoDate'
 import { ListIds } from '../../../adapters/brevo/constant'
 import { prisma } from '../../../adapters/prisma/client'
@@ -189,13 +190,13 @@ describe('Given a NGC user', () => {
           const databaseError = new Error('Something went wrong')
 
           beforeEach(() => {
-            jest
-              .spyOn(prisma, '$transaction')
-              .mockRejectedValueOnce(databaseError)
+            vi.spyOn(prisma, '$transaction').mockRejectedValueOnce(
+              databaseError
+            )
           })
 
           afterEach(() => {
-            jest.spyOn(prisma, '$transaction').mockRestore()
+            vi.spyOn(prisma, '$transaction').mockRestore()
           })
 
           test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {

@@ -3,6 +3,7 @@ import dayjs from 'dayjs'
 import { StatusCodes } from 'http-status-codes'
 import nock from 'nock'
 import supertest from 'supertest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { prisma } from '../../../../../adapters/prisma/client'
 import app from '../../../../../app'
 import { EventBus } from '../../../../../core/event-bus/event-bus'
@@ -65,12 +66,12 @@ describe('Given a NGC integrations API user', () => {
         }))
         code = faker.number.int({ min: 100000, max: 999999 }).toString()
         expirationDate = dayjs().add(1, 'hour').toDate()
-        jest
-          .mocked(authenticationService)
-          .generateVerificationCodeAndExpiration.mockReturnValueOnce({
-            code,
-            expirationDate,
-          })
+        vi.mocked(
+          authenticationService
+        ).generateVerificationCodeAndExpiration.mockReturnValueOnce({
+          code,
+          expirationDate,
+        })
       })
 
       test(`Then it returns a ${StatusCodes.CREATED} response`, async () => {
@@ -197,12 +198,12 @@ describe('Given a NGC integrations API user', () => {
         })
         code = faker.number.int({ min: 100000, max: 999999 }).toString()
         expirationDate = dayjs().add(1, 'hour').toDate()
-        jest
-          .mocked(authenticationService)
-          .generateVerificationCodeAndExpiration.mockReturnValueOnce({
-            code,
-            expirationDate,
-          })
+        vi.mocked(
+          authenticationService
+        ).generateVerificationCodeAndExpiration.mockReturnValueOnce({
+          code,
+          expirationDate,
+        })
       })
 
       test(`Then it returns a ${StatusCodes.CREATED} response`, async () => {
@@ -221,11 +222,11 @@ describe('Given a NGC integrations API user', () => {
       const databaseError = new Error('Something went wrong')
 
       beforeEach(() => {
-        jest.spyOn(prisma, '$transaction').mockRejectedValueOnce(databaseError)
+        vi.spyOn(prisma, '$transaction').mockRejectedValueOnce(databaseError)
       })
 
       afterEach(() => {
-        jest.spyOn(prisma, '$transaction').mockRestore()
+        vi.spyOn(prisma, '$transaction').mockRestore()
       })
 
       test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {

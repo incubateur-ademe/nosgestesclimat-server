@@ -3,6 +3,7 @@ import dayjs from 'dayjs'
 import { StatusCodes } from 'http-status-codes'
 import nock from 'nock'
 import type supertest from 'supertest'
+import { expect, vi } from 'vitest'
 import { EventBus } from '../../../../core/event-bus/event-bus'
 import * as authenticationService from '../../authentication.service'
 import type { VerificationCodeCreateDto } from '../../verification-codes.validator'
@@ -25,12 +26,12 @@ export const createVerificationCode = async ({
   code = code || faker.number.int({ min: 100000, max: 999999 }).toString()
   expirationDate = expirationDate || dayjs().add(1, 'hour').toDate()
 
-  jest
-    .mocked(authenticationService)
-    .generateVerificationCodeAndExpiration.mockReturnValueOnce({
-      code,
-      expirationDate,
-    })
+  vi.mocked(
+    authenticationService
+  ).generateVerificationCodeAndExpiration.mockReturnValueOnce({
+    code,
+    expirationDate,
+  })
 
   const payload = {
     userId: userId || faker.string.uuid(),
@@ -52,9 +53,9 @@ export const createVerificationCode = async ({
 
   expect(nock.isDone()).toBeTruthy()
 
-  jest
-    .mocked(authenticationService)
-    .generateVerificationCodeAndExpiration.mockRestore()
+  vi.mocked(
+    authenticationService
+  ).generateVerificationCodeAndExpiration.mockRestore()
 
   return {
     ...response.body,
