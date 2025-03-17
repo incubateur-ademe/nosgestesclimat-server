@@ -10,6 +10,7 @@ import { fetchUserContact, updateUserAndContact } from './users.service'
 import {
   FetchUserContactValidator,
   UpdateUserValidator,
+  UserUpdateDto,
 } from './users.validator'
 
 const router = express.Router()
@@ -46,7 +47,7 @@ router
     try {
       const contact = await updateUserAndContact({
         params: req.params,
-        userDto: req.body,
+        userDto: UserUpdateDto.parse(req.body),
       })
 
       return res.status(StatusCodes.OK).json(contact)

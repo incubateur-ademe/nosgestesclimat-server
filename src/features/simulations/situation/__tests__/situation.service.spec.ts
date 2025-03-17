@@ -8,6 +8,7 @@ import modelFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRule
 import personas from '@incubateur-ademe/nosgestesclimat/public/personas-fr.json'
 import Engine from 'publicodes'
 
+import { describe, expect, test } from 'vitest'
 import type { SituationSchema } from '../../simulations.validator'
 import { getSituationDottedNameValue } from '../situation.service'
 
@@ -57,7 +58,7 @@ describe('getSituationDottedNameValue', () => {
     describe.each(
       Object.values(personas).map(({ nom, situation }) => ({ nom, situation }))
     )('When computing funfacts for persona $nom', ({ situation }) => {
-      it('Should give the same result as the engine', () => {
+      test('Should give the same result as the engine', () => {
         // console.time('algoValue')
         const algoValue = getSituationDottedNameValue({
           dottedName,

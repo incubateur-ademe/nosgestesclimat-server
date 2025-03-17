@@ -3,9 +3,17 @@ import type supertest from 'supertest'
 import { faker } from '@faker-js/faker'
 import { OrganisationType } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
-import nock from 'nock'
-import { baseURL } from '../../../../adapters/connect/client'
+import {
+  brevoRemoveFromList,
+  brevoSendEmail,
+  brevoUpdateContact,
+} from '../../../../adapters/brevo/__tests__/fixtures/server.fixture'
+import { connectUpdateContact } from '../../../../adapters/connect/__tests__/fixtures/server.fixture'
 import { prisma } from '../../../../adapters/prisma/client'
+import {
+  mswServer,
+  resetMswServer,
+} from '../../../../core/__tests__/fixtures/server.fixture'
 import { EventBus } from '../../../../core/event-bus/event-bus'
 import { getSimulationPayload } from '../../../simulations/__tests__/fixtures/simulations.fixtures'
 import type { SimulationCreateInputDto } from '../../../simulations/simulations.validator'
@@ -74,21 +82,13 @@ export const createOrganisation = async ({
     numberOfCollaborators,
   }
 
-  const scope = nock(process.env.BREVO_URL!)
-    .post('/v3/smtp/email')
-    .reply(200)
-    .post('/v3/contacts')
-    .reply(200)
+  mswServer.use(brevoSendEmail(), brevoUpdateContact(), connectUpdateContact())
 
   const [administrator] = administrators || []
 
   if (!administrator?.optedInForCommunications) {
-    scope
-      .post('/v3/contacts/lists/27/contacts/remove')
-      .reply(400, { code: 'invalid_parameter' })
+    mswServer.use(brevoRemoveFromList(27, { invalid: true }))
   }
-
-  nock(baseURL).post('/api/v1/personnes').reply(200)
 
   const response = await agent
     .post(CREATE_ORGANISATION_ROUTE)
@@ -98,7 +98,7 @@ export const createOrganisation = async ({
 
   await EventBus.flush()
 
-  expect(nock.isDone()).toBeTruthy()
+  resetMswServer()
 
   return response.body
 }
@@ -126,7 +126,7 @@ export const createOrganisationPoll = async ({
     expectedNumberOfParticipants,
   }
 
-  const scope = nock(process.env.BREVO_URL!).post('/v3/contacts').reply(200)
+  mswServer.use(brevoUpdateContact())
 
   const {
     administrators: [administrator],
@@ -148,9 +148,7 @@ export const createOrganisationPoll = async ({
   })
 
   if (!administrator.user.optedInForCommunications) {
-    scope
-      .post('/v3/contacts/lists/27/contacts/remove')
-      .reply(400, { code: 'invalid_parameter' })
+    mswServer.use(brevoRemoveFromList(27, { invalid: true }))
   }
 
   const response = await agent
@@ -166,7 +164,7 @@ export const createOrganisationPoll = async ({
 
   await EventBus.flush()
 
-  expect(nock.isDone()).toBeTruthy()
+  resetMswServer()
 
   return response.body
 }
@@ -189,11 +187,10 @@ export const createOrganisationPollSimulation = async ({
     user,
   }
 
-  const scope = nock(process.env.BREVO_URL!)
-    .post('/v3/contacts')
-    .reply(200)
-    .post('/v3/contacts/lists/27/contacts/remove')
-    .reply(400, { code: 'invalid_parameter' })
+  mswServer.use(
+    brevoUpdateContact(),
+    brevoRemoveFromList(27, { invalid: true })
+  )
 
   if (payload.user?.email) {
     const existingParticipation = await prisma.simulationPoll.findFirst({
@@ -209,14 +206,10 @@ export const createOrganisationPollSimulation = async ({
     })
 
     if (!existingParticipation) {
-      scope.post('/v3/smtp/email').reply(200)
+      mswServer.use(brevoSendEmail())
     }
 
-    scope
-      .post('/v3/contacts')
-      .reply(200)
-      .post('/v3/contacts/lists/35/contacts/remove')
-      .reply(400, { code: 'invalid_parameter' })
+    mswServer.use(brevoRemoveFromList(35, { invalid: true }))
   }
 
   const response = await agent
@@ -231,7 +224,7 @@ export const createOrganisationPollSimulation = async ({
 
   await EventBus.flush()
 
-  expect(nock.isDone()).toBeTruthy()
+  resetMswServer()
 
   return response.body
 }

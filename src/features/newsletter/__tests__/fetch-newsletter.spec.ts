@@ -1,10 +1,12 @@
 import { faker } from '@faker-js/faker'
 import { StatusCodes } from 'http-status-codes'
-import nock from 'nock'
 import supertest from 'supertest'
+import { describe, expect, test } from 'vitest'
 import { ZodError } from 'zod'
 import { formatBrevoDate } from '../../../adapters/brevo/__tests__/fixtures/formatBrevoDate'
+import { brevoGetNewsletter } from '../../../adapters/brevo/__tests__/fixtures/server.fixture'
 import app from '../../../app'
+import { mswServer } from '../../../core/__tests__/fixtures/server.fixture'
 import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 
@@ -30,25 +32,27 @@ describe('Given a NGC user', () => {
     })
 
     test(`Then it returns a ${StatusCodes.OK} response with the mapped brevo response`, async () => {
-      const scope = nock(process.env.BREVO_URL!, {
-        reqheaders: {
-          'api-key': process.env.BREVO_API_KEY!,
-        },
-      })
-        .get(`/v3/contacts/lists/${newsletterId}`)
-        .reply(200, {
-          id: +newsletterId,
-          name: newsletterName,
-          startDate: formatBrevoDate(faker.date.recent()),
-          endDate: formatBrevoDate(faker.date.future()),
-          totalBlacklisted: faker.number.int(),
-          totalSubscribers: newsletterTotalSubscribers,
-          uniqueSubscribers: faker.number.int(),
-          folderId: faker.number.int(),
-          createdAt: formatBrevoDate(faker.date.past()),
-          dynamicList: faker.datatype.boolean(),
-          campaignStats: [],
+      mswServer.use(
+        brevoGetNewsletter(newsletterId, {
+          customResponses: [
+            {
+              body: {
+                id: +newsletterId,
+                name: newsletterName,
+                startDate: formatBrevoDate(faker.date.recent()),
+                endDate: formatBrevoDate(faker.date.future()),
+                totalBlacklisted: faker.number.int(),
+                totalSubscribers: newsletterTotalSubscribers,
+                uniqueSubscribers: faker.number.int(),
+                folderId: faker.number.int(),
+                createdAt: formatBrevoDate(faker.date.past()),
+                dynamicList: faker.datatype.boolean(),
+                campaignStats: [],
+              },
+            },
+          ],
         })
+      )
 
       const { body } = await agent
         .get(url.replace(':newsletterId', newsletterId))
@@ -61,21 +65,23 @@ describe('Given a NGC user', () => {
         name: newsletterName,
         totalSubscribers: newsletterTotalSubscribers,
       })
-      expect(scope.isDone()).toBeTruthy()
     })
 
     describe('And newsletter does not exists', () => {
       test(`Then it returns a ${StatusCodes.NOT_FOUND} response with the mapped brevo response`, async () => {
-        const scope = nock(process.env.BREVO_URL!, {
-          reqheaders: {
-            'api-key': process.env.BREVO_API_KEY!,
-          },
-        })
-          .get(`/v3/contacts/lists/${newsletterId}`)
-          .reply(404, {
-            code: 'document_not_found',
-            message: 'List ID does not exist',
+        mswServer.use(
+          brevoGetNewsletter(newsletterId, {
+            customResponses: [
+              {
+                body: {
+                  code: 'document_not_found',
+                  message: 'List ID does not exist',
+                },
+                status: StatusCodes.NOT_FOUND,
+              },
+            ],
           })
+        )
 
         const { body } = await agent
           .get(url.replace(':newsletterId', newsletterId))
@@ -87,22 +93,16 @@ describe('Given a NGC user', () => {
           code: 'document_not_found',
           message: 'List ID does not exist',
         })
-        expect(scope.isDone()).toBeTruthy()
       })
     })
 
     describe('And network error', () => {
       test(`Then it returns a ${StatusCodes.NOT_FOUND} response`, async () => {
-        const scope = nock(process.env.BREVO_URL!, {
-          reqheaders: {
-            'api-key': process.env.BREVO_API_KEY!,
-          },
-        })
-          .get(`/v3/contacts/lists/${newsletterId}`)
-          .replyWithError({
-            message: 'Network error occurred',
-            code: 'ERR_CONNECTION_REFUSED',
+        mswServer.use(
+          brevoGetNewsletter(newsletterId, {
+            networkError: true,
           })
+        )
 
         const { body } = await agent
           .get(url.replace(':newsletterId', newsletterId))
@@ -111,25 +111,21 @@ describe('Given a NGC user', () => {
         await EventBus.flush()
 
         expect(body).toEqual({})
-        expect(scope.isDone()).toBeTruthy()
       })
     })
 
     describe('And brevo is down', () => {
       test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} response after retries`, async () => {
-        const scope = nock(process.env.BREVO_URL!, {
-          reqheaders: {
-            'api-key': process.env.BREVO_API_KEY!,
-          },
-        })
-          .get(`/v3/contacts/lists/${newsletterId}`)
-          .reply(500)
-          .get(`/v3/contacts/lists/${newsletterId}`)
-          .reply(500)
-          .get(`/v3/contacts/lists/${newsletterId}`)
-          .reply(500)
-          .get(`/v3/contacts/lists/${newsletterId}`)
-          .reply(500)
+        mswServer.use(
+          brevoGetNewsletter(newsletterId, {
+            customResponses: [
+              { status: StatusCodes.INTERNAL_SERVER_ERROR },
+              { status: StatusCodes.INTERNAL_SERVER_ERROR },
+              { status: StatusCodes.INTERNAL_SERVER_ERROR },
+              { status: StatusCodes.INTERNAL_SERVER_ERROR },
+            ],
+          })
+        )
 
         const { body } = await agent
           .get(url.replace(':newsletterId', newsletterId))
@@ -138,19 +134,16 @@ describe('Given a NGC user', () => {
         await EventBus.flush()
 
         expect(body).toEqual({})
-        expect(scope.isDone()).toBeTruthy()
       })
     })
 
     describe('And brevo interface changes', () => {
       test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} response and logs the exception`, async () => {
-        const scope = nock(process.env.BREVO_URL!, {
-          reqheaders: {
-            'api-key': process.env.BREVO_API_KEY!,
-          },
-        })
-          .get(`/v3/contacts/lists/${newsletterId}`)
-          .reply(200)
+        mswServer.use(
+          brevoGetNewsletter(newsletterId, {
+            customResponses: [{ body: {} }],
+          })
+        )
 
         const { body } = await agent
           .get(url.replace(':newsletterId', newsletterId))
@@ -159,7 +152,6 @@ describe('Given a NGC user', () => {
         await EventBus.flush()
 
         expect(body).toEqual({})
-        expect(scope.isDone()).toBeTruthy()
         expect(logger.error).toHaveBeenCalledWith(
           'Newsletter fetch failed',
           expect.any(ZodError)

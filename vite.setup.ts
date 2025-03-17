@@ -1,10 +1,14 @@
 import { PGlite } from '@electric-sql/pglite'
 import { Prisma, PrismaClient } from '@prisma/client'
 import { readFile, readdir } from 'fs/promises'
-import nock from 'nock'
 import path from 'path'
 import { PrismaPGlite } from 'pglite-prisma-adapter'
 import redisMock from 'redis-mock'
+import { afterAll, afterEach, beforeAll, expect, vi } from 'vitest'
+import {
+  mswServer,
+  resetMswServer,
+} from './src/core/__tests__/fixtures/server.fixture'
 
 const pgClient = new PGlite()
 const adapter = new PrismaPGlite(pgClient)
@@ -15,16 +19,37 @@ const prismaMigrationDir = path.join(__dirname, 'prisma', 'migrations')
 type DelegateNames = Prisma.TypeMap['meta']['modelProps']
 type DelegateName = TuplifyUnion<DelegateNames>[0]
 
-jest.mock('winston')
-jest.mock('./src/adapters/prisma/client', () => ({
+vi.mock('winston', async () => ({
+  default: {
+    ...(await vi.importActual('winston')),
+    format: {
+      combine: vi.fn(),
+      colorize: vi.fn(),
+      timestamp: vi.fn(),
+      json: vi.fn(),
+      errors: vi.fn(),
+    },
+    transports: {
+      Console: vi.fn(),
+    },
+    createLogger: vi.fn(() => ({
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    })),
+  },
+}))
+vi.mock('./src/adapters/prisma/client', () => ({
   prisma,
 }))
-jest.mock('./src/adapters/redis/client', () => ({
+vi.mock('./src/adapters/redis/client', () => ({
   redis,
 }))
-jest.mock('./src/features/authentication/authentication.service', () => ({
-  ...jest.requireActual('./src/features/authentication/authentication.service'),
-  generateVerificationCodeAndExpiration: jest.fn(),
+vi.mock('./src/features/authentication/authentication.service', async () => ({
+  ...(await vi.importActual(
+    './src/features/authentication/authentication.service'
+  )),
+  generateVerificationCodeAndExpiration: vi.fn(),
 }))
 
 const models = Prisma.dmmf.datamodel.models
@@ -40,6 +65,18 @@ const models = Prisma.dmmf.datamodel.models
   }))
 
 beforeAll(async () => {
+  mswServer.listen({
+    onUnhandledRequest(request, print) {
+      const url = new URL(request.url)
+
+      if (url.hostname === '127.0.0.1') {
+        return
+      }
+
+      print.warning()
+    },
+  })
+
   const [migrationPaths] = await Promise.all([
     readdir(prismaMigrationDir),
     // Need to subscribe to redis channels
@@ -58,16 +95,15 @@ beforeAll(async () => {
     }, Promise.resolve())
 })
 
-beforeEach(() => nock.cleanAll())
-
 afterAll(async () => {
+  mswServer.close()
   await prisma.$disconnect()
   await pgClient.close()
   redis.quit()
 })
 
 afterEach(async () => {
-  expect(nock.isDone()).toBeTruthy()
+  resetMswServer()
 
   await Promise.all(
     models.map(async ({ delegate, name }) => {

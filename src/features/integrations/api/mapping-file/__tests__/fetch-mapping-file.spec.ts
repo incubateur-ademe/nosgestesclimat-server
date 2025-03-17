@@ -4,6 +4,7 @@ import { ApiScopeName } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
 import supertest from 'supertest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { prisma } from '../../../../../adapters/prisma/client'
 import { client } from '../../../../../adapters/scaleway/client'
 import app from '../../../../../app'
@@ -71,7 +72,7 @@ describe('Given a NGC integrations API user', () => {
       let token: string
 
       beforeEach(async () => {
-        jest.spyOn(client, 'send').mockImplementationOnce((command) => {
+        vi.spyOn(client, 'send').mockImplementationOnce((command) => {
           if (!(command instanceof HeadObjectCommand)) {
             throw command
           }
@@ -88,7 +89,7 @@ describe('Given a NGC integrations API user', () => {
       })
 
       afterEach(() => {
-        jest.spyOn(client, 'send').mockRestore()
+        vi.spyOn(client, 'send').mockRestore()
       })
 
       describe.each(
@@ -145,7 +146,7 @@ describe('Given a NGC integrations API user', () => {
       })
 
       afterEach(() => {
-        jest.spyOn(client, 'send').mockRestore()
+        vi.spyOn(client, 'send').mockRestore()
       })
 
       describe('And invalid kind provided', () => {
@@ -176,7 +177,7 @@ describe('Given a NGC integrations API user', () => {
 
       describe('And file does not exist', () => {
         beforeEach(async () => {
-          jest.spyOn(client, 'send').mockImplementationOnce((command) => {
+          vi.spyOn(client, 'send').mockImplementationOnce((command) => {
             if (!(command instanceof HeadObjectCommand)) {
               throw command
             }
@@ -210,7 +211,7 @@ describe('Given a NGC integrations API user', () => {
 
       describe('And file does exist', () => {
         beforeEach(async () => {
-          jest.spyOn(client, 'send').mockImplementationOnce((command) => {
+          vi.spyOn(client, 'send').mockImplementationOnce((command) => {
             if (!(command instanceof HeadObjectCommand)) {
               throw command
             }
@@ -256,9 +257,9 @@ describe('Given a NGC integrations API user', () => {
         const bucketError = new Error('Something went wrong')
 
         beforeEach(() => {
-          jest
-            .spyOn(client, 'send')
-            .mockImplementationOnce(() => Promise.reject(bucketError))
+          vi.spyOn(client, 'send').mockImplementationOnce(() =>
+            Promise.reject(bucketError)
+          )
         })
 
         test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {

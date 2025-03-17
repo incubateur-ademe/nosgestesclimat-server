@@ -76,7 +76,7 @@ export type OrganisationUpdateAdministrator = z.infer<
   typeof OrganisationUpdateAdministrator
 >
 
-const OrganisationUpdateDto = OrganisationCreateDto.merge(
+export const OrganisationUpdateDto = OrganisationCreateDto.merge(
   z
     .object({
       administrators: z.tuple([OrganisationUpdateAdministrator]).optional(),

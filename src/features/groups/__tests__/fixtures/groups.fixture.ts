@@ -1,8 +1,16 @@
 import { faker } from '@faker-js/faker'
 import { StatusCodes } from 'http-status-codes'
-import nock from 'nock'
 import type supertest from 'supertest'
+import {
+  brevoRemoveFromList,
+  brevoSendEmail,
+  brevoUpdateContact,
+} from '../../../../adapters/brevo/__tests__/fixtures/server.fixture'
 import { prisma } from '../../../../adapters/prisma/client'
+import {
+  mswServer,
+  resetMswServer,
+} from '../../../../core/__tests__/fixtures/server.fixture'
 import { EventBus } from '../../../../core/event-bus/event-bus'
 import { getSimulationPayload } from '../../../simulations/__tests__/fixtures/simulations.fixtures'
 import type {
@@ -44,18 +52,12 @@ export const createGroup = async ({
     participants,
   }
 
-  const scope = nock(process.env.BREVO_URL!)
-
   if (payload.administrator.email && participants?.length) {
-    scope
-      .post('/v3/smtp/email')
-      .reply(200)
-      .post('/v3/contacts')
-      .reply(200)
-      .post('/v3/contacts')
-      .reply(200)
-      .post('/v3/contacts/lists/35/contacts/remove')
-      .reply(400, { code: 'invalid_parameter' })
+    mswServer.use(
+      brevoSendEmail(),
+      brevoUpdateContact(),
+      brevoRemoveFromList(35)
+    )
   }
 
   const response = await agent
@@ -65,7 +67,7 @@ export const createGroup = async ({
 
   await EventBus.flush()
 
-  expect(nock.isDone()).toBeTruthy()
+  resetMswServer()
 
   return response.body
 }
@@ -85,8 +87,6 @@ export const joinGroup = async ({
     simulation: simulation || getSimulationPayload(),
     email,
   }
-
-  const scope = nock(process.env.BREVO_URL!)
 
   const [existingUser, group, existingParticipant] = await Promise.all([
     prisma.user.findFirst({
@@ -141,15 +141,11 @@ export const joinGroup = async ({
 
   if (email || existingUser?.email) {
     if (!existingParticipant) {
-      scope.post('/v3/smtp/email').reply(200)
+      mswServer.use(brevoSendEmail())
     }
 
-    scope.post('/v3/contacts').reply(200)
-
     if (payload.simulation.progression === 1) {
-      scope
-        .post('/v3/contacts/lists/35/contacts/remove')
-        .reply(400, { code: 'invalid_parameter' })
+      mswServer.use(brevoRemoveFromList(35))
     }
   }
 
@@ -157,10 +153,12 @@ export const joinGroup = async ({
   const participants = group.participants
 
   if (
-    administrator?.email &&
-    participants.some(({ user }) => user.id === administrator.id)
+    email ||
+    existingUser?.email ||
+    (administrator?.email &&
+      participants.some(({ user }) => user.id === administrator.id))
   ) {
-    scope.post('/v3/contacts').reply(200)
+    mswServer.use(brevoUpdateContact())
   }
 
   const response = await agent
@@ -170,7 +168,7 @@ export const joinGroup = async ({
 
   await EventBus.flush()
 
-  expect(nock.isDone()).toBeTruthy()
+  resetMswServer()
 
   return response.body
 }
