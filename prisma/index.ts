@@ -9,7 +9,8 @@ const main = async () => {
     await import('./scripts/grant-roles'),
     await import('./scripts/add-integrations-api-scopes'),
     await import('./scripts/add-integrations-email-whitelist'),
-    await import('./scripts/geolocation'),
+    await import('./scripts/geolocation-sorted-ips'),
+    await import('./scripts/geolocation-countries'),
   ]
 
   try {

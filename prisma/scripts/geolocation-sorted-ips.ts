@@ -1,9 +1,16 @@
 import axios from 'axios'
 import type Redis from 'ioredis'
+import { isIPv4 } from 'node:net'
 import { createGunzip } from 'node:zlib'
 import Papa from 'papaparse'
+import { z } from 'zod'
 import { KEYS } from '../../src/adapters/redis/constant'
 import { converIpToNumber } from '../../src/features/geolocation/geolocation.service'
+
+const GeoIpCsvValidator = z.object({
+  ipStart: z.string(),
+  countryCode: z.string().regex(/^[A-Z]{2}$/),
+})
 
 export const exec = async ({ redis }: { redis: Redis }) => {
   try {
@@ -38,17 +45,32 @@ export const exec = async ({ redis }: { redis: Redis }) => {
     for await (const chunk of parseStream) {
       const [ipStart, _, countryCode] = chunk
 
-      // Ignore IPv6 addresses
-      if (!ipStart.includes('.')) {
+      const parsed = GeoIpCsvValidator.safeParse({ ipStart, countryCode })
+
+      if (!parsed.success) {
+        console.warn('Invalid CSV row:', {
+          chunk,
+          ipStart,
+          countryCode,
+          error: parsed.error,
+        })
         continue
       }
 
-      const ipStartNumber = converIpToNumber(ipStart)
-      sortedArray.push({ ipStartNum: ipStartNumber, countryCode })
+      // Ignore IPv6 addresses
+      if (!isIPv4(parsed.data.ipStart)) {
+        continue
+      }
+
+      const ipStartNumber = converIpToNumber(parsed.data.ipStart)
+      sortedArray.push({
+        ipStartNum: ipStartNumber,
+        countryCode: parsed.data.countryCode,
+      })
     }
 
-    await redis.set(KEYS.geolocation, JSON.stringify(sortedArray))
-    await redis.persist(KEYS.geolocation)
+    await redis.set(KEYS.geolocationSortedIps, JSON.stringify(sortedArray))
+    await redis.persist(KEYS.geolocationSortedIps)
     console.log(`Stored ${sortedArray.length} IPs to redis`)
   } catch (err) {
     console.error('Geolocation error', err)
