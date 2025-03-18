@@ -4,6 +4,7 @@ import { readFile, readdir } from 'fs/promises'
 import path from 'path'
 import { PrismaPGlite } from 'pglite-prisma-adapter'
 import redisMock from 'redis-mock'
+import { promisify } from 'util'
 import { afterAll, afterEach, beforeAll, expect, vi } from 'vitest'
 import {
   mswServer,
@@ -13,6 +14,7 @@ import {
 const pgClient = new PGlite()
 const adapter = new PrismaPGlite(pgClient)
 const redis = redisMock.createClient()
+redis.get = promisify(redis.get.bind(redis)) as unknown as (typeof redis)['get']
 const prisma = new PrismaClient({ adapter })
 const prismaMigrationDir = path.join(__dirname, 'prisma', 'migrations')
 

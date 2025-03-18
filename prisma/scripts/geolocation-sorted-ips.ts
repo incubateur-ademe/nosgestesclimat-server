@@ -5,7 +5,7 @@ import { createGunzip } from 'node:zlib'
 import Papa from 'papaparse'
 import { z } from 'zod'
 import { KEYS } from '../../src/adapters/redis/constant'
-import { converIpToNumber } from '../../src/features/geolocation/geolocation.service'
+import { converIpToNumber } from '../../src/features/modele/geolocation.repository'
 
 const GeoIpCsvValidator = z.object({
   ipStart: z.string(),

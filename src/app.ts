@@ -15,6 +15,7 @@ import groupsController from './features/groups/groups.controller'
 import integrationsApiContract from './features/integrations/api/api.contract'
 import integrationsApiController from './features/integrations/api/api.controller'
 import integrationsController from './features/integrations/integrations.controller'
+import modeleController from './features/modele/modele.controller'
 import newslettersController from './features/newsletter/newsletter.controller'
 import northstarRatingsController from './features/northstar-ratings/northstar-ratings.controller'
 import organisationController from './features/organisations/organisations.controller'
@@ -68,6 +69,7 @@ app.use('/get-newsletter-subscriptions', getNewsletterSubscriptions)
 
 // new API routes
 app.use('/authentication', authenticationController)
+app.use('/modele', modeleController)
 app.use('/groups', groupsController)
 app.use('/integrations', integrationsController)
 app.use('/newsletters', newslettersController)
