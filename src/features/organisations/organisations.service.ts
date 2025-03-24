@@ -1,5 +1,7 @@
 import type { Organisation, Poll } from '@prisma/client'
 import type { Request } from 'express'
+import type { Session } from '../../adapters/prisma/transaction'
+import { transaction } from '../../adapters/prisma/transaction'
 import { config } from '../../config'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
 import { ForbiddenException } from '../../core/errors/ForbiddenException'
@@ -9,6 +11,10 @@ import {
   isPrismaErrorUniqueConstraintFailed,
 } from '../../core/typeguards/isPrismaError'
 import { exchangeCredentialsForToken } from '../authentication/authentication.service'
+import {
+  fetchPollValidSimulations,
+  getSimulationsFunFactsWithEngine,
+} from '../simulations/simulations.service'
 import { OrganisationCreatedEvent } from './events/OrganisationCreated.event'
 import { OrganisationUpdatedEvent } from './events/OrganisationUpdated.event'
 import { PollCreatedEvent as PollUpdatedEvent } from './events/PollCreated.event'
@@ -22,6 +28,8 @@ import {
   fetchOrganisationPublicPoll,
   fetchUserOrganisation,
   fetchUserOrganisations,
+  findSimulationPoll,
+  setPollFunFacts,
   updateAdministratorOrganisation,
   updateOrganisationPoll,
 } from './organisations.repository'
@@ -396,4 +404,32 @@ export const fetchPublicPoll = async ({
     }
     throw e
   }
+}
+
+export const updatePollFunFacts = (
+  simulationId: string,
+  { session }: { session?: Session } = {}
+) => {
+  return transaction(async (prismaSession) => {
+    const sessionParam = { session: prismaSession }
+    const simulationPoll = await findSimulationPoll(
+      { simulationId },
+      sessionParam
+    )
+
+    if (!simulationPoll) {
+      return
+    }
+
+    const { pollId } = simulationPoll
+
+    const simulations = await fetchPollValidSimulations(
+      { id: pollId },
+      sessionParam
+    )
+
+    const funFacts = getSimulationsFunFactsWithEngine(simulations)
+
+    await setPollFunFacts(pollId, funFacts, sessionParam)
+  }, session)
 }

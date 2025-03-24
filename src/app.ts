@@ -2,6 +2,7 @@ import type { Request } from 'express'
 import express from 'express'
 import type { TokenCallbackFn } from 'morgan'
 import morgan from 'morgan'
+import requestIp from 'request-ip'
 
 import { createExpressEndpoints } from '@ts-rest/express'
 import { generateOpenApi } from '@ts-rest/open-api'
@@ -14,6 +15,7 @@ import groupsController from './features/groups/groups.controller'
 import integrationsApiContract from './features/integrations/api/api.contract'
 import integrationsApiController from './features/integrations/api/api.controller'
 import integrationsController from './features/integrations/integrations.controller'
+import modeleController from './features/modele/modele.controller'
 import newslettersController from './features/newsletter/newsletter.controller'
 import northstarRatingsController from './features/northstar-ratings/northstar-ratings.controller'
 import organisationController from './features/organisations/organisations.controller'
@@ -36,8 +38,7 @@ app.use(
   })
 )
 
-// serve static context files
-app.use(express.static('contextes-sondage'))
+app.use(requestIp.mw())
 
 morgan.token('params', ((req: Request) =>
   JSON.stringify({
@@ -45,9 +46,12 @@ morgan.token('params', ((req: Request) =>
     query: req.query,
     params: req.params,
   })) as unknown as TokenCallbackFn)
+
+morgan.token('ip', (req: Request) => JSON.stringify(req.clientIp))
+
 app.use(
   morgan(
-    ':method :url :params :status :res[content-length] - :response-time ms',
+    '{"method":":method","url":":url","ip"::ip,"params"::params,"status":":status","resContentLength":":res[content-length]","reponseTime":":response-time ms"}',
     {
       stream: {
         write: (message) => logger.info(message.trim()),
@@ -65,6 +69,7 @@ app.use('/get-newsletter-subscriptions', getNewsletterSubscriptions)
 
 // new API routes
 app.use('/authentication', authenticationController)
+app.use('/modele', modeleController)
 app.use('/groups', groupsController)
 app.use('/integrations', integrationsController)
 app.use('/newsletters', newslettersController)

@@ -1,12 +1,19 @@
 import { faker } from '@faker-js/faker'
 import { StatusCodes } from 'http-status-codes'
-import nock from 'nock'
 import supertest from 'supertest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { formatBrevoDate } from '../../../adapters/brevo/__tests__/fixtures/formatBrevoDate'
+import {
+  brevoGetContact,
+  brevoRemoveFromList,
+  brevoUpdateContact,
+} from '../../../adapters/brevo/__tests__/fixtures/server.fixture'
 import { ListIds } from '../../../adapters/brevo/constant'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
+import { mswServer } from '../../../core/__tests__/fixtures/server.fixture'
 import { EventBusError } from '../../../core/event-bus/error'
+import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 import { createSimulation } from '../../simulations/__tests__/fixtures/simulations.fixtures'
 
@@ -115,39 +122,42 @@ describe('Given a NGC user', () => {
         })
 
         test(`Then it sets the email and returns a ${StatusCodes.OK} response with the user`, async () => {
-          const email = faker.internet.email()
+          const email = faker.internet.email().toLocaleLowerCase()
           const name = faker.person.fullName()
           const contactId = faker.number.int()
 
-          const scope = nock(process.env.BREVO_URL!, {
-            reqheaders: {
-              'api-key': process.env.BREVO_API_KEY!,
-            },
-          })
-            .post(`/v3/contacts`, {
-              email,
-              attributes: {
-                USER_ID: userId,
-                PRENOM: name,
+          mswServer.use(
+            brevoUpdateContact({
+              expectBody: {
+                email,
+                attributes: {
+                  USER_ID: userId,
+                  PRENOM: name,
+                },
+                updateEnabled: true,
               },
-              updateEnabled: true,
+            }),
+            brevoGetContact(email, {
+              customResponses: [
+                {
+                  body: {
+                    email,
+                    id: contactId,
+                    emailBlacklisted: faker.datatype.boolean(),
+                    smsBlacklisted: faker.datatype.boolean(),
+                    createdAt: formatBrevoDate(faker.date.past()),
+                    modifiedAt: formatBrevoDate(faker.date.recent()),
+                    attributes: {
+                      USER_ID: userId,
+                      PRENOM: null,
+                    },
+                    listIds: [],
+                    statistics: {},
+                  },
+                },
+              ],
             })
-            .reply(200, '')
-            .get(`/v3/contacts/${encodeURIComponent(email)}`)
-            .reply(200, {
-              email,
-              id: contactId,
-              emailBlacklisted: faker.datatype.boolean(),
-              smsBlacklisted: faker.datatype.boolean(),
-              createdAt: formatBrevoDate(faker.date.past()),
-              modifiedAt: formatBrevoDate(faker.date.recent()),
-              attributes: {
-                USER_ID: userId,
-                PRENOM: null,
-              },
-              listIds: [],
-              statistics: {},
-            })
+          )
 
           const { body } = await agent
             .put(url.replace(':userId', userId))
@@ -166,6 +176,8 @@ describe('Given a NGC user', () => {
             },
           })
 
+          await EventBus.flush()
+
           expect(body).toEqual({
             contact: {
               id: contactId,
@@ -179,20 +191,19 @@ describe('Given a NGC user', () => {
             updatedAt: expect.any(String),
           })
           expect(user.email).toBe(email)
-          expect(scope.isDone()).toBeTruthy()
         })
 
         describe('And database failure', () => {
           const databaseError = new Error('Something went wrong')
 
           beforeEach(() => {
-            jest
-              .spyOn(prisma, '$transaction')
-              .mockRejectedValueOnce(databaseError)
+            vi.spyOn(prisma, '$transaction').mockRejectedValueOnce(
+              databaseError
+            )
           })
 
           afterEach(() => {
-            jest.spyOn(prisma, '$transaction').mockRestore()
+            vi.spyOn(prisma, '$transaction').mockRestore()
           })
 
           test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
@@ -236,37 +247,44 @@ describe('Given a NGC user', () => {
         })
 
         test(`Then it returns a ${StatusCodes.OK} response with the user`, async () => {
-          const scope = nock(process.env.BREVO_URL!, {
-            reqheaders: {
-              'api-key': process.env.BREVO_API_KEY!,
+          const contactBody = {
+            email,
+            id: contactId,
+            emailBlacklisted: faker.datatype.boolean(),
+            smsBlacklisted: faker.datatype.boolean(),
+            createdAt: formatBrevoDate(faker.date.past()),
+            modifiedAt: formatBrevoDate(faker.date.recent()),
+            attributes: {
+              USER_ID: userId,
+              PRENOM: null,
             },
-          })
-            .post(`/v3/contacts`, {
-              email,
-              listIds,
-              attributes: {
-                USER_ID: userId,
-                PRENOM: null,
+            listIds,
+            statistics: {},
+          }
+
+          mswServer.use(
+            brevoUpdateContact({
+              expectBody: {
+                email,
+                listIds,
+                attributes: {
+                  USER_ID: userId,
+                  PRENOM: null,
+                },
+                updateEnabled: true,
               },
-              updateEnabled: true,
+            }),
+            brevoGetContact(email, {
+              customResponses: [
+                {
+                  body: contactBody,
+                },
+                {
+                  body: contactBody,
+                },
+              ],
             })
-            .reply(200, '')
-            .get(`/v3/contacts/${encodeURIComponent(email)}`)
-            .times(2)
-            .reply(200, {
-              email,
-              id: contactId,
-              emailBlacklisted: faker.datatype.boolean(),
-              smsBlacklisted: faker.datatype.boolean(),
-              createdAt: formatBrevoDate(faker.date.past()),
-              modifiedAt: formatBrevoDate(faker.date.recent()),
-              attributes: {
-                USER_ID: userId,
-                PRENOM: null,
-              },
-              listIds,
-              statistics: {},
-            })
+          )
 
           const { body } = await agent
             .put(url.replace(':userId', userId))
@@ -277,6 +295,8 @@ describe('Given a NGC user', () => {
               },
             })
             .expect(StatusCodes.OK)
+
+          await EventBus.flush()
 
           expect(body).toEqual({
             contact: {
@@ -290,52 +310,50 @@ describe('Given a NGC user', () => {
             createdAt: expect.any(String),
             updatedAt: expect.any(String),
           })
-          expect(scope.isDone()).toBeTruthy()
         })
 
         describe('And already has newsLetters', () => {
           test(`Then it unsubscribes unwanted newsletters and it returns a ${StatusCodes.OK} response with the user`, async () => {
-            const scope = nock(process.env.BREVO_URL!, {
-              reqheaders: {
-                'api-key': process.env.BREVO_API_KEY!,
-              },
-            })
-              .post(`/v3/contacts`)
-              .reply(200, '')
-              .get(`/v3/contacts/${encodeURIComponent(email)}`)
-              .reply(200, {
-                email,
-                id: contactId,
-                emailBlacklisted: faker.datatype.boolean(),
-                smsBlacklisted: faker.datatype.boolean(),
-                createdAt: formatBrevoDate(faker.date.past()),
-                modifiedAt: formatBrevoDate(faker.date.recent()),
-                attributes: {
-                  USER_ID: userId,
-                  PRENOM: null,
-                },
-                listIds: [...listIds, ListIds.TRANSPORT_NEWSLETTER],
-                statistics: {},
+            mswServer.use(
+              brevoUpdateContact(),
+              brevoRemoveFromList(32),
+              brevoGetContact(email, {
+                customResponses: [
+                  {
+                    body: {
+                      email,
+                      id: contactId,
+                      emailBlacklisted: faker.datatype.boolean(),
+                      smsBlacklisted: faker.datatype.boolean(),
+                      createdAt: formatBrevoDate(faker.date.past()),
+                      modifiedAt: formatBrevoDate(faker.date.recent()),
+                      attributes: {
+                        USER_ID: userId,
+                        PRENOM: null,
+                      },
+                      listIds: [...listIds, 32],
+                      statistics: {},
+                    },
+                  },
+                  {
+                    body: {
+                      email,
+                      id: contactId,
+                      emailBlacklisted: faker.datatype.boolean(),
+                      smsBlacklisted: faker.datatype.boolean(),
+                      createdAt: formatBrevoDate(faker.date.past()),
+                      modifiedAt: formatBrevoDate(faker.date.recent()),
+                      attributes: {
+                        USER_ID: userId,
+                        PRENOM: null,
+                      },
+                      listIds,
+                      statistics: {},
+                    },
+                  },
+                ],
               })
-              .post(
-                `/v3/contacts/lists/${ListIds.TRANSPORT_NEWSLETTER}/contacts/remove`
-              )
-              .reply(200)
-              .get(`/v3/contacts/${encodeURIComponent(email)}`)
-              .reply(200, {
-                email,
-                id: contactId,
-                emailBlacklisted: faker.datatype.boolean(),
-                smsBlacklisted: faker.datatype.boolean(),
-                createdAt: formatBrevoDate(faker.date.past()),
-                modifiedAt: formatBrevoDate(faker.date.recent()),
-                attributes: {
-                  USER_ID: userId,
-                  PRENOM: null,
-                },
-                listIds,
-                statistics: {},
-              })
+            )
 
             const { body } = await agent
               .put(url.replace(':userId', userId))
@@ -346,6 +364,8 @@ describe('Given a NGC user', () => {
                 },
               })
               .expect(StatusCodes.OK)
+
+            await EventBus.flush()
 
             expect(body).toEqual({
               contact: {
@@ -359,22 +379,16 @@ describe('Given a NGC user', () => {
               createdAt: expect.any(String),
               updatedAt: expect.any(String),
             })
-            expect(scope.isDone()).toBeTruthy()
           })
         })
 
         describe('And network error', () => {
           test(`Then it returns a ${StatusCodes.NOT_FOUND} response and logs the exception`, async () => {
-            const scope = nock(process.env.BREVO_URL!, {
-              reqheaders: {
-                'api-key': process.env.BREVO_API_KEY!,
-              },
-            })
-              .post(`/v3/contacts`)
-              .replyWithError({
-                message: 'Network error occurred',
-                code: 'ERR_CONNECTION_REFUSED',
+            mswServer.use(
+              brevoUpdateContact({
+                networkError: true,
               })
+            )
 
             const { body } = await agent
               .put(url.replace(':userId', userId))
@@ -386,8 +400,9 @@ describe('Given a NGC user', () => {
               })
               .expect(StatusCodes.INTERNAL_SERVER_ERROR)
 
+            await EventBus.flush()
+
             expect(body).toEqual({})
-            expect(scope.isDone()).toBeTruthy()
             expect(logger.error).toHaveBeenCalledWith(
               'User update failed',
               expect.any(EventBusError)
@@ -397,19 +412,16 @@ describe('Given a NGC user', () => {
 
         describe('And brevo is down', () => {
           test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} response after retries and logs the exception`, async () => {
-            const scope = nock(process.env.BREVO_URL!, {
-              reqheaders: {
-                'api-key': process.env.BREVO_API_KEY!,
-              },
-            })
-              .post(`/v3/contacts`)
-              .reply(500)
-              .post(`/v3/contacts`)
-              .reply(500)
-              .post(`/v3/contacts`)
-              .reply(500)
-              .post(`/v3/contacts`)
-              .reply(500)
+            mswServer.use(
+              brevoUpdateContact({
+                customResponses: [
+                  { status: StatusCodes.INTERNAL_SERVER_ERROR },
+                  { status: StatusCodes.INTERNAL_SERVER_ERROR },
+                  { status: StatusCodes.INTERNAL_SERVER_ERROR },
+                  { status: StatusCodes.INTERNAL_SERVER_ERROR },
+                ],
+              })
+            )
 
             const { body } = await agent
               .put(url.replace(':userId', userId))
@@ -421,8 +433,9 @@ describe('Given a NGC user', () => {
               })
               .expect(StatusCodes.INTERNAL_SERVER_ERROR)
 
+            await EventBus.flush()
+
             expect(body).toEqual({})
-            expect(scope.isDone()).toBeTruthy()
             expect(logger.error).toHaveBeenCalledWith(
               'User update failed',
               expect.any(EventBusError)
@@ -432,15 +445,12 @@ describe('Given a NGC user', () => {
 
         describe('And brevo interface changes', () => {
           test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} response and logs the exception`, async () => {
-            const scope = nock(process.env.BREVO_URL!, {
-              reqheaders: {
-                'api-key': process.env.BREVO_API_KEY!,
-              },
-            })
-              .post(`/v3/contacts`)
-              .reply(200, '')
-              .get(`/v3/contacts/${encodeURIComponent(email)}`)
-              .reply(200)
+            mswServer.use(
+              brevoUpdateContact(),
+              brevoGetContact(email, {
+                customResponses: [{ body: {} }],
+              })
+            )
 
             const { body } = await agent
               .put(url.replace(':userId', userId))
@@ -452,8 +462,9 @@ describe('Given a NGC user', () => {
               })
               .expect(StatusCodes.INTERNAL_SERVER_ERROR)
 
+            await EventBus.flush()
+
             expect(body).toEqual({})
-            expect(scope.isDone()).toBeTruthy()
             expect(logger.error).toHaveBeenCalledWith(
               'User update failed',
               expect.any(EventBusError)

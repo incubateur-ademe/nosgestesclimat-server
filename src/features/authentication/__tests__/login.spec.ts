@@ -3,10 +3,13 @@ import type { VerificationCode } from '@prisma/client'
 import dayjs from 'dayjs'
 import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
-import nock from 'nock'
 import supertest from 'supertest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { brevoUpdateContact } from '../../../adapters/brevo/__tests__/fixtures/server.fixture'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
+import { mswServer } from '../../../core/__tests__/fixtures/server.fixture'
+import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 import { LOGIN_ROUTE } from './fixtures/login.fixture'
 import { createVerificationCode } from './fixtures/verification-codes.fixture'
@@ -88,7 +91,7 @@ describe('Given a NGC user', () => {
           code: verificationCode.code,
         }
 
-        nock(process.env.BREVO_URL!).post('/v3/contacts').reply(200)
+        mswServer.use(brevoUpdateContact())
 
         const response = await agent
           .post(url)
@@ -115,23 +118,21 @@ describe('Given a NGC user', () => {
           code: verificationCode.code,
         }
 
-        const scope = nock(process.env.BREVO_URL!, {
-          reqheaders: {
-            'api-key': process.env.BREVO_API_KEY!,
-          },
-        })
-          .post('/v3/contacts', {
-            email: verificationCode.email,
-            attributes: {
-              USER_ID: verificationCode.userId,
+        mswServer.use(
+          brevoUpdateContact({
+            expectBody: {
+              email: verificationCode.email,
+              attributes: {
+                USER_ID: verificationCode.userId,
+              },
+              updateEnabled: true,
             },
-            updateEnabled: true,
           })
-          .reply(200)
+        )
 
         await agent.post(url).send(payload).expect(StatusCodes.OK)
 
-        expect(scope.isDone()).toBeTruthy()
+        await EventBus.flush()
       })
 
       describe('And is expired', () => {
@@ -157,11 +158,11 @@ describe('Given a NGC user', () => {
       const databaseError = new Error('Something went wrong')
 
       beforeEach(() => {
-        jest.spyOn(prisma, '$transaction').mockRejectedValueOnce(databaseError)
+        vi.spyOn(prisma, '$transaction').mockRejectedValueOnce(databaseError)
       })
 
       afterEach(() => {
-        jest.spyOn(prisma, '$transaction').mockRestore()
+        vi.spyOn(prisma, '$transaction').mockRestore()
       })
 
       test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {

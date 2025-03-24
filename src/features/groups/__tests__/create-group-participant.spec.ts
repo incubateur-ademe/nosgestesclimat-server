@@ -1,9 +1,16 @@
 import { faker } from '@faker-js/faker'
 import { StatusCodes } from 'http-status-codes'
-import nock from 'nock'
 import supertest from 'supertest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import {
+  brevoRemoveFromList,
+  brevoSendEmail,
+  brevoUpdateContact,
+} from '../../../adapters/brevo/__tests__/fixtures/server.fixture'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
+import { mswServer } from '../../../core/__tests__/fixtures/server.fixture'
+import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 import { getSimulationPayload } from '../../simulations/__tests__/fixtures/simulations.fixtures'
 import type { ParticipantInputCreateDto } from '../groups.validator'
@@ -36,8 +43,6 @@ describe('Given a NGC user', () => {
             simulation: getSimulationPayload(),
           })
           .expect(StatusCodes.NOT_FOUND)
-
-        jest.spyOn(prisma.groupParticipant, 'upsert').mockRestore()
       })
     })
 
@@ -175,13 +180,11 @@ describe('Given a NGC user', () => {
           simulation: getSimulationPayload(),
         }
 
-        nock(process.env.BREVO_URL!)
-          .post('/v3/smtp/email')
-          .reply(200)
-          .post('/v3/contacts')
-          .reply(200)
-          .post('/v3/contacts/lists/35/contacts/remove')
-          .reply(200)
+        mswServer.use(
+          brevoSendEmail(),
+          brevoUpdateContact(),
+          brevoRemoveFromList(35)
+        )
 
         await agent
           .post(url.replace(':groupId', groupId))
@@ -236,70 +239,68 @@ describe('Given a NGC user', () => {
             simulation: simulationPayload,
           }
 
-          const scope = nock(process.env.BREVO_URL!, {
-            reqheaders: {
-              'api-key': process.env.BREVO_API_KEY!,
-            },
-          })
-            .post('/v3/contacts', {
-              email,
-              listIds: [30],
-              attributes: {
-                USER_ID: userId,
-                LAST_SIMULATION_DATE: date.toISOString(),
-                ACTIONS_SELECTED_NUMBER: 0,
-                LAST_SIMULATION_BILAN_FOOTPRINT: (
-                  computedResults.carbone.bilan / 1000
-                ).toLocaleString('fr-FR', {
-                  maximumFractionDigits: 1,
-                }),
-                LAST_SIMULATION_TRANSPORTS_FOOTPRINT: (
-                  computedResults.carbone.categories.transport / 1000
-                ).toLocaleString('fr-FR', {
-                  maximumFractionDigits: 1,
-                }),
-                LAST_SIMULATION_ALIMENTATION_FOOTPRINT: (
-                  computedResults.carbone.categories.alimentation / 1000
-                ).toLocaleString('fr-FR', {
-                  maximumFractionDigits: 1,
-                }),
-                LAST_SIMULATION_LOGEMENT_FOOTPRINT: (
-                  computedResults.carbone.categories.logement / 1000
-                ).toLocaleString('fr-FR', {
-                  maximumFractionDigits: 1,
-                }),
-                LAST_SIMULATION_DIVERS_FOOTPRINT: (
-                  computedResults.carbone.categories.divers / 1000
-                ).toLocaleString('fr-FR', {
-                  maximumFractionDigits: 1,
-                }),
-                LAST_SIMULATION_SERVICES_FOOTPRINT: (
-                  computedResults.carbone.categories['services sociétaux'] /
-                  1000
-                ).toLocaleString('fr-FR', {
-                  maximumFractionDigits: 1,
-                }),
-                LAST_SIMULATION_BILAN_WATER: Math.round(
-                  computedResults.eau.bilan / 365
-                ).toString(),
-                PRENOM: name,
+          mswServer.use(
+            brevoSendEmail(),
+            brevoUpdateContact({
+              expectBody: {
+                email,
+                listIds: [30],
+                attributes: {
+                  USER_ID: userId,
+                  LAST_SIMULATION_DATE: date.toISOString(),
+                  ACTIONS_SELECTED_NUMBER: 0,
+                  LAST_SIMULATION_BILAN_FOOTPRINT: (
+                    computedResults.carbone.bilan / 1000
+                  ).toLocaleString('fr-FR', {
+                    maximumFractionDigits: 1,
+                  }),
+                  LAST_SIMULATION_TRANSPORTS_FOOTPRINT: (
+                    computedResults.carbone.categories.transport / 1000
+                  ).toLocaleString('fr-FR', {
+                    maximumFractionDigits: 1,
+                  }),
+                  LAST_SIMULATION_ALIMENTATION_FOOTPRINT: (
+                    computedResults.carbone.categories.alimentation / 1000
+                  ).toLocaleString('fr-FR', {
+                    maximumFractionDigits: 1,
+                  }),
+                  LAST_SIMULATION_LOGEMENT_FOOTPRINT: (
+                    computedResults.carbone.categories.logement / 1000
+                  ).toLocaleString('fr-FR', {
+                    maximumFractionDigits: 1,
+                  }),
+                  LAST_SIMULATION_DIVERS_FOOTPRINT: (
+                    computedResults.carbone.categories.divers / 1000
+                  ).toLocaleString('fr-FR', {
+                    maximumFractionDigits: 1,
+                  }),
+                  LAST_SIMULATION_SERVICES_FOOTPRINT: (
+                    computedResults.carbone.categories['services sociétaux'] /
+                    1000
+                  ).toLocaleString('fr-FR', {
+                    maximumFractionDigits: 1,
+                  }),
+                  LAST_SIMULATION_BILAN_WATER: Math.round(
+                    computedResults.eau.bilan / 365
+                  ).toString(),
+                  PRENOM: name,
+                },
+                updateEnabled: true,
               },
-              updateEnabled: true,
+            }),
+            brevoRemoveFromList(35, {
+              expectBody: {
+                emails: [email],
+              },
             })
-            .reply(200)
-            .post('/v3/contacts/lists/35/contacts/remove', {
-              emails: [email],
-            })
-            .reply(200)
-            .post('/v3/smtp/email')
-            .reply(200)
+          )
 
           await agent
             .post(url.replace(':groupId', groupId))
             .send(payload)
             .expect(StatusCodes.CREATED)
 
-          expect(scope.isDone()).toBeTruthy()
+          await EventBus.flush()
         })
 
         test('Then it sends a join email', async () => {
@@ -312,39 +313,35 @@ describe('Given a NGC user', () => {
             simulation: getSimulationPayload(),
           }
 
-          const scope = nock(process.env.BREVO_URL!, {
-            reqheaders: {
-              'api-key': process.env.BREVO_API_KEY!,
-            },
-          })
-            .post('/v3/smtp/email', {
-              to: [
-                {
-                  name: email,
-                  email,
+          mswServer.use(
+            brevoSendEmail({
+              expectBody: {
+                to: [
+                  {
+                    name: email,
+                    email,
+                  },
+                ],
+                templateId: 58,
+                params: {
+                  GROUP_URL: `https://nosgestesclimat.fr/amis/resultats?groupId=${groupId}&mtm_campaign=email-automatise&mtm_kwd=groupe-invite-voir-classement`,
+                  SHARE_URL: `https://nosgestesclimat.fr/amis/invitation?groupId=${groupId}&mtm_campaign=email-automatise&mtm_kwd=groupe-invite-url-partage`,
+                  DELETE_URL: `https://nosgestesclimat.fr/amis/supprimer?groupId=${groupId}&userId=${userId}&mtm_campaign=email-automatise&mtm_kwd=groupe-invite-delete`,
+                  GROUP_NAME: groupName,
+                  NAME: payload.name,
                 },
-              ],
-              templateId: 58,
-              params: {
-                GROUP_URL: `https://nosgestesclimat.fr/amis/resultats?groupId=${groupId}&mtm_campaign=email-automatise&mtm_kwd=groupe-invite-voir-classement`,
-                SHARE_URL: `https://nosgestesclimat.fr/amis/invitation?groupId=${groupId}&mtm_campaign=email-automatise&mtm_kwd=groupe-invite-url-partage`,
-                DELETE_URL: `https://nosgestesclimat.fr/amis/supprimer?groupId=${groupId}&userId=${userId}&mtm_campaign=email-automatise&mtm_kwd=groupe-invite-delete`,
-                GROUP_NAME: groupName,
-                NAME: payload.name,
               },
-            })
-            .reply(200)
-            .post('/v3/contacts')
-            .reply(200)
-            .post('/v3/contacts/lists/35/contacts/remove')
-            .reply(200)
+            }),
+            brevoUpdateContact(),
+            brevoRemoveFromList(35)
+          )
 
           await agent
             .post(url.replace(':groupId', groupId))
             .send(payload)
             .expect(StatusCodes.CREATED)
 
-          expect(scope.isDone()).toBeTruthy()
+          await EventBus.flush()
         })
 
         describe(`And incomplete simulation`, () => {
@@ -360,31 +357,29 @@ describe('Given a NGC user', () => {
               }),
             }
 
-            const scope = nock(process.env.BREVO_URL!, {
-              reqheaders: {
-                'api-key': process.env.BREVO_API_KEY!,
-              },
-            })
-              .post('/v3/smtp/email', {
-                to: [
-                  {
-                    name: email,
-                    email,
+            mswServer.use(
+              brevoSendEmail({
+                expectBody: {
+                  to: [
+                    {
+                      name: email,
+                      email,
+                    },
+                  ],
+                  templateId: 102,
+                  params: {
+                    SIMULATION_URL: `https://nosgestesclimat.fr/simulateur/bilan?sid=${payload.simulation.id}&mtm_campaign=email-automatise&mtm_kwd=pause-test-en-cours`,
                   },
-                ],
-                templateId: 102,
-                params: {
-                  SIMULATION_URL: `https://nosgestesclimat.fr/simulateur/bilan?sid=${payload.simulation.id}&mtm_campaign=email-automatise&mtm_kwd=pause-test-en-cours`,
                 },
               })
-              .reply(200)
+            )
 
             await agent
               .post(url.replace(':groupId', groupId))
               .send(payload)
               .expect(StatusCodes.CREATED)
 
-            expect(scope.isDone()).toBeTruthy()
+            await EventBus.flush()
           })
         })
 
@@ -399,32 +394,28 @@ describe('Given a NGC user', () => {
               simulation: getSimulationPayload(),
             }
 
-            const scope = nock(process.env.BREVO_URL!, {
-              reqheaders: {
-                'api-key': process.env.BREVO_API_KEY!,
-              },
-            })
-              .post('/v3/smtp/email', {
-                to: [
-                  {
-                    name: email,
-                    email,
+            mswServer.use(
+              brevoSendEmail({
+                expectBody: {
+                  to: [
+                    {
+                      name: email,
+                      email,
+                    },
+                  ],
+                  templateId: 58,
+                  params: {
+                    GROUP_URL: `https://preprod.nosgestesclimat.fr/amis/resultats?groupId=${groupId}&mtm_campaign=email-automatise&mtm_kwd=groupe-invite-voir-classement`,
+                    SHARE_URL: `https://preprod.nosgestesclimat.fr/amis/invitation?groupId=${groupId}&mtm_campaign=email-automatise&mtm_kwd=groupe-invite-url-partage`,
+                    DELETE_URL: `https://preprod.nosgestesclimat.fr/amis/supprimer?groupId=${groupId}&userId=${userId}&mtm_campaign=email-automatise&mtm_kwd=groupe-invite-delete`,
+                    GROUP_NAME: groupName,
+                    NAME: payload.name,
                   },
-                ],
-                templateId: 58,
-                params: {
-                  GROUP_URL: `https://preprod.nosgestesclimat.fr/amis/resultats?groupId=${groupId}&mtm_campaign=email-automatise&mtm_kwd=groupe-invite-voir-classement`,
-                  SHARE_URL: `https://preprod.nosgestesclimat.fr/amis/invitation?groupId=${groupId}&mtm_campaign=email-automatise&mtm_kwd=groupe-invite-url-partage`,
-                  DELETE_URL: `https://preprod.nosgestesclimat.fr/amis/supprimer?groupId=${groupId}&userId=${userId}&mtm_campaign=email-automatise&mtm_kwd=groupe-invite-delete`,
-                  GROUP_NAME: groupName,
-                  NAME: payload.name,
                 },
-              })
-              .reply(200)
-              .post('/v3/contacts')
-              .reply(200)
-              .post('/v3/contacts/lists/35/contacts/remove')
-              .reply(200)
+              }),
+              brevoUpdateContact(),
+              brevoRemoveFromList(35)
+            )
 
             await agent
               .post(url.replace(':groupId', groupId))
@@ -432,7 +423,7 @@ describe('Given a NGC user', () => {
               .send(payload)
               .expect(StatusCodes.CREATED)
 
-            expect(scope.isDone()).toBeTruthy()
+            await EventBus.flush()
           })
         })
 
@@ -449,7 +440,7 @@ describe('Given a NGC user', () => {
             })
           })
 
-          it(`Then it does not send email twice`, async () => {
+          test(`Then it does not send email twice`, async () => {
             const {
               id: _1,
               createdAt: _2,
@@ -457,22 +448,18 @@ describe('Given a NGC user', () => {
               ...payload
             } = participant
 
-            const scope = nock(process.env.BREVO_URL!)
-              .post('/v3/contacts')
-              .reply(200)
-              .post('/v3/contacts/lists/35/contacts/remove')
-              .reply(200)
+            mswServer.use(brevoUpdateContact(), brevoRemoveFromList(35))
 
             await agent
               .post(url.replace(':groupId', groupId))
               .send(payload)
               .expect(StatusCodes.CREATED)
 
-            expect(scope.isDone()).toBeTruthy()
+            await EventBus.flush()
           })
 
           describe('And from another device', () => {
-            it(`Then it does not send email twice`, async () => {
+            test(`Then it does not send email twice`, async () => {
               const { email } = participant
               const payload = {
                 email,
@@ -481,18 +468,14 @@ describe('Given a NGC user', () => {
                 simulation: getSimulationPayload(),
               }
 
-              const scope = nock(process.env.BREVO_URL!)
-                .post('/v3/contacts')
-                .reply(200)
-                .post('/v3/contacts/lists/35/contacts/remove')
-                .reply(200)
+              mswServer.use(brevoUpdateContact(), brevoRemoveFromList(35))
 
               await agent
                 .post(url.replace(':groupId', groupId))
                 .send(payload)
                 .expect(StatusCodes.CREATED)
 
-              expect(scope.isDone()).toBeTruthy()
+              await EventBus.flush()
             })
           })
         })
@@ -502,13 +485,11 @@ describe('Given a NGC user', () => {
         const databaseError = new Error('Something went wrong')
 
         beforeEach(() => {
-          jest
-            .spyOn(prisma, '$transaction')
-            .mockRejectedValueOnce(databaseError)
+          vi.spyOn(prisma, '$transaction').mockRejectedValueOnce(databaseError)
         })
 
         afterEach(() => {
-          jest.spyOn(prisma, '$transaction').mockRestore()
+          vi.spyOn(prisma, '$transaction').mockRestore()
         })
 
         test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
@@ -574,31 +555,29 @@ describe('Given a NGC user', () => {
           simulation: getSimulationPayload(),
         }
 
-        const scope = nock(process.env.BREVO_URL!, {
-          reqheaders: {
-            'api-key': process.env.BREVO_API_KEY!,
-          },
-        })
-          .post('/v3/contacts', {
-            email: administratorEmail,
-            listIds: [29],
-            attributes: {
-              USER_ID: administratorId,
-              NUMBER_CREATED_GROUPS: 1,
-              LAST_GROUP_CREATION_DATE: groupCreatedAt,
-              NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT: 0,
-              PRENOM: administratorName,
+        mswServer.use(
+          brevoUpdateContact({
+            expectBody: {
+              email: administratorEmail,
+              listIds: [29],
+              attributes: {
+                USER_ID: administratorId,
+                NUMBER_CREATED_GROUPS: 1,
+                LAST_GROUP_CREATION_DATE: groupCreatedAt,
+                NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT: 0,
+                PRENOM: administratorName,
+              },
+              updateEnabled: true,
             },
-            updateEnabled: true,
           })
-          .reply(200)
+        )
 
         await agent
           .post(url.replace(':groupId', groupId))
           .send(payload)
           .expect(StatusCodes.CREATED)
 
-        expect(scope.isDone()).toBeTruthy()
+        await EventBus.flush()
       })
     })
 
@@ -626,17 +605,10 @@ describe('Given a NGC user', () => {
           simulation: getSimulationPayload(),
         }
 
-        const scope = nock(process.env.BREVO_URL!)
-          .post('/v3/contacts')
-          .reply(200)
-
         await agent
           .post(url.replace(':groupId', groupId))
           .send(payload)
           .expect(StatusCodes.CREATED)
-
-        expect(scope.isDone()).toBeFalsy()
-        nock.cleanAll()
       })
     })
   })
@@ -727,15 +699,11 @@ describe('Given a NGC user', () => {
         simulation: getSimulationPayload(),
       }
 
-      nock(process.env.BREVO_URL!)
-        .post('/v3/smtp/email')
-        .reply(200)
-        .post('/v3/contacts')
-        .reply(200)
-        .post('/v3/contacts')
-        .reply(200)
-        .post('/v3/contacts/lists/35/contacts/remove')
-        .reply(200)
+      mswServer.use(
+        brevoSendEmail(),
+        brevoUpdateContact(),
+        brevoRemoveFromList(35)
+      )
 
       const response = await agent
         .post(url.replace(':groupId', groupId))
@@ -763,46 +731,6 @@ describe('Given a NGC user', () => {
     })
 
     test('Then it updates group administrator in brevo', async () => {
-      const payload: ParticipantInputCreateDto = {
-        userId: administratorId,
-        name: administratorName,
-        simulation: getSimulationPayload(),
-      }
-
-      const scope = nock(process.env.BREVO_URL!, {
-        reqheaders: {
-          'api-key': process.env.BREVO_API_KEY!,
-        },
-      })
-        .post('/v3/contacts', {
-          email: administratorEmail,
-          listIds: [29],
-          attributes: {
-            USER_ID: administratorId,
-            NUMBER_CREATED_GROUPS: 1,
-            LAST_GROUP_CREATION_DATE: groupCreatedAt,
-            NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT: 1,
-            PRENOM: administratorName,
-          },
-          updateEnabled: true,
-        })
-        .reply(200)
-        .post('/v3/smtp/email')
-        .reply(200)
-        .post('/v3/contacts')
-        .reply(200)
-        .post('/v3/contacts/lists/35/contacts/remove')
-        .reply(200)
-
-      await agent
-        .post(url.replace(':groupId', groupId))
-        .send(payload)
-        .expect(StatusCodes.CREATED)
-
-      expect(scope.isDone()).toBeTruthy()
-    })
-
-    test('Then it updates group administrator simulation in brevo', async () => {
       const date = new Date()
       const simulation = getSimulationPayload({ date })
       const { computedResults } = simulation
@@ -812,70 +740,86 @@ describe('Given a NGC user', () => {
         simulation,
       }
 
-      const scope = nock(process.env.BREVO_URL!, {
-        reqheaders: {
-          'api-key': process.env.BREVO_API_KEY!,
-        },
-      })
-        .post('/v3/contacts', {
-          email: administratorEmail,
-          attributes: {
-            USER_ID: administratorId,
-            LAST_SIMULATION_DATE: date.toISOString(),
-            ACTIONS_SELECTED_NUMBER: 0,
-            LAST_SIMULATION_BILAN_FOOTPRINT: (
-              computedResults.carbone.bilan / 1000
-            ).toLocaleString('fr-FR', {
-              maximumFractionDigits: 1,
-            }),
-            LAST_SIMULATION_TRANSPORTS_FOOTPRINT: (
-              computedResults.carbone.categories.transport / 1000
-            ).toLocaleString('fr-FR', {
-              maximumFractionDigits: 1,
-            }),
-            LAST_SIMULATION_ALIMENTATION_FOOTPRINT: (
-              computedResults.carbone.categories.alimentation / 1000
-            ).toLocaleString('fr-FR', {
-              maximumFractionDigits: 1,
-            }),
-            LAST_SIMULATION_LOGEMENT_FOOTPRINT: (
-              computedResults.carbone.categories.logement / 1000
-            ).toLocaleString('fr-FR', {
-              maximumFractionDigits: 1,
-            }),
-            LAST_SIMULATION_DIVERS_FOOTPRINT: (
-              computedResults.carbone.categories.divers / 1000
-            ).toLocaleString('fr-FR', {
-              maximumFractionDigits: 1,
-            }),
-            LAST_SIMULATION_SERVICES_FOOTPRINT: (
-              computedResults.carbone.categories['services sociétaux'] / 1000
-            ).toLocaleString('fr-FR', {
-              maximumFractionDigits: 1,
-            }),
-            LAST_SIMULATION_BILAN_WATER: Math.round(
-              computedResults.eau.bilan / 365
-            ).toString(),
-            PRENOM: administratorName,
+      const contactBodies: unknown[] = []
+
+      mswServer.use(
+        brevoSendEmail(),
+        brevoUpdateContact({
+          storeBodies: contactBodies,
+        }),
+        brevoRemoveFromList(35, {
+          expectBody: {
+            emails: [administratorEmail],
           },
-          updateEnabled: true,
         })
-        .reply(200)
-        .post('/v3/contacts/lists/35/contacts/remove', {
-          emails: [administratorEmail],
-        })
-        .reply(200)
-        .post('/v3/smtp/email')
-        .reply(200)
-        .post('/v3/contacts')
-        .reply(200)
+      )
 
       await agent
         .post(url.replace(':groupId', groupId))
         .send(payload)
         .expect(StatusCodes.CREATED)
 
-      expect(scope.isDone()).toBeTruthy()
+      await EventBus.flush()
+
+      expect(contactBodies).toEqual(
+        expect.arrayContaining([
+          {
+            email: administratorEmail,
+            listIds: [29],
+            attributes: {
+              USER_ID: administratorId,
+              NUMBER_CREATED_GROUPS: 1,
+              LAST_GROUP_CREATION_DATE: groupCreatedAt,
+              NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT: 1,
+              PRENOM: administratorName,
+            },
+            updateEnabled: true,
+          },
+          {
+            email: administratorEmail,
+            attributes: {
+              USER_ID: administratorId,
+              LAST_SIMULATION_DATE: date.toISOString(),
+              ACTIONS_SELECTED_NUMBER: 0,
+              LAST_SIMULATION_BILAN_FOOTPRINT: (
+                computedResults.carbone.bilan / 1000
+              ).toLocaleString('fr-FR', {
+                maximumFractionDigits: 1,
+              }),
+              LAST_SIMULATION_TRANSPORTS_FOOTPRINT: (
+                computedResults.carbone.categories.transport / 1000
+              ).toLocaleString('fr-FR', {
+                maximumFractionDigits: 1,
+              }),
+              LAST_SIMULATION_ALIMENTATION_FOOTPRINT: (
+                computedResults.carbone.categories.alimentation / 1000
+              ).toLocaleString('fr-FR', {
+                maximumFractionDigits: 1,
+              }),
+              LAST_SIMULATION_LOGEMENT_FOOTPRINT: (
+                computedResults.carbone.categories.logement / 1000
+              ).toLocaleString('fr-FR', {
+                maximumFractionDigits: 1,
+              }),
+              LAST_SIMULATION_DIVERS_FOOTPRINT: (
+                computedResults.carbone.categories.divers / 1000
+              ).toLocaleString('fr-FR', {
+                maximumFractionDigits: 1,
+              }),
+              LAST_SIMULATION_SERVICES_FOOTPRINT: (
+                computedResults.carbone.categories['services sociétaux'] / 1000
+              ).toLocaleString('fr-FR', {
+                maximumFractionDigits: 1,
+              }),
+              LAST_SIMULATION_BILAN_WATER: Math.round(
+                computedResults.eau.bilan / 365
+              ).toString(),
+              PRENOM: administratorName,
+            },
+            updateEnabled: true,
+          },
+        ])
+      )
     })
 
     test('Then it sends a creation email', async () => {
@@ -885,41 +829,35 @@ describe('Given a NGC user', () => {
         simulation: getSimulationPayload(),
       }
 
-      const scope = nock(process.env.BREVO_URL!, {
-        reqheaders: {
-          'api-key': process.env.BREVO_API_KEY!,
-        },
-      })
-        .post('/v3/smtp/email', {
-          to: [
-            {
-              name: administratorEmail,
-              email: administratorEmail,
+      mswServer.use(
+        brevoSendEmail({
+          expectBody: {
+            to: [
+              {
+                name: administratorEmail,
+                email: administratorEmail,
+              },
+            ],
+            templateId: 57,
+            params: {
+              GROUP_URL: `https://nosgestesclimat.fr/amis/resultats?groupId=${groupId}&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-voir-classement`,
+              SHARE_URL: `https://nosgestesclimat.fr/amis/invitation?groupId=${groupId}&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-url-partage`,
+              DELETE_URL: `https://nosgestesclimat.fr/amis/supprimer?groupId=${groupId}&userId=${administratorId}&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-delete`,
+              GROUP_NAME: groupName,
+              NAME: administratorName,
             },
-          ],
-          templateId: 57,
-          params: {
-            GROUP_URL: `https://nosgestesclimat.fr/amis/resultats?groupId=${groupId}&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-voir-classement`,
-            SHARE_URL: `https://nosgestesclimat.fr/amis/invitation?groupId=${groupId}&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-url-partage`,
-            DELETE_URL: `https://nosgestesclimat.fr/amis/supprimer?groupId=${groupId}&userId=${administratorId}&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-delete`,
-            GROUP_NAME: groupName,
-            NAME: administratorName,
           },
-        })
-        .reply(200)
-        .post('/v3/contacts')
-        .reply(200)
-        .post('/v3/contacts')
-        .reply(200)
-        .post('/v3/contacts/lists/35/contacts/remove')
-        .reply(200)
+        }),
+        brevoUpdateContact(),
+        brevoRemoveFromList(35)
+      )
 
       await agent
         .post(url.replace(':groupId', groupId))
         .send(payload)
         .expect(StatusCodes.CREATED)
 
-      expect(scope.isDone()).toBeTruthy()
+      await EventBus.flush()
     })
   })
 })

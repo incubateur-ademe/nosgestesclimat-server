@@ -7,6 +7,7 @@ import { EventBus } from '../../core/event-bus/event-bus'
 import logger from '../../logger'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
 import { SimulationUpsertedEvent } from './events/SimulationUpserted.event'
+import { publishRedisEvent } from './handlers/publish-redis-event'
 import { sendSimulationUpserted } from './handlers/send-simulation-upserted'
 import { syncUserDataAfterSimulationUpserted } from './handlers/sync-user-data-after-simulation-upserted'
 import { updateBrevoContact } from './handlers/update-brevo-contact'
@@ -28,6 +29,7 @@ const router = express.Router()
 EventBus.on(SimulationUpsertedEvent, updateBrevoContact)
 EventBus.on(SimulationUpsertedEvent, sendSimulationUpserted)
 EventBus.on(SimulationUpsertedEvent, syncUserDataAfterSimulationUpserted)
+EventBus.on(SimulationUpsertedEvent, publishRedisEvent)
 
 /**
  * Upserts a simulation

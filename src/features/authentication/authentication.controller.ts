@@ -5,7 +5,7 @@ import { EntityNotFoundException } from '../../core/errors/EntityNotFoundExcepti
 import { EventBus } from '../../core/event-bus/event-bus'
 import logger from '../../logger'
 import { COOKIE_NAME, COOKIES_OPTIONS, login } from './authentication.service'
-import { LoginValidator } from './authentication.validator'
+import { LoginDto, LoginValidator } from './authentication.validator'
 import { LoginEvent } from './events/Login.event'
 import { syncUserDataAfterLogin } from './handlers/sync-user-data-after-login'
 import { updateBrevoContact } from './handlers/update-brevo-contact'
@@ -22,7 +22,7 @@ router
   .route('/v1/login')
   .post(validateRequest(LoginValidator), async (req, res) => {
     try {
-      const token = await login(req.body)
+      const token = await login(LoginDto.parse(req.body))
 
       res.cookie(COOKIE_NAME, token, COOKIES_OPTIONS)
 

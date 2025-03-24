@@ -1,9 +1,15 @@
 import { faker } from '@faker-js/faker'
 import { StatusCodes } from 'http-status-codes'
-import nock from 'nock'
 import supertest from 'supertest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import {
+  brevoRemoveFromList,
+  brevoUpdateContact,
+} from '../../../adapters/brevo/__tests__/fixtures/server.fixture'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
+import { mswServer } from '../../../core/__tests__/fixtures/server.fixture'
+import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 import { getSimulationPayload } from '../../simulations/__tests__/fixtures/simulations.fixtures'
 import {
@@ -84,15 +90,13 @@ describe('Given a NGC user', () => {
         )
 
         test('Then it updates group participant in brevo', async () => {
-          const scope = nock(process.env.BREVO_URL!, {
-            reqheaders: {
-              'api-key': process.env.BREVO_API_KEY!,
-            },
-          })
-            .post(`/v3/contacts/lists/30/contacts/remove`, {
-              emails: [participantUserEmail],
+          mswServer.use(
+            brevoRemoveFromList(30, {
+              expectBody: {
+                emails: [participantUserEmail],
+              },
             })
-            .reply(200)
+          )
 
           await agent
             .delete(
@@ -102,7 +106,7 @@ describe('Given a NGC user', () => {
             )
             .expect(StatusCodes.NO_CONTENT)
 
-          expect(scope.isDone()).toBeTruthy()
+          await EventBus.flush()
         })
       })
     })
@@ -136,26 +140,25 @@ describe('Given a NGC user', () => {
       })
 
       test('Then it updates group administrator in brevo', async () => {
-        const scope = nock(process.env.BREVO_URL!, {
-          reqheaders: {
-            'api-key': process.env.BREVO_API_KEY!,
-          },
-        })
-          .post('/v3/contacts', {
-            email: administratorEmail,
-            attributes: {
-              USER_ID: administratorId,
-              NUMBER_CREATED_GROUPS: 0,
-              NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT: 0,
-              PRENOM: administratorName,
+        mswServer.use(
+          brevoUpdateContact({
+            expectBody: {
+              email: administratorEmail,
+              attributes: {
+                USER_ID: administratorId,
+                NUMBER_CREATED_GROUPS: 0,
+                NUMBER_CREATED_GROUPS_WITH_ONE_PARTICIPANT: 0,
+                PRENOM: administratorName,
+              },
+              updateEnabled: true,
             },
-            updateEnabled: true,
+          }),
+          brevoRemoveFromList(29, {
+            expectBody: {
+              emails: [administratorEmail],
+            },
           })
-          .reply(200)
-          .post(`/v3/contacts/lists/29/contacts/remove`, {
-            emails: [administratorEmail],
-          })
-          .reply(200)
+        )
 
         await agent
           .delete(
@@ -163,7 +166,7 @@ describe('Given a NGC user', () => {
           )
           .expect(StatusCodes.NO_CONTENT)
 
-        expect(scope.isDone()).toBeTruthy()
+        await EventBus.flush()
       })
     })
 
@@ -189,18 +192,11 @@ describe('Given a NGC user', () => {
       )
 
       test('Then it does not update group administrator in brevo', async () => {
-        const scope = nock(process.env.BREVO_URL!)
-          .post('/v3/contacts')
-          .reply(200)
-
         await agent
           .delete(
             url.replace(':groupId', groupId).replace(':userId', administratorId)
           )
           .expect(StatusCodes.NO_CONTENT)
-
-        expect(scope.isDone()).toBeFalsy()
-        nock.cleanAll()
       })
     })
 
@@ -226,11 +222,11 @@ describe('Given a NGC user', () => {
       const databaseError = new Error('Something went wrong')
 
       beforeEach(() => {
-        jest.spyOn(prisma, '$transaction').mockRejectedValueOnce(databaseError)
+        vi.spyOn(prisma, '$transaction').mockRejectedValueOnce(databaseError)
       })
 
       afterEach(() => {
-        jest.spyOn(prisma, '$transaction').mockRestore()
+        vi.spyOn(prisma, '$transaction').mockRestore()
       })
 
       test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {

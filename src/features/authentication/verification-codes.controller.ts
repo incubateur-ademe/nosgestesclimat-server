@@ -8,7 +8,10 @@ import { VerificationCodeCreatedEvent } from './events/VerificationCodeCreated.e
 import { sendVerificationCode } from './handlers/send-verification-code'
 import { updateBrevoContact } from './handlers/update-brevo-contact'
 import { createVerificationCode } from './verification-codes.service'
-import { VerificationCodeCreateValidator } from './verification-codes.validator'
+import {
+  VerificationCodeCreateDto,
+  VerificationCodeCreateValidator,
+} from './verification-codes.validator'
 
 const router = express.Router()
 
@@ -23,7 +26,7 @@ router
   .post(validateRequest(VerificationCodeCreateValidator), async (req, res) => {
     try {
       const verificationCode = await createVerificationCode({
-        verificationCodeDto: req.body,
+        verificationCodeDto: VerificationCodeCreateDto.parse(req.body),
         origin: req.get('origin') || config.origin,
       })
 

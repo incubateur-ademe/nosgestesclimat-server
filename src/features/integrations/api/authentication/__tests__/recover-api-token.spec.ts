@@ -4,6 +4,7 @@ import dayjs from 'dayjs'
 import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
 import supertest from 'supertest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { prisma } from '../../../../../adapters/prisma/client'
 import app from '../../../../../app'
 import logger from '../../../../../logger'
@@ -129,11 +130,11 @@ describe('Given a NGC integrations API user', () => {
       const databaseError = new Error('Something went wrong')
 
       beforeEach(() => {
-        jest.spyOn(prisma, '$transaction').mockRejectedValueOnce(databaseError)
+        vi.spyOn(prisma, '$transaction').mockRejectedValueOnce(databaseError)
       })
 
       afterEach(() => {
-        jest.spyOn(prisma, '$transaction').mockRestore()
+        vi.spyOn(prisma, '$transaction').mockRestore()
       })
 
       test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {

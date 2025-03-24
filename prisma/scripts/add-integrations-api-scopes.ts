@@ -6,7 +6,7 @@ type Scope = {
   description: string
 }
 
-export const exec = async (prisma: PrismaClient) => {
+export const exec = async ({ prisma }: { prisma: PrismaClient }) => {
   try {
     const scopes: Scope[] = [
       {

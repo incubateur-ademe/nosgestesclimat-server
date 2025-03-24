@@ -16,7 +16,7 @@ export const FetchUserContactValidator = {
   query: z.object({}).strict().optional(),
 }
 
-const UserUpdateDto = z
+export const UserUpdateDto = z
   .object({
     email: z
       .string()

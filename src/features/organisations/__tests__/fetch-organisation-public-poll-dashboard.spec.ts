@@ -1,6 +1,7 @@
 import { faker } from '@faker-js/faker'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
 import logger from '../../../logger'
@@ -177,13 +178,11 @@ describe('Given a NGC user', () => {
         const databaseError = new Error('Something went wrong')
 
         beforeEach(() => {
-          jest
-            .spyOn(prisma, '$transaction')
-            .mockRejectedValueOnce(databaseError)
+          vi.spyOn(prisma, '$transaction').mockRejectedValueOnce(databaseError)
         })
 
         afterEach(() => {
-          jest.spyOn(prisma, '$transaction').mockRestore()
+          vi.spyOn(prisma, '$transaction').mockRestore()
         })
 
         test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
@@ -270,20 +269,14 @@ describe('Given a NGC user', () => {
 
       describe('And participants do their simulation', () => {
         beforeEach(async () => {
-          await Promise.all([
-            createOrganisationPollSimulation({
+          let i = 0
+          while (i < 3) {
+            await createOrganisationPollSimulation({
               agent,
               pollId,
-            }),
-            createOrganisationPollSimulation({
-              agent,
-              pollId,
-            }),
-            createOrganisationPollSimulation({
-              agent,
-              pollId,
-            }),
-          ])
+            })
+            i++
+          }
         })
 
         test(`Then it returns a ${StatusCodes.OK} response with the dashboard`, async () => {
@@ -335,20 +328,14 @@ describe('Given a NGC user', () => {
             verificationCode: { email },
           }))
 
-          await Promise.all([
-            createOrganisationPollSimulation({
+          let i = 0
+          while (i < 3) {
+            await createOrganisationPollSimulation({
               agent,
               pollId,
-            }),
-            createOrganisationPollSimulation({
-              agent,
-              pollId,
-            }),
-            createOrganisationPollSimulation({
-              agent,
-              pollId,
-            }),
-          ])
+            })
+            i++
+          }
         })
 
         test(`Then it returns a ${StatusCodes.OK} response with the dashboard`, async () => {

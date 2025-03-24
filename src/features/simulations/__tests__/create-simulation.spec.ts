@@ -5,10 +5,17 @@ import {
   SimulationAdditionalQuestionAnswerType,
 } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
-import nock from 'nock'
 import supertest from 'supertest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import {
+  brevoRemoveFromList,
+  brevoSendEmail,
+  brevoUpdateContact,
+} from '../../../adapters/brevo/__tests__/fixtures/server.fixture'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
+import { mswServer } from '../../../core/__tests__/fixtures/server.fixture'
+import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 import type { SimulationCreateInputDto } from '../simulations.validator'
 import {
@@ -181,17 +188,13 @@ describe('Given a NGC user', () => {
           },
         }
 
-        nock(process.env.BREVO_URL!)
-          .post('/v3/contacts')
-          .reply(200)
-          .post('/v3/contacts/lists/35/contacts/remove')
-          .reply(200)
-          .post('/v3/contacts/lists/22/contacts/remove')
-          .reply(200)
-          .post('/v3/contacts/lists/32/contacts/remove')
-          .reply(200)
-          .post('/v3/contacts/lists/36/contacts/remove')
-          .reply(200)
+        mswServer.use(
+          brevoUpdateContact(),
+          brevoRemoveFromList(22),
+          brevoRemoveFromList(32),
+          brevoRemoveFromList(35),
+          brevoRemoveFromList(36)
+        )
 
         const {
           body: { id },
@@ -199,6 +202,8 @@ describe('Given a NGC user', () => {
           .post(url.replace(':userId', userId))
           .send(payload)
           .expect(StatusCodes.CREATED)
+
+        await EventBus.flush()
 
         const createdSimulation = await prisma.simulation.findUnique({
           where: {
@@ -269,224 +274,10 @@ describe('Given a NGC user', () => {
               },
             }
 
-            const scope = nock(process.env.BREVO_URL!, {
-              reqheaders: {
-                'api-key': process.env.BREVO_API_KEY!,
-              },
-            })
-              .post('/v3/contacts', {
-                email,
-                attributes: {
-                  USER_ID: userId,
-                  LAST_SIMULATION_DATE: date.toISOString(),
-                  ACTIONS_SELECTED_NUMBER: 0,
-                  LAST_SIMULATION_BILAN_FOOTPRINT: (
-                    computedResults.carbone.bilan / 1000
-                  ).toLocaleString('fr-FR', {
-                    maximumFractionDigits: 1,
-                  }),
-                  LAST_SIMULATION_TRANSPORTS_FOOTPRINT: (
-                    computedResults.carbone.categories.transport / 1000
-                  ).toLocaleString('fr-FR', {
-                    maximumFractionDigits: 1,
-                  }),
-                  LAST_SIMULATION_ALIMENTATION_FOOTPRINT: (
-                    computedResults.carbone.categories.alimentation / 1000
-                  ).toLocaleString('fr-FR', {
-                    maximumFractionDigits: 1,
-                  }),
-                  LAST_SIMULATION_LOGEMENT_FOOTPRINT: (
-                    computedResults.carbone.categories.logement / 1000
-                  ).toLocaleString('fr-FR', {
-                    maximumFractionDigits: 1,
-                  }),
-                  LAST_SIMULATION_DIVERS_FOOTPRINT: (
-                    computedResults.carbone.categories.divers / 1000
-                  ).toLocaleString('fr-FR', {
-                    maximumFractionDigits: 1,
-                  }),
-                  LAST_SIMULATION_SERVICES_FOOTPRINT: (
-                    computedResults.carbone.categories['services sociétaux'] /
-                    1000
-                  ).toLocaleString('fr-FR', {
-                    maximumFractionDigits: 1,
-                  }),
-                  LAST_SIMULATION_BILAN_WATER: Math.round(
-                    computedResults.eau.bilan / 365
-                  ).toString(),
-                  PRENOM: nom,
-                },
-                updateEnabled: true,
-              })
-              .reply(200)
-              .post('/v3/contacts/lists/35/contacts/remove', {
-                emails: [email],
-              })
-              .reply(200)
-              .post('/v3/contacts/lists/22/contacts/remove', {
-                emails: [email],
-              })
-              .reply(200)
-              .post('/v3/contacts/lists/32/contacts/remove', {
-                emails: [email],
-              })
-              .reply(200)
-              .post('/v3/contacts/lists/36/contacts/remove', {
-                emails: [email],
-              })
-              .reply(200)
-
-            await agent
-              .post(url.replace(':userId', userId))
-              .send(payload)
-              .expect(StatusCodes.CREATED)
-
-            expect(scope.isDone()).toBeTruthy()
-          })
-
-          test(`Then it sends a SIMULATION_COMPLETED email`, async () => {
-            const id = faker.string.uuid()
-            const email = faker.internet.email().toLocaleLowerCase()
-            const payload: SimulationCreateInputDto = {
-              id,
-              situation,
-              computedResults,
-              progression: 1,
-              user: {
-                email,
-              },
-            }
-
-            const scope = nock(process.env.BREVO_URL!, {
-              reqheaders: {
-                'api-key': process.env.BREVO_API_KEY!,
-              },
-            })
-              .post('/v3/smtp/email', {
-                to: [
-                  {
-                    name: email,
-                    email,
-                  },
-                ],
-                templateId: 55,
-                params: {
-                  SIMULATION_URL: `https://nosgestesclimat.fr/fin?sid=${id}&mtm_campaign=email-automatise&mtm_kwd=fin-retrouver-simulation`,
-                },
-              })
-              .reply(200)
-              .post('/v3/contacts')
-              .reply(200)
-              .post('/v3/contacts/lists/35/contacts/remove')
-              .reply(200)
-              .post('/v3/contacts/lists/22/contacts/remove', {
-                emails: [email],
-              })
-              .reply(200)
-              .post('/v3/contacts/lists/32/contacts/remove', {
-                emails: [email],
-              })
-              .reply(200)
-              .post('/v3/contacts/lists/36/contacts/remove', {
-                emails: [email],
-              })
-              .reply(200)
-
-            await agent
-              .post(url.replace(':userId', faker.string.uuid()))
-              .send(payload)
-              .query({ sendEmail: true })
-              .expect(StatusCodes.CREATED)
-
-            expect(scope.isDone()).toBeTruthy()
-          })
-
-          describe('And custom user origin (preprod)', () => {
-            test(`Then it sends a SIMULATION_COMPLETED email`, async () => {
-              const id = faker.string.uuid()
-              const email = faker.internet.email().toLocaleLowerCase()
-              const payload: SimulationCreateInputDto = {
-                id,
-                situation,
-                computedResults,
-                progression: 1,
-                user: {
+            mswServer.use(
+              brevoUpdateContact({
+                expectBody: {
                   email,
-                },
-              }
-
-              const scope = nock(process.env.BREVO_URL!, {
-                reqheaders: {
-                  'api-key': process.env.BREVO_API_KEY!,
-                },
-              })
-                .post('/v3/smtp/email', {
-                  to: [
-                    {
-                      name: email,
-                      email,
-                    },
-                  ],
-                  templateId: 55,
-                  params: {
-                    SIMULATION_URL: `https://preprod.nosgestesclimat.fr/fin?sid=${id}&mtm_campaign=email-automatise&mtm_kwd=fin-retrouver-simulation`,
-                  },
-                })
-                .reply(200)
-                .post('/v3/contacts')
-                .reply(200)
-                .post('/v3/contacts/lists/35/contacts/remove')
-                .reply(200)
-                .post('/v3/contacts/lists/22/contacts/remove', {
-                  emails: [email],
-                })
-                .reply(200)
-                .post('/v3/contacts/lists/32/contacts/remove', {
-                  emails: [email],
-                })
-                .reply(200)
-                .post('/v3/contacts/lists/36/contacts/remove', {
-                  emails: [email],
-                })
-                .reply(200)
-
-              await agent
-                .post(url.replace(':userId', faker.string.uuid()))
-                .send(payload)
-                .query({ sendEmail: true })
-                .set('origin', 'https://preprod.nosgestesclimat.fr')
-                .expect(StatusCodes.CREATED)
-
-              expect(scope.isDone()).toBeTruthy()
-            })
-          })
-
-          describe('And he subsribed to newsletters', () => {
-            test('Then it adds or updates contact in brevo', async () => {
-              const date = new Date()
-              const email = faker.internet.email().toLocaleLowerCase()
-              const userId = faker.string.uuid()
-              const payload: SimulationCreateInputDto = {
-                id: faker.string.uuid(),
-                date,
-                situation,
-                computedResults,
-                progression: 1,
-                savedViaEmail: true,
-                user: {
-                  name: nom,
-                  email,
-                },
-              }
-
-              const scope = nock(process.env.BREVO_URL!, {
-                reqheaders: {
-                  'api-key': process.env.BREVO_API_KEY!,
-                },
-              })
-                .post('/v3/contacts', {
-                  email,
-                  listIds: [22, 32, 36],
                   attributes: {
                     USER_ID: userId,
                     LAST_SIMULATION_DATE: date.toISOString(),
@@ -528,12 +319,190 @@ describe('Given a NGC user', () => {
                     PRENOM: nom,
                   },
                   updateEnabled: true,
-                })
-                .reply(200)
-                .post('/v3/contacts/lists/35/contacts/remove', {
-                  emails: [email],
-                })
-                .reply(200)
+                },
+              }),
+              brevoRemoveFromList(22, {
+                expectBody: { emails: [email] },
+              }),
+              brevoRemoveFromList(32, {
+                expectBody: { emails: [email] },
+              }),
+              brevoRemoveFromList(35, {
+                expectBody: { emails: [email] },
+              }),
+              brevoRemoveFromList(36, {
+                expectBody: { emails: [email] },
+              })
+            )
+
+            await agent
+              .post(url.replace(':userId', userId))
+              .send(payload)
+              .expect(StatusCodes.CREATED)
+
+            await EventBus.flush()
+          })
+
+          test(`Then it sends a SIMULATION_COMPLETED email`, async () => {
+            const id = faker.string.uuid()
+            const email = faker.internet.email().toLocaleLowerCase()
+            const payload: SimulationCreateInputDto = {
+              id,
+              situation,
+              computedResults,
+              progression: 1,
+              user: {
+                email,
+              },
+            }
+
+            mswServer.use(
+              brevoSendEmail({
+                expectBody: {
+                  to: [
+                    {
+                      name: email,
+                      email,
+                    },
+                  ],
+                  templateId: 55,
+                  params: {
+                    SIMULATION_URL: `https://nosgestesclimat.fr/fin?sid=${id}&mtm_campaign=email-automatise&mtm_kwd=fin-retrouver-simulation`,
+                  },
+                },
+              }),
+              brevoUpdateContact(),
+              brevoRemoveFromList(22),
+              brevoRemoveFromList(32),
+              brevoRemoveFromList(35),
+              brevoRemoveFromList(36)
+            )
+
+            await agent
+              .post(url.replace(':userId', faker.string.uuid()))
+              .send(payload)
+              .query({ sendEmail: true })
+              .expect(StatusCodes.CREATED)
+
+            await EventBus.flush()
+          })
+
+          describe('And custom user origin (preprod)', () => {
+            test(`Then it sends a SIMULATION_COMPLETED email`, async () => {
+              const id = faker.string.uuid()
+              const email = faker.internet.email().toLocaleLowerCase()
+              const payload: SimulationCreateInputDto = {
+                id,
+                situation,
+                computedResults,
+                progression: 1,
+                user: {
+                  email,
+                },
+              }
+
+              mswServer.use(
+                brevoSendEmail({
+                  expectBody: {
+                    to: [
+                      {
+                        name: email,
+                        email,
+                      },
+                    ],
+                    templateId: 55,
+                    params: {
+                      SIMULATION_URL: `https://preprod.nosgestesclimat.fr/fin?sid=${id}&mtm_campaign=email-automatise&mtm_kwd=fin-retrouver-simulation`,
+                    },
+                  },
+                }),
+                brevoUpdateContact(),
+                brevoRemoveFromList(22),
+                brevoRemoveFromList(32),
+                brevoRemoveFromList(35),
+                brevoRemoveFromList(36)
+              )
+
+              await agent
+                .post(url.replace(':userId', faker.string.uuid()))
+                .send(payload)
+                .query({ sendEmail: true })
+                .set('origin', 'https://preprod.nosgestesclimat.fr')
+                .expect(StatusCodes.CREATED)
+
+              await EventBus.flush()
+            })
+          })
+
+          describe('And he subsribed to newsletters', () => {
+            test('Then it adds or updates contact in brevo', async () => {
+              const date = new Date()
+              const email = faker.internet.email().toLocaleLowerCase()
+              const userId = faker.string.uuid()
+              const payload: SimulationCreateInputDto = {
+                id: faker.string.uuid(),
+                date,
+                situation,
+                computedResults,
+                progression: 1,
+                savedViaEmail: true,
+                user: {
+                  name: nom,
+                  email,
+                },
+              }
+
+              mswServer.use(
+                brevoUpdateContact({
+                  expectBody: {
+                    email,
+                    listIds: [22, 32, 36],
+                    attributes: {
+                      USER_ID: userId,
+                      LAST_SIMULATION_DATE: date.toISOString(),
+                      ACTIONS_SELECTED_NUMBER: 0,
+                      LAST_SIMULATION_BILAN_FOOTPRINT: (
+                        computedResults.carbone.bilan / 1000
+                      ).toLocaleString('fr-FR', {
+                        maximumFractionDigits: 1,
+                      }),
+                      LAST_SIMULATION_TRANSPORTS_FOOTPRINT: (
+                        computedResults.carbone.categories.transport / 1000
+                      ).toLocaleString('fr-FR', {
+                        maximumFractionDigits: 1,
+                      }),
+                      LAST_SIMULATION_ALIMENTATION_FOOTPRINT: (
+                        computedResults.carbone.categories.alimentation / 1000
+                      ).toLocaleString('fr-FR', {
+                        maximumFractionDigits: 1,
+                      }),
+                      LAST_SIMULATION_LOGEMENT_FOOTPRINT: (
+                        computedResults.carbone.categories.logement / 1000
+                      ).toLocaleString('fr-FR', {
+                        maximumFractionDigits: 1,
+                      }),
+                      LAST_SIMULATION_DIVERS_FOOTPRINT: (
+                        computedResults.carbone.categories.divers / 1000
+                      ).toLocaleString('fr-FR', {
+                        maximumFractionDigits: 1,
+                      }),
+                      LAST_SIMULATION_SERVICES_FOOTPRINT: (
+                        computedResults.carbone.categories[
+                          'services sociétaux'
+                        ] / 1000
+                      ).toLocaleString('fr-FR', {
+                        maximumFractionDigits: 1,
+                      }),
+                      LAST_SIMULATION_BILAN_WATER: Math.round(
+                        computedResults.eau.bilan / 365
+                      ).toString(),
+                      PRENOM: nom,
+                    },
+                    updateEnabled: true,
+                  },
+                }),
+                brevoRemoveFromList(35)
+              )
 
               await agent
                 .post(url.replace(':userId', userId))
@@ -543,7 +512,7 @@ describe('Given a NGC user', () => {
                 .send(payload)
                 .expect(StatusCodes.CREATED)
 
-              expect(scope.isDone()).toBeTruthy()
+              await EventBus.flush()
             })
           })
         })
@@ -563,27 +532,25 @@ describe('Given a NGC user', () => {
               },
             }
 
-            const scope = nock(process.env.BREVO_URL!, {
-              reqheaders: {
-                'api-key': process.env.BREVO_API_KEY!,
-              },
-            })
-              .post('/v3/contacts', {
-                email,
-                listIds: [35],
-                attributes: {
-                  USER_ID: userId,
+            mswServer.use(
+              brevoUpdateContact({
+                expectBody: {
+                  email,
+                  listIds: [35],
+                  attributes: {
+                    USER_ID: userId,
+                  },
+                  updateEnabled: true,
                 },
-                updateEnabled: true,
               })
-              .reply(200)
+            )
+
+            await EventBus.flush()
 
             await agent
               .post(url.replace(':userId', userId))
               .send(payload)
               .expect(StatusCodes.CREATED)
-
-            expect(scope.isDone()).toBeTruthy()
           })
 
           test(`Then it sends a SIMULATION_IN_PROGRESS email`, async () => {
@@ -599,34 +566,31 @@ describe('Given a NGC user', () => {
               },
             }
 
-            const scope = nock(process.env.BREVO_URL!, {
-              reqheaders: {
-                'api-key': process.env.BREVO_API_KEY!,
-              },
-            })
-              .post('/v3/smtp/email', {
-                to: [
-                  {
-                    name: email,
-                    email,
+            mswServer.use(
+              brevoSendEmail({
+                expectBody: {
+                  to: [
+                    {
+                      name: email,
+                      email,
+                    },
+                  ],
+                  templateId: 102,
+                  params: {
+                    SIMULATION_URL: `https://nosgestesclimat.fr/simulateur/bilan?sid=${id}&mtm_campaign=email-automatise&mtm_kwd=pause-test-en-cours`,
                   },
-                ],
-                templateId: 102,
-                params: {
-                  SIMULATION_URL: `https://nosgestesclimat.fr/simulateur/bilan?sid=${id}&mtm_campaign=email-automatise&mtm_kwd=pause-test-en-cours`,
                 },
-              })
-              .reply(200)
-              .post('/v3/contacts')
-              .reply(200)
+              }),
+              brevoUpdateContact()
+            )
+
+            await EventBus.flush()
 
             await agent
               .post(url.replace(':userId', faker.string.uuid()))
               .send(payload)
               .query({ sendEmail: true })
               .expect(StatusCodes.CREATED)
-
-            expect(scope.isDone()).toBeTruthy()
           })
         })
       })
@@ -635,13 +599,11 @@ describe('Given a NGC user', () => {
         const databaseError = new Error('Something went wrong')
 
         beforeEach(() => {
-          jest
-            .spyOn(prisma, '$transaction')
-            .mockRejectedValueOnce(databaseError)
+          vi.spyOn(prisma, '$transaction').mockRejectedValueOnce(databaseError)
         })
 
         afterEach(() => {
-          jest.spyOn(prisma, '$transaction').mockRestore()
+          vi.spyOn(prisma, '$transaction').mockRestore()
         })
 
         test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {

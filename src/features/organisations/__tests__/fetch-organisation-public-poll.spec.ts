@@ -1,6 +1,8 @@
 import { faker } from '@faker-js/faker'
+import modelFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRules.json'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
 import logger from '../../../logger'
@@ -134,6 +136,13 @@ describe('Given a NGC user', () => {
                 finished: 1,
                 hasParticipated: true,
               },
+              funFacts: Object.fromEntries(
+                Object.entries(modelFunFacts).map(([k]) => [
+                  k,
+                  expect.any(Number),
+                ])
+              ),
+              updatedAt: expect.any(String),
             })
           })
 
@@ -159,6 +168,13 @@ describe('Given a NGC user', () => {
                   finished: 1,
                   hasParticipated: true,
                 },
+                funFacts: Object.fromEntries(
+                  Object.entries(modelFunFacts).map(([k]) => [
+                    k,
+                    expect.any(Number),
+                  ])
+                ),
+                updatedAt: expect.any(String),
               })
             })
           })
@@ -169,13 +185,11 @@ describe('Given a NGC user', () => {
         const databaseError = new Error('Something went wrong')
 
         beforeEach(() => {
-          jest
-            .spyOn(prisma, '$transaction')
-            .mockRejectedValueOnce(databaseError)
+          vi.spyOn(prisma, '$transaction').mockRejectedValueOnce(databaseError)
         })
 
         afterEach(() => {
-          jest.spyOn(prisma, '$transaction').mockRestore()
+          vi.spyOn(prisma, '$transaction').mockRestore()
         })
 
         test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
@@ -340,20 +354,15 @@ describe('Given a NGC user', () => {
           >[]
 
           beforeEach(async () => {
-            simulations = await Promise.all([
-              createOrganisationPollSimulation({
-                agent,
-                pollId,
-              }),
-              createOrganisationPollSimulation({
-                agent,
-                pollId,
-              }),
-              createOrganisationPollSimulation({
-                agent,
-                pollId,
-              }),
-            ])
+            simulations = []
+            while (simulations.length < 3) {
+              simulations.push(
+                await createOrganisationPollSimulation({
+                  agent,
+                  pollId,
+                })
+              )
+            }
           })
 
           test(`Then it returns a ${StatusCodes.OK} response with the private poll data`, async () => {
@@ -376,6 +385,13 @@ describe('Given a NGC user', () => {
                 finished: 3,
                 hasParticipated: false,
               },
+              funFacts: Object.fromEntries(
+                Object.entries(modelFunFacts).map(([k]) => [
+                  k,
+                  expect.any(Number),
+                ])
+              ),
+              updatedAt: expect.any(String),
             })
           })
 
@@ -465,13 +481,11 @@ describe('Given a NGC user', () => {
         const databaseError = new Error('Something went wrong')
 
         beforeEach(() => {
-          jest
-            .spyOn(prisma, '$transaction')
-            .mockRejectedValueOnce(databaseError)
+          vi.spyOn(prisma, '$transaction').mockRejectedValueOnce(databaseError)
         })
 
         afterEach(() => {
-          jest.spyOn(prisma, '$transaction').mockRestore()
+          vi.spyOn(prisma, '$transaction').mockRestore()
         })
 
         test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {

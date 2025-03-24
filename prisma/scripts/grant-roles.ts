@@ -1,7 +1,7 @@
 import type { PrismaClient } from '@prisma/client'
 import { Prisma } from '@prisma/client'
 
-export const exec = async (prisma: PrismaClient) => {
+export const exec = async ({ prisma }: { prisma: PrismaClient }) => {
   if (!process.env.DATABASE_READONLY_ROLES) {
     console.info('No role to grant')
     return

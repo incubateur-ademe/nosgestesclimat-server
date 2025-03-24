@@ -1,12 +1,19 @@
 import { faker } from '@faker-js/faker'
 import { OrganisationType } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
-import nock from 'nock'
 import slugify from 'slugify'
 import supertest from 'supertest'
-import { baseURL } from '../../../adapters/connect/client'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import {
+  brevoRemoveFromList,
+  brevoSendEmail,
+  brevoUpdateContact,
+} from '../../../adapters/brevo/__tests__/fixtures/server.fixture'
+import { connectUpdateContact } from '../../../adapters/connect/__tests__/fixtures/server.fixture'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
+import { mswServer } from '../../../core/__tests__/fixtures/server.fixture'
+import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 import { login } from '../../authentication/__tests__/fixtures/login.fixture'
 import { COOKIE_NAME } from '../../authentication/authentication.service'
@@ -108,14 +115,12 @@ describe('Given a NGC user', () => {
           name: faker.company.name(),
         }
 
-        nock(process.env.BREVO_URL!)
-          .post('/v3/smtp/email')
-          .reply(200)
-          .post('/v3/contacts')
-          .reply(200)
-          .post('/v3/contacts/lists/27/contacts/remove')
-          .reply(200)
-        nock(baseURL).post('/api/v1/personnes').reply(200)
+        mswServer.use(
+          brevoSendEmail(),
+          brevoUpdateContact(),
+          brevoRemoveFromList(27),
+          connectUpdateContact()
+        )
 
         const response = await agent
           .post(url)
@@ -163,12 +168,11 @@ describe('Given a NGC user', () => {
           administrators: [administratorPayload],
         }
 
-        nock(process.env.BREVO_URL!)
-          .post('/v3/smtp/email')
-          .reply(200)
-          .post('/v3/contacts')
-          .reply(200)
-        nock(baseURL).post('/api/v1/personnes').reply(200)
+        mswServer.use(
+          brevoSendEmail(),
+          brevoUpdateContact(),
+          connectUpdateContact()
+        )
 
         const {
           body: { id },
@@ -244,24 +248,18 @@ describe('Given a NGC user', () => {
           administrators: [administratorPayload],
         }
 
-        nock(process.env.BREVO_URL!)
-          .post('/v3/smtp/email')
-          .reply(200)
-          .post('/v3/contacts')
-          .reply(200)
-        const scope = nock(baseURL, {
-          reqheaders: {
-            client_id: process.env.CONNECT_CLIENT_ID!,
-            client_secret: process.env.CONNECT_CLIENT_SECRET!,
-          },
-        })
-          .post('/api/v1/personnes', {
-            email,
-            nom: administratorPayload.name,
-            fonction: administratorPayload.position,
-            source: 'Nos gestes Climat',
+        mswServer.use(
+          brevoSendEmail(),
+          brevoUpdateContact(),
+          connectUpdateContact({
+            expectBody: {
+              email,
+              nom: administratorPayload.name,
+              fonction: administratorPayload.position,
+              source: 'Nos gestes Climat',
+            },
           })
-          .reply(200)
+        )
 
         await agent
           .post(url)
@@ -269,7 +267,7 @@ describe('Given a NGC user', () => {
           .send(payload)
           .expect(StatusCodes.CREATED)
 
-        expect(scope.isDone()).toBeTruthy()
+        await EventBus.flush()
       })
 
       test('Then it sends a creation email', async () => {
@@ -283,29 +281,26 @@ describe('Given a NGC user', () => {
           administrators: [administratorPayload],
         }
 
-        const scope = nock(process.env.BREVO_URL!, {
-          reqheaders: {
-            'api-key': process.env.BREVO_API_KEY!,
-          },
-        })
-          .post('/v3/smtp/email', {
-            to: [
-              {
-                name: email,
-                email,
+        mswServer.use(
+          brevoSendEmail({
+            expectBody: {
+              to: [
+                {
+                  name: email,
+                  email,
+                },
+              ],
+              templateId: 70,
+              params: {
+                ADMINISTRATOR_NAME: administratorPayload.name,
+                ORGANISATION_NAME: payload.name,
+                DASHBOARD_URL: `https://nosgestesclimat.fr/organisations/${slugify(payload.name.toLowerCase(), { strict: true })}?mtm_campaign=email-automatise&mtm_kwd=orga-admin-creation`,
               },
-            ],
-            templateId: 70,
-            params: {
-              ADMINISTRATOR_NAME: administratorPayload.name,
-              ORGANISATION_NAME: payload.name,
-              DASHBOARD_URL: `https://nosgestesclimat.fr/organisations/${slugify(payload.name.toLowerCase(), { strict: true })}?mtm_campaign=email-automatise&mtm_kwd=orga-admin-creation`,
             },
-          })
-          .reply(200)
-          .post('/v3/contacts')
-          .reply(200)
-        nock(baseURL).post('/api/v1/personnes').reply(200)
+          }),
+          brevoUpdateContact(),
+          connectUpdateContact()
+        )
 
         await agent
           .post(url)
@@ -313,7 +308,7 @@ describe('Given a NGC user', () => {
           .send(payload)
           .expect(StatusCodes.CREATED)
 
-        expect(scope.isDone()).toBeTruthy()
+        await EventBus.flush()
       })
 
       describe('And opt in for communications', () => {
@@ -329,31 +324,28 @@ describe('Given a NGC user', () => {
             administrators: [administratorPayload],
           }
 
-          const scope = nock(process.env.BREVO_URL!, {
-            reqheaders: {
-              'api-key': process.env.BREVO_API_KEY!,
-            },
-          })
-            .post('/v3/smtp/email')
-            .reply(200)
-            .post('/v3/contacts', {
-              email,
-              listIds: [27],
-              attributes: {
-                USER_ID: userId,
-                IS_ORGANISATION_ADMIN: true,
-                ORGANISATION_NAME: payload.name,
-                ORGANISATION_SLUG: slugify(payload.name.toLowerCase(), {
-                  strict: true,
-                }),
-                LAST_POLL_PARTICIPANTS_NUMBER: 0,
-                OPT_IN: true,
-                PRENOM: administratorPayload.name,
+          mswServer.use(
+            brevoSendEmail(),
+            brevoUpdateContact({
+              expectBody: {
+                email,
+                listIds: [27],
+                attributes: {
+                  USER_ID: userId,
+                  IS_ORGANISATION_ADMIN: true,
+                  ORGANISATION_NAME: payload.name,
+                  ORGANISATION_SLUG: slugify(payload.name.toLowerCase(), {
+                    strict: true,
+                  }),
+                  LAST_POLL_PARTICIPANTS_NUMBER: 0,
+                  OPT_IN: true,
+                  PRENOM: administratorPayload.name,
+                },
+                updateEnabled: true,
               },
-              updateEnabled: true,
-            })
-            .reply(200)
-          nock(baseURL).post('/api/v1/personnes').reply(200)
+            }),
+            connectUpdateContact()
+          )
 
           await agent
             .post(url)
@@ -361,7 +353,7 @@ describe('Given a NGC user', () => {
             .send(payload)
             .expect(StatusCodes.CREATED)
 
-          expect(scope.isDone()).toBeTruthy()
+          await EventBus.flush()
         })
       })
 
@@ -378,34 +370,32 @@ describe('Given a NGC user', () => {
             administrators: [administratorPayload],
           }
 
-          const scope = nock(process.env.BREVO_URL!, {
-            reqheaders: {
-              'api-key': process.env.BREVO_API_KEY!,
-            },
-          })
-            .post('/v3/smtp/email')
-            .reply(200)
-            .post('/v3/contacts', {
-              email,
-              attributes: {
-                USER_ID: userId,
-                IS_ORGANISATION_ADMIN: true,
-                ORGANISATION_NAME: payload.name,
-                ORGANISATION_SLUG: slugify(payload.name.toLowerCase(), {
-                  strict: true,
-                }),
-                LAST_POLL_PARTICIPANTS_NUMBER: 0,
-                OPT_IN: false,
-                PRENOM: administratorPayload.name,
+          mswServer.use(
+            brevoSendEmail(),
+            brevoUpdateContact({
+              expectBody: {
+                email,
+                attributes: {
+                  USER_ID: userId,
+                  IS_ORGANISATION_ADMIN: true,
+                  ORGANISATION_NAME: payload.name,
+                  ORGANISATION_SLUG: slugify(payload.name.toLowerCase(), {
+                    strict: true,
+                  }),
+                  LAST_POLL_PARTICIPANTS_NUMBER: 0,
+                  OPT_IN: false,
+                  PRENOM: administratorPayload.name,
+                },
+                updateEnabled: true,
               },
-              updateEnabled: true,
-            })
-            .reply(200)
-            .post('/v3/contacts/lists/27/contacts/remove', {
-              emails: [email],
-            })
-            .reply(200)
-          nock(baseURL).post('/api/v1/personnes').reply(200)
+            }),
+            brevoRemoveFromList(27, {
+              expectBody: {
+                emails: [email],
+              },
+            }),
+            connectUpdateContact()
+          )
 
           await agent
             .post(url)
@@ -413,7 +403,7 @@ describe('Given a NGC user', () => {
             .send(payload)
             .expect(StatusCodes.CREATED)
 
-          expect(scope.isDone()).toBeTruthy()
+          await EventBus.flush()
         })
       })
 
@@ -429,29 +419,26 @@ describe('Given a NGC user', () => {
             administrators: [administratorPayload],
           }
 
-          const scope = nock(process.env.BREVO_URL!, {
-            reqheaders: {
-              'api-key': process.env.BREVO_API_KEY!,
-            },
-          })
-            .post('/v3/smtp/email', {
-              to: [
-                {
-                  name: email,
-                  email,
+          mswServer.use(
+            brevoSendEmail({
+              expectBody: {
+                to: [
+                  {
+                    name: email,
+                    email,
+                  },
+                ],
+                templateId: 70,
+                params: {
+                  ADMINISTRATOR_NAME: administratorPayload.name,
+                  ORGANISATION_NAME: payload.name,
+                  DASHBOARD_URL: `https://preprod.nosgestesclimat.preprod.fr/organisations/${slugify(payload.name.toLowerCase(), { strict: true })}?mtm_campaign=email-automatise&mtm_kwd=orga-admin-creation`,
                 },
-              ],
-              templateId: 70,
-              params: {
-                ADMINISTRATOR_NAME: administratorPayload.name,
-                ORGANISATION_NAME: payload.name,
-                DASHBOARD_URL: `https://preprod.nosgestesclimat.preprod.fr/organisations/${slugify(payload.name.toLowerCase(), { strict: true })}?mtm_campaign=email-automatise&mtm_kwd=orga-admin-creation`,
               },
-            })
-            .reply(200)
-            .post('/v3/contacts')
-            .reply(200)
-          nock(baseURL).post('/api/v1/personnes').reply(200)
+            }),
+            brevoUpdateContact(),
+            connectUpdateContact()
+          )
 
           await agent
             .post(url)
@@ -460,7 +447,7 @@ describe('Given a NGC user', () => {
             .send(payload)
             .expect(StatusCodes.CREATED)
 
-          expect(scope.isDone()).toBeTruthy()
+          await EventBus.flush()
         })
       })
 
@@ -480,8 +467,6 @@ describe('Given a NGC user', () => {
           expect(response.text).toEqual(
             "Forbidden ! An organisation with this administrator's email already exists."
           )
-
-          jest.spyOn(prisma.organisation, 'create').mockRestore()
         })
       })
 
@@ -507,12 +492,11 @@ describe('Given a NGC user', () => {
             ],
           }
 
-          nock(process.env.BREVO_URL!)
-            .post('/v3/smtp/email')
-            .reply(200)
-            .post('/v3/contacts')
-            .reply(200)
-          nock(baseURL).post('/api/v1/personnes').reply(200)
+          mswServer.use(
+            brevoSendEmail(),
+            brevoUpdateContact(),
+            connectUpdateContact()
+          )
 
           const response = await agent
             .post(url)
@@ -550,13 +534,11 @@ describe('Given a NGC user', () => {
         const databaseError = new Error('Something went wrong')
 
         beforeEach(() => {
-          jest
-            .spyOn(prisma, '$transaction')
-            .mockRejectedValueOnce(databaseError)
+          vi.spyOn(prisma, '$transaction').mockRejectedValueOnce(databaseError)
         })
 
         afterEach(() => {
-          jest.spyOn(prisma, '$transaction').mockRestore()
+          vi.spyOn(prisma, '$transaction').mockRestore()
         })
 
         test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {

@@ -1,9 +1,15 @@
 import { faker } from '@faker-js/faker'
 import { StatusCodes } from 'http-status-codes'
-import nock from 'nock'
 import supertest from 'supertest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import {
+  brevoRemoveFromList,
+  brevoUpdateContact,
+} from '../../../adapters/brevo/__tests__/fixtures/server.fixture'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
+import { mswServer } from '../../../core/__tests__/fixtures/server.fixture'
+import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 import { login } from '../../authentication/__tests__/fixtures/login.fixture'
 import { COOKIE_NAME } from '../../authentication/authentication.service'
@@ -113,11 +119,7 @@ describe('Given a NGC user', () => {
         })
 
         test(`Then it returns a ${StatusCodes.NO_CONTENT} response`, async () => {
-          nock(process.env.BREVO_URL!)
-            .post('/v3/contacts')
-            .reply(200)
-            .post('/v3/contacts/lists/27/contacts/remove')
-            .reply(200)
+          mswServer.use(brevoUpdateContact(), brevoRemoveFromList(27))
 
           await agent
             .delete(
@@ -130,26 +132,23 @@ describe('Given a NGC user', () => {
         })
 
         test('Then it updates organisation administrator in brevo', async () => {
-          const scope = nock(process.env.BREVO_URL!, {
-            reqheaders: {
-              'api-key': process.env.BREVO_API_KEY!,
-            },
-          })
-            .post('/v3/contacts', {
-              email,
-              attributes: {
-                USER_ID: userId,
-                IS_ORGANISATION_ADMIN: true,
-                ORGANISATION_NAME: organisationName,
-                ORGANISATION_SLUG: organisationSlug,
-                LAST_POLL_PARTICIPANTS_NUMBER: 0,
-                OPT_IN: false,
+          mswServer.use(
+            brevoUpdateContact({
+              expectBody: {
+                email,
+                attributes: {
+                  USER_ID: userId,
+                  IS_ORGANISATION_ADMIN: true,
+                  ORGANISATION_NAME: organisationName,
+                  ORGANISATION_SLUG: organisationSlug,
+                  LAST_POLL_PARTICIPANTS_NUMBER: 0,
+                  OPT_IN: false,
+                },
+                updateEnabled: true,
               },
-              updateEnabled: true,
-            })
-            .reply(200)
-            .post('/v3/contacts/lists/27/contacts/remove')
-            .reply(200)
+            }),
+            brevoRemoveFromList(27)
+          )
 
           await agent
             .delete(
@@ -160,16 +159,12 @@ describe('Given a NGC user', () => {
             .set('cookie', cookie)
             .expect(StatusCodes.NO_CONTENT)
 
-          expect(scope.isDone()).toBeTruthy()
+          await EventBus.flush()
         })
 
         describe('And using organisation and poll slugs', () => {
           test(`Then it returns a ${StatusCodes.NO_CONTENT} response`, async () => {
-            nock(process.env.BREVO_URL!)
-              .post('/v3/contacts')
-              .reply(200)
-              .post('/v3/contacts/lists/27/contacts/remove')
-              .reply(200)
+            mswServer.use(brevoUpdateContact(), brevoRemoveFromList(27))
 
             await agent
               .delete(
@@ -215,25 +210,23 @@ describe('Given a NGC user', () => {
         })
 
         test('Then it updates organisation administrator in brevo', async () => {
-          const scope = nock(process.env.BREVO_URL!, {
-            reqheaders: {
-              'api-key': process.env.BREVO_API_KEY!,
-            },
-          })
-            .post('/v3/contacts', {
-              email,
-              listIds: [27],
-              attributes: {
-                USER_ID: userId,
-                IS_ORGANISATION_ADMIN: true,
-                ORGANISATION_NAME: organisationName,
-                ORGANISATION_SLUG: organisationSlug,
-                LAST_POLL_PARTICIPANTS_NUMBER: 0,
-                OPT_IN: true,
+          mswServer.use(
+            brevoUpdateContact({
+              expectBody: {
+                email,
+                listIds: [27],
+                attributes: {
+                  USER_ID: userId,
+                  IS_ORGANISATION_ADMIN: true,
+                  ORGANISATION_NAME: organisationName,
+                  ORGANISATION_SLUG: organisationSlug,
+                  LAST_POLL_PARTICIPANTS_NUMBER: 0,
+                  OPT_IN: true,
+                },
+                updateEnabled: true,
               },
-              updateEnabled: true,
             })
-            .reply(200)
+          )
 
           await agent
             .delete(
@@ -244,7 +237,7 @@ describe('Given a NGC user', () => {
             .set('cookie', cookie)
             .expect(StatusCodes.NO_CONTENT)
 
-          expect(scope.isDone()).toBeTruthy()
+          await EventBus.flush()
         })
       })
 
@@ -252,13 +245,11 @@ describe('Given a NGC user', () => {
         const databaseError = new Error('Something went wrong')
 
         beforeEach(() => {
-          jest
-            .spyOn(prisma, '$transaction')
-            .mockRejectedValueOnce(databaseError)
+          vi.spyOn(prisma, '$transaction').mockRejectedValueOnce(databaseError)
         })
 
         afterEach(() => {
-          jest.spyOn(prisma, '$transaction').mockRestore()
+          vi.spyOn(prisma, '$transaction').mockRestore()
         })
 
         test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {

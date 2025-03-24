@@ -1,8 +1,17 @@
 import { faker } from '@faker-js/faker'
 import dayjs from 'dayjs'
 import { StatusCodes } from 'http-status-codes'
-import nock from 'nock'
 import type supertest from 'supertest'
+import { vi } from 'vitest'
+import {
+  brevoSendEmail,
+  brevoUpdateContact,
+} from '../../../../adapters/brevo/__tests__/fixtures/server.fixture'
+import {
+  mswServer,
+  resetMswServer,
+} from '../../../../core/__tests__/fixtures/server.fixture'
+import { EventBus } from '../../../../core/event-bus/event-bus'
 import * as authenticationService from '../../authentication.service'
 import type { VerificationCodeCreateDto } from '../../verification-codes.validator'
 
@@ -24,32 +33,32 @@ export const createVerificationCode = async ({
   code = code || faker.number.int({ min: 100000, max: 999999 }).toString()
   expirationDate = expirationDate || dayjs().add(1, 'hour').toDate()
 
-  jest
-    .mocked(authenticationService)
-    .generateVerificationCodeAndExpiration.mockReturnValueOnce({
-      code,
-      expirationDate,
-    })
+  vi.mocked(
+    authenticationService
+  ).generateVerificationCodeAndExpiration.mockReturnValueOnce({
+    code,
+    expirationDate,
+  })
 
   const payload = {
     userId: userId || faker.string.uuid(),
     email: email || faker.internet.email(),
   }
 
-  nock(process.env.BREVO_URL!)
-    .post('/v3/smtp/email')
-    .reply(200)
-    .post('/v3/contacts')
-    .reply(200)
+  mswServer.use(brevoSendEmail(), brevoUpdateContact())
 
   const response = await agent
     .post(CREATE_VERIFICATION_CODE_ROUTE)
     .send(payload)
     .expect(StatusCodes.CREATED)
 
-  jest
-    .mocked(authenticationService)
-    .generateVerificationCodeAndExpiration.mockRestore()
+  await EventBus.flush()
+
+  resetMswServer()
+
+  vi.mocked(
+    authenticationService
+  ).generateVerificationCodeAndExpiration.mockRestore()
 
   return {
     ...response.body,

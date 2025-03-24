@@ -1,6 +1,11 @@
 import { StatusCodes } from 'http-status-codes'
-import nock from 'nock'
 import type supertest from 'supertest'
+import { brevoUpdateContact } from '../../../../adapters/brevo/__tests__/fixtures/server.fixture'
+import {
+  mswServer,
+  resetMswServer,
+} from '../../../../core/__tests__/fixtures/server.fixture'
+import { EventBus } from '../../../../core/event-bus/event-bus'
 import type { VerificationCodeCreateDto } from '../../verification-codes.validator'
 import { createVerificationCode } from './verification-codes.fixture'
 
@@ -20,7 +25,7 @@ export const login = async ({
     verificationCode,
   })
 
-  nock(process.env.BREVO_URL!).post('/v3/contacts').reply(200)
+  mswServer.use(brevoUpdateContact())
 
   const response = await agent
     .post(LOGIN_ROUTE)
@@ -30,6 +35,10 @@ export const login = async ({
       code,
     })
     .expect(StatusCodes.OK)
+
+  await EventBus.flush()
+
+  resetMswServer()
 
   const [cookie] = response.headers['set-cookie']
 

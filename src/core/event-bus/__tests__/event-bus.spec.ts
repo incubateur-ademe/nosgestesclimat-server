@@ -1,3 +1,4 @@
+import { afterEach, describe, expect, test, vi } from 'vitest'
 import { EventBusError } from '../error'
 import { EventBusEvent } from '../event'
 import { EventBus } from '../event-bus'
@@ -32,7 +33,7 @@ describe('EventBus', () => {
     }
   })
 
-  it('Should not trigger non subscribed handlers', async () => {
+  test('Should not trigger non subscribed handlers', async () => {
     const event = new Event1({ event: 'testEvent' })
     EventBus.emit(event)
 
@@ -44,7 +45,7 @@ describe('EventBus', () => {
     ])
   })
 
-  it('Should not trigger unsubscribed handlers', async () => {
+  test('Should not trigger unsubscribed handlers', async () => {
     EventBus.on(Event1, handler1)()
 
     const event = new Event1({ event: 'testEvent' })
@@ -58,7 +59,7 @@ describe('EventBus', () => {
     ])
   })
 
-  it('Should trigger subscribed handlers', async () => {
+  test('Should trigger subscribed handlers', async () => {
     subscriptions.push(
       EventBus.on(Event1, handler1),
       EventBus.on(Event2, handler2),
@@ -95,7 +96,7 @@ describe('EventBus', () => {
     ])
   })
 
-  it('Should not introduce memory leak keeping reference to an event Promise result', async () => {
+  test('Should not introduce memory leak keeping reference to an event Promise result', async () => {
     subscriptions.push(EventBus.on(Event1, handler1))
 
     const event = new Event1({ event: 'testEvent' })
@@ -112,7 +113,7 @@ describe('EventBus', () => {
   })
 
   describe('When handler raises', () => {
-    it('Should catch the error', async () => {
+    test('Should catch the error', async () => {
       const error = new Error('Something bad happened')
 
       const handler: Handler<Event1> = () => Promise.reject(error)
@@ -135,6 +136,39 @@ describe('EventBus', () => {
           },
         ])
       )
+    })
+  })
+
+  describe('When flushed', () => {
+    test('Should callback if no event', async () => {
+      await expect(EventBus.flush()).resolves.toBeUndefined()
+    })
+
+    test('Should callback after handlers resolve', async () => {
+      const spy = vi.fn()
+      const handler = async (event: Event1 | Event2) =>
+        new Promise<void>((res) =>
+          setTimeout(() => {
+            spy(event.attributes)
+            return res()
+          })
+        )
+
+      subscriptions.push(
+        EventBus.on(Event1, handler),
+        EventBus.on(Event2, handler)
+      )
+
+      const event1 = new Event1({ event: 'testEvent' })
+      EventBus.emit(event1)
+
+      const event2 = new Event2({ event: 'testEvent' })
+      EventBus.emit(event2)
+
+      await EventBus.flush()
+
+      expect(spy).toHaveBeenCalledWith(event1.attributes)
+      expect(spy).toHaveBeenCalledWith(event2.attributes)
     })
   })
 })

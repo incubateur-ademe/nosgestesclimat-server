@@ -6,6 +6,7 @@ import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
 import path from 'path'
 import supertest from 'supertest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { prisma } from '../../../../../adapters/prisma/client'
 import { client } from '../../../../../adapters/scaleway/client'
 import app from '../../../../../app'
@@ -73,7 +74,7 @@ describe('Given a NGC integrations API user', () => {
       let token: string
 
       beforeEach(async () => {
-        jest.spyOn(client, 'send').mockImplementationOnce((command) => {
+        vi.spyOn(client, 'send').mockImplementationOnce((command) => {
           if (!(command instanceof PutObjectCommand)) {
             throw command
           }
@@ -90,7 +91,7 @@ describe('Given a NGC integrations API user', () => {
       })
 
       afterEach(() => {
-        jest.spyOn(client, 'send').mockRestore()
+        vi.spyOn(client, 'send').mockRestore()
       })
 
       describe.each(
@@ -138,7 +139,7 @@ describe('Given a NGC integrations API user', () => {
       let token: string
 
       beforeEach(async () => {
-        jest.spyOn(client, 'send').mockImplementationOnce((command) => {
+        vi.spyOn(client, 'send').mockImplementationOnce((command) => {
           if (!(command instanceof PutObjectCommand)) {
             throw command
           }
@@ -154,7 +155,7 @@ describe('Given a NGC integrations API user', () => {
       })
 
       afterEach(() => {
-        jest.spyOn(client, 'send').mockRestore()
+        vi.spyOn(client, 'send').mockRestore()
       })
 
       describe('And no data provided', () => {
@@ -264,8 +265,7 @@ describe('Given a NGC integrations API user', () => {
         const bucketError = new Error('Something went wrong')
 
         beforeEach(() => {
-          jest
-            .spyOn(client, 'send')
+          vi.spyOn(client, 'send')
             .mockReset()
             .mockImplementationOnce(() => Promise.reject(bucketError))
         })

@@ -52,6 +52,7 @@ import {
   OrganisationPublicPollFetchValidator,
   OrganisationPublicPollSimulationsFetchValidator,
   OrganisationsFetchValidator,
+  OrganisationUpdateDto,
   OrganisationUpdateValidator,
 } from './organisations.validator'
 
@@ -105,7 +106,7 @@ router
       try {
         const { organisation, token } = await updateOrganisation({
           params,
-          organisationDto: body,
+          organisationDto: OrganisationUpdateDto.parse(body),
           code: query.code,
           user: user!,
         })

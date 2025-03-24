@@ -1,10 +1,16 @@
 import { faker } from '@faker-js/faker'
 import dayjs from 'dayjs'
 import { StatusCodes } from 'http-status-codes'
-import nock from 'nock'
 import supertest from 'supertest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import {
+  brevoSendEmail,
+  brevoUpdateContact,
+} from '../../../adapters/brevo/__tests__/fixtures/server.fixture'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
+import { mswServer } from '../../../core/__tests__/fixtures/server.fixture'
+import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 import * as authenticationService from '../authentication.service'
 import type { VerificationCodeCreateDto } from '../verification-codes.validator'
@@ -23,18 +29,18 @@ describe('Given a NGC user', () => {
     beforeEach(() => {
       code = faker.number.int({ min: 100000, max: 999999 }).toString()
       expirationDate = dayjs().add(1, 'hour').toDate()
-      jest
-        .mocked(authenticationService)
-        .generateVerificationCodeAndExpiration.mockReturnValueOnce({
-          code,
-          expirationDate,
-        })
+      vi.mocked(
+        authenticationService
+      ).generateVerificationCodeAndExpiration.mockReturnValueOnce({
+        code,
+        expirationDate,
+      })
     })
 
     afterEach(() => {
-      jest
-        .mocked(authenticationService)
-        .generateVerificationCodeAndExpiration.mockRestore()
+      vi.mocked(
+        authenticationService
+      ).generateVerificationCodeAndExpiration.mockRestore()
     })
 
     describe('And no data provided', () => {
@@ -70,14 +76,10 @@ describe('Given a NGC user', () => {
     test(`Then it returns a ${StatusCodes.CREATED} response with the created verification code`, async () => {
       const payload = {
         userId: faker.string.uuid(),
-        email: faker.internet.email(),
+        email: faker.internet.email().toLocaleLowerCase(),
       }
 
-      nock(process.env.BREVO_URL!)
-        .post('/v3/smtp/email')
-        .reply(200)
-        .post('/v3/contacts')
-        .reply(200)
+      mswServer.use(brevoSendEmail(), brevoUpdateContact())
 
       const response = await agent
         .post(url)
@@ -96,14 +98,10 @@ describe('Given a NGC user', () => {
     test('Then it stores a verification code in database', async () => {
       const payload: VerificationCodeCreateDto = {
         userId: faker.string.uuid(),
-        email: faker.internet.email(),
+        email: faker.internet.email().toLocaleLowerCase(),
       }
 
-      nock(process.env.BREVO_URL!)
-        .post('/v3/smtp/email')
-        .reply(200)
-        .post('/v3/contacts')
-        .reply(200)
+      mswServer.use(brevoSendEmail(), brevoUpdateContact())
 
       await agent.post(url).send(payload)
 
@@ -125,74 +123,68 @@ describe('Given a NGC user', () => {
     })
 
     test('Then it sends an email with the code', async () => {
-      const email = faker.internet.email()
+      const email = faker.internet.email().toLocaleLowerCase()
 
-      const scope = nock(process.env.BREVO_URL!, {
-        reqheaders: {
-          'api-key': process.env.BREVO_API_KEY!,
-        },
-      })
-        .post('/v3/smtp/email', {
-          to: [
-            {
-              name: email,
-              email,
+      mswServer.use(
+        brevoSendEmail({
+          expectBody: {
+            to: [
+              {
+                name: email,
+                email,
+              },
+            ],
+            templateId: 66,
+            params: {
+              VERIFICATION_CODE: code,
             },
-          ],
-          templateId: 66,
-          params: {
-            VERIFICATION_CODE: code,
           },
-        })
-        .reply(200)
-        .post('/v3/contacts')
-        .reply(200)
+        }),
+        brevoUpdateContact()
+      )
 
       await agent.post(url).send({
         userId: faker.string.uuid(),
         email,
       })
 
-      expect(scope.isDone()).toBeTruthy()
+      await EventBus.flush()
     })
 
     test('Then it updates brevo contact', async () => {
-      const email = faker.internet.email()
+      const email = faker.internet.email().toLocaleLowerCase()
       const userId = faker.string.uuid()
 
-      const scope = nock(process.env.BREVO_URL!, {
-        reqheaders: {
-          'api-key': process.env.BREVO_API_KEY!,
-        },
-      })
-        .post('/v3/contacts', {
-          email,
-          attributes: {
-            USER_ID: userId,
+      mswServer.use(
+        brevoSendEmail(),
+        brevoUpdateContact({
+          expectBody: {
+            email,
+            attributes: {
+              USER_ID: userId,
+            },
+            updateEnabled: true,
           },
-          updateEnabled: true,
         })
-        .reply(200)
-        .post('/v3/smtp/email')
-        .reply(200)
+      )
 
       await agent.post(url).send({
         userId,
         email,
       })
 
-      expect(scope.isDone()).toBeTruthy()
+      await EventBus.flush()
     })
 
     describe('And database failure', () => {
       const databaseError = new Error('Something went wrong')
 
       beforeEach(() => {
-        jest.spyOn(prisma, '$transaction').mockRejectedValueOnce(databaseError)
+        vi.spyOn(prisma, '$transaction').mockRejectedValueOnce(databaseError)
       })
 
       afterEach(() => {
-        jest.spyOn(prisma, '$transaction').mockRestore()
+        vi.spyOn(prisma, '$transaction').mockRestore()
       })
 
       test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
