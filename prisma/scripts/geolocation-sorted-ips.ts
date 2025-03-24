@@ -5,7 +5,7 @@ import { createGunzip } from 'node:zlib'
 import Papa from 'papaparse'
 import { z } from 'zod'
 import { KEYS } from '../../src/adapters/redis/constant'
-import { converIpToNumber } from '../../src/features/modele/geolocation.repository'
+import { convertIpToNumber } from '../../src/features/modele/geolocation.repository'
 
 const GeoIpCsvValidator = z.object({
   ipStart: z.string(),
@@ -62,7 +62,7 @@ export const exec = async ({ redis }: { redis: Redis }) => {
         continue
       }
 
-      const ipStartNumber = converIpToNumber(parsed.data.ipStart)
+      const ipStartNumber = convertIpToNumber(parsed.data.ipStart)
       sortedArray.push({
         ipStartNum: ipStartNumber,
         countryCode: parsed.data.countryCode,

@@ -24,7 +24,7 @@ export const initGeolocationStore = async (): Promise<void> => {
   }
 
   if (!sortedIps) {
-    logger.warn(`Could not load geolocation countries redis store`)
+    logger.warn(`Could not load geolocation ip adresses redis store`)
   }
 
   store = {
@@ -33,12 +33,12 @@ export const initGeolocationStore = async (): Promise<void> => {
   }
 }
 
-export const converIpToNumber = (ip: string) => {
+export const convertIpToNumber = (ip: string) => {
   return ip.split('.').reduce((acc, octet) => acc * 256 + parseInt(octet), 0)
 }
 
 const findIpCountryCode = (ip: string) => {
-  const ipNumber = converIpToNumber(ip)
+  const ipNumber = convertIpToNumber(ip)
 
   const sortedArray = store?.sortedIps || []
 

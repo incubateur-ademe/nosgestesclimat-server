@@ -6,7 +6,7 @@ import { redis } from '../../../adapters/redis/client'
 import { KEYS } from '../../../adapters/redis/constant'
 import app from '../../../app'
 import {
-  converIpToNumber,
+  convertIpToNumber,
   initGeolocationStore,
 } from '../geolocation.repository'
 
@@ -49,7 +49,7 @@ describe(`Given redis store`, () => {
       countryCode: `BE`,
     },
     {
-      ipStartNum: converIpToNumber(frIP),
+      ipStartNum: convertIpToNumber(frIP),
       countryCode: `FR`,
     },
   ]
@@ -94,7 +94,7 @@ describe(`Given redis store`, () => {
 
       expect(body).toEqual(
         countries[
-          converIpToNumber(frIP) > converIpToNumber(clientIp) ? 'BE' : 'FR'
+          convertIpToNumber(frIP) > convertIpToNumber(clientIp) ? 'BE' : 'FR'
         ]
       )
     })
