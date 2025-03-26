@@ -13,7 +13,7 @@ import {
 import { exchangeCredentialsForToken } from '../authentication/authentication.service'
 import {
   fetchPollValidSimulations,
-  getSimulationsFunFactsWithEngine,
+  getSimulationsFunFacts,
 } from '../simulations/simulations.service'
 import { OrganisationCreatedEvent } from './events/OrganisationCreated.event'
 import { OrganisationUpdatedEvent } from './events/OrganisationUpdated.event'
@@ -428,7 +428,7 @@ export const updatePollFunFacts = (
       sessionParam
     )
 
-    const funFacts = getSimulationsFunFactsWithEngine(simulations)
+    const funFacts = getSimulationsFunFacts(simulations)
 
     await setPollFunFacts(pollId, funFacts, sessionParam)
   }, session)
