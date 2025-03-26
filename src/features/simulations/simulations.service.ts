@@ -232,7 +232,7 @@ const getFunFactValue = ({
     0
   )
 
-const getSimulationsFunFacts = (simulations: FunFactsSimulations) => {
+export const getSimulationsFunFacts = (simulations: FunFactsSimulations) => {
   return Object.fromEntries(
     Object.entries(funFactsRules).map(([key, dottedName]) => {
       if (dottedName in frRules) {
