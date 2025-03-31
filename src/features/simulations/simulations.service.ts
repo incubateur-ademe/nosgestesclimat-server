@@ -8,6 +8,7 @@ import modelFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRule
 import type { JsonValue } from '@prisma/client/runtime/library'
 import type { Request } from 'express'
 import Engine from 'publicodes'
+import { defaultSimulationSelectionWithoutPoll } from '../../adapters/prisma/selection'
 import type { Session } from '../../adapters/prisma/transaction'
 import { transaction } from '../../adapters/prisma/transaction'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
@@ -303,7 +304,7 @@ export const fetchPollValidSimulations = async (
   { session }: { session: Session }
 ) => {
   const simulations = await fetchPollSimulations(
-    { id, user },
+    { id, user, select: defaultSimulationSelectionWithoutPoll },
     {
       session,
     }
