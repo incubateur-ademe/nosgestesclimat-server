@@ -1,5 +1,5 @@
 import type { Handler } from '../../../core/event-bus/handler'
-import { updatePollFunFacts } from '../../organisations/organisations.service'
+import { updatePollFunFactsAfterSimulationChange } from '../../organisations/organisations.service'
 import type { SimulationUpsertedAsyncEvent } from '../events/SimulationUpserted.event'
 
 export const computePollFunFacts: Handler<SimulationUpsertedAsyncEvent> = ({
@@ -7,5 +7,5 @@ export const computePollFunFacts: Handler<SimulationUpsertedAsyncEvent> = ({
     simulation: { id },
   },
 }) => {
-  return updatePollFunFacts(id)
+  return updatePollFunFactsAfterSimulationChange(id)
 }
