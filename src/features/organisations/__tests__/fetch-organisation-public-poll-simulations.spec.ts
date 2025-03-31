@@ -93,14 +93,22 @@ describe('Given a NGC user', () => {
             ReturnType<typeof createOrganisationPollSimulation>
           >
           let _simulationPolls: unknown
+          let _situation: unknown
+          let _foldedSteps: unknown
+          let _actionChoices: unknown
           let userId: string
 
           beforeEach(async () => {
-            ;({ polls: _simulationPolls, ...simulation } =
-              await createOrganisationPollSimulation({
-                agent,
-                pollId,
-              }))
+            ;({
+              polls: _simulationPolls,
+              situation: _situation,
+              foldedSteps: _foldedSteps,
+              actionChoices: _actionChoices,
+              ...simulation
+            } = await createOrganisationPollSimulation({
+              agent,
+              pollId,
+            }))
             ;({
               user: { id: userId },
             } = simulation)
@@ -134,12 +142,18 @@ describe('Given a NGC user', () => {
             let simulation2: Awaited<
               ReturnType<typeof createOrganisationPollSimulation>
             >
-            let _simulationUser: unknown
+            let _user2: unknown
+            let _foldedSteps2: unknown
+            let _situation2: unknown
+            let _actionChoices2: unknown
 
             beforeEach(async () => {
               ;({
                 polls: _simulationPolls,
-                user: _simulationUser,
+                user: _user2,
+                situation: _situation2,
+                foldedSteps: _foldedSteps2,
+                actionChoices: _actionChoices2,
                 ...simulation2
               } = await createOrganisationPollSimulation({
                 agent,
@@ -338,12 +352,17 @@ describe('Given a NGC user', () => {
           beforeEach(async () => {
             simulations = []
             while (simulations.length < 3) {
-              simulations.push(
-                await createOrganisationPollSimulation({
-                  agent,
-                  pollId,
-                })
-              )
+              const {
+                situation: _situation,
+                foldedSteps: _foldedSteps,
+                actionChoices: _actionChoices,
+                ...simulation
+              } = await createOrganisationPollSimulation({
+                agent,
+                pollId,
+              })
+
+              simulations.push(simulation)
             }
           })
 
@@ -466,12 +485,17 @@ describe('Given a NGC user', () => {
 
           simulations = []
           while (simulations.length < 3) {
-            simulations.push(
-              await createOrganisationPollSimulation({
-                agent,
-                pollId,
-              })
-            )
+            const {
+              situation: _situation,
+              foldedSteps: _foldedSteps,
+              actionChoices: _actionChoices,
+              ...simulation
+            } = await createOrganisationPollSimulation({
+              agent,
+              pollId,
+            })
+
+            simulations.push(simulation)
           }
         })
 

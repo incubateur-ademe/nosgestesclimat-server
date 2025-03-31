@@ -187,6 +187,13 @@ export const defaultSimulationSelectionWithoutPoll = {
   },
 }
 
+export const defaultSimulationSelectionWithoutPollAndSituation = {
+  ...defaultSimulationSelectionWithoutPoll,
+  situation: false,
+  foldedSteps: false,
+  actionChoices: false,
+}
+
 export const defaultSimulationSelection = {
   ...defaultSimulationSelectionWithoutUser,
   ...defaultSimulationSelectionWithoutPoll,
