@@ -5,7 +5,7 @@ import {
   defaultOrganisationSelectionWithoutPolls,
   defaultPollSelection,
   defaultSimulationSelection,
-  defaultSimulationSelectionWithoutPoll,
+  defaultSimulationSelectionWithoutPollAndSituation,
   defaultSimulationSelectionWithoutUser,
 } from '../../adapters/prisma/selection'
 import type { Session } from '../../adapters/prisma/transaction'
@@ -278,13 +278,18 @@ export const getIncompleteSimulationsCount = (user: {
   })
 }
 
-export const fetchPollSimulations = (
+export const fetchPollSimulations = <
+  T extends
+    Prisma.SimulationSelect = typeof defaultSimulationSelectionWithoutPollAndSituation,
+>(
   {
     id,
     user: _user = {},
+    select = defaultSimulationSelectionWithoutPollAndSituation as T,
   }: {
     id: string
     user?: Partial<(UserParams & { email?: undefined }) | Request['user']>
+    select?: T
   },
   { session }: { session?: Session } = {}
 ) => {
@@ -323,7 +328,7 @@ export const fetchPollSimulations = (
           },
         },
       },
-      select: defaultSimulationSelectionWithoutPoll,
+      select,
     })
   }, session)
 }
