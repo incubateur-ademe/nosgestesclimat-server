@@ -11,10 +11,7 @@ import {
   isPrismaErrorUniqueConstraintFailed,
 } from '../../core/typeguards/isPrismaError'
 import { exchangeCredentialsForToken } from '../authentication/authentication.service'
-import {
-  fetchPollValidSimulations,
-  getSimulationsFunFacts,
-} from '../simulations/simulations.service'
+import { getPollFunFacts } from '../simulations/simulations.service'
 import { OrganisationCreatedEvent } from './events/OrganisationCreated.event'
 import { OrganisationUpdatedEvent } from './events/OrganisationUpdated.event'
 import { PollCreatedEvent as PollUpdatedEvent } from './events/PollCreated.event'
@@ -406,15 +403,28 @@ export const fetchPublicPoll = async ({
   }
 }
 
-export const updatePollFunFacts = (
+export const updatePollFunFacts = async (
+  pollId: string,
+  { session }: { session?: Session } = {}
+) => {
+  return transaction(async (prismaSession) => {
+    const funFacts = await getPollFunFacts(
+      { id: pollId },
+      { session: prismaSession }
+    )
+
+    await setPollFunFacts(pollId, funFacts, { session: prismaSession })
+  }, session)
+}
+
+export const updatePollFunFactsAfterSimulationChange = (
   simulationId: string,
   { session }: { session?: Session } = {}
 ) => {
   return transaction(async (prismaSession) => {
-    const sessionParam = { session: prismaSession }
     const simulationPoll = await findSimulationPoll(
       { simulationId },
-      sessionParam
+      { session: prismaSession }
     )
 
     if (!simulationPoll) {
@@ -423,13 +433,6 @@ export const updatePollFunFacts = (
 
     const { pollId } = simulationPoll
 
-    const simulations = await fetchPollValidSimulations(
-      { id: pollId },
-      sessionParam
-    )
-
-    const funFacts = getSimulationsFunFacts(simulations)
-
-    await setPollFunFacts(pollId, funFacts, sessionParam)
+    return updatePollFunFacts(pollId, { session: prismaSession })
   }, session)
 }

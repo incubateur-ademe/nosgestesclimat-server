@@ -10,6 +10,7 @@ import {
 } from '../../adapters/prisma/selection'
 import type { Session } from '../../adapters/prisma/transaction'
 import { transaction } from '../../adapters/prisma/transaction'
+import { batchFindMany } from '../../core/batchFindMany'
 import type { PublicPollParams } from '../organisations/organisations.validator'
 import { transferOwnershipToUser } from '../users/users.repository'
 import type { UserParams } from '../users/users.validator'
@@ -331,4 +332,25 @@ export const fetchPollSimulations = <
       select,
     })
   }, session)
+}
+
+export const batchPollSimulations = (
+  {
+    id,
+    batchSize = 100,
+  }: {
+    id: string
+    batchSize?: number
+  },
+  { session }: { session: Session }
+) => {
+  return batchFindMany(
+    (params) =>
+      session.simulation.findMany({
+        ...params,
+        where: { polls: { some: { poll: { id } } } },
+        select: defaultSimulationSelection,
+      }),
+    { batchSize }
+  )
 }
