@@ -68,7 +68,9 @@ export const createSimulation = async ({
   params: UserParams
   origin: string
 }) => {
-  const simulation = await createUserSimulation(params, simulationDto)
+  const simulation = await transaction((session) =>
+    createUserSimulation(params, simulationDto, { session })
+  )
   const { user } = simulation
 
   const simulationUpsertedEvent = new SimulationUpsertedEvent({
@@ -87,14 +89,18 @@ export const createSimulation = async ({
 }
 
 export const fetchSimulations = async (params: UserParams) => {
-  const simulations = await fetchUserSimulations(params)
+  const simulations = await transaction((session) =>
+    fetchUserSimulations(params, { session })
+  )
 
   return simulations.map((s) => simulationToDto(s, params.userId))
 }
 
 export const fetchSimulation = async (params: UserSimulationParams) => {
   try {
-    const simulation = await fetchUserSimulation(params)
+    const simulation = await transaction((session) =>
+      fetchUserSimulation(params, { session })
+    )
 
     return simulationToDto(simulation, params.userId)
   } catch (e) {
@@ -115,9 +121,8 @@ export const createPollSimulation = async ({
   simulationDto: SimulationCreateDto
 }) => {
   try {
-    const { poll, simulation, created } = await createPollUserSimulation(
-      params,
-      simulationDto
+    const { poll, simulation, created } = await transaction((session) =>
+      createPollUserSimulation(params, simulationDto, { session })
     )
     const { user } = simulation
     const { organisation } = poll
@@ -157,15 +162,15 @@ export const fetchPublicPollSimulations = async ({
   user?: Request['user']
 }) => {
   try {
-    return await transaction(async (prismaSession) => {
+    return await transaction(async (session) => {
       const { id } = await findOrganisationPublicPollBySlugOrId(
         { params },
-        { session: prismaSession }
+        { session }
       )
       const simulations = await fetchPollSimulations(
         { id, user },
         {
-          session: prismaSession,
+          session,
         }
       )
 
@@ -286,17 +291,14 @@ export const fetchPublicPollDashboard = async ({
   user?: Request['user']
 }) => {
   try {
-    return await transaction(async (prismaSession) => {
+    return await transaction(async (session) => {
       const { id } = await findOrganisationPublicPollBySlugOrId(
         { params },
-        { session: prismaSession }
+        { session }
       )
 
       return {
-        funFacts: await getPollFunFacts(
-          { id, user },
-          { session: prismaSession }
-        ),
+        funFacts: await getPollFunFacts({ id, user }, { session }),
       }
     })
   } catch (e) {

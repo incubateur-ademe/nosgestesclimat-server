@@ -95,8 +95,9 @@ export const createOrganisation = async ({
   user: NonNullable<Request['user']>
 }) => {
   try {
-    const { organisation, administrator } =
-      await createOrganisationAndAdministrator(organisationDto, user)
+    const { organisation, administrator } = await transaction((session) =>
+      createOrganisationAndAdministrator(organisationDto, user, { session })
+    )
 
     const organisationCreatedEvent = new OrganisationCreatedEvent({
       administrator,
@@ -154,8 +155,11 @@ export const updateOrganisation = async ({
   }
 
   try {
-    const { organisation, administrator } =
-      await updateAdministratorOrganisation(params, organisationDto, user)
+    const { organisation, administrator } = await transaction((session) =>
+      updateAdministratorOrganisation(params, organisationDto, user, {
+        session,
+      })
+    )
 
     const organisationUpdatedEvent = new OrganisationUpdatedEvent({
       administrator,
@@ -186,7 +190,9 @@ export const updateOrganisation = async ({
 export const fetchOrganisations = async (
   user: NonNullable<Request['user']>
 ) => {
-  const organisations = await fetchUserOrganisations(user)
+  const organisations = await transaction((session) =>
+    fetchUserOrganisations(user, { session })
+  )
 
   return organisations.map((organisation) =>
     organisationToDto(organisation, user.email)
@@ -201,7 +207,9 @@ export const fetchOrganisation = async ({
   user: NonNullable<Request['user']>
 }) => {
   try {
-    const organisation = await fetchUserOrganisation(params, user)
+    const organisation = await transaction((session) =>
+      fetchUserOrganisation(params, user, { session })
+    )
 
     return organisationToDto(organisation, user.email)
   } catch (e) {
@@ -275,7 +283,9 @@ export const createPoll = async ({
     const {
       polls: [poll],
       ...organisation
-    } = await createOrganisationPoll(params, pollDto, user)
+    } = await transaction((session) =>
+      createOrganisationPoll(params, pollDto, user, { session })
+    )
 
     const pollCreatedEvent = new PollUpdatedEvent({ poll, organisation })
 
@@ -302,7 +312,9 @@ export const updatePoll = async ({
   user: NonNullable<Request['user']>
 }) => {
   try {
-    const poll = await updateOrganisationPoll(params, pollDto, user)
+    const poll = await transaction((session) =>
+      updateOrganisationPoll(params, pollDto, user, { session })
+    )
     const { organisation } = poll
 
     const pollUpdatedEvent = new PollUpdatedEvent({ poll, organisation })
@@ -328,7 +340,9 @@ export const deletePoll = async ({
   user: NonNullable<Request['user']>
 }) => {
   try {
-    const { organisation } = await deleteOrganisationPoll(params, user)
+    const { organisation } = await transaction((session) =>
+      deleteOrganisationPoll(params, user, { session })
+    )
 
     const pollDeletedEvent = new PollDeletedEvent({ organisation })
 
@@ -351,7 +365,9 @@ export const fetchPolls = async ({
   user: NonNullable<Request['user']>
 }) => {
   try {
-    const { polls } = await fetchOrganisationPolls(params, user)
+    const { polls } = await transaction((session) =>
+      fetchOrganisationPolls(params, user, { session })
+    )
 
     return polls.map((poll) => pollToDto({ poll, user }))
   } catch (e) {
@@ -370,7 +386,9 @@ export const fetchPoll = async ({
   user: NonNullable<Request['user']>
 }) => {
   try {
-    const poll = await fetchOrganisationPoll(params, user)
+    const poll = await transaction((session) =>
+      fetchOrganisationPoll(params, user, { session })
+    )
 
     return pollToDto({ poll, user })
   } catch (e) {
@@ -389,7 +407,9 @@ export const fetchPublicPoll = async ({
   user?: NonNullable<Request['user']>
 }) => {
   try {
-    const poll = await fetchOrganisationPublicPoll(params)
+    const poll = await transaction((session) =>
+      fetchOrganisationPublicPoll(params, { session })
+    )
 
     return pollToDto({
       poll,
@@ -407,24 +427,20 @@ export const updatePollFunFacts = async (
   pollId: string,
   { session }: { session?: Session } = {}
 ) => {
-  return transaction(async (prismaSession) => {
-    const funFacts = await getPollFunFacts(
-      { id: pollId },
-      { session: prismaSession }
-    )
+  return transaction(async (session) => {
+    const funFacts = await getPollFunFacts({ id: pollId }, { session })
 
-    await setPollFunFacts(pollId, funFacts, { session: prismaSession })
+    await setPollFunFacts(pollId, funFacts, { session })
   }, session)
 }
 
 export const updatePollFunFactsAfterSimulationChange = (
-  simulationId: string,
-  { session }: { session?: Session } = {}
+  simulationId: string
 ) => {
-  return transaction(async (prismaSession) => {
+  return transaction(async (session) => {
     const simulationPoll = await findSimulationPoll(
       { simulationId },
-      { session: prismaSession }
+      { session }
     )
 
     if (!simulationPoll) {
@@ -433,6 +449,6 @@ export const updatePollFunFactsAfterSimulationChange = (
 
     const { pollId } = simulationPoll
 
-    return updatePollFunFacts(pollId, { session: prismaSession })
-  }, session)
+    return updatePollFunFacts(pollId, { session })
+  })
 }

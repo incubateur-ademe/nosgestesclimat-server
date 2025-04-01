@@ -1,3 +1,5 @@
+import type { Session } from '../../adapters/prisma/transaction'
+import { transaction } from '../../adapters/prisma/transaction'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
 import { ForbiddenException } from '../../core/errors/ForbiddenException'
 import { EventBus } from '../../core/event-bus/event-bus'
@@ -82,9 +84,12 @@ const participantToDto = (
       }),
 })
 
-const findGroupAndParticipant = async (params: UserGroupParticipantParams) => {
+const findGroupAndParticipant = async (
+  params: UserGroupParticipantParams,
+  { session }: { session: Session }
+) => {
   try {
-    return await findGroupAndParticipantById(params)
+    return await findGroupAndParticipantById(params, { session })
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('Group or participant not found')
@@ -100,8 +105,9 @@ export const createGroup = async ({
   groupDto: GroupCreateDto
   origin: string
 }) => {
-  const { group, administrator, simulation } =
-    await createGroupAndUser(groupDto)
+  const { group, administrator, simulation } = await transaction((session) =>
+    createGroupAndUser(groupDto, { session })
+  )
   const { participants } = group
 
   const events = []
@@ -140,7 +146,9 @@ export const updateGroup = async (
   update: GroupUpdateDto
 ) => {
   try {
-    const group = await updateUserGroup(params, update)
+    const group = await transaction((session) =>
+      updateUserGroup(params, update, { session })
+    )
     const { participants } = group
 
     const groupUpdatedEvent = new GroupUpdatedEvent({
@@ -171,9 +179,8 @@ export const createParticipant = async ({
   participantDto: ParticipantCreateDto
 }) => {
   try {
-    const { participant, created } = await createParticipantAndUser(
-      params,
-      participantDto
+    const { participant, created } = await transaction((session) =>
+      createParticipantAndUser(params, participantDto, { session })
     )
     const {
       user,
@@ -216,29 +223,31 @@ export const createParticipant = async ({
 export const removeParticipant = async (params: UserGroupParticipantParams) => {
   try {
     const {
-      group: { administrator: admin },
-      ...participant
-    } = await findGroupAndParticipant(params)
-
-    const administratorId = admin?.userId
-    const isConnectedUserGroupAdmin = params.userId === administratorId
-
-    if (isConnectedUserGroupAdmin && administratorId === participant.userId) {
-      throw new ForbiddenException(
-        'Forbidden ! Administrator cannot leave group, delete it instead.'
-      )
-    }
-
-    if (!isConnectedUserGroupAdmin && params.userId !== participant.userId) {
-      throw new ForbiddenException(
-        'Forbidden ! You cannot remove other participants from this group.'
-      )
-    }
-
-    const {
       group: { participants, administrator },
       user: participantUser,
-    } = await deleteParticipantById(params.participantId)
+    } = await transaction(async (session) => {
+      const {
+        group: { administrator: admin },
+        ...participant
+      } = await findGroupAndParticipant(params, { session })
+
+      const administratorId = admin?.userId
+      const isConnectedUserGroupAdmin = params.userId === administratorId
+
+      if (isConnectedUserGroupAdmin && administratorId === participant.userId) {
+        throw new ForbiddenException(
+          'Forbidden ! Administrator cannot leave group, delete it instead.'
+        )
+      }
+
+      if (!isConnectedUserGroupAdmin && params.userId !== participant.userId) {
+        throw new ForbiddenException(
+          'Forbidden ! You cannot remove other participants from this group.'
+        )
+      }
+
+      return deleteParticipantById(params.participantId, { session })
+    })
 
     const groupUpdatedEvent = new GroupUpdatedEvent({
       administrator: administrator!.user,
@@ -262,14 +271,18 @@ export const fetchGroups = async (
   params: UserParams,
   filters: GroupsFetchQuery
 ) => {
-  const groups = await fetchUserGroups(params, filters)
+  const groups = await transaction((session) =>
+    fetchUserGroups(params, filters, { session })
+  )
 
   return groups.map((p) => groupToDto(p, params.userId))
 }
 
 export const fetchGroup = async (params: UserGroupParams) => {
   try {
-    const group = await fetchUserGroup(params)
+    const group = await transaction((session) =>
+      fetchUserGroup(params, { session })
+    )
 
     return groupToDto(group, params.userId)
   } catch (e) {
@@ -285,7 +298,9 @@ export const deleteGroup = async (params: {
   groupId: string
 }) => {
   try {
-    const { administrator, participants } = await deleteUserGroup(params)
+    const { administrator, participants } = await transaction((session) =>
+      deleteUserGroup(params, { session })
+    )
 
     const groupDeletedEvent = new GroupDeletedEvent({
       administrator: administrator!.user,

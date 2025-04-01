@@ -2,6 +2,7 @@ import {
   addOrUpdateContactAfterIncompleteSimulationCreated,
   addOrUpdateContactAfterSimulationCreated,
 } from '../../../adapters/brevo/client'
+import { transaction } from '../../../adapters/prisma/transaction'
 import type { Handler } from '../../../core/event-bus/handler'
 import type { SimulationUpsertedEvent } from '../events/SimulationUpserted.event'
 import { getIncompleteSimulationsCount } from '../simulations.repository'
@@ -43,10 +44,15 @@ export const updateBrevoContact: Handler<SimulationUpsertedEvent> = async ({
       computedResults: computedResults as ComputedResultSchema,
       lastSimulationDate,
       subscribeToGroupNewsletter,
-      incompleteSumulations: await getIncompleteSimulationsCount({
-        userId,
-        userEmail: email,
-      }),
+      incompleteSumulations: await transaction((session) =>
+        getIncompleteSimulationsCount(
+          {
+            userId,
+            userEmail: email,
+          },
+          { session }
+        )
+      ),
     })
   } else if (!attributes.group && !attributes.organisation) {
     return addOrUpdateContactAfterIncompleteSimulationCreated({

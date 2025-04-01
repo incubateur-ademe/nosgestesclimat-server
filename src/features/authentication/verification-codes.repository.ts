@@ -1,45 +1,41 @@
 import type { Prisma, VerificationCode } from '@prisma/client'
-import { transaction } from '../../adapters/prisma/transaction'
+import type { Session } from '../../adapters/prisma/transaction'
 
 export const createUserVerificationCode = (
-  data: Prisma.VerificationCodeCreateInput
+  data: Prisma.VerificationCodeCreateInput,
+  { session }: { session: Session }
 ) => {
-  return transaction((prismaSession) =>
-    prismaSession.verificationCode.create({
-      data: {
-        ...data,
-      },
-      select: {
-        id: true,
-        email: true,
-        userId: true,
-        createdAt: true,
-        updatedAt: true,
-        expirationDate: true,
-      },
-    })
-  )
+  return session.verificationCode.create({
+    data: {
+      ...data,
+    },
+    select: {
+      id: true,
+      email: true,
+      userId: true,
+      createdAt: true,
+      updatedAt: true,
+      expirationDate: true,
+    },
+  })
 }
 
-export const findUserVerificationCode = ({
-  userId,
-  email,
-  code,
-}: Pick<VerificationCode, 'email' | 'code' | 'userId'>) => {
-  return transaction((prismaSession) =>
-    prismaSession.verificationCode.findFirstOrThrow({
-      where: {
-        code,
-        email,
-        userId,
-        expirationDate: {
-          gte: new Date(),
-        },
+export const findUserVerificationCode = (
+  { userId, email, code }: Pick<VerificationCode, 'email' | 'code' | 'userId'>,
+  { session }: { session: Session }
+) => {
+  return session.verificationCode.findFirstOrThrow({
+    where: {
+      code,
+      email,
+      userId,
+      expirationDate: {
+        gte: new Date(),
       },
-      select: {
-        email: true,
-        userId: true,
-      },
-    })
-  )
+    },
+    select: {
+      email: true,
+      userId: true,
+    },
+  })
 }
