@@ -1,5 +1,6 @@
 import type { Organisation, Poll } from '@prisma/client'
 import type { Request } from 'express'
+import { prisma } from '../../adapters/prisma/client'
 import type { Session } from '../../adapters/prisma/transaction'
 import { transaction } from '../../adapters/prisma/transaction'
 import { config } from '../../config'
@@ -190,8 +191,9 @@ export const updateOrganisation = async ({
 export const fetchOrganisations = async (
   user: NonNullable<Request['user']>
 ) => {
-  const organisations = await transaction((session) =>
-    fetchUserOrganisations(user, { session })
+  const organisations = await transaction(
+    (session) => fetchUserOrganisations(user, { session }),
+    prisma
   )
 
   return organisations.map((organisation) =>
@@ -207,8 +209,9 @@ export const fetchOrganisation = async ({
   user: NonNullable<Request['user']>
 }) => {
   try {
-    const organisation = await transaction((session) =>
-      fetchUserOrganisation(params, user, { session })
+    const organisation = await transaction(
+      (session) => fetchUserOrganisation(params, user, { session }),
+      prisma
     )
 
     return organisationToDto(organisation, user.email)

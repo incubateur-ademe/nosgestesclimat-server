@@ -1,3 +1,4 @@
+import { prisma } from '../../adapters/prisma/client'
 import type { Session } from '../../adapters/prisma/transaction'
 import { transaction } from '../../adapters/prisma/transaction'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
@@ -271,8 +272,9 @@ export const fetchGroups = async (
   params: UserParams,
   filters: GroupsFetchQuery
 ) => {
-  const groups = await transaction((session) =>
-    fetchUserGroups(params, filters, { session })
+  const groups = await transaction(
+    (session) => fetchUserGroups(params, filters, { session }),
+    prisma
   )
 
   return groups.map((p) => groupToDto(p, params.userId))
@@ -280,8 +282,9 @@ export const fetchGroups = async (
 
 export const fetchGroup = async (params: UserGroupParams) => {
   try {
-    const group = await transaction((session) =>
-      fetchUserGroup(params, { session })
+    const group = await transaction(
+      (session) => fetchUserGroup(params, { session }),
+      prisma
     )
 
     return groupToDto(group, params.userId)

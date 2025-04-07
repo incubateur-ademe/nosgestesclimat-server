@@ -7,12 +7,17 @@ import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { brevoUpdateContact } from '../../../adapters/brevo/__tests__/fixtures/server.fixture'
 import { prisma } from '../../../adapters/prisma/client'
+import * as prismaTransactionAdapter from '../../../adapters/prisma/transaction'
 import app from '../../../app'
 import { mswServer } from '../../../core/__tests__/fixtures/server.fixture'
 import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 import { LOGIN_ROUTE } from './fixtures/login.fixture'
 import { createVerificationCode } from './fixtures/verification-codes.fixture'
+
+vi.mock('../../../adapters/prisma/transaction', async () => ({
+  ...(await vi.importActual('../../../adapters/prisma/transaction')),
+}))
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)
@@ -158,11 +163,13 @@ describe('Given a NGC user', () => {
       const databaseError = new Error('Something went wrong')
 
       beforeEach(() => {
-        vi.spyOn(prisma, '$transaction').mockRejectedValueOnce(databaseError)
+        vi.spyOn(prismaTransactionAdapter, 'transaction').mockRejectedValueOnce(
+          databaseError
+        )
       })
 
       afterEach(() => {
-        vi.spyOn(prisma, '$transaction').mockRestore()
+        vi.spyOn(prismaTransactionAdapter, 'transaction').mockRestore()
       })
 
       test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {

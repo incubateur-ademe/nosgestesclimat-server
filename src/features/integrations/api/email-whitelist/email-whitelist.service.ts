@@ -1,3 +1,4 @@
+import { prisma } from '../../../../adapters/prisma/client'
 import { transaction } from '../../../../adapters/prisma/transaction'
 import { EntityNotFoundException } from '../../../../core/errors/EntityNotFoundException'
 import { ForbiddenException } from '../../../../core/errors/ForbiddenException'
@@ -99,14 +100,16 @@ export const fetchEmailWhitelists = async ({
   query: EmailWhitelistsFetchQuery
   userScopes: Set<string>
 }) => {
-  const whitelists = await transaction((session) =>
-    fetchWhitelists(
-      {
-        ...query,
-        scopes: userScopes,
-      },
-      { session }
-    )
+  const whitelists = await transaction(
+    (session) =>
+      fetchWhitelists(
+        {
+          ...query,
+          scopes: userScopes,
+        },
+        { session }
+      ),
+    prisma
   )
 
   return whitelists.map(whitelistToDto)

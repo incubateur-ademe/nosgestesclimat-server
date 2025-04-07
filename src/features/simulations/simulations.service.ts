@@ -8,6 +8,7 @@ import modelFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRule
 import type { JsonValue } from '@prisma/client/runtime/library'
 import type { Request } from 'express'
 import type Engine from 'publicodes'
+import { prisma } from '../../adapters/prisma/client'
 import type { Session } from '../../adapters/prisma/transaction'
 import { transaction } from '../../adapters/prisma/transaction'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
@@ -89,8 +90,9 @@ export const createSimulation = async ({
 }
 
 export const fetchSimulations = async (params: UserParams) => {
-  const simulations = await transaction((session) =>
-    fetchUserSimulations(params, { session })
+  const simulations = await transaction(
+    (session) => fetchUserSimulations(params, { session }),
+    prisma
   )
 
   return simulations.map((s) => simulationToDto(s, params.userId))
@@ -98,8 +100,9 @@ export const fetchSimulations = async (params: UserParams) => {
 
 export const fetchSimulation = async (params: UserSimulationParams) => {
   try {
-    const simulation = await transaction((session) =>
-      fetchUserSimulation(params, { session })
+    const simulation = await transaction(
+      (session) => fetchUserSimulation(params, { session }),
+      prisma
     )
 
     return simulationToDto(simulation, params.userId)

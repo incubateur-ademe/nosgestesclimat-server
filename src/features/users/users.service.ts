@@ -1,6 +1,7 @@
 import { isAxiosError } from 'axios'
 import type { Request } from 'express'
 import { fetchContact, isNotFound } from '../../adapters/brevo/client'
+import { prisma } from '../../adapters/prisma/client'
 import { transaction } from '../../adapters/prisma/transaction'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
 import { EventBus } from '../../core/event-bus/event-bus'
@@ -25,7 +26,10 @@ export const syncUserData = (user: NonNullable<Request['user']>) => {
 
 export const fetchUserContact = async (params: UserParams) => {
   try {
-    const user = await transaction((session) => fetchUser(params, { session }))
+    const user = await transaction(
+      (session) => fetchUser(params, { session }),
+      prisma
+    )
 
     if (!user.email) {
       throw new EntityNotFoundException('Contact not found')

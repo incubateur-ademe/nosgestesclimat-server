@@ -3,6 +3,7 @@ import type { Request, RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import type { JwtPayload } from 'jsonwebtoken'
 import jwt, { TokenExpiredError } from 'jsonwebtoken'
+import { prisma } from '../../../../adapters/prisma/client'
 import { transaction } from '../../../../adapters/prisma/transaction'
 import { config } from '../../../../config'
 import { EntityNotFoundException } from '../../../../core/errors/EntityNotFoundException'
@@ -78,8 +79,9 @@ export const isValidRefreshToken = async (refreshToken: string) => {
 }
 
 const signTokens = async (email: string) => {
-  const emailWhitelist = await transaction((session) =>
-    fetchWhitelists({ emailPattern: email }, { session })
+  const emailWhitelist = await transaction(
+    (session) => fetchWhitelists({ emailPattern: email }, { session }),
+    prisma
   )
 
   const scopes = new Set(emailWhitelist.map(({ apiScopeName }) => apiScopeName))
@@ -133,14 +135,16 @@ export const exchangeCredentialsForToken = async (
   query: RecoverApiTokenQuery
 ) => {
   try {
-    const { email } = await transaction((session) =>
-      findUserVerificationCode(
-        {
-          ...query,
-          userId: null,
-        },
-        { session }
-      )
+    const { email } = await transaction(
+      (session) =>
+        findUserVerificationCode(
+          {
+            ...query,
+            userId: null,
+          },
+          { session }
+        ),
+      prisma
     )
 
     return signTokens(email)
