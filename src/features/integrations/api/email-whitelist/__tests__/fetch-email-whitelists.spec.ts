@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { prisma } from '../../../../../adapters/prisma/client'
+import * as prismaTransactionAdapter from '../../../../../adapters/prisma/transaction'
 import app from '../../../../../app'
 import { config } from '../../../../../config'
 import logger from '../../../../../logger'
@@ -13,6 +14,10 @@ import {
   recoverApiToken,
 } from '../../authentication/__tests__/fixtures/authentication.fixtures'
 import { FETCH_EMAIL_WHITELISTS_ROUTE } from './fixtures/email-whitelist.fixture'
+
+vi.mock('../../../../../adapters/prisma/transaction', async () => ({
+  ...(await vi.importActual('../../../../../adapters/prisma/transaction')),
+}))
 
 describe('Given a NGC integrations API user', () => {
   const agent = supertest(app)
@@ -315,11 +320,14 @@ describe('Given a NGC integrations API user', () => {
         const databaseError = new Error('Something went wrong')
 
         beforeEach(() => {
-          vi.spyOn(prisma, '$transaction').mockRejectedValueOnce(databaseError)
+          vi.spyOn(
+            prismaTransactionAdapter,
+            'transaction'
+          ).mockRejectedValueOnce(databaseError)
         })
 
         afterEach(() => {
-          vi.spyOn(prisma, '$transaction').mockRestore()
+          vi.spyOn(prismaTransactionAdapter, 'transaction').mockRestore()
         })
 
         test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {

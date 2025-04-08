@@ -3,6 +3,8 @@ import type { Request, RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import type { JwtPayload } from 'jsonwebtoken'
 import jwt, { TokenExpiredError } from 'jsonwebtoken'
+import { prisma } from '../../../../adapters/prisma/client'
+import { transaction } from '../../../../adapters/prisma/transaction'
 import { config } from '../../../../config'
 import { EntityNotFoundException } from '../../../../core/errors/EntityNotFoundException'
 import { UnauthorizedException } from '../../../../core/errors/UnauthorizedException'
@@ -77,7 +79,10 @@ export const isValidRefreshToken = async (refreshToken: string) => {
 }
 
 const signTokens = async (email: string) => {
-  const emailWhitelist = await fetchWhitelists({ emailPattern: email })
+  const emailWhitelist = await transaction(
+    (session) => fetchWhitelists({ emailPattern: email }, { session }),
+    prisma
+  )
 
   const scopes = new Set(emailWhitelist.map(({ apiScopeName }) => apiScopeName))
 
@@ -106,26 +111,41 @@ export const generateApiToken = async ({
   generateApiTokenDto: GenerateAPITokenRequestDto
   origin: string
 }) => {
-  const emailWhitelist = await fetchWhitelists({ emailPattern: email })
+  await transaction(async (session) => {
+    const emailWhitelist = await fetchWhitelists(
+      { emailPattern: email },
+      { session }
+    )
 
-  if (emailWhitelist.length) {
-    await createVerificationCode({
-      verificationCodeDto: {
-        email,
-      },
-      origin,
-    })
-  }
+    if (emailWhitelist.length) {
+      await createVerificationCode(
+        {
+          verificationCodeDto: {
+            email,
+          },
+          origin,
+        },
+        { session }
+      )
+    }
+  })
 }
 
 export const exchangeCredentialsForToken = async (
   query: RecoverApiTokenQuery
 ) => {
   try {
-    const { email } = await findUserVerificationCode({
-      ...query,
-      userId: null,
-    })
+    const { email } = await transaction(
+      (session) =>
+        findUserVerificationCode(
+          {
+            ...query,
+            userId: null,
+          },
+          { session }
+        ),
+      prisma
+    )
 
     return signTokens(email)
   } catch (e) {
