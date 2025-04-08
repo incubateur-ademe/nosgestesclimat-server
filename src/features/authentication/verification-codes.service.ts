@@ -6,14 +6,8 @@ import { VerificationCodeCreatedEvent } from './events/VerificationCodeCreated.e
 import { createUserVerificationCode } from './verification-codes.repository'
 import type { VerificationCodeCreateDto } from './verification-codes.validator'
 
-export const createVerificationCode = async (
-  {
-    verificationCodeDto,
-    origin,
-  }: {
-    verificationCodeDto: Pick<VerificationCodeCreateDto, 'email'>
-    origin: string
-  },
+export const generateVerificationCode = async (
+  verificationCodeDto: Pick<VerificationCodeCreateDto, 'email'>,
   { session }: { session?: Session } = {}
 ) => {
   const { code, expirationDate } = generateVerificationCodeAndExpiration()
@@ -28,6 +22,24 @@ export const createVerificationCode = async (
         },
         { session }
       ),
+    session
+  )
+
+  return { code, verificationCode }
+}
+
+export const createVerificationCode = async (
+  {
+    verificationCodeDto,
+    origin,
+  }: {
+    verificationCodeDto: Pick<VerificationCodeCreateDto, 'email'>
+    origin: string
+  },
+  session: { session?: Session } = {}
+) => {
+  const { verificationCode, code } = await generateVerificationCode(
+    verificationCodeDto,
     session
   )
 

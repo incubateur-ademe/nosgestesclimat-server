@@ -10,6 +10,14 @@ export const config = {
     process.env.NODE_ENV,
     'development' as 'development' | 'production' | 'test'
   ),
+  get serverUrl() {
+    return ensureEnvVar(
+      process.env.SERVER_URL,
+      config.env === 'development'
+        ? 'http://localhost:3001'
+        : 'https://server.nosgestesclimat.fr'
+    )
+  },
   origin: ensureEnvVar(process.env.ORIGIN, 'https://nosgestesclimat.fr'),
   get app() {
     return {

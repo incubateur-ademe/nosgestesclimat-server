@@ -10,6 +10,7 @@ export enum TemplateIds {
   ORGANISATION_JOINED = 71,
   SIMULATION_IN_PROGRESS = 102,
   API_VERIFICATION_CODE = 116,
+  NEWSLETTER_CONFIRMATION = 118,
 }
 
 export enum Attributes {

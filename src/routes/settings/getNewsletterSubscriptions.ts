@@ -1,5 +1,5 @@
 import express from 'express'
-import { fetchContact } from '../../adapters/brevo/client'
+import { fetchContactOrThrow } from '../../adapters/brevo/client'
 
 const router = express.Router()
 
@@ -18,7 +18,7 @@ router.route('/').get(async (req, res) => {
   }
 
   try {
-    const { listIds } = await fetchContact(email)
+    const { listIds } = await fetchContactOrThrow(email)
     return res.status(200).json(listIds)
   } catch (error) {
     console.warn(error)

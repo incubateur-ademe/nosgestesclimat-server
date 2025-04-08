@@ -14,4 +14,5 @@ export default () => {
   process.env.SCALEWAY_ENDPOINT = 'https://s3.fr-par.scw.cloud'
   process.env.SCALEWAY_REGION = 'fr-par'
   process.env.SCALEWAY_ROOT_PATH = 'ngc'
+  process.env.SERVER_URL = 'https://server.nosgestesclimat.fr'
 }
