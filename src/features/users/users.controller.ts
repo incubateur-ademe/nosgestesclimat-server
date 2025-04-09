@@ -1,6 +1,7 @@
 import express from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { validateRequest } from 'zod-express-middleware'
+import { config } from '../../config'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
 import { ForbiddenException } from '../../core/errors/ForbiddenException'
 import { EventBus } from '../../core/event-bus/event-bus'
@@ -9,9 +10,15 @@ import { authentificationMiddleware } from '../../middlewares/authentificationMi
 import { UserUpdatedEvent } from './events/UserUpdated.event'
 import { addOrUpdateBrevoContact } from './handlers/add-or-update-brevo-contact'
 import { sendBrevoNewsLetterConfirmationEmail } from './handlers/send-brevo-newsletter-confirmation-email'
-import { fetchUserContact, updateUserAndContact } from './users.service'
+import {
+  confirmNewsletterSubscriptions,
+  fetchUserContact,
+  updateUserAndContact,
+} from './users.service'
 import {
   FetchUserContactValidator,
+  NewsletterConfirmationQuery,
+  NewsletterConfirmationValidator,
   UpdateUserValidator,
   UserUpdateDto,
 } from './users.validator'
@@ -79,5 +86,38 @@ router
       }
     }
   )
+
+router
+  .route('/v1/:userId/newsletter-confirmation')
+  .get(validateRequest(NewsletterConfirmationValidator), async (req, res) => {
+    const redirectUrl = new URL(req.get('origin') || config.origin)
+    const { searchParams: redirectSearchParams } = redirectUrl
+
+    try {
+      await confirmNewsletterSubscriptions({
+        params: req.params,
+        query: NewsletterConfirmationQuery.parse(req.query),
+      })
+
+      redirectSearchParams.append('newsletter-confirmation-success', 'true')
+    } catch (err) {
+      const expired = err instanceof EntityNotFoundException
+
+      if (!expired) {
+        logger.error('Newsletter confirmation failed', err)
+      }
+
+      redirectSearchParams.append('newsletter-confirmation-success', 'false')
+      redirectSearchParams.append(
+        'newsletter-confirmation-status',
+        (expired
+          ? StatusCodes.NOT_FOUND
+          : StatusCodes.INTERNAL_SERVER_ERROR
+        ).toString()
+      )
+    }
+
+    return res.redirect(redirectUrl.toString())
+  })
 
 export default router

@@ -1,13 +1,17 @@
 import type { Session } from '../../adapters/prisma/transaction'
 import { transaction } from '../../adapters/prisma/transaction'
 import { EventBus } from '../../core/event-bus/event-bus'
+import type { WithOptionalProperty } from '../../types/types'
 import { generateVerificationCodeAndExpiration } from './authentication.service'
 import { VerificationCodeCreatedEvent } from './events/VerificationCodeCreated.event'
 import { createUserVerificationCode } from './verification-codes.repository'
 import type { VerificationCodeCreateDto } from './verification-codes.validator'
 
 export const generateVerificationCode = async (
-  verificationCodeDto: Pick<VerificationCodeCreateDto, 'email'>,
+  verificationCodeDto: WithOptionalProperty<
+    VerificationCodeCreateDto,
+    'userId'
+  >,
   { session }: { session?: Session } = {}
 ) => {
   const { code, expirationDate } = generateVerificationCodeAndExpiration()

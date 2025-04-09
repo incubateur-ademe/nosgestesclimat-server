@@ -17,7 +17,7 @@ export const sendBrevoNewsLetterConfirmationEmail: Handler<
     return
   }
 
-  const { code } = await generateVerificationCode({ email })
+  const { code } = await generateVerificationCode({ email, userId })
 
   return sendNewsLetterConfirmationEmail({
     newsLetterConfirmationBaseUrl: config.serverUrl,

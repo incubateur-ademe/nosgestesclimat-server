@@ -9,6 +9,7 @@ import { ForbiddenException } from '../../core/errors/ForbiddenException'
 import { EventBus } from '../../core/event-bus/event-bus'
 import { isAuthenticated } from '../../core/typeguards/isAuthenticated'
 import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError'
+import { findUserVerificationCode } from '../authentication/verification-codes.repository'
 import { UserUpdatedEvent } from './events/UserUpdated.event'
 import {
   fetchUser,
@@ -16,7 +17,11 @@ import {
   updateUser,
   updateVerifiedUser,
 } from './users.repository'
-import type { UserParams, UserUpdateDto } from './users.validator'
+import type {
+  NewsletterConfirmationQuery,
+  UserParams,
+  UserUpdateDto,
+} from './users.validator'
 
 const REACHABLE_NEWSLETTER_LIST_IDS: ListIds[] = [
   ListIds.MAIN_NEWSLETTER,
@@ -187,5 +192,51 @@ export const updateUserAndContact = async ({
           }
         : {}),
     }),
+  }
+}
+
+export const confirmNewsletterSubscriptions = async ({
+  params,
+  query,
+}: {
+  params: UserParams
+  query: NewsletterConfirmationQuery
+}) => {
+  try {
+    const [user, contact] = await transaction(
+      (session) =>
+        Promise.all([
+          fetchUser(params, { session }),
+          fetchContact(query.email),
+          findUserVerificationCode(
+            {
+              ...params,
+              ...query,
+            },
+            { session }
+          ),
+        ]),
+      prisma
+    )
+
+    const newsletters = getNewsletterMutation({
+      contact,
+      wantedNewsletters: query.listIds,
+    })
+
+    const userUpdatedEvent = new UserUpdatedEvent({
+      verified: true,
+      newsletters,
+      user,
+    })
+
+    EventBus.emit(userUpdatedEvent)
+
+    await EventBus.once(userUpdatedEvent)
+  } catch (e) {
+    if (isPrismaErrorNotFound(e)) {
+      throw new EntityNotFoundException('Verification code not found')
+    }
+    throw e
   }
 }

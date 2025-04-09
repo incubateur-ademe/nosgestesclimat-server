@@ -19,10 +19,11 @@ import logger from '../../../logger'
 import { login } from '../../authentication/__tests__/fixtures/login.fixture'
 import * as authenticationService from '../../authentication/authentication.service'
 import { createSimulation } from '../../simulations/__tests__/fixtures/simulations.fixtures'
+import { UPDATE_USER_ROUTE } from './fixtures/users.fixture'
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)
-  const url = '/users/v1/:userId'
+  const url = UPDATE_USER_ROUTE
 
   afterEach(() =>
     Promise.all([

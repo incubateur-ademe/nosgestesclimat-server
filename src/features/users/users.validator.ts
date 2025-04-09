@@ -39,3 +39,28 @@ export const UpdateUserValidator = {
   params: UserParams,
   query: z.object({}).strict().optional(),
 }
+
+export const NewsletterConfirmationQuery = z.object({
+  code: z.string().regex(/^\d{6}$/),
+  email: z
+    .string()
+    .regex(EMAIL_REGEX)
+    .transform((email) => email.toLocaleLowerCase()),
+  listIds: z
+    .union([
+      z.coerce.number().pipe(z.nativeEnum(ListIds).transform((s) => [s])),
+      z.array(z.coerce.number().pipe(z.nativeEnum(ListIds))),
+    ])
+    .optional()
+    .transform((listIds) => listIds || []),
+})
+
+export type NewsletterConfirmationQuery = z.infer<
+  typeof NewsletterConfirmationQuery
+>
+
+export const NewsletterConfirmationValidator = {
+  body: z.object({}).optional(),
+  params: UserParams,
+  query: NewsletterConfirmationQuery,
+}
