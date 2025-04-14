@@ -4,9 +4,21 @@ import { validateRequest } from 'zod-express-middleware'
 import logger from '../../logger'
 import { SituationSchema } from '../simulations/simulations.validator'
 import { exportSituation } from './integrations.service'
-import { SituationExportValidator } from './integrations.validator'
+import {
+  FetchExternalServiceValidator,
+  SituationExportValidator,
+} from './integrations.validator'
 
 const router = express.Router()
+
+/**
+ * Returns details for an external Service
+ */
+router
+  .route('/v1/:externalService')
+  .get(validateRequest(FetchExternalServiceValidator), async (req, res) => {
+    return res.status(StatusCodes.OK).end()
+  })
 
 /**
  * Exports situation to an external Service
