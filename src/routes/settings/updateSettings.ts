@@ -1,6 +1,9 @@
 import axios from 'axios'
 import express from 'express'
-import { addOrUpdateContact, fetchContact } from '../../adapters/brevo/client'
+import {
+  addOrUpdateContact,
+  fetchContactOrThrow,
+} from '../../adapters/brevo/client'
 import { Attributes } from '../../adapters/brevo/constant'
 import { axiosConf } from '../../constants/axios'
 import { createOrUpdateUser } from './createOrUpdateUser'
@@ -30,7 +33,7 @@ router.route('/').post(async (req, res) => {
       let currentListIds: number[]
 
       try {
-        ;({ listIds: currentListIds } = await fetchContact(email))
+        ;({ listIds: currentListIds } = await fetchContactOrThrow(email))
       } catch (e) {
         console.warn(e)
         // The contact does not exist in Brevo

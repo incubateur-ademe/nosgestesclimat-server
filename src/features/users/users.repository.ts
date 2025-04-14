@@ -1,8 +1,10 @@
-import type { User } from '@prisma/client'
 import type { Request } from 'express'
-import { defaultUserSelection } from '../../adapters/prisma/selection'
+import {
+  defaultUserSelection,
+  defaultVerifiedUserSelection,
+} from '../../adapters/prisma/selection'
 import type { Session } from '../../adapters/prisma/transaction'
-import type { UserParams } from './users.validator'
+import type { UserParams, UserUpdateDto } from './users.validator'
 
 export const transferOwnershipToUser = async (
   { userId, email }: NonNullable<Request['user']>,
@@ -176,17 +178,75 @@ export const fetchUser = (
 
 export const updateUser = (
   { userId }: UserParams,
-  { email, name }: Partial<Pick<User, 'email' | 'name'>>,
+  { email, name }: UserUpdateDto,
   { session }: { session: Session }
 ) => {
-  return session.user.update({
+  return session.user.upsert({
     where: {
       id: userId,
     },
-    data: {
+    create: {
+      id: userId,
+      email,
+      name,
+    },
+    update: {
       email,
       name,
     },
     select: defaultUserSelection,
+  })
+}
+
+export const updateVerifiedUser = async (
+  { userId, email }: NonNullable<Request['user']>,
+  { name }: UserUpdateDto,
+  { session }: { session: Session }
+) => {
+  const [user] = await Promise.all([
+    session.verifiedUser.upsert({
+      where: {
+        email,
+      },
+      create: {
+        id: userId,
+        email,
+        name,
+      },
+      update: {
+        id: userId,
+        name,
+      },
+      select: defaultVerifiedUserSelection,
+    }),
+    session.user.upsert({
+      where: {
+        id: userId,
+      },
+      create: {
+        id: userId,
+        email,
+        name,
+      },
+      update: {
+        email,
+        name,
+      },
+      select: { id: true },
+    }),
+  ])
+
+  return user
+}
+
+export const fetchVerifiedUser = (
+  email: string,
+  { session }: { session: Session }
+) => {
+  return session.verifiedUser.findUniqueOrThrow({
+    where: {
+      email,
+    },
+    select: defaultVerifiedUserSelection,
   })
 }
