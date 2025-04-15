@@ -7,6 +7,7 @@ import { formatBrevoDate } from '../../../../adapters/brevo/__tests__/fixtures/f
 import {
   brevoGetContact,
   brevoSendEmail,
+  brevoUpdateContact,
 } from '../../../../adapters/brevo/__tests__/fixtures/server.fixture'
 import type { BrevoContactDto } from '../../../../adapters/brevo/client'
 import { ListIds } from '../../../../adapters/brevo/constant'
@@ -39,6 +40,58 @@ export const getBrevoContact = (
   listIds: contact.listIds ?? [],
   statistics: contact.statistics ?? {},
 })
+
+export const createUser = async ({
+  agent,
+  user: { id, name, email } = {},
+}: {
+  agent: TestAgent
+  user?: Partial<UserUpdateDto> & { id?: string }
+}) => {
+  const userId = id || faker.string.uuid()
+  let contact: BrevoContactDto | undefined
+
+  if (email) {
+    contact = getBrevoContact({
+      email,
+      attributes: {
+        USER_ID: userId,
+      },
+    })
+
+    mswServer.use(
+      brevoGetContact(email, {
+        customResponses: [
+          {
+            body: {
+              code: 'document_not_found',
+              message: 'List ID does not exist',
+            },
+            status: StatusCodes.NOT_FOUND,
+          },
+          {
+            body: contact,
+          },
+        ],
+      }),
+      brevoUpdateContact()
+    )
+  }
+
+  const response = await agent
+    .put(UPDATE_USER_ROUTE.replace(':userId', userId))
+    .send({ name, email })
+    .expect(StatusCodes.OK)
+
+  await EventBus.flush()
+
+  resetMswServer()
+
+  return {
+    user: response.body,
+    contact,
+  }
+}
 
 export const subscribeToNewsLetter = async ({
   code,

@@ -2,6 +2,7 @@ import dayjs from 'dayjs'
 import type { CookieOptions } from 'express'
 import jwt from 'jsonwebtoken'
 import { prisma } from '../../adapters/prisma/client'
+import type { Session } from '../../adapters/prisma/transaction'
 import { transaction } from '../../adapters/prisma/transaction'
 import { config } from '../../config'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
@@ -29,11 +30,14 @@ export const generateVerificationCodeAndExpiration = () => ({
   expirationDate: dayjs().add(1, 'hour').toDate(),
 })
 
-export const exchangeCredentialsForToken = async (loginDto: LoginDto) => {
+export const exchangeCredentialsForToken = async (
+  loginDto: LoginDto,
+  { session }: { session?: Session } = {}
+) => {
   try {
     const { email, userId } = await transaction(
       (session) => findUserVerificationCode(loginDto, { session }),
-      prisma
+      session || prisma
     )
 
     return {

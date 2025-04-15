@@ -118,6 +118,20 @@ export const fetchContact = async (email: string) => {
   }
 }
 
+export const deleteContact = async (email: string) => {
+  try {
+    await brevo.delete<BrevoContactDto>(
+      `/v3/contacts/${encodeURIComponent(email)}`
+    )
+  } catch (e) {
+    if (isAxiosError(e) && isNotFound(e)) {
+      return
+    }
+
+    throw e
+  }
+}
+
 const sendEmail = ({
   email,
   templateId,
