@@ -3,7 +3,6 @@ import dayjs from 'dayjs'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import { formatBrevoDate } from '../../../adapters/brevo/__tests__/fixtures/formatBrevoDate'
 import {
   brevoGetContact,
   brevoRemoveFromList,
@@ -19,7 +18,7 @@ import logger from '../../../logger'
 import { login } from '../../authentication/__tests__/fixtures/login.fixture'
 import * as authenticationService from '../../authentication/authentication.service'
 import { createSimulation } from '../../simulations/__tests__/fixtures/simulations.fixtures'
-import { UPDATE_USER_ROUTE } from './fixtures/users.fixture'
+import { getBrevoContact, UPDATE_USER_ROUTE } from './fixtures/users.fixture'
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)
@@ -433,20 +432,12 @@ describe('Given a NGC user', () => {
             beforeEach(() => {
               email = faker.internet.email().toLocaleLowerCase()
 
-              contact = {
+              contact = getBrevoContact({
                 email,
-                id: faker.number.int(),
-                emailBlacklisted: faker.datatype.boolean(),
-                smsBlacklisted: faker.datatype.boolean(),
-                createdAt: formatBrevoDate(faker.date.past()),
-                modifiedAt: formatBrevoDate(faker.date.recent()),
                 attributes: {
                   USER_ID: userId,
-                  PRENOM: null,
                 },
-                listIds: [],
-                statistics: {},
-              }
+              })
             })
 
             test(`Then it sends an email and returns a ${StatusCodes.ACCEPTED} response`, async () => {
@@ -796,20 +787,12 @@ describe('Given a NGC user', () => {
             let contact: BrevoContactDto
 
             beforeEach(() => {
-              contact = {
+              contact = getBrevoContact({
                 email,
-                id: faker.number.int(),
-                emailBlacklisted: faker.datatype.boolean(),
-                smsBlacklisted: faker.datatype.boolean(),
-                createdAt: formatBrevoDate(faker.date.past()),
-                modifiedAt: formatBrevoDate(faker.date.recent()),
                 attributes: {
                   USER_ID: userId,
-                  PRENOM: null,
                 },
-                listIds: [],
-                statistics: {},
-              }
+              })
             })
 
             test(`Then it sends an email and returns a ${StatusCodes.ACCEPTED} response`, async () => {
@@ -1121,20 +1104,12 @@ describe('Given a NGC user', () => {
                   status: StatusCodes.NOT_FOUND,
                 },
                 {
-                  body: {
+                  body: getBrevoContact({
                     email,
-                    id: faker.number.int(),
-                    emailBlacklisted: faker.datatype.boolean(),
-                    smsBlacklisted: faker.datatype.boolean(),
-                    createdAt: formatBrevoDate(faker.date.past()),
-                    modifiedAt: formatBrevoDate(faker.date.recent()),
                     attributes: {
                       USER_ID: userId,
-                      PRENOM: null,
                     },
-                    listIds: [],
-                    statistics: {},
-                  },
+                  }),
                 },
               ],
             }),
@@ -1226,20 +1201,12 @@ describe('Given a NGC user', () => {
                       status: StatusCodes.NOT_FOUND,
                     },
                     {
-                      body: {
+                      body: getBrevoContact({
                         email,
-                        id: faker.number.int(),
-                        emailBlacklisted: faker.datatype.boolean(),
-                        smsBlacklisted: faker.datatype.boolean(),
-                        createdAt: formatBrevoDate(faker.date.past()),
-                        modifiedAt: formatBrevoDate(faker.date.recent()),
                         attributes: {
                           USER_ID: userId,
-                          PRENOM: null,
                         },
-                        listIds: [],
-                        statistics: {},
-                      },
+                      }),
                     },
                   ],
                 }),
@@ -1304,20 +1271,12 @@ describe('Given a NGC user', () => {
             beforeEach(() => {
               email = faker.internet.email().toLocaleLowerCase()
 
-              contact = {
+              contact = getBrevoContact({
                 email,
-                id: faker.number.int(),
-                emailBlacklisted: faker.datatype.boolean(),
-                smsBlacklisted: faker.datatype.boolean(),
-                createdAt: formatBrevoDate(faker.date.past()),
-                modifiedAt: formatBrevoDate(faker.date.recent()),
                 attributes: {
                   USER_ID: userId,
-                  PRENOM: null,
                 },
-                listIds: [],
-                statistics: {},
-              }
+              })
             })
 
             test(`Then it returns a ${StatusCodes.OK} response`, async () => {
@@ -1430,20 +1389,12 @@ describe('Given a NGC user', () => {
                         status: StatusCodes.NOT_FOUND,
                       },
                       {
-                        body: {
+                        body: getBrevoContact({
                           email,
-                          id: faker.number.int(),
-                          emailBlacklisted: faker.datatype.boolean(),
-                          smsBlacklisted: faker.datatype.boolean(),
-                          createdAt: formatBrevoDate(faker.date.past()),
-                          modifiedAt: formatBrevoDate(faker.date.recent()),
                           attributes: {
                             USER_ID: userId,
-                            PRENOM: null,
                           },
-                          listIds: [],
-                          statistics: {},
-                        },
+                        }),
                       },
                     ],
                   }),
@@ -1501,20 +1452,12 @@ describe('Given a NGC user', () => {
                         status: StatusCodes.NOT_FOUND,
                       },
                       {
-                        body: {
+                        body: getBrevoContact({
                           email,
-                          id: faker.number.int(),
-                          emailBlacklisted: faker.datatype.boolean(),
-                          smsBlacklisted: faker.datatype.boolean(),
-                          createdAt: formatBrevoDate(faker.date.past()),
-                          modifiedAt: formatBrevoDate(faker.date.recent()),
                           attributes: {
                             USER_ID: userId,
-                            PRENOM: null,
                           },
-                          listIds: [],
-                          statistics: {},
-                        },
+                        }),
                       },
                     ],
                   }),
@@ -1556,20 +1499,12 @@ describe('Given a NGC user', () => {
             let contact: BrevoContactDto
 
             beforeEach(() => {
-              contact = {
+              contact = getBrevoContact({
                 email,
-                id: faker.number.int(),
-                emailBlacklisted: faker.datatype.boolean(),
-                smsBlacklisted: faker.datatype.boolean(),
-                createdAt: formatBrevoDate(faker.date.past()),
-                modifiedAt: formatBrevoDate(faker.date.recent()),
                 attributes: {
                   USER_ID: userId,
-                  PRENOM: null,
                 },
-                listIds: [],
-                statistics: {},
-              }
+              })
             })
 
             test(`Then it returns a ${StatusCodes.ACCEPTED} response`, async () => {
@@ -1700,20 +1635,12 @@ describe('Given a NGC user', () => {
         agent,
       }))
 
-      contact = {
+      contact = getBrevoContact({
         email,
-        id: faker.number.int(),
-        emailBlacklisted: faker.datatype.boolean(),
-        smsBlacklisted: faker.datatype.boolean(),
-        createdAt: formatBrevoDate(faker.date.past()),
-        modifiedAt: formatBrevoDate(faker.date.recent()),
         attributes: {
           USER_ID: userId,
-          PRENOM: null,
         },
-        listIds: [],
-        statistics: {},
-      }
+      })
     })
 
     describe('When subscribing to newsletter', () => {

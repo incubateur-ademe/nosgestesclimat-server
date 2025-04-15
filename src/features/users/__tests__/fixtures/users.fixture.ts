@@ -3,10 +3,12 @@ import dayjs from 'dayjs'
 import { StatusCodes } from 'http-status-codes'
 import type supertest from 'supertest'
 import { vi } from 'vitest'
+import { formatBrevoDate } from '../../../../adapters/brevo/__tests__/fixtures/formatBrevoDate'
 import {
   brevoGetContact,
   brevoSendEmail,
 } from '../../../../adapters/brevo/__tests__/fixtures/server.fixture'
+import type { BrevoContactDto } from '../../../../adapters/brevo/client'
 import { ListIds } from '../../../../adapters/brevo/constant'
 import {
   mswServer,
@@ -19,6 +21,24 @@ import type { UserUpdateDto } from '../../users.validator'
 type TestAgent = ReturnType<typeof supertest>
 
 export const UPDATE_USER_ROUTE = '/users/v1/:userId'
+
+export const getBrevoContact = (
+  contact: Partial<BrevoContactDto> = {}
+): BrevoContactDto => ({
+  email: contact.email ?? faker.internet.email(),
+  id: contact.id ?? faker.number.int(),
+  emailBlacklisted: contact.emailBlacklisted ?? faker.datatype.boolean(),
+  smsBlacklisted: contact.smsBlacklisted ?? faker.datatype.boolean(),
+  createdAt: contact.createdAt ?? formatBrevoDate(faker.date.past()),
+  modifiedAt: contact.modifiedAt ?? formatBrevoDate(faker.date.recent()),
+  attributes: {
+    ...contact.attributes,
+    USER_ID: contact.attributes?.USER_ID ?? faker.string.uuid(),
+    PRENOM: contact.attributes?.PRENOM ?? null,
+  },
+  listIds: contact.listIds ?? [],
+  statistics: contact.statistics ?? {},
+})
 
 export const subscribeToNewsLetter = async ({
   code,

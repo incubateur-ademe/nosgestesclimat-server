@@ -4,7 +4,6 @@ import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test } from 'vitest'
 import { ZodError } from 'zod'
-import { formatBrevoDate } from '../../../adapters/brevo/__tests__/fixtures/formatBrevoDate'
 import { brevoGetContact } from '../../../adapters/brevo/__tests__/fixtures/server.fixture'
 import { prisma } from '../../../adapters/prisma/client'
 import app from '../../../app'
@@ -12,6 +11,7 @@ import { mswServer } from '../../../core/__tests__/fixtures/server.fixture'
 import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 import { createSimulation } from '../../simulations/__tests__/fixtures/simulations.fixtures'
+import { getBrevoContact } from './fixtures/users.fixture'
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)
@@ -80,19 +80,14 @@ describe('Given a NGC user', () => {
             brevoGetContact(email, {
               customResponses: [
                 {
-                  body: {
+                  body: getBrevoContact({
                     email,
                     id: contactId,
-                    emailBlacklisted: faker.datatype.boolean(),
-                    smsBlacklisted: faker.datatype.boolean(),
-                    createdAt: formatBrevoDate(faker.date.past()),
-                    modifiedAt: formatBrevoDate(faker.date.recent()),
                     attributes: {
                       USER_ID: userId,
                     },
                     listIds,
-                    statistics: {},
-                  },
+                  }),
                 },
               ],
             })
