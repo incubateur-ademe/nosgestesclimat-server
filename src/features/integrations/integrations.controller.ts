@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes'
 import { validateRequest } from 'zod-express-middleware'
 import logger from '../../logger'
 import { SituationSchema } from '../simulations/simulations.validator'
-import { exportSituation } from './integrations.service'
+import { exportSituation, getPartnerFeatures } from './integrations.service'
 import {
   FetchExternalServiceValidator,
   SituationExportValidator,
@@ -17,7 +17,9 @@ const router = express.Router()
 router
   .route('/v1/:externalService')
   .get(validateRequest(FetchExternalServiceValidator), async (req, res) => {
-    return res.status(StatusCodes.OK).end()
+    return res
+      .status(StatusCodes.OK)
+      .json(getPartnerFeatures(req.params.externalService))
   })
 
 /**

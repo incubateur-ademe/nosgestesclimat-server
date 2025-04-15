@@ -2,6 +2,7 @@ import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { describe, test } from 'vitest'
 import app from '../../../app'
+import { ExternalServiceTypeEnum } from '../integrations.validator'
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)
@@ -14,24 +15,31 @@ describe('Given a NGC user', () => {
       })
     })
 
-    describe('And agir external service', () => {
-      const serviceName = 'agir'
-
-      test(`Then it returns a ${StatusCodes.OK} response`, async () => {
-        await agent
-          .get(url.replace(':externalService', serviceName))
-          .expect(StatusCodes.OK)
-      })
-    })
-
-    describe('And 2 tonnes external service', () => {
-      const serviceName = '2-tonnes'
-
-      test(`Then it returns a ${StatusCodes.OK} response`, async () => {
-        await agent
-          .get(url.replace(':externalService', serviceName))
-          .expect(StatusCodes.OK)
-      })
-    })
+    describe.each([
+      {
+        externalService: ExternalServiceTypeEnum.agir,
+        features: {
+          hasEndSimulationRedirection: true,
+          hasPossibleSituationExport: false,
+        },
+      },
+      {
+        externalService: ExternalServiceTypeEnum['2-tonnes'],
+        features: {
+          hasEndSimulationRedirection: false,
+          hasPossibleSituationExport: true,
+        },
+      },
+    ])(
+      'And $externalService external service',
+      ({ features, externalService }) => {
+        test(`Then it returns a ${StatusCodes.OK} response`, async () => {
+          await agent
+            .get(url.replace(':externalService', externalService))
+            .expect(StatusCodes.OK)
+            .expect(features)
+        })
+      }
+    )
   })
 })
