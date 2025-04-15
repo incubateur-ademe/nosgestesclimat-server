@@ -8,15 +8,13 @@ export enum ExternalServiceTypeEnum {
 
 const ExternalServiceType = z.nativeEnum(ExternalServiceTypeEnum)
 
-const SituationExportParamsSchema = z
+const ExternalServiceParams = z
   .object({
     externalService: ExternalServiceType,
   })
   .strict()
 
-export type SituationExportParamsSchema = z.infer<
-  typeof SituationExportParamsSchema
->
+export type ExternalServiceParams = z.infer<typeof ExternalServiceParams>
 
 const partnerPrefix = 'partner-'
 
@@ -40,8 +38,14 @@ export type SituationExportQueryParamsSchema = z.infer<
   typeof SituationExportQueryParamsSchema
 >
 
+export const FetchExternalServiceValidator = {
+  body: z.object({}).strict(),
+  query: z.object({}).strict(),
+  params: ExternalServiceParams,
+}
+
 export const SituationExportValidator = {
   body: SituationSchema,
-  params: SituationExportParamsSchema,
+  params: ExternalServiceParams,
   query: SituationExportQueryParamsSchema,
 }
