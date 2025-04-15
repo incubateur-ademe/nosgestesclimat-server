@@ -94,7 +94,7 @@ describe('Given a NGC user', () => {
           .expect(StatusCodes.MOVED_TEMPORARILY)
 
         expect(response.get('location')).toBe(
-          'https://nosgestesclimat.fr/?newsletter-confirmation-success=false&newsletter-confirmation-status=500'
+          'https://nosgestesclimat.fr/newsletter-confirmation?success=false&status=500'
         )
       })
 
@@ -171,7 +171,7 @@ describe('Given a NGC user', () => {
             .expect(StatusCodes.MOVED_TEMPORARILY)
 
           expect(response.get('location')).toBe(
-            'https://nosgestesclimat.fr/?newsletter-confirmation-success=true'
+            'https://nosgestesclimat.fr/newsletter-confirmation?success=true'
           )
         })
 
@@ -213,7 +213,7 @@ describe('Given a NGC user', () => {
               .expect(StatusCodes.MOVED_TEMPORARILY)
 
             expect(response.get('location')).toBe(
-              'https://preprod.nosgestesclimat.fr/?newsletter-confirmation-success=true'
+              'https://preprod.nosgestesclimat.fr/newsletter-confirmation?success=true'
             )
           })
         })
@@ -282,7 +282,7 @@ describe('Given a NGC user', () => {
             .expect(StatusCodes.MOVED_TEMPORARILY)
 
           expect(response.get('location')).toBe(
-            'https://nosgestesclimat.fr/?newsletter-confirmation-success=true'
+            'https://nosgestesclimat.fr/newsletter-confirmation?success=true'
           )
         })
       })
@@ -362,7 +362,7 @@ describe('Given a NGC user', () => {
             .expect(StatusCodes.MOVED_TEMPORARILY)
 
           expect(response.get('location')).toBe(
-            'https://nosgestesclimat.fr/?newsletter-confirmation-success=true'
+            'https://nosgestesclimat.fr/newsletter-confirmation?success=true'
           )
         })
       })
@@ -413,7 +413,7 @@ describe('Given a NGC user', () => {
           .expect(StatusCodes.MOVED_TEMPORARILY)
 
         expect(response.get('location')).toBe(
-          'https://nosgestesclimat.fr/?newsletter-confirmation-success=false&newsletter-confirmation-status=404'
+          'https://nosgestesclimat.fr/newsletter-confirmation?success=false&status=404'
         )
       })
     })
