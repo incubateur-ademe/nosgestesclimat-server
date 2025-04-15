@@ -91,6 +91,7 @@ router
   .route('/v1/:userId/newsletter-confirmation')
   .get(validateRequest(NewsletterConfirmationValidator), async (req, res) => {
     const redirectUrl = new URL(req.get('origin') || config.origin)
+    redirectUrl.pathname = '/newsletter-confirmation'
     const { searchParams: redirectSearchParams } = redirectUrl
 
     try {
@@ -99,7 +100,7 @@ router
         query: NewsletterConfirmationQuery.parse(req.query),
       })
 
-      redirectSearchParams.append('newsletter-confirmation-success', 'true')
+      redirectSearchParams.append('success', 'true')
     } catch (err) {
       const expired = err instanceof EntityNotFoundException
 
@@ -107,9 +108,9 @@ router
         logger.error('Newsletter confirmation failed', err)
       }
 
-      redirectSearchParams.append('newsletter-confirmation-success', 'false')
+      redirectSearchParams.append('success', 'false')
       redirectSearchParams.append(
-        'newsletter-confirmation-status',
+        'status',
         (expired
           ? StatusCodes.NOT_FOUND
           : StatusCodes.INTERNAL_SERVER_ERROR
