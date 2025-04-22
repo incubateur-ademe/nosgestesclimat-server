@@ -178,7 +178,7 @@ export const fetchPublicPollSimulations = async ({
       )
 
       return simulations.map((s) => simulationToDto(s, params.userId))
-    })
+    }, prisma)
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('Poll not found')
@@ -303,7 +303,7 @@ export const fetchPublicPollDashboard = async ({
       return {
         funFacts: await getPollFunFacts({ id, user }, { session }),
       }
-    })
+    }, prisma)
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('Poll not found')
