@@ -2,7 +2,6 @@ import type { FunFacts } from '@incubateur-ademe/nosgestesclimat'
 import type { Prisma } from '@prisma/client'
 import type { Request } from 'express'
 import slugify from 'slugify'
-import { prisma } from '../../adapters/prisma/client'
 import {
   defaultOrganisationSelection,
   defaultOrganisationSelectionWithoutPolls,
@@ -10,7 +9,6 @@ import {
   defaultVerifiedUserSelection,
 } from '../../adapters/prisma/selection'
 import type { Session } from '../../adapters/prisma/transaction'
-import { transaction } from '../../adapters/prisma/transaction'
 import type { SimulationParams } from '../simulations/simulations.validator'
 import type {
   OrganisationCreateDto,
@@ -149,57 +147,55 @@ export const createOrganisationAndAdministrator = async (
     numberOfCollaborators,
   }: OrganisationCreateDto,
   { userId, email }: NonNullable<Request['user']>,
-  { session }: { session?: Session } = {}
+  { session }: { session: Session }
 ) => {
-  return transaction(async (prismaSession) => {
-    // upsert administrator
-    const administrator = await prismaSession.verifiedUser.upsert({
-      where: {
-        email,
-      },
-      create: {
-        email,
-        id: userId,
-        name: administratorName,
-        position,
-        telephone,
-        optedInForCommunications,
-      },
-      update: {
-        id: userId,
-        name: administratorName,
-        position,
-        telephone,
-        optedInForCommunications,
-      },
-      select: defaultVerifiedUserSelection,
-    })
+  // upsert administrator
+  const administrator = await session.verifiedUser.upsert({
+    where: {
+      email,
+    },
+    create: {
+      email,
+      id: userId,
+      name: administratorName,
+      position,
+      telephone,
+      optedInForCommunications,
+    },
+    update: {
+      id: userId,
+      name: administratorName,
+      position,
+      telephone,
+      optedInForCommunications,
+    },
+    select: defaultVerifiedUserSelection,
+  })
 
-    const slug = await findUniqueOrganisationSlug(name, {
-      session: prismaSession,
-    })
+  const slug = await findUniqueOrganisationSlug(name, {
+    session,
+  })
 
-    // create organisation
-    const organisation = await prismaSession.organisation.create({
-      data: {
-        name,
-        slug,
-        type,
-        numberOfCollaborators,
-        administrators: {
-          create: {
-            userEmail: email,
-          },
+  // create organisation
+  const organisation = await session.organisation.create({
+    data: {
+      name,
+      slug,
+      type,
+      numberOfCollaborators,
+      administrators: {
+        create: {
+          userEmail: email,
         },
       },
-      select: defaultOrganisationSelection,
-    })
+    },
+    select: defaultOrganisationSelection,
+  })
 
-    return {
-      organisation,
-      administrator,
-    }
-  }, session)
+  return {
+    organisation,
+    administrator,
+  }
 }
 
 export const updateAdministratorOrganisation = async (
@@ -211,108 +207,101 @@ export const updateAdministratorOrganisation = async (
     administrators,
   }: OrganisationUpdateDto,
   user: NonNullable<Request['user']>,
-  { session }: { session?: Session } = {}
+  { session }: { session: Session }
 ) => {
-  return transaction(async (prismaSession) => {
-    const { email: userEmail } = user
-    const organisationUpdate = {
-      type,
-      name: organisationName,
-      numberOfCollaborators,
-      administrators: {
-        update: {
-          where: {
-            userEmail,
-          },
-          data: {
-            userEmail,
-          },
-        },
-      },
-    }
-
-    let administrator
-    if (administrators) {
-      const [
-        {
-          email,
-          name: administratorName,
-          optedInForCommunications,
-          position,
-          telephone,
-        },
-      ] = administrators
-
-      // update administrator
-      administrator = await prismaSession.verifiedUser.update({
+  const { email: userEmail } = user
+  const organisationUpdate = {
+    type,
+    name: organisationName,
+    numberOfCollaborators,
+    administrators: {
+      update: {
         where: {
-          email: userEmail,
+          userEmail,
         },
         data: {
-          id: user.userId,
-          name: administratorName,
-          email,
-          position,
-          telephone,
-          optedInForCommunications,
-        },
-        select: defaultVerifiedUserSelection,
-      })
-
-      if (email) {
-        user.email = email
-        organisationUpdate.administrators.update.where.userEmail = email
-        organisationUpdate.administrators.update.data.userEmail = email
-      }
-    }
-
-    // update organisation
-    const organisation = await prismaSession.organisation.update({
-      where: await findOrganisationBySlugOrId(
-        { params, user },
-        { session: prismaSession }
-      ),
-      data: organisationUpdate,
-      select: defaultOrganisationSelection,
-    })
-
-    return {
-      organisation,
-      administrator,
-    }
-  }, session)
-}
-
-export const fetchUserOrganisations = ({
-  email: userEmail,
-}: NonNullable<Request['user']>) => {
-  return transaction((prismaSession) =>
-    prismaSession.organisation.findMany({
-      where: {
-        administrators: {
-          some: {
-            userEmail,
-          },
+          userEmail,
         },
       },
-      select: defaultOrganisationSelection,
+    },
+  }
+
+  let administrator
+  if (administrators) {
+    const [
+      {
+        email,
+        name: administratorName,
+        optedInForCommunications,
+        position,
+        telephone,
+      },
+    ] = administrators
+
+    // update administrator
+    administrator = await session.verifiedUser.update({
+      where: {
+        email: userEmail,
+      },
+      data: {
+        id: user.userId,
+        name: administratorName,
+        email,
+        position,
+        telephone,
+        optedInForCommunications,
+      },
+      select: defaultVerifiedUserSelection,
     })
-  )
+
+    if (email) {
+      user.email = email
+      organisationUpdate.administrators.update.where.userEmail = email
+      organisationUpdate.administrators.update.data.userEmail = email
+    }
+  }
+
+  // update organisation
+  const organisation = await session.organisation.update({
+    where: await findOrganisationBySlugOrId({ params, user }, { session }),
+    data: organisationUpdate,
+    select: defaultOrganisationSelection,
+  })
+
+  return {
+    organisation,
+    administrator,
+  }
+}
+
+export const fetchUserOrganisations = (
+  { email: userEmail }: NonNullable<Request['user']>,
+  { session }: { session: Session }
+) => {
+  return session.organisation.findMany({
+    where: {
+      administrators: {
+        some: {
+          userEmail,
+        },
+      },
+    },
+    select: defaultOrganisationSelection,
+  })
 }
 
 export const fetchUserOrganisation = (
   params: OrganisationParams,
-  user: NonNullable<Request['user']>
+  user: NonNullable<Request['user']>,
+  { session }: { session: Session }
 ) => {
-  return transaction((prismaSession) =>
-    findOrganisationBySlugOrId(
-      {
-        params,
-        user,
-        select: defaultOrganisationSelection,
-      },
-      { session: prismaSession }
-    )
+  return findOrganisationBySlugOrId(
+    {
+      params,
+      user,
+      select: defaultOrganisationSelection,
+    },
+    { session }
   )
 }
 
@@ -327,48 +316,43 @@ export const createOrganisationPoll = async (
     customAdditionalQuestions,
   }: OrganisationPollCreateDto,
   user: NonNullable<Request['user']>,
-  { session }: { session?: Session } = {}
+  { session }: { session: Session }
 ) => {
-  return transaction(async (prismaSession) => {
-    const slug = await findUniquePollSlug(name, { session: prismaSession })
+  const slug = await findUniquePollSlug(name, { session })
 
-    return prismaSession.organisation.update({
-      where: await findOrganisationBySlugOrId(
-        { params, user },
-        { session: prismaSession }
-      ),
-      data: {
-        polls: {
-          create: {
-            slug,
-            name,
-            customAdditionalQuestions: customAdditionalQuestions ?? [],
-            expectedNumberOfParticipants,
-            ...(!!defaultAdditionalQuestions?.length
-              ? {
-                  defaultAdditionalQuestions: {
-                    createMany: {
-                      data: defaultAdditionalQuestions.map((type) => ({
-                        type,
-                      })),
-                    },
+  return session.organisation.update({
+    where: await findOrganisationBySlugOrId({ params, user }, { session }),
+    data: {
+      polls: {
+        create: {
+          slug,
+          name,
+          customAdditionalQuestions: customAdditionalQuestions ?? [],
+          expectedNumberOfParticipants,
+          ...(!!defaultAdditionalQuestions?.length
+            ? {
+                defaultAdditionalQuestions: {
+                  createMany: {
+                    data: defaultAdditionalQuestions.map((type) => ({
+                      type,
+                    })),
                   },
-                }
-              : {}),
-          },
+                },
+              }
+            : {}),
         },
       },
-      select: {
-        ...defaultOrganisationSelection,
-        polls: {
-          where: {
-            slug,
-          },
-          select: defaultPollSelection,
+    },
+    select: {
+      ...defaultOrganisationSelection,
+      polls: {
+        where: {
+          slug,
         },
+        select: defaultPollSelection,
       },
-    })
-  }, session)
+    },
+  })
 }
 
 export const updateOrganisationPoll = async (
@@ -380,146 +364,140 @@ export const updateOrganisationPoll = async (
     customAdditionalQuestions: updateCustomAdditionalQuestions,
   }: OrganisationPollUpdateDto,
   user: NonNullable<Request['user']>,
-  { session }: { session?: Session } = {}
+  { session }: { session: Session }
 ) => {
-  return transaction(async (prismaSession) => {
-    const {
-      id,
-      customAdditionalQuestions: existingCustomAdditionalQuestions,
-      defaultAdditionalQuestions: existingDefaultAdditionalQuestions,
-    } = await findOrganisationPollBySlugOrId(
-      {
-        params,
-        user,
-        select: {
-          id: true,
-          customAdditionalQuestions: true,
-          defaultAdditionalQuestions: true,
-        },
+  const {
+    id,
+    customAdditionalQuestions: existingCustomAdditionalQuestions,
+    defaultAdditionalQuestions: existingDefaultAdditionalQuestions,
+  } = await findOrganisationPollBySlugOrId(
+    {
+      params,
+      user,
+      select: {
+        id: true,
+        customAdditionalQuestions: true,
+        defaultAdditionalQuestions: true,
       },
-      { session: prismaSession }
-    )
+    },
+    { session }
+  )
 
-    const customAdditionalQuestions =
-      updateCustomAdditionalQuestions || existingCustomAdditionalQuestions
+  const customAdditionalQuestions =
+    updateCustomAdditionalQuestions || existingCustomAdditionalQuestions
 
-    return prismaSession.poll.update({
-      where: { id },
-      data: {
-        name,
-        expectedNumberOfParticipants,
-        ...(!!customAdditionalQuestions
-          ? {
-              customAdditionalQuestions,
-            }
-          : {}),
-        ...(!!defaultAdditionalQuestions
-          ? {
-              defaultAdditionalQuestions: {
-                ...(!!existingDefaultAdditionalQuestions.length
-                  ? {
-                      deleteMany: {
-                        id: {
-                          in: existingDefaultAdditionalQuestions.map(
-                            ({ id }) => id
-                          ),
-                        },
+  return session.poll.update({
+    where: { id },
+    data: {
+      name,
+      expectedNumberOfParticipants,
+      ...(!!customAdditionalQuestions
+        ? {
+            customAdditionalQuestions,
+          }
+        : {}),
+      ...(!!defaultAdditionalQuestions
+        ? {
+            defaultAdditionalQuestions: {
+              ...(!!existingDefaultAdditionalQuestions.length
+                ? {
+                    deleteMany: {
+                      id: {
+                        in: existingDefaultAdditionalQuestions.map(
+                          ({ id }) => id
+                        ),
                       },
-                    }
-                  : {}),
-                ...(!!defaultAdditionalQuestions.length
-                  ? {
-                      createMany: {
-                        data: defaultAdditionalQuestions.map((type) => ({
-                          type,
-                        })),
-                      },
-                    }
-                  : {}),
-              },
-            }
-          : {}),
-      },
-      select: defaultPollSelection,
-    })
-  }, session)
+                    },
+                  }
+                : {}),
+              ...(!!defaultAdditionalQuestions.length
+                ? {
+                    createMany: {
+                      data: defaultAdditionalQuestions.map((type) => ({
+                        type,
+                      })),
+                    },
+                  }
+                : {}),
+            },
+          }
+        : {}),
+    },
+    select: defaultPollSelection,
+  })
 }
 
 export const deleteOrganisationPoll = async (
   params: OrganisationPollParams,
   user: NonNullable<Request['user']>,
-  { session }: { session?: Session } = {}
+  { session }: { session: Session }
 ) => {
-  return transaction(async (prismaSession) => {
-    return prismaSession.poll.delete({
-      where: await findOrganisationPollBySlugOrId(
-        { params, user },
-        { session: prismaSession }
-      ),
-      select: {
-        organisation: {
-          select: defaultOrganisationSelectionWithoutPolls,
-        },
+  return session.poll.delete({
+    where: await findOrganisationPollBySlugOrId({ params, user }, { session }),
+    select: {
+      organisation: {
+        select: defaultOrganisationSelectionWithoutPolls,
       },
-    })
-  }, session)
+    },
+  })
 }
 
 export const fetchOrganisationPolls = async (
   params: OrganisationParams,
   user: NonNullable<Request['user']>,
-  { session }: { session?: Session } = {}
+  { session }: { session: Session }
 ) => {
-  return transaction(async (prismaSession) => {
-    return prismaSession.organisation.findUniqueOrThrow({
-      where: await findOrganisationBySlugOrId(
-        { params, user },
-        { session: prismaSession }
-      ),
-      select: {
-        polls: {
-          select: defaultPollSelection,
-        },
+  return session.organisation.findUniqueOrThrow({
+    where: await findOrganisationBySlugOrId(
+      { params, user },
+      { session: session }
+    ),
+    select: {
+      polls: {
+        select: defaultPollSelection,
       },
-    })
-  }, session)
+    },
+  })
 }
 
 export const fetchOrganisationPoll = (
   params: OrganisationPollParams,
-  user: NonNullable<Request['user']>
+  user: NonNullable<Request['user']>,
+  { session }: { session: Session }
 ) => {
-  return transaction((prismaSession) =>
-    findOrganisationPollBySlugOrId(
-      {
-        params,
-        user,
-        select: defaultPollSelection,
-      },
-      { session: prismaSession }
-    )
-  )
-}
-
-export const fetchOrganisationPublicPoll = ({ pollIdOrSlug }: PollParams) => {
-  return transaction((prismaSession) =>
-    prismaSession.poll.findFirstOrThrow({
-      where: {
-        OR: [
-          {
-            id: pollIdOrSlug,
-          },
-          {
-            slug: pollIdOrSlug,
-          },
-        ],
-      },
+  return findOrganisationPollBySlugOrId(
+    {
+      params,
+      user,
       select: defaultPollSelection,
-    })
+    },
+    { session }
   )
 }
 
-export const getLastPollParticipantsCount = async (organisationId: string) => {
+export const fetchOrganisationPublicPoll = (
+  { pollIdOrSlug }: PollParams,
+  { session }: { session: Session }
+) => {
+  return session.poll.findFirstOrThrow({
+    where: {
+      OR: [
+        {
+          id: pollIdOrSlug,
+        },
+        {
+          slug: pollIdOrSlug,
+        },
+      ],
+    },
+    select: defaultPollSelection,
+  })
+}
+
+export const getLastPollParticipantsCount = async (
+  organisationId: string,
+  { session }: { session: Session }
+) => {
   /**
    * Prisma does not handle the greatest-n-per-group
    * https://github.com/prisma/prisma/discussions/17994
@@ -537,7 +515,7 @@ export const getLastPollParticipantsCount = async (organisationId: string) => {
    */
 
   let count = 0
-  const poll = await prisma.poll.findFirst({
+  const poll = await session.poll.findFirst({
     where: {
       organisationId,
     },
@@ -550,7 +528,7 @@ export const getLastPollParticipantsCount = async (organisationId: string) => {
   })
 
   if (poll) {
-    count = await prisma.simulationPoll.count({
+    count = await session.simulationPoll.count({
       where: {
         pollId: poll.id,
       },
@@ -562,42 +540,34 @@ export const getLastPollParticipantsCount = async (organisationId: string) => {
 
 export const findSimulationPoll = (
   { simulationId }: SimulationParams,
-  { session }: { session?: Session } = {}
+  { session }: { session: Session }
 ) => {
-  return transaction(
-    (prismaSession) =>
-      prismaSession.simulationPoll.findFirst({
-        where: {
-          simulationId,
-        },
-        select: {
-          pollId: true,
-          simulationId: true,
-        },
-      }),
-    session
-  )
+  return session.simulationPoll.findFirst({
+    where: {
+      simulationId,
+    },
+    select: {
+      pollId: true,
+      simulationId: true,
+    },
+  })
 }
 
 export const setPollFunFacts = (
   id: string,
   funFacts: FunFacts,
-  { session }: { session?: Session } = {}
+  { session }: { session: Session }
 ) => {
-  return transaction(
-    (prismaSession) =>
-      prismaSession.poll.update({
-        where: {
-          id,
-        },
-        data: {
-          funFacts,
-        },
-        select: {
-          id: true,
-          funFacts: true,
-        },
-      }),
-    session
-  )
+  return session.poll.update({
+    where: {
+      id,
+    },
+    data: {
+      funFacts,
+    },
+    select: {
+      id: true,
+      funFacts: true,
+    },
+  })
 }

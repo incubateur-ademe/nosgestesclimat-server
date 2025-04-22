@@ -4,7 +4,11 @@ import { EventBusEvent } from '../../../core/event-bus/event'
 
 export class UserUpdatedEvent extends EventBusEvent<{
   user: Pick<User, 'id' | 'name' | 'email'>
-  listIds?: ListIds[]
+  newsletters: {
+    newslettersToUnsubscribe: Set<ListIds>
+    finalNewsletters: Set<ListIds>
+  }
+  verified?: boolean
 }> {
   name = 'UserUpdatedEvent'
 }

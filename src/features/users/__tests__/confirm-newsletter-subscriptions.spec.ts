@@ -1,0 +1,421 @@
+import { faker } from '@faker-js/faker'
+import dayjs from 'dayjs'
+import { StatusCodes } from 'http-status-codes'
+import supertest from 'supertest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { formatBrevoDate } from '../../../adapters/brevo/__tests__/fixtures/formatBrevoDate'
+import {
+  brevoGetContact,
+  brevoRemoveFromList,
+  brevoUpdateContact,
+} from '../../../adapters/brevo/__tests__/fixtures/server.fixture'
+import { ListIds } from '../../../adapters/brevo/constant'
+import { prisma } from '../../../adapters/prisma/client'
+import * as prismaTransactionAdapter from '../../../adapters/prisma/transaction'
+import app from '../../../app'
+import { mswServer } from '../../../core/__tests__/fixtures/server.fixture'
+import logger from '../../../logger'
+import { subscribeToNewsLetter } from './fixtures/users.fixture'
+
+vi.mock('../../../adapters/prisma/transaction', async () => ({
+  ...(await vi.importActual('../../../adapters/prisma/transaction')),
+}))
+
+describe('Given a NGC user', () => {
+  const agent = supertest(app)
+  const url = '/users/v1/:userId/newsletter-confirmation'
+
+  afterEach(() =>
+    Promise.all([
+      prisma.user.deleteMany(),
+      prisma.verificationCode.deleteMany(),
+    ])
+  )
+
+  describe('When clicking the confirmation email link', () => {
+    describe('And invalid userId', () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
+        await agent
+          .get(url.replace(':userId', faker.string.alpha(34)))
+          .query({
+            code: faker.number.int({ min: 100000, max: 999999 }).toString(),
+            email: faker.internet.email(),
+          })
+          .expect(StatusCodes.BAD_REQUEST)
+      })
+    })
+
+    describe('And invalid email', () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
+        await agent
+          .get(url.replace(':userId', faker.string.uuid()))
+          .query({
+            code: faker.number.int({ min: 100000, max: 999999 }).toString(),
+            email: 'Je ne donne jamais mon email',
+          })
+          .expect(StatusCodes.BAD_REQUEST)
+      })
+    })
+
+    describe('And invalid newsLetters', () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
+        await agent
+          .get(url.replace(':userId', faker.string.uuid()))
+          .query({
+            code: faker.number.int({ min: 100000, max: 999999 }).toString(),
+            email: faker.internet.email,
+            listIds: [-1],
+          })
+          .expect(StatusCodes.BAD_REQUEST)
+      })
+    })
+
+    describe('And database failure', () => {
+      const databaseError = new Error('Something went wrong')
+
+      beforeEach(() => {
+        vi.spyOn(prismaTransactionAdapter, 'transaction').mockRejectedValueOnce(
+          databaseError
+        )
+      })
+
+      afterEach(() => {
+        vi.spyOn(prismaTransactionAdapter, 'transaction').mockRestore()
+      })
+
+      test('Then it redirects to an error page', async () => {
+        const response = await agent
+          .get(url.replace(':userId', faker.string.uuid()))
+          .query({
+            code: faker.number.int({ min: 100000, max: 999999 }).toString(),
+            email: faker.internet.email().toLocaleLowerCase(),
+            listIds: [ListIds.MAIN_NEWSLETTER],
+          })
+          .expect(StatusCodes.MOVED_TEMPORARILY)
+
+        expect(response.get('location')).toBe(
+          'https://nosgestesclimat.fr/newsletter-confirmation?success=false&status=500'
+        )
+      })
+
+      test('Then it logs the exception', async () => {
+        await agent
+          .get(url.replace(':userId', faker.string.uuid()))
+          .query({
+            code: faker.number.int({ min: 100000, max: 999999 }).toString(),
+            email: faker.internet.email().toLocaleLowerCase(),
+            listIds: [ListIds.MAIN_NEWSLETTER],
+          })
+          .expect(StatusCodes.MOVED_TEMPORARILY)
+
+        expect(logger.error).toHaveBeenCalledWith(
+          'Newsletter confirmation failed',
+          databaseError
+        )
+      })
+    })
+  })
+
+  describe('With an ongoing newsletter subscription request', () => {
+    let listIds: string[]
+    let userId: string
+    let email: string
+    let code: string
+
+    describe('And main newsletter', () => {
+      beforeEach(async () => {
+        ;({
+          id: userId,
+          listIds,
+          email,
+          code,
+        } = await subscribeToNewsLetter({
+          agent,
+        }))
+      })
+
+      describe('When clicking the confirmation email link', () => {
+        test('Then it redirects to a success page', async () => {
+          mswServer.use(
+            brevoGetContact(email, {
+              customResponses: [
+                {
+                  body: {
+                    code: 'document_not_found',
+                    message: 'List ID does not exist',
+                  },
+                  status: StatusCodes.NOT_FOUND,
+                },
+              ],
+            }),
+            brevoUpdateContact({
+              expectBody: {
+                email,
+                attributes: {
+                  USER_ID: userId,
+                  PRENOM: null,
+                },
+                updateEnabled: true,
+                listIds: [ListIds.MAIN_NEWSLETTER],
+              },
+            })
+          )
+
+          const response = await agent
+            .get(url.replace(':userId', userId))
+            .query({
+              code,
+              email,
+              listIds,
+            })
+            .expect(StatusCodes.MOVED_TEMPORARILY)
+
+          expect(response.get('location')).toBe(
+            'https://nosgestesclimat.fr/newsletter-confirmation?success=true'
+          )
+        })
+
+        describe('And custom user origin (preprod)', () => {
+          test('Then it redirects to a success page', async () => {
+            mswServer.use(
+              brevoGetContact(email, {
+                customResponses: [
+                  {
+                    body: {
+                      code: 'document_not_found',
+                      message: 'List ID does not exist',
+                    },
+                    status: StatusCodes.NOT_FOUND,
+                  },
+                ],
+              }),
+              brevoUpdateContact({
+                expectBody: {
+                  email,
+                  attributes: {
+                    USER_ID: userId,
+                    PRENOM: null,
+                  },
+                  updateEnabled: true,
+                  listIds: [ListIds.MAIN_NEWSLETTER],
+                },
+              })
+            )
+
+            const response = await agent
+              .get(url.replace(':userId', userId))
+              .set('origin', 'https://preprod.nosgestesclimat.fr')
+              .query({
+                code,
+                email,
+                listIds,
+              })
+              .expect(StatusCodes.MOVED_TEMPORARILY)
+
+            expect(response.get('location')).toBe(
+              'https://preprod.nosgestesclimat.fr/newsletter-confirmation?success=true'
+            )
+          })
+        })
+      })
+    })
+
+    describe('And several newsletters', () => {
+      beforeEach(async () => {
+        ;({
+          id: userId,
+          listIds,
+          email,
+          code,
+        } = await subscribeToNewsLetter({
+          agent,
+          user: {
+            contact: {
+              listIds: [
+                ListIds.MAIN_NEWSLETTER,
+                ListIds.LOGEMENT_NEWSLETTER,
+                ListIds.TRANSPORT_NEWSLETTER,
+              ],
+            },
+          },
+        }))
+      })
+
+      describe('When clicking the confirmation email link', () => {
+        test('Then it redirects to a success page', async () => {
+          mswServer.use(
+            brevoGetContact(email, {
+              customResponses: [
+                {
+                  body: {
+                    code: 'document_not_found',
+                    message: 'List ID does not exist',
+                  },
+                  status: StatusCodes.NOT_FOUND,
+                },
+              ],
+            }),
+            brevoUpdateContact({
+              expectBody: {
+                email,
+                attributes: {
+                  USER_ID: userId,
+                  PRENOM: null,
+                },
+                updateEnabled: true,
+                listIds: [
+                  ListIds.MAIN_NEWSLETTER,
+                  ListIds.LOGEMENT_NEWSLETTER,
+                  ListIds.TRANSPORT_NEWSLETTER,
+                ],
+              },
+            })
+          )
+
+          const response = await agent
+            .get(url.replace(':userId', userId))
+            .query({
+              code,
+              email,
+              'listIds[]': listIds,
+            })
+            .expect(StatusCodes.MOVED_TEMPORARILY)
+
+          expect(response.get('location')).toBe(
+            'https://nosgestesclimat.fr/newsletter-confirmation?success=true'
+          )
+        })
+      })
+    })
+
+    describe('And user already has a brevo contact with some subscribed news letters', () => {
+      beforeEach(async () => {
+        ;({
+          id: userId,
+          listIds,
+          email,
+          code,
+        } = await subscribeToNewsLetter({
+          agent,
+          user: {
+            contact: {
+              listIds: [ListIds.LOGEMENT_NEWSLETTER],
+            },
+          },
+        }))
+      })
+
+      describe('When clicking the confirmation email link', () => {
+        test('Then it redirects to a success page', async () => {
+          mswServer.use(
+            brevoGetContact(email, {
+              customResponses: [
+                {
+                  body: {
+                    email,
+                    id: faker.number.int(),
+                    emailBlacklisted: faker.datatype.boolean(),
+                    smsBlacklisted: faker.datatype.boolean(),
+                    createdAt: formatBrevoDate(faker.date.past()),
+                    modifiedAt: formatBrevoDate(faker.date.recent()),
+                    attributes: {
+                      USER_ID: userId,
+                      PRENOM: null,
+                    },
+                    listIds: [
+                      ListIds.UNFINISHED_SIMULATION,
+                      ListIds.MAIN_NEWSLETTER,
+                    ],
+                    statistics: {},
+                  },
+                },
+              ],
+            }),
+            brevoRemoveFromList(ListIds.MAIN_NEWSLETTER, {
+              expectBody: {
+                emails: [email],
+              },
+            }),
+            brevoUpdateContact({
+              expectBody: {
+                email,
+                attributes: {
+                  USER_ID: userId,
+                  PRENOM: null,
+                },
+                updateEnabled: true,
+                listIds: expect.arrayContaining([
+                  ListIds.UNFINISHED_SIMULATION,
+                  ListIds.LOGEMENT_NEWSLETTER,
+                ]),
+              },
+            })
+          )
+
+          const response = await agent
+            .get(url.replace(':userId', userId))
+            .query({
+              code,
+              email,
+              listIds,
+            })
+            .expect(StatusCodes.MOVED_TEMPORARILY)
+
+          expect(response.get('location')).toBe(
+            'https://nosgestesclimat.fr/newsletter-confirmation?success=true'
+          )
+        })
+      })
+    })
+  })
+
+  describe('With an expired newsletter subscription request', () => {
+    let listIds: string[]
+    let userId: string
+    let email: string
+    let code: string
+
+    beforeEach(async () => {
+      ;({
+        id: userId,
+        listIds,
+        email,
+        code,
+      } = await subscribeToNewsLetter({
+        agent,
+        expirationDate: dayjs().subtract(1, 'second').toDate(),
+      }))
+    })
+
+    describe('When clicking the confirmation email link', () => {
+      test('Then it redirects to an error page', async () => {
+        mswServer.use(
+          brevoGetContact(email, {
+            customResponses: [
+              {
+                body: {
+                  code: 'document_not_found',
+                  message: 'List ID does not exist',
+                },
+                status: StatusCodes.NOT_FOUND,
+              },
+            ],
+          })
+        )
+
+        const response = await agent
+          .get(url.replace(':userId', userId))
+          .query({
+            code,
+            email,
+            listIds,
+          })
+          .expect(StatusCodes.MOVED_TEMPORARILY)
+
+        expect(response.get('location')).toBe(
+          'https://nosgestesclimat.fr/newsletter-confirmation?success=false&status=404'
+        )
+      })
+    })
+  })
+})

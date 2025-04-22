@@ -61,7 +61,7 @@ export const isBadRequest = isBrevoClientError(ClientErrors.BAD_REQUEST)
 
 export const isNotFound = isBrevoClientError(ClientErrors.NOT_FOUND)
 
-type NewsletterDto = {
+type BrevoNewsletterDto = {
   id: number
   name: string
   startDate: string
@@ -75,33 +75,47 @@ type NewsletterDto = {
 }
 
 export const fetchNewsletter = (listId: number) => {
-  return brevo.get<NewsletterDto>(`/v3/contacts/lists/${listId}`)
+  return brevo.get<BrevoNewsletterDto>(`/v3/contacts/lists/${listId}`)
 }
 
-type ContactDto = {
+export type BrevoContactDto = {
   email: string
   id: number
   emailBlacklisted: boolean
   smsBlacklisted: boolean
   createdAt: string
   modifiedAt: string
-  attributes: Record<string, string | number | boolean>
+  attributes: Record<string, string | number | boolean | null>
   listIds: number[]
   statistics: unknown
 }
 
-const BrevoContactDtoSchema = z.object({
+const BrevoContactSchema = z.object({
   id: z.number(),
   email: z.string(),
   listIds: z.array(z.number()),
 })
 
-export const fetchContact = async (email: string) => {
-  const { data } = await brevo.get<ContactDto>(
+export type BrevoContact = z.infer<typeof BrevoContactSchema>
+
+export const fetchContactOrThrow = async (email: string) => {
+  const { data } = await brevo.get<BrevoContactDto>(
     `/v3/contacts/${encodeURIComponent(email)}`
   )
 
-  return BrevoContactDtoSchema.parse(data)
+  return BrevoContactSchema.parse(data)
+}
+
+export const fetchContact = async (email: string) => {
+  try {
+    return await fetchContactOrThrow(email)
+  } catch (e) {
+    if (isAxiosError(e) && isNotFound(e)) {
+      return
+    }
+
+    throw e
+  }
 }
 
 const sendEmail = ({
@@ -321,6 +335,37 @@ export const sendPollSimulationUpsertedEmail = async ({
   })
 }
 
+export const sendNewsLetterConfirmationEmail = ({
+  code,
+  email,
+  userId,
+  listIds,
+  newsLetterConfirmationBaseUrl,
+}: {
+  code: string
+  email: string
+  userId: string
+  listIds?: number[]
+  newsLetterConfirmationBaseUrl: string
+}) => {
+  const newsletterConfirmationUrl = new URL(
+    `${newsLetterConfirmationBaseUrl}/users/v1/${userId}/newsletter-confirmation`
+  )
+
+  const { searchParams } = newsletterConfirmationUrl
+  searchParams.append('code', code)
+  searchParams.append('email', email)
+  listIds?.forEach((l) => searchParams.append('listIds', l.toString()))
+
+  return sendEmail({
+    email,
+    params: {
+      NEWSLETTER_CONFIRMATION_URL: newsletterConfirmationUrl.toString(),
+    },
+    templateId: TemplateIds.NEWSLETTER_CONFIRMATION,
+  })
+}
+
 export const addOrUpdateContact = ({
   email,
   listIds,
@@ -374,7 +419,7 @@ export const addOrUpdateContactAfterLogin = ({
   })
 }
 
-export const addOrUpdateContactAndNewsLetterSubscriptions = async ({
+export const addOrUpdateContactAndAddToNewsletters = async ({
   user,
   email,
   listIds,
@@ -384,7 +429,7 @@ export const addOrUpdateContactAndNewsLetterSubscriptions = async ({
     name?: string | null
   }
   email: string
-  listIds?: ListIds[]
+  listIds?: number[]
 }) => {
   const attributes = {
     [Attributes.USER_ID]: user.id,
@@ -396,21 +441,20 @@ export const addOrUpdateContactAndNewsLetterSubscriptions = async ({
     attributes,
     listIds,
   })
+}
 
-  if (listIds) {
-    const wantedListIds = new Set(listIds)
-    const contact = await fetchContact(email)
-
-    await contact.listIds.reduce(async (promise, listId) => {
-      await promise
-
-      if (!wantedListIds.has(listId)) {
-        await unsubscribeContactFromList({
-          email,
-          listId,
-        })
-      }
-    }, Promise.resolve())
+export const removeFromNewsletters = async ({
+  email,
+  listIds = [],
+}: {
+  email: string
+  listIds?: number[]
+}) => {
+  for (const listId of listIds) {
+    await unsubscribeContactFromList({
+      email,
+      listId,
+    })
   }
 }
 

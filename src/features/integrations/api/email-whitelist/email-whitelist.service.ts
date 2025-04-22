@@ -1,3 +1,5 @@
+import { prisma } from '../../../../adapters/prisma/client'
+import { transaction } from '../../../../adapters/prisma/transaction'
 import { EntityNotFoundException } from '../../../../core/errors/EntityNotFoundException'
 import { ForbiddenException } from '../../../../core/errors/ForbiddenException'
 import { isPrismaErrorNotFound } from '../../../../core/typeguards/isPrismaError'
@@ -36,7 +38,9 @@ export const createEmailWhitelist = async ({
       )
     }
 
-    const whitelist = await createWhitelist(emailWhitelistDto)
+    const whitelist = await transaction((session) =>
+      createWhitelist(emailWhitelistDto, { session })
+    )
 
     return whitelistToDto(whitelist)
   } catch (e) {
@@ -57,10 +61,8 @@ export const updateEmailWhitelist = async ({
   emailWhitelistDto: EmailWhitelistUpdateDto
 }) => {
   try {
-    const whitelist = await updateWhitelist(
-      params,
-      emailWhitelistDto,
-      userScopes
+    const whitelist = await transaction((session) =>
+      updateWhitelist(params, emailWhitelistDto, userScopes, { session })
     )
 
     return whitelistToDto(whitelist)
@@ -80,7 +82,9 @@ export const deleteEmailWhitelist = async ({
   userScopes: Set<string>
 }) => {
   try {
-    await deleteWhitelist(params, userScopes)
+    await transaction((session) =>
+      deleteWhitelist(params, userScopes, { session })
+    )
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('Email Whitelist not found')
@@ -96,10 +100,17 @@ export const fetchEmailWhitelists = async ({
   query: EmailWhitelistsFetchQuery
   userScopes: Set<string>
 }) => {
-  const whitelists = await fetchWhitelists({
-    ...query,
-    scopes: userScopes,
-  })
+  const whitelists = await transaction(
+    (session) =>
+      fetchWhitelists(
+        {
+          ...query,
+          scopes: userScopes,
+        },
+        { session }
+      ),
+    prisma
+  )
 
   return whitelists.map(whitelistToDto)
 }

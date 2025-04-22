@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { prisma } from '../../../adapters/prisma/client'
+import * as prismaTransactionAdapter from '../../../adapters/prisma/transaction'
 import app from '../../../app'
 import logger from '../../../logger'
 import {
@@ -10,6 +11,10 @@ import {
   FETCH_USER_GROUP_ROUTE,
   joinGroup,
 } from './fixtures/groups.fixture'
+
+vi.mock('../../../adapters/prisma/transaction', async () => ({
+  ...(await vi.importActual('../../../adapters/prisma/transaction')),
+}))
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)
@@ -101,11 +106,13 @@ describe('Given a NGC user', () => {
       const databaseError = new Error('Something went wrong')
 
       beforeEach(() => {
-        vi.spyOn(prisma, '$transaction').mockRejectedValueOnce(databaseError)
+        vi.spyOn(prismaTransactionAdapter, 'transaction').mockRejectedValueOnce(
+          databaseError
+        )
       })
 
       afterEach(() => {
-        vi.spyOn(prisma, '$transaction').mockRestore()
+        vi.spyOn(prismaTransactionAdapter, 'transaction').mockRestore()
       })
 
       test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {

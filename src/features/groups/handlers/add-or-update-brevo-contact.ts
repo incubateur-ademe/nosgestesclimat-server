@@ -2,6 +2,7 @@ import {
   addOrUpdateAdministratorContactAfterGroupChange,
   addOrUpdateParticipantContactAfterGroupChange,
 } from '../../../adapters/brevo/client'
+import { transaction } from '../../../adapters/prisma/transaction'
 import type { Handler } from '../../../core/event-bus/handler'
 import type { GroupCreatedEvent } from '../events/GroupCreated.event'
 import { GroupDeletedEvent } from '../events/GroupDeleted.event'
@@ -33,7 +34,9 @@ export const addOrUpdateBrevoAdministratorContact: Handler<
     email,
     userId: id,
     administratorName: name,
-    ...(await getAdministratorGroupsStats(id)),
+    ...(await transaction((session) =>
+      getAdministratorGroupsStats(id, { session })
+    )),
   })
 }
 
@@ -62,7 +65,9 @@ export const addOrUpdateBrevoParticipantContact: Handler<
     if (email && participantId !== administratorId) {
       await addOrUpdateParticipantContactAfterGroupChange({
         email,
-        joinedGroupsCount: await getGroupsJoinedCount(participantId),
+        joinedGroupsCount: await transaction((session) =>
+          getGroupsJoinedCount(participantId, { session })
+        ),
       })
     }
   }

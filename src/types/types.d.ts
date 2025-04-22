@@ -33,9 +33,15 @@ export type Situation = {
   [key: string]: NodeValue
 }
 
-type WithRequiredProperty<Type, Keys extends keyof Type> = Type & {
+export type WithRequiredProperty<Type, Keys extends keyof Type> = Type & {
   [Property in Keys]-?: Type[Property]
 }
+
+export type WithOptionalProperty<T, O extends keyof T> = Pick<
+  T,
+  Exclude<keyof T, O>
+> &
+  Partial<{ [P in O]: T[P] }>
 
 type ValueToDto<T> = T extends Function
   ? never

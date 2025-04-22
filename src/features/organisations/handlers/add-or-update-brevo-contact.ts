@@ -1,4 +1,5 @@
 import { addOrUpdateContactAfterOrganisationChange } from '../../../adapters/brevo/client'
+import { transaction } from '../../../adapters/prisma/transaction'
 import type { Handler } from '../../../core/event-bus/handler'
 import type { OrganisationCreatedEvent } from '../events/OrganisationCreated.event'
 import type { OrganisationUpdatedEvent } from '../events/OrganisationUpdated.event'
@@ -41,7 +42,8 @@ export const addOrUpdateBrevoContact: Handler<
     organisationName,
     administratorName,
     optedInForCommunications,
-    lastPollParticipantsCount:
-      await getLastPollParticipantsCount(organisationId),
+    lastPollParticipantsCount: await transaction((session) =>
+      getLastPollParticipantsCount(organisationId, { session })
+    ),
   })
 }

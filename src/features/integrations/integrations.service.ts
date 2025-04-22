@@ -2,15 +2,47 @@ import { exportSituation as twoTonsExportSituation } from '../../adapters/2tonne
 import { exportSituation as agirExportSituation } from '../../adapters/agir/client'
 import type { SituationSchema } from '../simulations/simulations.validator'
 import type { SituationExportQueryParamsSchema } from './integrations.validator'
+import { ExternalServiceTypeEnum } from './integrations.validator'
 
-const externalServicesMap = {
-  agir: {
+type ExternalService = keyof typeof ExternalServiceTypeEnum
+
+type ExternalServiceAdapter = {
+  exportSituation: (
+    situation: SituationSchema,
+    params: SituationExportQueryParamsSchema
+  ) => Promise<{ redirectUrl: string }>
+}
+
+const externalServicesAdapters: Record<
+  ExternalService,
+  ExternalServiceAdapter
+> = {
+  [ExternalServiceTypeEnum.agir]: {
     exportSituation: agirExportSituation,
   },
-  '2-tonnes': {
+  [ExternalServiceTypeEnum['2-tonnes']]: {
     exportSituation: twoTonsExportSituation,
   },
 } as const
+
+type ExternalServiceFeature = {
+  hasPossibleSituationExport: boolean
+  hasEndSimulationRedirection: boolean
+}
+
+const externalServicesFeatures: Record<
+  ExternalService,
+  ExternalServiceFeature
+> = {
+  [ExternalServiceTypeEnum.agir]: {
+    hasEndSimulationRedirection: true,
+    hasPossibleSituationExport: false,
+  },
+  [ExternalServiceTypeEnum['2-tonnes']]: {
+    hasEndSimulationRedirection: false,
+    hasPossibleSituationExport: true,
+  },
+}
 
 const PARTNER_PREFIX = /^partner-/
 
@@ -24,16 +56,19 @@ const removePartnerPrefix = (
     ])
   )
 
+export const getPartnerFeatures = (externalService: ExternalService) =>
+  externalServicesFeatures[externalService]
+
 export const exportSituation = ({
   externalService,
   situation,
   params,
 }: {
   situation: SituationSchema
-  externalService: keyof typeof externalServicesMap
+  externalService: ExternalService
   params: SituationExportQueryParamsSchema
 }) => {
-  return externalServicesMap[externalService].exportSituation(
+  return externalServicesAdapters[externalService].exportSituation(
     situation,
     removePartnerPrefix(params)
   )

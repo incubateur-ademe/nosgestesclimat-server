@@ -1,7 +1,6 @@
 import type { ApiScopeName } from '@prisma/client'
 import { defaultEmailWhitelistSelection } from '../../../../adapters/prisma/selection'
 import type { Session } from '../../../../adapters/prisma/transaction'
-import { transaction } from '../../../../adapters/prisma/transaction'
 import type {
   EmailWhitelistCreateDto,
   EmailWhitelistParams,
@@ -16,93 +15,81 @@ const getEmailDomainName = (email: string) => {
 
 export const createWhitelist = (
   { description, emailPattern, scope }: EmailWhitelistCreateDto,
-  { session }: { session?: Session } = {}
+  { session }: { session: Session }
 ) => {
-  return transaction(
-    async (prismaSession) =>
-      prismaSession.integrationWhitelist.upsert({
-        where: {
-          emailPattern_apiScopeName: {
-            emailPattern,
-            apiScopeName: scope,
-          },
+  return session.integrationWhitelist.upsert({
+    where: {
+      emailPattern_apiScopeName: {
+        emailPattern,
+        apiScopeName: scope,
+      },
+    },
+    create: {
+      emailPattern,
+      description,
+      apiScope: {
+        connect: {
+          name: scope,
         },
-        create: {
-          emailPattern,
-          description,
-          apiScope: {
-            connect: {
-              name: scope,
-            },
-          },
-        },
-        update: {
-          description,
-        },
-        select: defaultEmailWhitelistSelection,
-      }),
-    session
-  )
+      },
+    },
+    update: {
+      description,
+    },
+    select: defaultEmailWhitelistSelection,
+  })
 }
 
 export const updateWhitelist = (
   { whitelistId }: EmailWhitelistParams,
   { description, emailPattern, scope }: EmailWhitelistUpdateDto,
   scopes: Set<string>,
-  { session }: { session?: Session } = {}
+  { session }: { session: Session }
 ) => {
-  return transaction(
-    async (prismaSession) =>
-      prismaSession.integrationWhitelist.update({
-        where: {
-          id: whitelistId,
-          apiScope: {
-            name: {
-              in: [...scopes] as ApiScopeName[],
+  return session.integrationWhitelist.update({
+    where: {
+      id: whitelistId,
+      apiScope: {
+        name: {
+          in: [...scopes] as ApiScopeName[],
+        },
+      },
+    },
+    data: {
+      emailPattern,
+      description,
+      ...(scope
+        ? {
+            apiScope: {
+              connect: {
+                name: scope,
+              },
             },
-          },
-        },
-        data: {
-          emailPattern,
-          description,
-          ...(scope
-            ? {
-                apiScope: {
-                  connect: {
-                    name: scope,
-                  },
-                },
-              }
-            : {}),
-        },
-        select: defaultEmailWhitelistSelection,
-      }),
-    session
-  )
+          }
+        : {}),
+    },
+    select: defaultEmailWhitelistSelection,
+  })
 }
 
 export const deleteWhitelist = (
   { whitelistId }: EmailWhitelistParams,
   scopes: Set<string>,
-  { session }: { session?: Session } = {}
+  { session }: { session: Session }
 ) => {
-  return transaction(
-    async (prismaSession) =>
-      prismaSession.integrationWhitelist.delete({
-        where: {
-          id: whitelistId,
-          apiScope: {
-            name: {
-              in: [...scopes] as ApiScopeName[],
-            },
-          },
+  return session.integrationWhitelist.delete({
+    where: {
+      id: whitelistId,
+      apiScope: {
+        name: {
+          in: [...scopes] as ApiScopeName[],
         },
-        select: {
-          id: true,
-        },
-      }),
-    session
-  )
+      },
+    },
+    select: {
+      id: true,
+    },
+  })
 }
 
 export const fetchWhitelists = (
@@ -112,46 +99,42 @@ export const fetchWhitelists = (
   }:
     | (Required<EmailWhitelistsFetchQuery> & { scopes?: Set<string> })
     | (EmailWhitelistsFetchQuery & { scopes: Set<string> }),
-  { session }: { session?: Session } = {}
+  { session }: { session: Session }
 ) => {
-  return transaction(
-    (prismaSession) =>
-      prismaSession.integrationWhitelist.findMany({
-        where: {
-          ...(scopes
-            ? {
-                apiScope: {
-                  name: {
-                    in: [...scopes] as ApiScopeName[],
-                  },
-                },
-              }
-            : {}),
-          ...(emailPattern
-            ? {
-                OR: [
-                  {
-                    emailPattern,
-                  },
-                  ...(emailPattern === `*@${getEmailDomainName(emailPattern)}`
-                    ? [
-                        {
-                          emailPattern: {
-                            endsWith: `@${getEmailDomainName(emailPattern)}`,
-                          },
-                        },
-                      ]
-                    : [
-                        {
-                          emailPattern: `*@${getEmailDomainName(emailPattern)}`,
-                        },
-                      ]),
-                ],
-              }
-            : {}),
-        },
-        select: defaultEmailWhitelistSelection,
-      }),
-    session
-  )
+  return session.integrationWhitelist.findMany({
+    where: {
+      ...(scopes
+        ? {
+            apiScope: {
+              name: {
+                in: [...scopes] as ApiScopeName[],
+              },
+            },
+          }
+        : {}),
+      ...(emailPattern
+        ? {
+            OR: [
+              {
+                emailPattern,
+              },
+              ...(emailPattern === `*@${getEmailDomainName(emailPattern)}`
+                ? [
+                    {
+                      emailPattern: {
+                        endsWith: `@${getEmailDomainName(emailPattern)}`,
+                      },
+                    },
+                  ]
+                : [
+                    {
+                      emailPattern: `*@${getEmailDomainName(emailPattern)}`,
+                    },
+                  ]),
+            ],
+          }
+        : {}),
+    },
+    select: defaultEmailWhitelistSelection,
+  })
 }
