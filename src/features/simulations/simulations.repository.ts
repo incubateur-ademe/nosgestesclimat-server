@@ -278,6 +278,21 @@ export const getIncompleteSimulationsCount = (
   })
 }
 
+export const countOrganisationPublicPollSimulations = (
+  {
+    id,
+  }: {
+    id: string
+  },
+  { session }: { session: Session }
+) => {
+  return session.simulationPoll.count({
+    where: {
+      pollId: id,
+    },
+  })
+}
+
 export const fetchPollSimulations = <
   T extends
     Prisma.SimulationSelect = typeof defaultSimulationSelectionWithoutPollAndSituation,

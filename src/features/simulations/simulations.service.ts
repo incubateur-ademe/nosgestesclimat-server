@@ -12,6 +12,7 @@ import { prisma } from '../../adapters/prisma/client'
 import type { Session } from '../../adapters/prisma/transaction'
 import { transaction } from '../../adapters/prisma/transaction'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
+import { ForbiddenException } from '../../core/errors/ForbiddenException'
 import { EventBus } from '../../core/event-bus/event-bus'
 import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError'
 import { PollUpdatedEvent } from '../organisations/events/PollUpdated.event'
@@ -21,6 +22,7 @@ import type { UserParams } from '../users/users.validator'
 import { SimulationUpsertedEvent } from './events/SimulationUpserted.event'
 import {
   batchPollSimulations,
+  countOrganisationPublicPollSimulations,
   createPollUserSimulation,
   createUserSimulation,
   fetchPollSimulations,
@@ -170,6 +172,16 @@ export const fetchPublicPollSimulations = async ({
         { params },
         { session }
       )
+
+      const simulationsCount = await countOrganisationPublicPollSimulations(
+        { id },
+        { session }
+      )
+
+      if (simulationsCount > 500) {
+        throw new ForbiddenException(`Cannot fetch more than 500 simulations`)
+      }
+
       const simulations = await fetchPollSimulations(
         { id, user },
         {
