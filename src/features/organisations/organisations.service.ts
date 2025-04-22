@@ -456,5 +456,5 @@ export const updatePollFunFactsAfterSimulationChange = (
     const { pollId } = simulationPoll
 
     return updatePollFunFacts(pollId, { session })
-  })
+  }, prisma)
 }
