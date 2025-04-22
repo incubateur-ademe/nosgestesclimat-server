@@ -238,7 +238,7 @@ const isValidSimulation = <T>(
 }
 
 const getFunFactValues = async (
-  { id, engine }: { id: string; user?: Request['user']; engine?: Engine },
+  { id, engine }: { id: string; engine?: Engine },
   { session }: { session: Session }
 ) => {
   let simulationCount = 0
@@ -278,7 +278,7 @@ const getFunFactValues = async (
 }
 
 export const getPollFunFacts = async (
-  params: { id: string; user?: Request['user']; engine?: Engine },
+  params: { id: string; engine?: Engine },
   session: { session: Session }
 ) => {
   const { funFactValues, simulationCount } = await getFunFactValues(
@@ -301,30 +301,4 @@ export const getPollFunFacts = async (
       return [key, value]
     })
   ) as FunFacts
-}
-
-export const fetchPublicPollDashboard = async ({
-  params,
-  user,
-}: {
-  params: PublicPollParams
-  user?: Request['user']
-}) => {
-  try {
-    return await transaction(async (session) => {
-      const { id } = await findOrganisationPublicPollBySlugOrId(
-        { params },
-        { session }
-      )
-
-      return {
-        funFacts: await getPollFunFacts({ id, user }, { session }),
-      }
-    }, prisma)
-  } catch (e) {
-    if (isPrismaErrorNotFound(e)) {
-      throw new EntityNotFoundException('Poll not found')
-    }
-    throw e
-  }
 }
