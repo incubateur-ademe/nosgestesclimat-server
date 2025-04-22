@@ -2,6 +2,7 @@ import {
   addOrUpdateAdministratorContactAfterGroupChange,
   addOrUpdateParticipantContactAfterGroupChange,
 } from '../../../adapters/brevo/client'
+import { prisma } from '../../../adapters/prisma/client'
 import { transaction } from '../../../adapters/prisma/transaction'
 import type { Handler } from '../../../core/event-bus/handler'
 import type { GroupCreatedEvent } from '../events/GroupCreated.event'
@@ -34,8 +35,9 @@ export const addOrUpdateBrevoAdministratorContact: Handler<
     email,
     userId: id,
     administratorName: name,
-    ...(await transaction((session) =>
-      getAdministratorGroupsStats(id, { session })
+    ...(await transaction(
+      (session) => getAdministratorGroupsStats(id, { session }),
+      prisma
     )),
   })
 }

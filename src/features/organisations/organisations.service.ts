@@ -368,8 +368,9 @@ export const fetchPolls = async ({
   user: NonNullable<Request['user']>
 }) => {
   try {
-    const { polls } = await transaction((session) =>
-      fetchOrganisationPolls(params, user, { session })
+    const { polls } = await transaction(
+      (session) => fetchOrganisationPolls(params, user, { session }),
+      prisma
     )
 
     return polls.map((poll) => pollToDto({ poll, user }))
@@ -389,8 +390,9 @@ export const fetchPoll = async ({
   user: NonNullable<Request['user']>
 }) => {
   try {
-    const poll = await transaction((session) =>
-      fetchOrganisationPoll(params, user, { session })
+    const poll = await transaction(
+      (session) => fetchOrganisationPoll(params, user, { session }),
+      prisma
     )
 
     return pollToDto({ poll, user })
@@ -410,8 +412,9 @@ export const fetchPublicPoll = async ({
   user?: NonNullable<Request['user']>
 }) => {
   try {
-    const poll = await transaction((session) =>
-      fetchOrganisationPublicPoll(params, { session })
+    const poll = await transaction(
+      (session) => fetchOrganisationPublicPoll(params, { session }),
+      prisma
     )
 
     return pollToDto({
