@@ -71,7 +71,7 @@ export const createSimulation = async ({
   params: UserParams
   origin: string
 }) => {
-  const simulation = await transaction((session) =>
+  const { simulation, created, updated } = await transaction((session) =>
     createUserSimulation(params, simulationDto, { session })
   )
   const { user } = simulation
@@ -80,6 +80,8 @@ export const createSimulation = async ({
     newsletters,
     simulation,
     sendEmail,
+    created,
+    updated,
     origin,
     user,
   })
@@ -126,9 +128,10 @@ export const createPollSimulation = async ({
   simulationDto: SimulationCreateDto
 }) => {
   try {
-    const { poll, simulation, created } = await transaction((session) =>
-      createPollUserSimulation(params, simulationDto, { session })
-    )
+    const { poll, simulation, simulationCreated, simulationUpdated, created } =
+      await transaction((session) =>
+        createPollUserSimulation(params, simulationDto, { session })
+      )
     const { user } = simulation
     const { organisation } = poll
 
@@ -138,6 +141,8 @@ export const createPollSimulation = async ({
     })
 
     const simulationUpsertedEvent = new SimulationUpsertedEvent({
+      created: simulationCreated,
+      updated: simulationUpdated,
       sendEmail: created,
       organisation,
       simulation,

@@ -106,9 +106,13 @@ export const createGroup = async ({
   groupDto: GroupCreateDto
   origin: string
 }) => {
-  const { group, administrator, simulation } = await transaction((session) =>
-    createGroupAndUser(groupDto, { session })
-  )
+  const {
+    group,
+    administrator,
+    simulation,
+    simulationUpdated,
+    simulationCreated,
+  } = await transaction((session) => createGroupAndUser(groupDto, { session }))
   const { participants } = group
 
   const events = []
@@ -130,6 +134,8 @@ export const createGroup = async ({
       administrator,
       sendEmail: true,
       user: administrator,
+      updated: simulationUpdated,
+      created: simulationCreated,
     })
 
     EventBus.emit(simulationUpsertedEvent)
@@ -180,9 +186,10 @@ export const createParticipant = async ({
   participantDto: ParticipantCreateDto
 }) => {
   try {
-    const { participant, created } = await transaction((session) =>
-      createParticipantAndUser(params, participantDto, { session })
-    )
+    const { participant, created, simulationCreated, simulationUpdated } =
+      await transaction((session) =>
+        createParticipantAndUser(params, participantDto, { session })
+      )
     const {
       user,
       group,
@@ -198,6 +205,8 @@ export const createParticipant = async ({
     })
 
     const simulationUpsertedEvent = new SimulationUpsertedEvent({
+      created: simulationCreated,
+      updated: simulationUpdated,
       sendEmail: created,
       administrator,
       simulation,
