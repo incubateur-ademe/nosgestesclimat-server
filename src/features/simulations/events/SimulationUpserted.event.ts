@@ -3,13 +3,22 @@ import { EventBusEvent } from '../../../core/event-bus/event'
 import type { ModelToDto } from '../../../types/types'
 import type { SimulationCreateNewsletterList } from '../simulations.validator'
 
+export type SimulationEvent = Pick<
+  Simulation,
+  | 'id'
+  | 'progression'
+  | 'actionChoices'
+  | 'computedResults'
+  | 'date'
+  | 'situation'
+>
+
+export type SimulationAsyncEvent = SimulationEvent | ModelToDto<SimulationEvent>
+
 type BaseSimulationUpsertedEventAttributes = {
   origin: string
   user: Pick<User, 'id' | 'name' | 'email'>
-  simulation: Pick<
-    Simulation,
-    'id' | 'progression' | 'actionChoices' | 'computedResults' | 'date'
-  >
+  simulation: SimulationEvent
   sendEmail: boolean
   created: boolean
   updated: boolean
