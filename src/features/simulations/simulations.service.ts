@@ -21,6 +21,7 @@ import { PollUpdatedEvent } from '../organisations/events/PollUpdated.event'
 import { findOrganisationPublicPollBySlugOrId } from '../organisations/organisations.repository'
 import type { PublicPollParams } from '../organisations/organisations.validator'
 import type { UserParams } from '../users/users.validator'
+import type { SimulationAsyncEvent } from './events/SimulationUpserted.event'
 import { SimulationUpsertedEvent } from './events/SimulationUpserted.event'
 import {
   batchPollSimulations,
@@ -209,11 +210,15 @@ export const fetchPublicPollSimulations = async ({
 const MAX_VALUE = 100000
 
 const isValidSimulation = <T>(
-  simulation: T & {
-    progression: number
-    computedResults: JsonValue
-    situation: JsonValue
-  }
+  simulation: T &
+    (
+      | {
+          progression: number
+          computedResults: JsonValue
+          situation: JsonValue
+        }
+      | SimulationAsyncEvent
+    )
 ): simulation is T & {
   progression: number
   computedResults: ComputedResultSchema
@@ -284,22 +289,18 @@ type RedisPollFunFactsCache = {
 const getFunFactValues = async (
   {
     id,
-    simulationId,
+    simulation,
     engine,
-  }: { id: string; simulationId?: string; engine?: Engine },
+  }: { id: string; simulation?: SimulationAsyncEvent; engine?: Engine },
   { session }: { session: Session }
 ) => {
   const redisKey = `${KEYS.pollsFunFactsResults}:${id}`
 
   let result: RedisPollFunFactsCache | undefined
-  if (simulationId) {
+  if (simulation) {
     const rawPreviousFunFactValues = await redis.get(redisKey)
     if (rawPreviousFunFactValues) {
       result = JSON.parse(rawPreviousFunFactValues) as RedisPollFunFactsCache
-      const simulation = await fetchSimulationById(
-        { simulationId },
-        { session }
-      )
 
       if (isValidSimulation(simulation)) {
         const { situation } = simulation
@@ -337,7 +338,7 @@ const getFunFactValues = async (
 }
 
 export const getPollFunFacts = async (
-  params: { id: string; simulationId?: string; engine?: Engine },
+  params: { id: string; simulation?: SimulationAsyncEvent; engine?: Engine },
   session: { session: Session }
 ) => {
   const { funFactValues, simulationCount } = await getFunFactValues(

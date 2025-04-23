@@ -3,10 +3,7 @@ import { updatePollFunFactsAfterSimulationChange } from '../../organisations/org
 import type { SimulationUpsertedAsyncEvent } from '../events/SimulationUpserted.event'
 
 export const computePollFunFacts: Handler<SimulationUpsertedAsyncEvent> = ({
-  attributes: {
-    simulation: { id },
-    created,
-  },
+  attributes: { simulation, created },
 }) => {
-  return updatePollFunFactsAfterSimulationChange({ simulationId: id, created })
+  return updatePollFunFactsAfterSimulationChange({ simulation, created })
 }
