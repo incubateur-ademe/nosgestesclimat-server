@@ -17,7 +17,7 @@ const main = async () => {
     let updatedPolls = 0
 
     for await (const poll of batchPolls) {
-      await updatePollFunFacts(poll.id, { session: prisma })
+      await updatePollFunFacts({ pollId: poll.id }, { session: prisma })
 
       updatedPolls++
 

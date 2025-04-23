@@ -15,7 +15,6 @@ import type { UserParams } from '../users/users.validator'
 import type {
   SimulationCreateDto,
   SimulationParticipantCreateDto,
-  UserSimulationParams,
 } from './simulations.validator'
 
 export const createUserSimulation = async (
@@ -151,17 +150,13 @@ export const fetchUserSimulations = (
   })
 }
 
-export const fetchUserSimulation = (
-  {
-    simulationId,
-    // userId,
-  }: UserSimulationParams,
+export const fetchSimulationById = (
+  { simulationId }: { simulationId: string },
   { session }: { session: Session }
 ) => {
   return session.simulation.findUniqueOrThrow({
     where: {
       id: simulationId,
-      // userId,
     },
     select: defaultSimulationSelection,
   })

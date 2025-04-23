@@ -30,6 +30,7 @@ redis.on('message', async (_, message) => {
     await EventBus.once(event)
     logger.info('Handled event', { event })
   } catch (err) {
+    console.error(err.reasons[0].errors[0].error)
     logger.error('Redis api event failure', err)
   }
 })
