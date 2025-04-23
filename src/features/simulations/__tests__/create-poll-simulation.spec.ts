@@ -33,6 +33,7 @@ describe('Given a NGC user', () => {
   const { computedResults, nom, situation } = getRandomTestCase()
 
   afterEach(async () => {
+    await EventBus.flush()
     await Promise.all([
       prisma.organisationAdministrator.deleteMany(),
       prisma.simulationPoll.deleteMany(),

@@ -11,6 +11,8 @@ import type Engine from 'publicodes'
 import { prisma } from '../../adapters/prisma/client'
 import type { Session } from '../../adapters/prisma/transaction'
 import { transaction } from '../../adapters/prisma/transaction'
+import { redis } from '../../adapters/redis/client'
+import { KEYS } from '../../adapters/redis/constant'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
 import { ForbiddenException } from '../../core/errors/ForbiddenException'
 import { EventBus } from '../../core/event-bus/event-bus'
@@ -26,7 +28,7 @@ import {
   createPollUserSimulation,
   createUserSimulation,
   fetchPollSimulations,
-  fetchUserSimulation,
+  fetchSimulationById,
   fetchUserSimulations,
 } from './simulations.repository'
 import type {
@@ -48,7 +50,7 @@ const simulationToDto = (
     polls,
     user,
     ...rest
-  }: Partial<Awaited<ReturnType<typeof fetchUserSimulation>>>,
+  }: Partial<Awaited<ReturnType<typeof fetchSimulationById>>>,
   connectedUser: string
 ) => ({
   ...rest,
@@ -71,7 +73,7 @@ export const createSimulation = async ({
   params: UserParams
   origin: string
 }) => {
-  const simulation = await transaction((session) =>
+  const { simulation, created, updated } = await transaction((session) =>
     createUserSimulation(params, simulationDto, { session })
   )
   const { user } = simulation
@@ -80,6 +82,8 @@ export const createSimulation = async ({
     newsletters,
     simulation,
     sendEmail,
+    created,
+    updated,
     origin,
     user,
   })
@@ -103,7 +107,7 @@ export const fetchSimulations = async (params: UserParams) => {
 export const fetchSimulation = async (params: UserSimulationParams) => {
   try {
     const simulation = await transaction(
-      (session) => fetchUserSimulation(params, { session }),
+      (session) => fetchSimulationById(params, { session }),
       prisma
     )
 
@@ -126,9 +130,10 @@ export const createPollSimulation = async ({
   simulationDto: SimulationCreateDto
 }) => {
   try {
-    const { poll, simulation, created } = await transaction((session) =>
-      createPollUserSimulation(params, simulationDto, { session })
-    )
+    const { poll, simulation, simulationCreated, simulationUpdated, created } =
+      await transaction((session) =>
+        createPollUserSimulation(params, simulationDto, { session })
+      )
     const { user } = simulation
     const { organisation } = poll
 
@@ -138,6 +143,8 @@ export const createPollSimulation = async ({
     })
 
     const simulationUpsertedEvent = new SimulationUpsertedEvent({
+      created: simulationCreated,
+      updated: simulationUpdated,
       sendEmail: created,
       organisation,
       simulation,
@@ -232,8 +239,8 @@ const isValidSimulation = <T>(
   ].every((v) => v <= MAX_VALUE)
 }
 
-const getFunFactValues = async (
-  { id, engine }: { id: string; user?: Request['user']; engine?: Engine },
+const computeAllFunFactValues = async (
+  { id, engine }: { id: string; engine?: Engine },
   { session }: { session: Session }
 ) => {
   let simulationCount = 0
@@ -266,14 +273,71 @@ const getFunFactValues = async (
     }, funFactValues)
   }
 
-  return {
-    simulationCount,
-    funFactValues,
+  return { simulationCount, funFactValues }
+}
+
+const getFunFactValues = async (
+  {
+    id,
+    simulationId,
+    engine,
+  }: { id: string; simulationId?: string; engine?: Engine },
+  { session }: { session: Session }
+) => {
+  const redisKey = `${KEYS.pollsFunFactsResults}:${id}`
+
+  let result:
+    | {
+        simulationCount: number
+        funFactValues: { [key in DottedName]?: number }
+      }
+    | undefined
+  if (simulationId) {
+    const rawPreviousFunFactValues = await redis.get(redisKey)
+    if (rawPreviousFunFactValues) {
+      const result = JSON.parse(rawPreviousFunFactValues)
+      const simulation = await fetchSimulationById(
+        { simulationId },
+        { session }
+      )
+
+      if (isValidSimulation(simulation)) {
+        const { situation } = simulation
+        result.simulationCount++
+        Object.values(funFactsRules).reduce((acc, dottedName) => {
+          if (dottedName in frRules) {
+            acc[dottedName] =
+              (acc[dottedName] || 0) +
+              (engine
+                ? getSituationDottedNameValueWithEngine({
+                    dottedName,
+                    situation,
+                    engine,
+                  })
+                : getSituationDottedNameValue({
+                    dottedName,
+                    situation,
+                    rules: frRules,
+                  }))
+          }
+          return acc
+        }, result.funFactValues)
+      }
+    }
   }
+
+  if (!result) {
+    result = await computeAllFunFactValues({ id, engine }, { session })
+  }
+
+  await redis.set(redisKey, JSON.stringify(result))
+  await redis.expire(redisKey, 60 * 60)
+
+  return result
 }
 
 export const getPollFunFacts = async (
-  params: { id: string; user?: Request['user']; engine?: Engine },
+  params: { id: string; simulationId?: string; engine?: Engine },
   session: { session: Session }
 ) => {
   const { funFactValues, simulationCount } = await getFunFactValues(
@@ -296,30 +360,4 @@ export const getPollFunFacts = async (
       return [key, value]
     })
   ) as FunFacts
-}
-
-export const fetchPublicPollDashboard = async ({
-  params,
-  user,
-}: {
-  params: PublicPollParams
-  user?: Request['user']
-}) => {
-  try {
-    return await transaction(async (session) => {
-      const { id } = await findOrganisationPublicPollBySlugOrId(
-        { params },
-        { session }
-      )
-
-      return {
-        funFacts: await getPollFunFacts({ id, user }, { session }),
-      }
-    }, prisma)
-  } catch (e) {
-    if (isPrismaErrorNotFound(e)) {
-      throw new EntityNotFoundException('Poll not found')
-    }
-    throw e
-  }
 }

@@ -71,7 +71,7 @@ export const createGroupAndUser = async (
   const [participantDto] = participants || []
 
   // For now no relation
-  const [group, simulation] = await Promise.all([
+  const [group, simulationCreation] = await Promise.all([
     // create group
     session.group.create({
       data: {
@@ -111,7 +111,11 @@ export const createGroupAndUser = async (
       : []),
   ])
 
+  const { created, simulation, updated } = simulationCreation || {}
+
   return {
+    simulationUpdated: updated,
+    simulationCreated: created,
     administrator,
     simulation,
     group: {
@@ -185,7 +189,7 @@ export const createParticipantAndUser = async (
 
   // For now no relation
   const { id: simulationId } = simulationDto
-  const [simulation, participant] = await Promise.all([
+  const [simulationCreation, participant] = await Promise.all([
     createParticipantSimulation(
       {
         userId,
@@ -217,11 +221,19 @@ export const createParticipantAndUser = async (
     }),
   ])
 
+  const {
+    created: simulationCreated,
+    simulation,
+    updated: simulationUpdated,
+  } = simulationCreation
+
   return {
     participant: {
       ...participant,
       simulation,
     },
+    simulationUpdated,
+    simulationCreated,
     created: !existingParticipant,
     updated: !!existingParticipant,
   }

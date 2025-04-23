@@ -430,19 +430,26 @@ export const fetchPublicPoll = async ({
 }
 
 export const updatePollFunFacts = async (
-  pollId: string,
+  { pollId, simulationId }: { pollId: string; simulationId?: string },
   { session }: { session?: Session } = {}
 ) => {
   return transaction(async (session) => {
-    const funFacts = await getPollFunFacts({ id: pollId }, { session })
+    const funFacts = await getPollFunFacts(
+      { id: pollId, simulationId },
+      { session }
+    )
 
     await setPollFunFacts(pollId, funFacts, { session })
   }, session)
 }
 
-export const updatePollFunFactsAfterSimulationChange = (
+export const updatePollFunFactsAfterSimulationChange = ({
+  simulationId,
+  created,
+}: {
   simulationId: string
-) => {
+  created: boolean
+}) => {
   return transaction(async (session) => {
     const simulationPoll = await findSimulationPoll(
       { simulationId },
@@ -455,6 +462,9 @@ export const updatePollFunFactsAfterSimulationChange = (
 
     const { pollId } = simulationPoll
 
-    return updatePollFunFacts(pollId, { session })
+    return updatePollFunFacts(
+      { pollId, ...(created ? { simulationId } : {}) },
+      { session }
+    )
   }, prisma)
 }
