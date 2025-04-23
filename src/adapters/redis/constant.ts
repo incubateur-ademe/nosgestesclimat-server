@@ -3,6 +3,7 @@ export const CHANNELS = {
 }
 
 export const KEYS = {
+  pollsFunFactsResults: 'pollsFunFactsResults',
   geolocationSortedIps: 'geolocationSortedIps',
   geolocationCountries: 'geolocationCountries',
 }

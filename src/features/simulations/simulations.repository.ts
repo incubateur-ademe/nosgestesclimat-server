@@ -15,7 +15,6 @@ import type { UserParams } from '../users/users.validator'
 import type {
   SimulationCreateDto,
   SimulationParticipantCreateDto,
-  UserSimulationParams,
 } from './simulations.validator'
 
 export const createUserSimulation = async (
@@ -54,7 +53,7 @@ export const createUserSimulation = async (
   )
 }
 
-export const createParticipantSimulation = <
+export const createParticipantSimulation = async <
   T extends
     Prisma.SimulationSelect = typeof defaultSimulationSelectionWithoutUser,
 >(
@@ -80,69 +79,63 @@ export const createParticipantSimulation = <
   },
   { session }: { session: Session }
 ) => {
-  return session.simulation.upsert({
+  const existingSimulation = await session.simulation.findUnique({
     where: {
       id,
     },
-    create: {
-      id,
-      date,
-      model,
-      userId,
-      situation,
-      foldedSteps,
-      progression,
-      actionChoices,
-      savedViaEmail,
-      computedResults,
-      ...(!!additionalQuestionsAnswers?.length
-        ? {
-            additionalQuestionsAnswers: {
-              createMany: {
-                data: additionalQuestionsAnswers.map(
-                  ({ type, key, answer }) => ({
-                    type,
-                    key,
-                    answer,
-                  })
-                ),
-              },
-            },
-          }
-        : {}),
+    select: {
+      id: true,
     },
-    update: {
-      id,
-      date,
-      model,
-      userId,
-      situation,
-      foldedSteps,
-      progression,
-      actionChoices,
-      savedViaEmail,
-      computedResults,
-      additionalQuestionsAnswers: {
-        deleteMany: {
-          simulationId: id,
-        },
-        ...(!!additionalQuestionsAnswers?.length
-          ? {
-              createMany: {
-                data: additionalQuestionsAnswers.map(
-                  ({ type, key, answer }) => ({
-                    type,
-                    key,
-                    answer,
-                  })
-                ),
-              },
-            }
-          : {}),
-      },
-    },
-    select,
   })
+
+  const payload = {
+    date,
+    model,
+    userId,
+    situation,
+    foldedSteps,
+    progression,
+    actionChoices,
+    savedViaEmail,
+    computedResults,
+    ...(!!additionalQuestionsAnswers?.length
+      ? {
+          additionalQuestionsAnswers: {
+            createMany: {
+              data: additionalQuestionsAnswers.map(({ type, key, answer }) => ({
+                type,
+                key,
+                answer,
+              })),
+            },
+          },
+        }
+      : {}),
+  }
+
+  const simulation = !!existingSimulation
+    ? await session.simulation.update({
+        where: {
+          id,
+        },
+        data: {
+          ...payload,
+        },
+        select,
+      })
+    : await session.simulation.create({
+        data: {
+          id,
+          ...payload,
+        },
+        select,
+      })
+
+  return {
+    simulation,
+    created: !existingSimulation,
+    updated: !!existingSimulation,
+  }
 }
 
 export const fetchUserSimulations = (
@@ -157,17 +150,13 @@ export const fetchUserSimulations = (
   })
 }
 
-export const fetchUserSimulation = (
-  {
-    simulationId,
-    // userId,
-  }: UserSimulationParams,
+export const fetchSimulationById = (
+  { simulationId }: { simulationId: string },
   { session }: { session: Session }
 ) => {
   return session.simulation.findUniqueOrThrow({
     where: {
       id: simulationId,
-      // userId,
     },
     select: defaultSimulationSelection,
   })
@@ -211,11 +200,11 @@ export const createPollUserSimulation = async (
     select: { id: true },
   })
 
-  const { id: simulationId } = await createUserSimulation(
-    params,
-    simulationDto,
-    { session }
-  )
+  const {
+    simulation: { id: simulationId },
+    created: simulationCreated,
+    updated: simulationUpdated,
+  } = await createUserSimulation(params, simulationDto, { session })
 
   const relation = {
     pollId,
@@ -254,8 +243,10 @@ export const createPollUserSimulation = async (
   }
 
   return {
-    simulation,
     poll,
+    simulation,
+    simulationCreated,
+    simulationUpdated,
     created: !existingParticipation,
     updated: !!existingParticipation,
   }

@@ -5,7 +5,8 @@ import type { SimulationUpsertedAsyncEvent } from '../events/SimulationUpserted.
 export const computePollFunFacts: Handler<SimulationUpsertedAsyncEvent> = ({
   attributes: {
     simulation: { id },
+    created,
   },
 }) => {
-  return updatePollFunFactsAfterSimulationChange(id)
+  return updatePollFunFactsAfterSimulationChange({ simulationId: id, created })
 }
