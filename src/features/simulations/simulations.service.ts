@@ -250,7 +250,10 @@ const computeAllFunFactValues = async (
 ) => {
   let simulationCount = 0
   const funFactValues: { [key in DottedName]?: number } = {}
-  for await (const simulation of batchPollSimulations({ id }, { session })) {
+  for await (const { simulation } of batchPollSimulations(
+    { id },
+    { session }
+  )) {
     if (!isValidSimulation(simulation)) {
       continue
     }
