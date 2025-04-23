@@ -34,8 +34,7 @@ router.route('/').post(async (req, res) => {
 
       try {
         ;({ listIds: currentListIds } = await fetchContactOrThrow(email))
-      } catch (e) {
-        console.warn(e)
+      } catch {
         // The contact does not exist in Brevo
         currentListIds = []
       }
