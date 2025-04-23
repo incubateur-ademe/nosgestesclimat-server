@@ -276,6 +276,11 @@ const computeAllFunFactValues = async (
   return { simulationCount, funFactValues }
 }
 
+type RedisPollFunFactsCache = {
+  simulationCount: number
+  funFactValues: { [key in DottedName]?: number }
+}
+
 const getFunFactValues = async (
   {
     id,
@@ -286,16 +291,11 @@ const getFunFactValues = async (
 ) => {
   const redisKey = `${KEYS.pollsFunFactsResults}:${id}`
 
-  let result:
-    | {
-        simulationCount: number
-        funFactValues: { [key in DottedName]?: number }
-      }
-    | undefined
+  let result: RedisPollFunFactsCache | undefined
   if (simulationId) {
     const rawPreviousFunFactValues = await redis.get(redisKey)
     if (rawPreviousFunFactValues) {
-      const result = JSON.parse(rawPreviousFunFactValues)
+      result = JSON.parse(rawPreviousFunFactValues) as RedisPollFunFactsCache
       const simulation = await fetchSimulationById(
         { simulationId },
         { session }
