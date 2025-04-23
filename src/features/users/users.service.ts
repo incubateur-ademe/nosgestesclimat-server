@@ -100,7 +100,10 @@ const getNewsletterMutation = ({
 }
 
 export const syncUserData = (user: NonNullable<Request['user']>) => {
-  return transaction((session) => transferOwnershipToUser(user, { session }))
+  return transaction(
+    (session) => transferOwnershipToUser(user, { session }),
+    prisma
+  )
 }
 
 export const fetchUserContact = async (params: UserParams) => {

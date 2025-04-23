@@ -1,5 +1,5 @@
 import express from 'express'
-import { fetchContactOrThrow } from '../../adapters/brevo/client'
+import { fetchContact } from '../../adapters/brevo/client'
 
 const router = express.Router()
 
@@ -17,13 +17,9 @@ router.route('/').get(async (req, res) => {
     return res.status(500).send('Error. An email must be provided.')
   }
 
-  try {
-    const { listIds } = await fetchContactOrThrow(email)
-    return res.status(200).json(listIds)
-  } catch (error) {
-    console.warn(error)
-    return res.status(200).json([])
-  }
+  const contact = await fetchContact(email)
+
+  return res.status(200).json(contact?.listIds || [])
 })
 
 /**
