@@ -338,10 +338,15 @@ export const batchPollSimulations = (
 ) => {
   return batchFindMany(
     (params) =>
-      session.simulation.findMany({
+      session.simulationPoll.findMany({
         ...params,
-        where: { polls: { some: { poll: { id } } } },
-        select: defaultSimulationSelection,
+        where: { pollId: id },
+        select: {
+          id: true,
+          simulation: {
+            select: defaultSimulationSelection,
+          },
+        },
       }),
     { batchSize }
   )
