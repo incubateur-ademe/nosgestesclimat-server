@@ -10,7 +10,6 @@ import {
 import type { Session } from '../../adapters/prisma/transaction'
 import { batchFindMany } from '../../core/batchFindMany'
 import type { PublicPollParams } from '../organisations/organisations.validator'
-import { transferOwnershipToUser } from '../users/users.repository'
 import type { UserParams } from '../users/users.validator'
 import type {
   SimulationCreateDto,
@@ -231,16 +230,6 @@ export const createPollUserSimulation = async (
       },
     },
   })
-
-  if (email) {
-    await transferOwnershipToUser(
-      {
-        email,
-        userId,
-      },
-      { session }
-    )
-  }
 
   return {
     poll,
