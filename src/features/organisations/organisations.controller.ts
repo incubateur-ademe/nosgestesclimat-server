@@ -7,6 +7,7 @@ import { ForbiddenException } from '../../core/errors/ForbiddenException'
 import { EventBus } from '../../core/event-bus/event-bus'
 import logger from '../../logger'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
+import { rateLimitSameRequestMiddleware } from '../../middlewares/rateLimitSameRequestMiddleware'
 import {
   COOKIE_NAME,
   COOKIES_OPTIONS,
@@ -330,6 +331,7 @@ router
 router
   .route('/v1/:userId/public-polls/:pollIdOrSlug/simulations')
   .post(
+    rateLimitSameRequestMiddleware,
     validateRequest(OrganisationPollSimulationCreateValidator),
     async (req, res) => {
       try {

@@ -8,6 +8,7 @@ declare global {
       user?: { userId: string; email: string }
       apiUser?: { scopes: Set<string>; email: string }
       clientIp: string
+      requestParams: string
     }
   }
 }
