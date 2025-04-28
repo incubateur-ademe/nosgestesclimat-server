@@ -1,6 +1,5 @@
 import type { Request } from 'express'
 import express from 'express'
-import type { TokenCallbackFn } from 'morgan'
 import morgan from 'morgan'
 import requestIp from 'request-ip'
 
@@ -31,6 +30,16 @@ const app = express()
 
 app.use(express.json())
 
+app.use((req, _, next) => {
+  req.requestParams = JSON.stringify({
+    body: req.body,
+    query: req.query,
+    params: req.params,
+  })
+
+  return next()
+})
+
 app.use(
   cors({
     origin,
@@ -40,12 +49,7 @@ app.use(
 
 app.use(requestIp.mw())
 
-morgan.token('params', ((req: Request) =>
-  JSON.stringify({
-    body: req.body,
-    query: req.query,
-    params: req.params,
-  })) as unknown as TokenCallbackFn)
+morgan.token('params', (req: Request) => req.requestParams)
 
 morgan.token('ip', (req: Request) => JSON.stringify(req.clientIp))
 

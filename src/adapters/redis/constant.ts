@@ -3,6 +3,7 @@ export const CHANNELS = {
 }
 
 export const KEYS = {
+  rateLimitSameRequests: 'rateLimitSameRequests',
   pollsFunFactsResults: 'pollsFunFactsResults',
   geolocationSortedIps: 'geolocationSortedIps',
   geolocationCountries: 'geolocationCountries',
