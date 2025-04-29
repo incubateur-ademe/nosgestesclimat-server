@@ -131,6 +131,34 @@ export const brevoGetContact = (
     }
   )
 
+export const brevoDeleteContact = (
+  email: string,
+  {
+    customResponses,
+    networkError,
+  }: { customResponses?: CustomResponse[]; networkError?: true } = {}
+) =>
+  http.delete(
+    `${process.env.BREVO_URL}/v3/contacts/${encodeURIComponent(email)}`,
+    ({ request }) => {
+      if (request.headers.get('api-key') !== process.env.BREVO_API_KEY) {
+        return HttpResponse.text('', { status: StatusCodes.UNAUTHORIZED })
+      }
+
+      if (networkError) {
+        return HttpResponse.error()
+      }
+
+      const customResponse = customResponses?.shift()
+
+      return customResponse
+        ? HttpResponse.json(customResponse.body, {
+            status: customResponse.status || StatusCodes.OK,
+          })
+        : HttpResponse.json()
+    }
+  )
+
 export const brevoGetNewsletter = (
   newsletterId: string,
   {

@@ -34,10 +34,19 @@ export const UserUpdateDto = z
 
 export type UserUpdateDto = z.infer<typeof UserUpdateDto>
 
+const UserUpdateQuery = z
+  .object({
+    code: z
+      .string()
+      .regex(/^\d{6}$/)
+      .optional(),
+  })
+  .strict()
+
 export const UpdateUserValidator = {
   body: UserUpdateDto,
   params: UserParams,
-  query: z.object({}).strict().optional(),
+  query: UserUpdateQuery,
 }
 
 export const NewsletterConfirmationQuery = z.object({

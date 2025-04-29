@@ -7,8 +7,13 @@ import { ForbiddenException } from '../../core/errors/ForbiddenException'
 import { EventBus } from '../../core/event-bus/event-bus'
 import logger from '../../logger'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
+import {
+  COOKIE_NAME,
+  COOKIES_OPTIONS,
+} from '../authentication/authentication.service'
 import { UserUpdatedEvent } from './events/UserUpdated.event'
 import { addOrUpdateBrevoContact } from './handlers/add-or-update-brevo-contact'
+import { removePreviousBrevoContact } from './handlers/remove-previous-brevo-contact'
 import { sendBrevoNewsLetterConfirmationEmail } from './handlers/send-brevo-newsletter-confirmation-email'
 import {
   confirmNewsletterSubscriptions,
@@ -48,6 +53,7 @@ router
 
 EventBus.on(UserUpdatedEvent, addOrUpdateBrevoContact)
 EventBus.on(UserUpdatedEvent, sendBrevoNewsLetterConfirmationEmail)
+EventBus.on(UserUpdatedEvent, removePreviousBrevoContact)
 
 /**
  * Upserts user for given user id
@@ -63,10 +69,15 @@ router
           throw new ForbiddenException(`Different user ids found`)
         }
 
-        const { user, verified } = await updateUserAndContact({
+        const { user, verified, token } = await updateUserAndContact({
           params: req.user || req.params,
+          code: req.query.code,
           userDto: UserUpdateDto.parse(req.body),
         })
+
+        if (token) {
+          res.cookie(COOKIE_NAME, token, COOKIES_OPTIONS)
+        }
 
         return verified
           ? res.status(StatusCodes.OK).json(user)
