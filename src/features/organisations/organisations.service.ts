@@ -237,7 +237,13 @@ const isOrganisationAdmin = (
   )
 
 const pollToDto = ({
-  poll: { organisationId: _, organisation, simulations, ...poll },
+  poll: {
+    organisationId: _1,
+    computeRealTimeStats: _2,
+    organisation,
+    simulations,
+    ...poll
+  },
   user,
 }: {
   poll: PublicPoll
