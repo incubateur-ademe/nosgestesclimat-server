@@ -360,6 +360,28 @@ describe('Given a NGC user', () => {
             expect.any(ZodError)
           )
         })
+
+        describe('And fallback parameter', () => {
+          test(`Then it redirects to the fallback`, async () => {
+            mswServer.use(
+              twoTonsExportSituation({
+                customResponses: [{ body: {} }],
+              })
+            )
+
+            const response = await agent
+              .post(url.replace(':externalService', serviceName))
+              .query({
+                'partner-fallback': 'http://app.2-tonnes.com/fallback',
+              })
+              .send(situation)
+              .expect(StatusCodes.OK)
+
+            expect(response.body).toEqual({
+              redirectUrl: 'http://app.2-tonnes.com/fallback',
+            })
+          })
+        })
       })
 
       describe(`And service is down`, () => {
@@ -406,6 +428,33 @@ describe('Given a NGC user', () => {
               code: 'ERR_BAD_RESPONSE',
             })
           )
+        })
+
+        describe('And fallback parameter', () => {
+          test(`Then it redirects to the fallback`, async () => {
+            mswServer.use(
+              twoTonsExportSituation({
+                customResponses: [
+                  { status: StatusCodes.INTERNAL_SERVER_ERROR },
+                  { status: StatusCodes.INTERNAL_SERVER_ERROR },
+                  { status: StatusCodes.INTERNAL_SERVER_ERROR },
+                  { status: StatusCodes.INTERNAL_SERVER_ERROR },
+                ],
+              })
+            )
+
+            const response = await agent
+              .post(url.replace(':externalService', serviceName))
+              .query({
+                'partner-fallback': 'http://app.2-tonnes.com/fallback',
+              })
+              .send(situation)
+              .expect(StatusCodes.OK)
+
+            expect(response.body).toEqual({
+              redirectUrl: 'http://app.2-tonnes.com/fallback',
+            })
+          })
         })
       })
     })

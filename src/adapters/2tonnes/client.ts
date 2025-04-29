@@ -54,6 +54,17 @@ export const exportSituation = async (
         }
       }
     }
+
+    const { success, data } = TwoTonsResponseSchema.safeParse({
+      redirect_url: params['fallback'],
+    })
+
+    if (success) {
+      return {
+        redirectUrl: data.redirect_url,
+      }
+    }
+
     throw e
   }
 }
