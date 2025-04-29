@@ -463,7 +463,7 @@ export const updatePollFunFactsAfterSimulationChange = ({
       { session }
     )
 
-    if (!simulationPoll) {
+    if (!simulationPoll || !simulationPoll.poll.computeRealTimeStats) {
       return
     }
 
