@@ -115,9 +115,6 @@ export const defaultPollSelection = {
   name: true,
   slug: true,
   organisationId: true,
-  organisation: {
-    select: defaultOrganisationSelectionWithoutPolls,
-  },
   funFacts: true,
   defaultAdditionalQuestions: true,
   customAdditionalQuestions: true,
@@ -125,21 +122,6 @@ export const defaultPollSelection = {
   computeRealTimeStats: true,
   createdAt: true,
   updatedAt: true,
-  simulations: {
-    select: {
-      id: true,
-      simulation: {
-        select: {
-          progression: true,
-          user: {
-            select: {
-              id: true,
-            },
-          },
-        },
-      },
-    },
-  },
 }
 
 export const defaultSimulationSelectionWithoutUserAndPoll = {
