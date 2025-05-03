@@ -195,5 +195,32 @@ describe('Given a poll participation', () => {
         })
       })
     })
+
+    describe('And poll has no real time stats', () => {
+      beforeEach(async () => {
+        await prisma.poll.update({
+          where: {
+            id: poll.id,
+          },
+          data: {
+            computeRealTimeStats: false,
+          },
+        })
+      })
+
+      test('Then it should compute the funfacts', async () => {
+        EventBus.emit(event)
+
+        await EventBus.once(event)
+
+        poll = await prisma.poll.findUniqueOrThrow({
+          where: {
+            id: poll.id,
+          },
+        })
+
+        expect(poll.funFacts).toBeNull()
+      })
+    })
   })
 })
