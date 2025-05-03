@@ -1,4 +1,4 @@
-import type { Organisation, Poll } from '@prisma/client'
+import type { Organisation } from '@prisma/client'
 import type { Request } from 'express'
 import { prisma } from '../../adapters/prisma/client'
 import type { Session } from '../../adapters/prisma/transaction'
@@ -224,11 +224,13 @@ export const fetchOrganisation = async ({
   }
 }
 
-type PublicPoll = Poll &
-  Partial<Awaited<ReturnType<typeof fetchOrganisationPoll>>>
+type PollData = Awaited<ReturnType<typeof fetchOrganisationPoll>>
+type PollSimulationsInfos = PollData['simulationsInfos']
+type PollOrganisation = PollData['organisation']
+type PollPopulated = PollData['poll']
 
 const isOrganisationAdmin = (
-  organisation: NonNullable<PublicPoll['organisation']>,
+  organisation: PollOrganisation,
   connectedUser?: NonNullable<Request['user']> | string
 ): connectedUser is NonNullable<Request['user']> =>
   typeof connectedUser === 'object' &&
@@ -237,16 +239,14 @@ const isOrganisationAdmin = (
   )
 
 const pollToDto = ({
-  poll: {
-    organisationId: _1,
-    computeRealTimeStats: _2,
-    organisation,
-    simulations,
-    ...poll
-  },
+  poll: { organisationId: _1, computeRealTimeStats: _2, ...poll },
+  simulationsInfos: simulations,
+  organisation,
   user,
 }: {
-  poll: PublicPoll
+  poll: PollPopulated
+  simulationsInfos: PollSimulationsInfos
+  organisation: PollOrganisation
   user?: NonNullable<Request['user']> | string
 }) => ({
   ...poll,
@@ -264,20 +264,7 @@ const pollToDto = ({
   defaultAdditionalQuestions: poll.defaultAdditionalQuestions?.map(
     ({ type }) => type
   ),
-  simulations: {
-    count: simulations?.length || 0,
-    finished:
-      simulations?.filter(
-        ({ simulation: { progression } }) => progression === 1
-      ).length || 0,
-    hasParticipated: !!simulations?.find(
-      ({
-        simulation: {
-          user: { id },
-        },
-      }) => (typeof user === 'object' ? user.userId === id : user === id)
-    ),
-  },
+  simulations,
 })
 
 export const createPoll = async ({
@@ -290,11 +277,8 @@ export const createPoll = async ({
   user: NonNullable<Request['user']>
 }) => {
   try {
-    const {
-      polls: [poll],
-      ...organisation
-    } = await transaction((session) =>
-      createOrganisationPoll(params, pollDto, user, { session })
+    const { poll, organisation, simulationsInfos } = await transaction(
+      (session) => createOrganisationPoll(params, pollDto, user, { session })
     )
 
     const pollCreatedEvent = new PollUpdatedEvent({ poll, organisation })
@@ -303,7 +287,7 @@ export const createPoll = async ({
 
     await EventBus.once(pollCreatedEvent)
 
-    return pollToDto({ poll, user })
+    return pollToDto({ poll, organisation, simulationsInfos, user })
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('Organisation not found')
@@ -322,10 +306,9 @@ export const updatePoll = async ({
   user: NonNullable<Request['user']>
 }) => {
   try {
-    const poll = await transaction((session) =>
-      updateOrganisationPoll(params, pollDto, user, { session })
+    const { poll, organisation, simulationsInfos } = await transaction(
+      (session) => updateOrganisationPoll(params, pollDto, user, { session })
     )
-    const { organisation } = poll
 
     const pollUpdatedEvent = new PollUpdatedEvent({ poll, organisation })
 
@@ -333,7 +316,7 @@ export const updatePoll = async ({
 
     await EventBus.once(pollUpdatedEvent)
 
-    return pollToDto({ poll, user })
+    return pollToDto({ poll, organisation, simulationsInfos, user })
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('Poll not found')
@@ -375,12 +358,14 @@ export const fetchPolls = async ({
   user: NonNullable<Request['user']>
 }) => {
   try {
-    const { polls } = await transaction(
+    const { organisation, polls } = await transaction(
       (session) => fetchOrganisationPolls(params, user, { session }),
       prisma
     )
 
-    return polls.map((poll) => pollToDto({ poll, user }))
+    return polls.map(({ poll, simulationsInfos }) =>
+      pollToDto({ poll, user, simulationsInfos, organisation })
+    )
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('Organisation not found')
@@ -397,12 +382,12 @@ export const fetchPoll = async ({
   user: NonNullable<Request['user']>
 }) => {
   try {
-    const poll = await transaction(
+    const { poll, organisation, simulationsInfos } = await transaction(
       (session) => fetchOrganisationPoll(params, user, { session }),
       prisma
     )
 
-    return pollToDto({ poll, user })
+    return pollToDto({ poll, organisation, simulationsInfos, user })
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('Poll not found')
@@ -419,13 +404,22 @@ export const fetchPublicPoll = async ({
   user?: NonNullable<Request['user']>
 }) => {
   try {
-    const poll = await transaction(
-      (session) => fetchOrganisationPublicPoll(params, { session }),
+    const { poll, organisation, simulationsInfos } = await transaction(
+      (session) =>
+        fetchOrganisationPublicPoll(
+          {
+            ...params,
+            user,
+          },
+          { session }
+        ),
       prisma
     )
 
     return pollToDto({
       poll,
+      organisation,
+      simulationsInfos,
       user: user || params.userId,
     })
   } catch (e) {
