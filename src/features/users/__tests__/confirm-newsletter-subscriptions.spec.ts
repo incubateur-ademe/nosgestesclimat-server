@@ -3,7 +3,6 @@ import dayjs from 'dayjs'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import { formatBrevoDate } from '../../../adapters/brevo/__tests__/fixtures/formatBrevoDate'
 import {
   brevoGetContact,
   brevoRemoveFromList,
@@ -15,7 +14,10 @@ import * as prismaTransactionAdapter from '../../../adapters/prisma/transaction'
 import app from '../../../app'
 import { mswServer } from '../../../core/__tests__/fixtures/server.fixture'
 import logger from '../../../logger'
-import { subscribeToNewsLetter } from './fixtures/users.fixture'
+import {
+  getBrevoContact,
+  subscribeToNewsLetter,
+} from './fixtures/users.fixture'
 
 vi.mock('../../../adapters/prisma/transaction', async () => ({
   ...(await vi.importActual('../../../adapters/prisma/transaction')),
@@ -311,23 +313,16 @@ describe('Given a NGC user', () => {
             brevoGetContact(email, {
               customResponses: [
                 {
-                  body: {
+                  body: getBrevoContact({
                     email,
-                    id: faker.number.int(),
-                    emailBlacklisted: faker.datatype.boolean(),
-                    smsBlacklisted: faker.datatype.boolean(),
-                    createdAt: formatBrevoDate(faker.date.past()),
-                    modifiedAt: formatBrevoDate(faker.date.recent()),
                     attributes: {
                       USER_ID: userId,
-                      PRENOM: null,
                     },
                     listIds: [
                       ListIds.UNFINISHED_SIMULATION,
                       ListIds.MAIN_NEWSLETTER,
                     ],
-                    statistics: {},
-                  },
+                  }),
                 },
               ],
             }),

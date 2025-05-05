@@ -164,11 +164,23 @@ export const transferOwnershipToUser = async (
   ])
 }
 
-export const fetchUser = (
+export const fetchUserOrThrow = (
   { userId }: UserParams,
   { session }: { session: Session }
 ) => {
   return session.user.findUniqueOrThrow({
+    where: {
+      id: userId,
+    },
+    select: defaultUserSelection,
+  })
+}
+
+export const fetchUser = (
+  { userId }: UserParams,
+  { session }: { session: Session }
+) => {
+  return session.user.findUnique({
     where: {
       id: userId,
     },
@@ -198,9 +210,21 @@ export const updateUser = (
   })
 }
 
+export const fetchVerifiedUser = (
+  { email }: NonNullable<Request['user']>,
+  { session }: { session: Session }
+) => {
+  return session.verifiedUser.findUnique({
+    where: {
+      email,
+    },
+    select: defaultVerifiedUserSelection,
+  })
+}
+
 export const updateVerifiedUser = async (
   { userId, email }: NonNullable<Request['user']>,
-  { name }: UserUpdateDto,
+  { name, email: newEmail }: UserUpdateDto,
   { session }: { session: Session }
 ) => {
   const [user] = await Promise.all([
@@ -210,12 +234,13 @@ export const updateVerifiedUser = async (
       },
       create: {
         id: userId,
-        email,
+        email: newEmail || email,
         name,
       },
       update: {
         id: userId,
         name,
+        ...(newEmail ? { email: newEmail } : {}),
       },
       select: defaultVerifiedUserSelection,
     }),
@@ -225,11 +250,11 @@ export const updateVerifiedUser = async (
       },
       create: {
         id: userId,
-        email,
+        email: newEmail || email,
         name,
       },
       update: {
-        email,
+        email: newEmail || email,
         name,
       },
       select: { id: true },
@@ -237,16 +262,4 @@ export const updateVerifiedUser = async (
   ])
 
   return user
-}
-
-export const fetchVerifiedUser = (
-  email: string,
-  { session }: { session: Session }
-) => {
-  return session.verifiedUser.findUniqueOrThrow({
-    where: {
-      email,
-    },
-    select: defaultVerifiedUserSelection,
-  })
 }

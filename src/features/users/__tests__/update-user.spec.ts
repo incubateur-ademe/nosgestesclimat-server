@@ -1,10 +1,11 @@
 import { faker } from '@faker-js/faker'
 import dayjs from 'dayjs'
 import { StatusCodes } from 'http-status-codes'
+import jwt from 'jsonwebtoken'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import { formatBrevoDate } from '../../../adapters/brevo/__tests__/fixtures/formatBrevoDate'
 import {
+  brevoDeleteContact,
   brevoGetContact,
   brevoRemoveFromList,
   brevoSendEmail,
@@ -17,9 +18,14 @@ import app from '../../../app'
 import { mswServer } from '../../../core/__tests__/fixtures/server.fixture'
 import logger from '../../../logger'
 import { login } from '../../authentication/__tests__/fixtures/login.fixture'
+import { createVerificationCode } from '../../authentication/__tests__/fixtures/verification-codes.fixture'
 import * as authenticationService from '../../authentication/authentication.service'
 import { createSimulation } from '../../simulations/__tests__/fixtures/simulations.fixtures'
-import { UPDATE_USER_ROUTE } from './fixtures/users.fixture'
+import {
+  createUser,
+  getBrevoContact,
+  UPDATE_USER_ROUTE,
+} from './fixtures/users.fixture'
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)
@@ -109,28 +115,28 @@ describe('Given a NGC user', () => {
   })
 
   describe('And logged out', () => {
+    let code: string
+    let expirationDate: Date
+
+    beforeEach(() => {
+      code = faker.number.int({ min: 100000, max: 999999 }).toString()
+      expirationDate = dayjs().add(1, 'hour').toDate()
+
+      vi.mocked(
+        authenticationService
+      ).generateVerificationCodeAndExpiration.mockReturnValueOnce({
+        code,
+        expirationDate,
+      })
+    })
+
+    afterEach(() => {
+      vi.mocked(
+        authenticationService
+      ).generateVerificationCodeAndExpiration.mockRestore()
+    })
+
     describe('When subscribing to newsletter', () => {
-      let code: string
-      let expirationDate: Date
-
-      beforeEach(() => {
-        code = faker.number.int({ min: 100000, max: 999999 }).toString()
-        expirationDate = dayjs().add(1, 'hour').toDate()
-
-        vi.mocked(
-          authenticationService
-        ).generateVerificationCodeAndExpiration.mockReturnValueOnce({
-          code,
-          expirationDate,
-        })
-      })
-
-      afterEach(() => {
-        vi.mocked(
-          authenticationService
-        ).generateVerificationCodeAndExpiration.mockRestore()
-      })
-
       describe('And user does not already exist', () => {
         test(`Then it sends an email and returns a ${StatusCodes.ACCEPTED} response`, async () => {
           const email = faker.internet.email().toLocaleLowerCase()
@@ -433,20 +439,12 @@ describe('Given a NGC user', () => {
             beforeEach(() => {
               email = faker.internet.email().toLocaleLowerCase()
 
-              contact = {
+              contact = getBrevoContact({
                 email,
-                id: faker.number.int(),
-                emailBlacklisted: faker.datatype.boolean(),
-                smsBlacklisted: faker.datatype.boolean(),
-                createdAt: formatBrevoDate(faker.date.past()),
-                modifiedAt: formatBrevoDate(faker.date.recent()),
                 attributes: {
                   USER_ID: userId,
-                  PRENOM: null,
                 },
-                listIds: [],
-                statistics: {},
-              }
+              })
             })
 
             test(`Then it sends an email and returns a ${StatusCodes.ACCEPTED} response`, async () => {
@@ -698,9 +696,9 @@ describe('Given a NGC user', () => {
 
             describe('And new email provided', () => {
               test(`Then it sends an email and returns a ${StatusCodes.ACCEPTED} response`, async () => {
-                const email = faker.internet.email().toLocaleLowerCase()
+                const newEmail = faker.internet.email().toLocaleLowerCase()
                 const payload = {
-                  email,
+                  email: newEmail,
                   contact: {
                     listIds: [ListIds.MAIN_NEWSLETTER],
                   },
@@ -708,6 +706,18 @@ describe('Given a NGC user', () => {
 
                 mswServer.use(
                   brevoGetContact(email, {
+                    customResponses: [
+                      {
+                        body: getBrevoContact({
+                          email,
+                          attributes: {
+                            USER_ID: userId,
+                          },
+                        }),
+                      },
+                    ],
+                  }),
+                  brevoGetContact(newEmail, {
                     customResponses: [
                       {
                         body: {
@@ -722,13 +732,13 @@ describe('Given a NGC user', () => {
                     expectBody: {
                       to: [
                         {
-                          name: email,
-                          email,
+                          name: newEmail,
+                          email: newEmail,
                         },
                       ],
                       templateId: 118,
                       params: {
-                        NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(email)}&listIds=22`,
+                        NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(newEmail)}&listIds=22`,
                       },
                     },
                   })
@@ -740,6 +750,11 @@ describe('Given a NGC user', () => {
                   .expect(StatusCodes.ACCEPTED)
 
                 expect(body).toEqual({
+                  contact: {
+                    email,
+                    id: expect.any(Number),
+                    listIds: [],
+                  },
                   id: userId,
                   email,
                   name: null,
@@ -750,11 +765,11 @@ describe('Given a NGC user', () => {
 
               describe('And name', () => {
                 test(`Then it sends an email and returns a ${StatusCodes.ACCEPTED} response but stores the name`, async () => {
-                  const email = faker.internet.email().toLocaleLowerCase()
+                  const newEmail = faker.internet.email().toLocaleLowerCase()
                   const name = faker.person.fullName()
                   const payload = {
                     name,
-                    email,
+                    email: newEmail,
                     contact: {
                       listIds: [ListIds.MAIN_NEWSLETTER],
                     },
@@ -762,6 +777,18 @@ describe('Given a NGC user', () => {
 
                   mswServer.use(
                     brevoGetContact(email, {
+                      customResponses: [
+                        {
+                          body: getBrevoContact({
+                            email,
+                            attributes: {
+                              USER_ID: userId,
+                            },
+                          }),
+                        },
+                      ],
+                    }),
+                    brevoGetContact(newEmail, {
                       customResponses: [
                         {
                           body: {
@@ -781,6 +808,11 @@ describe('Given a NGC user', () => {
                     .expect(StatusCodes.ACCEPTED)
 
                   expect(body).toEqual({
+                    contact: {
+                      email,
+                      id: expect.any(Number),
+                      listIds: [],
+                    },
                     id: userId,
                     email,
                     name,
@@ -796,20 +828,12 @@ describe('Given a NGC user', () => {
             let contact: BrevoContactDto
 
             beforeEach(() => {
-              contact = {
+              contact = getBrevoContact({
                 email,
-                id: faker.number.int(),
-                emailBlacklisted: faker.datatype.boolean(),
-                smsBlacklisted: faker.datatype.boolean(),
-                createdAt: formatBrevoDate(faker.date.past()),
-                modifiedAt: formatBrevoDate(faker.date.recent()),
                 attributes: {
                   USER_ID: userId,
-                  PRENOM: null,
                 },
-                listIds: [],
-                statistics: {},
-              }
+              })
             })
 
             test(`Then it sends an email and returns a ${StatusCodes.ACCEPTED} response`, async () => {
@@ -1077,27 +1101,6 @@ describe('Given a NGC user', () => {
     })
 
     describe('When unsubscribing from newsletters', () => {
-      let code: string
-      let expirationDate: Date
-
-      beforeEach(() => {
-        code = faker.number.int({ min: 100000, max: 999999 }).toString()
-        expirationDate = dayjs().add(1, 'hour').toDate()
-
-        vi.mocked(
-          authenticationService
-        ).generateVerificationCodeAndExpiration.mockReturnValueOnce({
-          code,
-          expirationDate,
-        })
-      })
-
-      afterEach(() => {
-        vi.mocked(
-          authenticationService
-        ).generateVerificationCodeAndExpiration.mockRestore()
-      })
-
       describe('And user does not already exist', () => {
         test(`Then it returns a ${StatusCodes.OK} response`, async () => {
           const email = faker.internet.email().toLocaleLowerCase()
@@ -1121,20 +1124,12 @@ describe('Given a NGC user', () => {
                   status: StatusCodes.NOT_FOUND,
                 },
                 {
-                  body: {
+                  body: getBrevoContact({
                     email,
-                    id: faker.number.int(),
-                    emailBlacklisted: faker.datatype.boolean(),
-                    smsBlacklisted: faker.datatype.boolean(),
-                    createdAt: formatBrevoDate(faker.date.past()),
-                    modifiedAt: formatBrevoDate(faker.date.recent()),
                     attributes: {
                       USER_ID: userId,
-                      PRENOM: null,
                     },
-                    listIds: [],
-                    statistics: {},
-                  },
+                  }),
                 },
               ],
             }),
@@ -1226,20 +1221,12 @@ describe('Given a NGC user', () => {
                       status: StatusCodes.NOT_FOUND,
                     },
                     {
-                      body: {
+                      body: getBrevoContact({
                         email,
-                        id: faker.number.int(),
-                        emailBlacklisted: faker.datatype.boolean(),
-                        smsBlacklisted: faker.datatype.boolean(),
-                        createdAt: formatBrevoDate(faker.date.past()),
-                        modifiedAt: formatBrevoDate(faker.date.recent()),
                         attributes: {
                           USER_ID: userId,
-                          PRENOM: null,
                         },
-                        listIds: [],
-                        statistics: {},
-                      },
+                      }),
                     },
                   ],
                 }),
@@ -1304,20 +1291,12 @@ describe('Given a NGC user', () => {
             beforeEach(() => {
               email = faker.internet.email().toLocaleLowerCase()
 
-              contact = {
+              contact = getBrevoContact({
                 email,
-                id: faker.number.int(),
-                emailBlacklisted: faker.datatype.boolean(),
-                smsBlacklisted: faker.datatype.boolean(),
-                createdAt: formatBrevoDate(faker.date.past()),
-                modifiedAt: formatBrevoDate(faker.date.recent()),
                 attributes: {
                   USER_ID: userId,
-                  PRENOM: null,
                 },
-                listIds: [],
-                statistics: {},
-              }
+              })
             })
 
             test(`Then it returns a ${StatusCodes.OK} response`, async () => {
@@ -1430,20 +1409,12 @@ describe('Given a NGC user', () => {
                         status: StatusCodes.NOT_FOUND,
                       },
                       {
-                        body: {
+                        body: getBrevoContact({
                           email,
-                          id: faker.number.int(),
-                          emailBlacklisted: faker.datatype.boolean(),
-                          smsBlacklisted: faker.datatype.boolean(),
-                          createdAt: formatBrevoDate(faker.date.past()),
-                          modifiedAt: formatBrevoDate(faker.date.recent()),
                           attributes: {
                             USER_ID: userId,
-                            PRENOM: null,
                           },
-                          listIds: [],
-                          statistics: {},
-                        },
+                        }),
                       },
                     ],
                   }),
@@ -1481,10 +1452,10 @@ describe('Given a NGC user', () => {
             })
 
             describe('And new email provided', () => {
-              test(`Then it returns a ${StatusCodes.ACCEPTED} response`, async () => {
-                const email = faker.internet.email().toLocaleLowerCase()
+              test(`Then it returns a ${StatusCodes.OK} response`, async () => {
+                const newEmail = faker.internet.email().toLocaleLowerCase()
                 const payload = {
-                  email,
+                  email: newEmail,
                   contact: {
                     listIds: [],
                   },
@@ -1494,6 +1465,19 @@ describe('Given a NGC user', () => {
                   brevoGetContact(email, {
                     customResponses: [
                       {
+                        body: getBrevoContact({
+                          email,
+                          attributes: {
+                            USER_ID: userId,
+                          },
+                        }),
+                      },
+                    ],
+                  }),
+                  brevoDeleteContact(email),
+                  brevoGetContact(newEmail, {
+                    customResponses: [
+                      {
                         body: {
                           code: 'document_not_found',
                           message: 'List ID does not exist',
@@ -1501,26 +1485,18 @@ describe('Given a NGC user', () => {
                         status: StatusCodes.NOT_FOUND,
                       },
                       {
-                        body: {
-                          email,
-                          id: faker.number.int(),
-                          emailBlacklisted: faker.datatype.boolean(),
-                          smsBlacklisted: faker.datatype.boolean(),
-                          createdAt: formatBrevoDate(faker.date.past()),
-                          modifiedAt: formatBrevoDate(faker.date.recent()),
+                        body: getBrevoContact({
+                          email: newEmail,
                           attributes: {
                             USER_ID: userId,
-                            PRENOM: null,
                           },
-                          listIds: [],
-                          statistics: {},
-                        },
+                        }),
                       },
                     ],
                   }),
                   brevoUpdateContact({
                     expectBody: {
-                      email,
+                      email: newEmail,
                       attributes: {
                         USER_ID: userId,
                         PRENOM: null,
@@ -1538,11 +1514,11 @@ describe('Given a NGC user', () => {
 
                 expect(body).toEqual({
                   id: userId,
-                  email,
+                  email: newEmail,
                   name: null,
                   contact: {
                     id: expect.any(Number),
-                    email,
+                    email: newEmail,
                     listIds: [],
                   },
                   createdAt: expect.any(String),
@@ -1556,20 +1532,12 @@ describe('Given a NGC user', () => {
             let contact: BrevoContactDto
 
             beforeEach(() => {
-              contact = {
+              contact = getBrevoContact({
                 email,
-                id: faker.number.int(),
-                emailBlacklisted: faker.datatype.boolean(),
-                smsBlacklisted: faker.datatype.boolean(),
-                createdAt: formatBrevoDate(faker.date.past()),
-                modifiedAt: formatBrevoDate(faker.date.recent()),
                 attributes: {
                   USER_ID: userId,
-                  PRENOM: null,
                 },
-                listIds: [],
-                statistics: {},
-              }
+              })
             })
 
             test(`Then it returns a ${StatusCodes.ACCEPTED} response`, async () => {
@@ -1687,6 +1655,409 @@ describe('Given a NGC user', () => {
         })
       })
     })
+
+    describe('When updating his/her email', () => {
+      let contact: BrevoContactDto | undefined
+      let userId: string
+      let email: string
+
+      beforeEach(async () => {
+        ;({
+          user: { id: userId, email },
+          contact,
+        } = await createUser({
+          agent,
+          user: { email: faker.internet.email().toLocaleLowerCase() },
+        }))
+      })
+
+      describe('And brevo contact does not exist for new email', () => {
+        test(`Then it returns a ${StatusCodes.OK} response with the updated user`, async () => {
+          const newEmail = faker.internet.email().toLocaleLowerCase()
+
+          mswServer.use(
+            brevoGetContact(email, {
+              customResponses: [
+                {
+                  body: contact,
+                },
+              ],
+            }),
+            brevoDeleteContact(email),
+            brevoGetContact(newEmail, {
+              customResponses: [
+                {
+                  body: {
+                    code: 'document_not_found',
+                    message: 'List ID does not exist',
+                  },
+                  status: StatusCodes.NOT_FOUND,
+                },
+                {
+                  body: {
+                    ...contact,
+                    email: newEmail,
+                  },
+                },
+              ],
+            }),
+            brevoUpdateContact({
+              expectBody: {
+                email: newEmail,
+                attributes: {
+                  USER_ID: userId,
+                  PRENOM: null,
+                },
+                updateEnabled: true,
+                listIds: [],
+              },
+            })
+          )
+
+          const { body } = await agent
+            .put(url.replace(':userId', userId))
+            .send({
+              email: newEmail,
+            })
+            .expect(StatusCodes.OK)
+
+          expect(body).toEqual({
+            contact: {
+              email: newEmail,
+              id: contact?.id,
+              listIds: [],
+            },
+            id: userId,
+            email: newEmail,
+            name: null,
+            createdAt: expect.any(String),
+            updatedAt: expect.any(String),
+          })
+        })
+
+        describe('And subscribing to newsletters', () => {
+          test(`Then it sends an email and returns a ${StatusCodes.ACCEPTED} response`, async () => {
+            const newEmail = faker.internet.email().toLocaleLowerCase()
+
+            mswServer.use(
+              brevoGetContact(email, {
+                customResponses: [
+                  {
+                    body: contact,
+                  },
+                ],
+              }),
+              brevoGetContact(newEmail, {
+                customResponses: [
+                  {
+                    body: {
+                      code: 'document_not_found',
+                      message: 'List ID does not exist',
+                    },
+                    status: StatusCodes.NOT_FOUND,
+                  },
+                ],
+              }),
+              brevoSendEmail({
+                expectBody: {
+                  to: [
+                    {
+                      name: newEmail,
+                      email: newEmail,
+                    },
+                  ],
+                  templateId: 118,
+                  params: {
+                    NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(newEmail)}&listIds=22`,
+                  },
+                },
+              })
+            )
+
+            const { body } = await agent
+              .put(url.replace(':userId', userId))
+              .send({
+                email: newEmail,
+                contact: {
+                  listIds: [ListIds.MAIN_NEWSLETTER],
+                },
+              })
+              .expect(StatusCodes.ACCEPTED)
+
+            expect(body).toEqual({
+              contact: {
+                id: contact?.id,
+                listIds: contact?.listIds,
+                email,
+              },
+              id: userId,
+              email,
+              name: null,
+              createdAt: expect.any(String),
+              updatedAt: expect.any(String),
+            })
+          })
+        })
+
+        describe('And previous contact had newsletter', () => {
+          beforeEach(() => {
+            contact!.listIds = [ListIds.MAIN_NEWSLETTER]
+          })
+
+          test(`Then it sends an email and returns a ${StatusCodes.ACCEPTED} response`, async () => {
+            const newEmail = faker.internet.email().toLocaleLowerCase()
+
+            mswServer.use(
+              brevoGetContact(email, {
+                customResponses: [
+                  {
+                    body: contact,
+                  },
+                ],
+              }),
+              brevoGetContact(newEmail, {
+                customResponses: [
+                  {
+                    body: {
+                      code: 'document_not_found',
+                      message: 'List ID does not exist',
+                    },
+                    status: StatusCodes.NOT_FOUND,
+                  },
+                ],
+              }),
+              brevoSendEmail({
+                expectBody: {
+                  to: [
+                    {
+                      name: newEmail,
+                      email: newEmail,
+                    },
+                  ],
+                  templateId: 118,
+                  params: {
+                    NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(newEmail)}&listIds=22`,
+                  },
+                },
+              })
+            )
+
+            const { body } = await agent
+              .put(url.replace(':userId', userId))
+              .send({
+                email: newEmail,
+              })
+              .expect(StatusCodes.ACCEPTED)
+
+            expect(body).toEqual({
+              contact: {
+                id: contact?.id,
+                listIds: [ListIds.MAIN_NEWSLETTER],
+                email,
+              },
+              id: userId,
+              email,
+              name: null,
+              createdAt: expect.any(String),
+              updatedAt: expect.any(String),
+            })
+          })
+        })
+      })
+
+      describe('And brevo contact does exist for new email', () => {
+        test(`Then it sends an email and returns a ${StatusCodes.ACCEPTED} response`, async () => {
+          const newEmail = faker.internet.email().toLocaleLowerCase()
+
+          mswServer.use(
+            brevoGetContact(email, {
+              customResponses: [
+                {
+                  body: contact,
+                },
+              ],
+            }),
+            brevoGetContact(newEmail, {
+              customResponses: [
+                {
+                  body: getBrevoContact({
+                    email: newEmail,
+                    attributes: {
+                      USER_ID: userId,
+                    },
+                  }),
+                },
+              ],
+            }),
+            brevoSendEmail({
+              expectBody: {
+                to: [
+                  {
+                    name: newEmail,
+                    email: newEmail,
+                  },
+                ],
+                templateId: 118,
+                params: {
+                  NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(newEmail)}`,
+                },
+              },
+            })
+          )
+
+          const { body } = await agent
+            .put(url.replace(':userId', userId))
+            .send({
+              email: newEmail,
+            })
+            .expect(StatusCodes.ACCEPTED)
+
+          expect(body).toEqual({
+            contact: {
+              email,
+              id: contact?.id,
+              listIds: [],
+            },
+            id: userId,
+            email,
+            name: null,
+            createdAt: expect.any(String),
+            updatedAt: expect.any(String),
+          })
+        })
+
+        describe('And subscribing to newsletters', () => {
+          test(`Then it sends an email and returns a ${StatusCodes.ACCEPTED} response`, async () => {
+            const newEmail = faker.internet.email().toLocaleLowerCase()
+
+            mswServer.use(
+              brevoGetContact(email, {
+                customResponses: [
+                  {
+                    body: contact,
+                  },
+                ],
+              }),
+              brevoGetContact(newEmail, {
+                customResponses: [
+                  {
+                    body: getBrevoContact({
+                      email: newEmail,
+                      attributes: {
+                        USER_ID: userId,
+                      },
+                    }),
+                  },
+                ],
+              }),
+              brevoSendEmail({
+                expectBody: {
+                  to: [
+                    {
+                      name: newEmail,
+                      email: newEmail,
+                    },
+                  ],
+                  templateId: 118,
+                  params: {
+                    NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(newEmail)}&listIds=22`,
+                  },
+                },
+              })
+            )
+
+            const { body } = await agent
+              .put(url.replace(':userId', userId))
+              .send({
+                email: newEmail,
+                contact: {
+                  listIds: [ListIds.MAIN_NEWSLETTER],
+                },
+              })
+              .expect(StatusCodes.ACCEPTED)
+
+            expect(body).toEqual({
+              contact: {
+                email,
+                id: contact?.id,
+                listIds: [],
+              },
+              id: userId,
+              email,
+              name: null,
+              createdAt: expect.any(String),
+              updatedAt: expect.any(String),
+            })
+          })
+        })
+
+        describe('And previous contact had newsletter', () => {
+          beforeEach(() => {
+            contact!.listIds = [ListIds.MAIN_NEWSLETTER]
+          })
+
+          test(`Then it sends an email and returns a ${StatusCodes.ACCEPTED} response`, async () => {
+            const newEmail = faker.internet.email().toLocaleLowerCase()
+
+            mswServer.use(
+              brevoGetContact(email, {
+                customResponses: [
+                  {
+                    body: contact,
+                  },
+                ],
+              }),
+              brevoGetContact(newEmail, {
+                customResponses: [
+                  {
+                    body: getBrevoContact({
+                      email: newEmail,
+                      attributes: {
+                        USER_ID: userId,
+                      },
+                    }),
+                  },
+                ],
+              }),
+              brevoSendEmail({
+                expectBody: {
+                  to: [
+                    {
+                      name: newEmail,
+                      email: newEmail,
+                    },
+                  ],
+                  templateId: 118,
+                  params: {
+                    NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(newEmail)}&listIds=22`,
+                  },
+                },
+              })
+            )
+
+            const { body } = await agent
+              .put(url.replace(':userId', userId))
+              .send({
+                email: newEmail,
+              })
+              .expect(StatusCodes.ACCEPTED)
+
+            expect(body).toEqual({
+              contact: {
+                email,
+                id: contact?.id,
+                listIds: [ListIds.MAIN_NEWSLETTER],
+              },
+              id: userId,
+              email,
+              name: null,
+              createdAt: expect.any(String),
+              updatedAt: expect.any(String),
+            })
+          })
+        })
+      })
+    })
   })
 
   describe('And logged in', () => {
@@ -1700,20 +2071,12 @@ describe('Given a NGC user', () => {
         agent,
       }))
 
-      contact = {
+      contact = getBrevoContact({
         email,
-        id: faker.number.int(),
-        emailBlacklisted: faker.datatype.boolean(),
-        smsBlacklisted: faker.datatype.boolean(),
-        createdAt: formatBrevoDate(faker.date.past()),
-        modifiedAt: formatBrevoDate(faker.date.recent()),
         attributes: {
           USER_ID: userId,
-          PRENOM: null,
         },
-        listIds: [],
-        statistics: {},
-      }
+      })
     })
 
     describe('When subscribing to newsletter', () => {
@@ -1981,6 +2344,158 @@ describe('Given a NGC user', () => {
             telephone: null,
             createdAt: expect.any(String),
             updatedAt: expect.any(String),
+          })
+        })
+      })
+    })
+
+    describe('When updating his/her email', () => {
+      describe('And no verification code provided', () => {
+        test(`Then it returns a ${StatusCodes.FORBIDDEN} error`, async () => {
+          const payload = {
+            email: faker.internet.email(),
+          }
+
+          const response = await agent
+            .put(url.replace(':userId', userId))
+            .set('cookie', cookie)
+            .send(payload)
+            .expect(StatusCodes.FORBIDDEN)
+
+          expect(response.text).toEqual(
+            'Forbidden ! Cannot update email without a verification code.'
+          )
+        })
+      })
+
+      describe('And invalid verification code', () => {
+        test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
+          const payload = {
+            email: faker.internet.email(),
+          }
+
+          await agent
+            .put(url.replace(':userId', userId))
+            .set('cookie', cookie)
+            .query({
+              code: '42',
+            })
+            .send(payload)
+            .expect(StatusCodes.BAD_REQUEST)
+        })
+      })
+
+      describe('And verification code does not exist', () => {
+        test(`Then it returns a ${StatusCodes.FORBIDDEN} error`, async () => {
+          const payload = {
+            email: faker.internet.email(),
+          }
+
+          const response = await agent
+            .put(url.replace(':userId', userId))
+            .set('cookie', cookie)
+            .query({
+              code: faker.number.int({ min: 100000, max: 999999 }).toString(),
+            })
+            .send(payload)
+            .expect(StatusCodes.FORBIDDEN)
+
+          expect(response.text).toEqual(
+            'Forbidden ! Invalid verification code.'
+          )
+        })
+      })
+
+      describe('And verification code does exist', () => {
+        let newEmail: string
+        let code: string
+
+        beforeEach(async () => {
+          newEmail = faker.internet.email().toLocaleLowerCase()
+          ;({ code } = await createVerificationCode({
+            agent,
+            verificationCode: { userId, email: newEmail },
+          }))
+        })
+
+        test(`Then it returns a ${StatusCodes.OK} response with the updated user and a new cookie`, async () => {
+          const payload = {
+            email: newEmail,
+          }
+
+          mswServer.use(
+            brevoGetContact(email, {
+              customResponses: [
+                {
+                  body: contact,
+                },
+              ],
+            }),
+            brevoGetContact(newEmail, {
+              customResponses: [
+                {
+                  body: {
+                    code: 'document_not_found',
+                    message: 'List ID does not exist',
+                  },
+                  status: StatusCodes.NOT_FOUND,
+                },
+                {
+                  body: {
+                    ...contact,
+                    email: newEmail,
+                  },
+                },
+              ],
+            }),
+            brevoDeleteContact(email),
+            brevoUpdateContact({
+              expectBody: {
+                email: newEmail,
+                attributes: {
+                  USER_ID: userId,
+                  PRENOM: null,
+                },
+                updateEnabled: true,
+                listIds: [],
+              },
+            })
+          )
+
+          const response = await agent
+            .put(url.replace(':userId', userId))
+            .set('cookie', cookie)
+            .query({
+              code,
+            })
+            .send(payload)
+            .expect(StatusCodes.OK)
+
+          expect(response.body).toEqual({
+            contact: {
+              id: contact.id,
+              email: newEmail,
+              listIds: contact.listIds,
+            },
+            createdAt: expect.any(String),
+            email: newEmail,
+            id: userId,
+            name: null,
+            optedInForCommunications: false,
+            position: null,
+            telephone: null,
+            updatedAt: expect.any(String),
+          })
+
+          // Cookies are kept in supertest
+          const [, newCookie] = response.headers['set-cookie']
+          const token = newCookie.split(';').shift()?.replace('ngcjwt=', '')
+
+          expect(jwt.decode(token!)).toEqual({
+            userId,
+            email: newEmail,
+            exp: expect.any(Number),
+            iat: expect.any(Number),
           })
         })
       })

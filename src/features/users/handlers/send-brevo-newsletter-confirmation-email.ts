@@ -8,8 +8,9 @@ export const sendBrevoNewsLetterConfirmationEmail: Handler<
   UserUpdatedEvent
 > = async ({
   attributes: {
-    user: { email, id: userId },
+    user: { id: userId },
     newsletters: { finalNewsletters },
+    nextEmail: email,
     verified,
   },
 }) => {

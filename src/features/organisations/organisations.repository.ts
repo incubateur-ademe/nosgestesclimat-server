@@ -18,6 +18,7 @@ import type {
   OrganisationPollUpdateDto,
   OrganisationUpdateDto,
   PollParams,
+  PublicPollParams,
 } from './organisations.validator'
 
 const findModelUniqueSlug = (model: 'organisation' | 'poll') => {
@@ -307,6 +308,46 @@ export const fetchUserOrganisation = (
 
 const findUniquePollSlug = findModelUniqueSlug('poll')
 
+const fetchPollSimulationsInfo = async (
+  {
+    poll: { id },
+    user: { userId },
+  }: { poll: { id: string }; user: { userId: string } },
+  { session }: { session: Session }
+) => {
+  const [count, finished, userCount] = await Promise.all([
+    session.simulationPoll.count({
+      where: {
+        pollId: id,
+      },
+    }),
+    session.simulationPoll.count({
+      where: {
+        pollId: id,
+        simulation: {
+          progression: 1,
+        },
+      },
+    }),
+    session.simulationPoll.count({
+      where: {
+        pollId: id,
+        simulation: {
+          user: {
+            id: userId,
+          },
+        },
+      },
+    }),
+  ])
+
+  return {
+    count,
+    finished,
+    hasParticipated: !!userCount,
+  }
+}
+
 export const createOrganisationPoll = async (
   params: OrganisationParams,
   {
@@ -320,7 +361,10 @@ export const createOrganisationPoll = async (
 ) => {
   const slug = await findUniquePollSlug(name, { session })
 
-  return session.organisation.update({
+  const {
+    polls: [poll],
+    ...organisation
+  } = await session.organisation.update({
     where: await findOrganisationBySlugOrId({ params, user }, { session }),
     data: {
       polls: {
@@ -353,6 +397,20 @@ export const createOrganisationPoll = async (
       },
     },
   })
+
+  const simulationsInfos = await fetchPollSimulationsInfo(
+    {
+      poll,
+      user,
+    },
+    { session }
+  )
+
+  return {
+    simulationsInfos,
+    organisation,
+    poll,
+  }
 }
 
 export const updateOrganisationPoll = async (
@@ -386,7 +444,7 @@ export const updateOrganisationPoll = async (
   const customAdditionalQuestions =
     updateCustomAdditionalQuestions || existingCustomAdditionalQuestions
 
-  return session.poll.update({
+  const { organisation, ...poll } = await session.poll.update({
     where: { id },
     data: {
       name,
@@ -423,8 +481,27 @@ export const updateOrganisationPoll = async (
           }
         : {}),
     },
-    select: defaultPollSelection,
+    select: {
+      ...defaultPollSelection,
+      organisation: {
+        select: defaultOrganisationSelectionWithoutPolls,
+      },
+    },
   })
+
+  const simulationsInfos = await fetchPollSimulationsInfo(
+    {
+      poll,
+      user,
+    },
+    { session }
+  )
+
+  return {
+    simulationsInfos,
+    organisation,
+    poll,
+  }
 }
 
 export const deleteOrganisationPoll = async (
@@ -447,39 +524,78 @@ export const fetchOrganisationPolls = async (
   user: NonNullable<Request['user']>,
   { session }: { session: Session }
 ) => {
-  return session.organisation.findUniqueOrThrow({
-    where: await findOrganisationBySlugOrId(
-      { params, user },
-      { session: session }
-    ),
+  const organisation = await findOrganisationBySlugOrId(
+    { params, user, select: defaultOrganisationSelectionWithoutPolls },
+    { session: session }
+  )
+  const { polls } = await session.organisation.findUniqueOrThrow({
+    where: {
+      id: organisation.id,
+    },
     select: {
       polls: {
         select: defaultPollSelection,
       },
     },
   })
+
+  return {
+    organisation,
+    polls: await Promise.all(
+      polls.map(async (poll) => ({
+        poll,
+        simulationsInfos: await fetchPollSimulationsInfo(
+          { poll, user },
+          { session }
+        ),
+      }))
+    ),
+  }
 }
 
-export const fetchOrganisationPoll = (
+export const fetchOrganisationPoll = async (
   params: OrganisationPollParams,
   user: NonNullable<Request['user']>,
   { session }: { session: Session }
 ) => {
-  return findOrganisationPollBySlugOrId(
+  const { organisation, ...poll } = await findOrganisationPollBySlugOrId(
     {
       params,
       user,
-      select: defaultPollSelection,
+      select: {
+        ...defaultPollSelection,
+        organisation: {
+          select: defaultOrganisationSelectionWithoutPolls,
+        },
+      },
     },
     { session }
   )
+
+  const simulationsInfos = await fetchPollSimulationsInfo(
+    {
+      poll,
+      user,
+    },
+    { session }
+  )
+
+  return {
+    simulationsInfos,
+    organisation,
+    poll,
+  }
 }
 
-export const fetchOrganisationPublicPoll = (
-  { pollIdOrSlug }: PollParams,
+export const fetchOrganisationPublicPoll = async (
+  {
+    pollIdOrSlug,
+    userId,
+    user,
+  }: PublicPollParams & { user?: NonNullable<Request['user']> },
   { session }: { session: Session }
 ) => {
-  return session.poll.findFirstOrThrow({
+  const { organisation, ...poll } = await session.poll.findFirstOrThrow({
     where: {
       OR: [
         {
@@ -490,8 +606,27 @@ export const fetchOrganisationPublicPoll = (
         },
       ],
     },
-    select: defaultPollSelection,
+    select: {
+      ...defaultPollSelection,
+      organisation: {
+        select: defaultOrganisationSelectionWithoutPolls,
+      },
+    },
   })
+
+  const simulationsInfos = await fetchPollSimulationsInfo(
+    {
+      poll,
+      user: user || { userId },
+    },
+    { session }
+  )
+
+  return {
+    simulationsInfos,
+    organisation,
+    poll,
+  }
 }
 
 export const getLastPollParticipantsCount = async (
@@ -549,6 +684,11 @@ export const findSimulationPoll = (
     select: {
       pollId: true,
       simulationId: true,
+      poll: {
+        select: {
+          computeRealTimeStats: true,
+        },
+      },
     },
   })
 }
