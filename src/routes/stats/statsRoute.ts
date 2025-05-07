@@ -1,4 +1,5 @@
 import apicache from 'apicache'
+import axios from 'axios'
 import type { NextFunction, Request, Response } from 'express'
 import express from 'express'
 import { config } from '../../config'
@@ -43,7 +44,6 @@ router
   .get(
     cache('1 day'),
     async (req: Request, res: Response, next: NextFunction) => {
-      let url
       try {
         const rawRequestParams = decodeURIComponent(
           req.query.requestParams as string
@@ -62,28 +62,23 @@ router
 
         const authorizedMethod = authorizedMethods.includes(matomoMethod)
 
-        const authorizedSiteId = requestParams.get('idSite') === '153'
-
-        if (!authorizedMethod || !authorizedSiteId) {
+        if (!authorizedMethod) {
           res.statusCode = 401
           return next('Error. Not Authorized')
         }
 
-        url =
-          config.thirdParty.matomo.url +
-          '?' +
-          requestParams +
-          '&token_auth=' +
-          config.thirdParty.matomo.token
-
         console.log('will make matomo request', requestParams)
 
-        const response = await fetch(url)
+        requestParams.set('idSite', '20')
 
-        const json = (await response.json()) as {
-          label: string
-          subtable: { url: string }[]
-        }[]
+        const { data: json } = await axios.post<
+          {
+            label: string
+            subtable: { url: string }[]
+          }[]
+        >(config.thirdParty.matomo.url + '?' + requestParams, {
+          token_auth: config.thirdParty.matomo.secureToken,
+        })
 
         // Remove secret pages that would reveal groupe names that should stay private
         if (rawRequestParams.includes('Page')) {
