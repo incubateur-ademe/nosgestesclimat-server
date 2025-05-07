@@ -47,6 +47,7 @@ export const config = {
     matomo: {
       url: ensureEnvVar(process.env.MATOMO_URL, 'https://stats.data.gouv.fr'),
       token: ensureEnvVar(process.env.MATOMO_TOKEN, ''),
+      secureToken: ensureEnvVar(process.env.MATOMO_SECURE_TOKEN, ''),
     },
     redis: {
       url: ensureEnvVar(process.env.REDIS_URL, 'redis://localhost:6379'),
