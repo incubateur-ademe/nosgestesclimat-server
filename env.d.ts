@@ -27,16 +27,6 @@ declare namespace NodeJS {
      * {@link [Local Env Dist](.env.development)}
      */
     BREVO_API_KEY?: string
-    /**
-     * Dist: `your_matomo_url`
-     * {@link [Local Env Dist](.env.development)}
-     */
-    MATOMO_URL?: string
-    /**
-     * Dist: `your_matomo_token`
-     * {@link [Local Env Dist](.env.development)}
-     */
-    MATOMO_TOKEN?: string
   }
 }
 declare type ProcessEnvCustomKeys =
@@ -45,8 +35,6 @@ declare type ProcessEnvCustomKeys =
   | 'PORT'
   | 'MONGO_URL'
   | 'BREVO_API_KEY'
-  | 'MATOMO_URL'
-  | 'MATOMO_TOKEN'
 
 type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
   k: infer I

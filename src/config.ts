@@ -45,8 +45,22 @@ export const config = {
       apiKey: ensureEnvVar(process.env.BREVO_API_KEY, ''),
     },
     matomo: {
-      url: ensureEnvVar(process.env.MATOMO_URL, 'https://stats.data.gouv.fr'),
-      token: ensureEnvVar(process.env.MATOMO_TOKEN, ''),
+      beta: {
+        url: ensureEnvVar(
+          process.env.MATOMO_BETA_URL,
+          'https://stats.beta.gouv.fr'
+        ),
+        token: ensureEnvVar(process.env.MATOMO_BETA_TOKEN, ''),
+        siteId: ensureEnvVar(process.env.MATOMO_BETA_SITE_ID, '20'),
+      },
+      data: {
+        url: ensureEnvVar(
+          process.env.MATOMO_DATA_URL,
+          'https://stats.data.gouv.fr'
+        ),
+        token: ensureEnvVar(process.env.MATOMO_DATA_TOKEN, ''),
+        siteId: ensureEnvVar(process.env.MATOMO_DATA_SITE_ID, '153'),
+      },
     },
     redis: {
       url: ensureEnvVar(process.env.REDIS_URL, 'redis://localhost:6379'),
