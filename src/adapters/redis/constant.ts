@@ -3,6 +3,7 @@ export const CHANNELS = {
 }
 
 export const KEYS = {
+  brevoNewsletter: 'brevoNewsletter',
   rateLimitSameRequests: 'rateLimitSameRequests',
   pollsFunFactsResults: 'pollsFunFactsResults',
   geolocationSortedIps: 'geolocationSortedIps',
