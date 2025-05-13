@@ -62,7 +62,8 @@ router
 
         const authorizedMethod = authorizedMethods.includes(matomoMethod)
 
-        const authorizedSiteId = requestParams.get('idSite') === '153'
+        const authorizedSiteId =
+          requestParams.get('idSite') === config.thirdParty.matomo.data.siteId
 
         if (!authorizedMethod || !authorizedSiteId) {
           res.statusCode = 401
@@ -70,11 +71,11 @@ router
         }
 
         url =
-          config.thirdParty.matomo.url +
+          config.thirdParty.matomo.data.url +
           '?' +
           requestParams +
           '&token_auth=' +
-          config.thirdParty.matomo.token
+          config.thirdParty.matomo.data.token
 
         console.log('will make matomo request', requestParams)
 
