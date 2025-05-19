@@ -31,6 +31,9 @@ export const config = {
     }
   },
   security: {
+    job: {
+      secret: ensureEnvVar(process.env.JWT_SECRET, ''),
+    },
     jwt: {
       secret: ensureEnvVar(process.env.JWT_SECRET, ''),
     },

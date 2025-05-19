@@ -12,6 +12,8 @@ import {
   isPrismaErrorUniqueConstraintFailed,
 } from '../../core/typeguards/isPrismaError'
 import { exchangeCredentialsForToken } from '../authentication/authentication.service'
+import { JobKind } from '../jobs/jobs.repository'
+import { startJob } from '../jobs/jobs.service'
 import type { SimulationAsyncEvent } from '../simulations/events/SimulationUpserted.event'
 import { getPollFunFacts } from '../simulations/simulations.service'
 import { OrganisationCreatedEvent } from './events/OrganisationCreated.event'
@@ -27,19 +29,20 @@ import {
   fetchOrganisationPublicPoll,
   fetchUserOrganisation,
   fetchUserOrganisations,
+  findOrganisationPollBySlugOrId,
   findSimulationPoll,
   setPollFunFacts,
   updateAdministratorOrganisation,
   updateOrganisationPoll,
 } from './organisations.repository'
-import type {
-  OrganisationCreateDto,
-  OrganisationParams,
-  OrganisationPollCreateDto,
-  OrganisationPollParams,
-  OrganisationPollUpdateDto,
-  OrganisationUpdateDto,
-  PublicPollParams,
+import {
+  type OrganisationCreateDto,
+  type OrganisationParams,
+  type OrganisationPollCreateDto,
+  type OrganisationPollParams,
+  type OrganisationPollUpdateDto,
+  type OrganisationUpdateDto,
+  type PublicPollParams,
 } from './organisations.validator'
 
 const organisationToDto = (
@@ -468,4 +471,48 @@ export const updatePollFunFactsAfterSimulationChange = ({
       { session }
     )
   }, prisma)
+}
+
+export const startDownloadPollSimulationResultJob = async ({
+  params,
+  user,
+}: {
+  params: OrganisationPollParams
+  user: NonNullable<Request['user']>
+}) => {
+  try {
+    return await transaction(async (session) => {
+      const { id: pollId, organisationId } =
+        await findOrganisationPollBySlugOrId(
+          {
+            params,
+            user,
+            select: {
+              id: true,
+              organisationId: true,
+            },
+          },
+          { session }
+        )
+
+      return startJob(
+        {
+          params: {
+            kind: JobKind.DOWNLOAD_ORGANISATION_POLL_SIMULATIONS_RESULT,
+            organisationId,
+            pollId,
+          },
+          user,
+        },
+        {
+          session,
+        }
+      )
+    }, prisma)
+  } catch (e) {
+    if (isPrismaErrorNotFound(e)) {
+      throw new EntityNotFoundException('Poll not found')
+    }
+    throw e
+  }
 }

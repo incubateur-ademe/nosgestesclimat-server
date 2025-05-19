@@ -37,6 +37,7 @@ import {
   fetchPoll,
   fetchPolls,
   fetchPublicPoll,
+  startDownloadPollSimulationResultJob,
   updateOrganisation,
   updatePoll,
 } from './organisations.service'
@@ -47,6 +48,7 @@ import {
   OrganisationPollDeleteValidator,
   OrganisationPollFetchValidator,
   OrganisationPollsFetchValidator,
+  OrganisationPollSimulationsDownloadValidator,
   OrganisationPollUpdateValidator,
   OrganisationPublicPollFetchValidator,
   OrganisationPublicPollSimulationsFetchValidator,
@@ -319,6 +321,34 @@ router
         }
 
         logger.error('Poll fetch failed', err)
+
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
+      }
+    }
+  )
+
+/**
+ * Returns a job that can be polled to get the campaign simulations result
+ */
+router
+  .route('/v1/:organisationIdOrSlug/polls/:pollIdOrSlug/simulations/download')
+  .get(
+    authentificationMiddleware(),
+    validateRequest(OrganisationPollSimulationsDownloadValidator),
+    async ({ params, user }, res) => {
+      try {
+        const job = await startDownloadPollSimulationResultJob({
+          user: user!,
+          params,
+        })
+
+        return res.status(StatusCodes.ACCEPTED).json(job)
+      } catch (err) {
+        if (err instanceof EntityNotFoundException) {
+          return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
+        }
+
+        logger.error('Poll download simulations failed', err)
 
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
       }

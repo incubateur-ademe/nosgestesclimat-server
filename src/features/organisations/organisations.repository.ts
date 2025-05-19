@@ -81,7 +81,7 @@ const findOrganisationBySlugOrId = <
   })
 }
 
-const findOrganisationPollBySlugOrId = <
+export const findOrganisationPollBySlugOrId = <
   T extends Prisma.PollSelect = { id: true },
 >(
   {

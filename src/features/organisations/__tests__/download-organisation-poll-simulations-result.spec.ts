@@ -1,0 +1,269 @@
+import { faker } from '@faker-js/faker'
+import crypto from 'crypto'
+import { StatusCodes } from 'http-status-codes'
+import supertest from 'supertest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { prisma } from '../../../adapters/prisma/client'
+import * as prismaTransactionAdapter from '../../../adapters/prisma/transaction'
+import app from '../../../app'
+import { config } from '../../../config'
+import logger from '../../../logger'
+import { login } from '../../authentication/__tests__/fixtures/login.fixture'
+import { COOKIE_NAME } from '../../authentication/authentication.service'
+import {
+  createOrganisation,
+  createOrganisationPoll,
+  DOWNLOAD_ORGANISATION_POLL_SIMULATIONS_RESULT_ROUTE,
+} from './fixtures/organisations.fixture'
+
+vi.mock('../../../adapters/prisma/transaction', async () => ({
+  ...(await vi.importActual('../../../adapters/prisma/transaction')),
+}))
+
+describe('Given a NGC user', () => {
+  const agent = supertest(app)
+  const url = DOWNLOAD_ORGANISATION_POLL_SIMULATIONS_RESULT_ROUTE
+
+  afterEach(async () => {
+    await prisma.organisationAdministrator.deleteMany()
+    await Promise.all([
+      prisma.organisation.deleteMany(),
+      prisma.verifiedUser.deleteMany(),
+      prisma.verificationCode.deleteMany(),
+      prisma.job.deleteMany(),
+    ])
+  })
+
+  describe('And logged out', () => {
+    describe('When downloading one of his organisation poll result', () => {
+      test(`Then it returns a ${StatusCodes.UNAUTHORIZED} error`, async () => {
+        await agent
+          .get(
+            url
+              .replace(
+                ':organisationIdOrSlug',
+                faker.database.mongodbObjectId()
+              )
+              .replace(':pollIdOrSlug', faker.database.mongodbObjectId())
+          )
+          .expect(StatusCodes.UNAUTHORIZED)
+      })
+    })
+  })
+
+  describe('And invalid cookie', () => {
+    describe('When downloading one of his organisation poll result', () => {
+      test(`Then it returns a ${StatusCodes.UNAUTHORIZED} error`, async () => {
+        await agent
+          .get(
+            url
+              .replace(
+                ':organisationIdOrSlug',
+                faker.database.mongodbObjectId()
+              )
+              .replace(':pollIdOrSlug', faker.database.mongodbObjectId())
+          )
+          .set('cookie', `${COOKIE_NAME}=invalid cookie`)
+          .expect(StatusCodes.UNAUTHORIZED)
+      })
+    })
+  })
+
+  describe('And logged in', () => {
+    let cookie: string
+    let user: { userId: string; email: string }
+
+    beforeEach(async () => {
+      ;({ cookie, ...user } = await login({ agent }))
+    })
+
+    describe('When downloading one of his organisation poll result', () => {
+      describe('And organisation does not exist', () => {
+        test(`Then it returns a ${StatusCodes.NOT_FOUND} error`, async () => {
+          await agent
+            .get(
+              url
+                .replace(
+                  ':organisationIdOrSlug',
+                  faker.database.mongodbObjectId()
+                )
+                .replace(':pollIdOrSlug', faker.database.mongodbObjectId())
+            )
+            .set('cookie', cookie)
+            .expect(StatusCodes.NOT_FOUND)
+        })
+      })
+
+      describe('And organisation does exist', () => {
+        let organisationId: string
+        let organisationSlug: string
+
+        beforeEach(
+          async () =>
+            ({ id: organisationId, slug: organisationSlug } =
+              await createOrganisation({
+                agent,
+                cookie,
+              }))
+        )
+
+        describe('And poll does not exist in the organisation', () => {
+          test(`Then it returns a ${StatusCodes.NOT_FOUND} error`, async () => {
+            await agent
+              .get(
+                url
+                  .replace(':organisationIdOrSlug', organisationId)
+                  .replace(':pollIdOrSlug', faker.database.mongodbObjectId())
+              )
+              .set('cookie', cookie)
+              .expect(StatusCodes.NOT_FOUND)
+          })
+        })
+
+        describe('And poll does exist in the organisation', () => {
+          let poll: Awaited<ReturnType<typeof createOrganisationPoll>>
+          let pollId: string
+          let pollSlug: string
+
+          beforeEach(async () => {
+            poll = await createOrganisationPoll({
+              agent,
+              cookie,
+              organisationId,
+            })
+            ;({ id: pollId, slug: pollSlug } = poll)
+          })
+
+          test(`Then it returns a ${StatusCodes.ACCEPTED} response with the started job`, async () => {
+            const params = {
+              kind: 'DOWNLOAD_ORGANISATION_POLL_SIMULATIONS_RESULT',
+              organisationId,
+              pollId,
+            }
+
+            const response = await agent
+              .get(
+                url
+                  .replace(':organisationIdOrSlug', organisationId)
+                  .replace(':pollIdOrSlug', pollId)
+              )
+              .set('cookie', cookie)
+              .expect(StatusCodes.ACCEPTED)
+
+            const expectedId = crypto
+              .createHash('sha256')
+              .update(
+                `${config.security.job.secret}${new URLSearchParams(
+                  Object.entries({
+                    ...params,
+                    ...user,
+                  })
+                ).toString()}`
+              )
+              .digest('hex')
+
+            expect(response.body).toEqual({
+              id: expectedId,
+              params,
+              result: null,
+              status: 'pending',
+              createdAt: expect.any(String),
+              updatedAt: expect.any(String),
+            })
+          })
+
+          describe('And using organisation and poll slugs', () => {
+            test(`Then it returns a ${StatusCodes.ACCEPTED} response with the started job`, async () => {
+              const params = {
+                kind: 'DOWNLOAD_ORGANISATION_POLL_SIMULATIONS_RESULT',
+                organisationId,
+                pollId,
+              }
+
+              const response = await agent
+                .get(
+                  url
+                    .replace(':organisationIdOrSlug', organisationSlug)
+                    .replace(':pollIdOrSlug', pollSlug)
+                )
+                .set('cookie', cookie)
+                .expect(StatusCodes.ACCEPTED)
+
+              const expectedId = crypto
+                .createHash('sha256')
+                .update(
+                  `${config.security.job.secret}${new URLSearchParams(
+                    Object.entries({
+                      ...params,
+                      ...user,
+                    })
+                  ).toString()}`
+                )
+                .digest('hex')
+
+              expect(response.body).toEqual({
+                id: expectedId,
+                params: {
+                  kind: 'DOWNLOAD_ORGANISATION_POLL_SIMULATIONS_RESULT',
+                  organisationId,
+                  pollId,
+                },
+                result: null,
+                status: 'pending',
+                createdAt: expect.any(String),
+                updatedAt: expect.any(String),
+              })
+            })
+          })
+        })
+      })
+
+      describe('And database failure', () => {
+        const databaseError = new Error('Something went wrong')
+
+        beforeEach(() => {
+          vi.spyOn(
+            prismaTransactionAdapter,
+            'transaction'
+          ).mockRejectedValueOnce(databaseError)
+        })
+
+        afterEach(() => {
+          vi.spyOn(prismaTransactionAdapter, 'transaction').mockRestore()
+        })
+
+        test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
+          await agent
+            .get(
+              url
+                .replace(
+                  ':organisationIdOrSlug',
+                  faker.database.mongodbObjectId()
+                )
+                .replace(':pollIdOrSlug', faker.database.mongodbObjectId())
+            )
+            .set('cookie', cookie)
+            .expect(StatusCodes.INTERNAL_SERVER_ERROR)
+        })
+
+        test(`Then it logs the exception`, async () => {
+          await agent
+            .get(
+              url
+                .replace(
+                  ':organisationIdOrSlug',
+                  faker.database.mongodbObjectId()
+                )
+                .replace(':pollIdOrSlug', faker.database.mongodbObjectId())
+            )
+            .set('cookie', cookie)
+
+          expect(logger.error).toHaveBeenCalledWith(
+            'Poll download simulations failed',
+            databaseError
+          )
+        })
+      })
+    })
+  })
+})
