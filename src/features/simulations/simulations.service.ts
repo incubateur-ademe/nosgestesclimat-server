@@ -1,7 +1,7 @@
 import type {
   DottedName,
   FunFacts,
-  NGCRule,
+  NGCRules,
 } from '@incubateur-ademe/nosgestesclimat'
 import modelRules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
 import modelFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRules.json'
@@ -43,7 +43,7 @@ import {
   getSituationDottedNameValueWithEngine,
 } from './situation/situation.service'
 
-const frRules = modelRules as Record<DottedName, NGCRule | string | null>
+const frRules = modelRules as Partial<NGCRules>
 const funFactsRules = modelFunFacts as { [k in keyof FunFacts]: DottedName }
 
 const simulationToDto = (

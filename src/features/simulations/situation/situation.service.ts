@@ -1,21 +1,25 @@
-import type { DottedName, NGCRule } from '@incubateur-ademe/nosgestesclimat'
+import type { DottedName, NGCRules } from '@incubateur-ademe/nosgestesclimat'
 import type Engine from 'publicodes'
 import logger from '../../../logger'
 import type { SituationSchema } from '../simulations.validator'
 
-export type Rules = Record<DottedName, NGCRule | string | null>
-
 const isDottedName = (dottedName: unknown): dottedName is DottedName =>
   typeof dottedName === 'string'
 
-const safeEvaluateSituationDottedNameDefaultValue = ({
+const mergeDottedName = (root: DottedName, suffix: string) => {
+  const set = new Set(root.split(' . ').slice(0, -1))
+  suffix.split(' . ').forEach((s) => set.add(s))
+  return Array.from(set).join(' . ') as DottedName
+}
+
+const evaluateSituationDottedNameDefaultValue = ({
   dottedName,
   situation,
   rules,
 }: {
   situation: SituationSchema
   dottedName: DottedName
-  rules: Rules
+  rules: Partial<NGCRules>
 }): number => {
   const rule = rules[dottedName]
 
@@ -25,11 +29,9 @@ const safeEvaluateSituationDottedNameDefaultValue = ({
 
   if (
     'applicable si' in rule &&
+    typeof rule['applicable si'] === 'string' &&
     !checkIfConditionIsTrue({
-      conditionDottedName: [
-        ...dottedName.split(' . ').slice(0, -1),
-        rule['applicable si'],
-      ].join(' . '),
+      conditionDottedName: mergeDottedName(dottedName, rule['applicable si']),
       situation,
       rules,
     })
@@ -37,21 +39,32 @@ const safeEvaluateSituationDottedNameDefaultValue = ({
     return 0
   }
 
-  if ('par défaut' in rule && typeof rule['par défaut'] === 'number') {
-    return rule['par défaut']
+  if ('par défaut' in rule) {
+    const defaultValue = rule['par défaut']
+    if (typeof defaultValue === 'number') {
+      return defaultValue
+    }
+
+    if (typeof defaultValue === 'string') {
+      return getSituationDottedNameValue({
+        dottedName: mergeDottedName(dottedName, defaultValue),
+        situation,
+        rules,
+      })
+    }
   }
 
   return 0
 }
 
-const safeEvaluateSituationDottedName = ({
+const evaluateSituationDottedName = ({
   dottedName,
   situation,
   rules,
 }: {
   situation: SituationSchema
   dottedName: unknown
-  rules: Rules
+  rules: Partial<NGCRules>
 }): number => {
   if (!isDottedName(dottedName)) {
     return 0
@@ -60,13 +73,13 @@ const safeEvaluateSituationDottedName = ({
   const rawValue = situation[dottedName]
 
   return typeof rawValue === 'object'
-    ? safeEvaluateSituationDottedNameDefaultValue({
+    ? evaluateSituationDottedNameDefaultValue({
         dottedName,
         situation,
         rules,
       })
     : Number.isNaN(+rawValue)
-      ? safeEvaluateSituationDottedNameDefaultValue({
+      ? evaluateSituationDottedNameDefaultValue({
           dottedName,
           situation,
           rules,
@@ -104,7 +117,7 @@ const checkIfConditionIsTrue = ({
 }: {
   situation: SituationSchema
   conditionDottedName: unknown
-  rules: Rules
+  rules: Partial<NGCRules>
 }): boolean => {
   if (!isDottedName(conditionDottedName)) {
     return false
@@ -125,7 +138,7 @@ const checkIfConditionIsTrue = ({
   const left =
     typeof situation[dottedName] === 'string'
       ? situation[dottedName]
-      : safeEvaluateSituationDottedName({
+      : evaluateSituationDottedName({
           dottedName,
           situation,
           rules,
@@ -144,6 +157,103 @@ const checkIfConditionIsTrue = ({
   return false
 }
 
+const evaluateSituationFormula = ({
+  situation,
+  formule,
+  rules,
+}: {
+  situation: SituationSchema
+  formule: Record<string, unknown>
+  rules: Partial<NGCRules>
+}): number => {
+  if ('variations' in formule && Array.isArray(formule.variations)) {
+    const variations = [...formule.variations]
+    const fallback = variations.pop()
+
+    for (const variation of variations) {
+      if (
+        checkIfConditionIsTrue({
+          conditionDottedName: variation.si,
+          situation,
+          rules,
+        })
+      ) {
+        if (typeof variation.alors === 'object') {
+          return evaluateSituationFormula({
+            formule: variation.alors,
+            situation,
+            rules,
+          })
+        }
+
+        return +variation.alors || 0
+      }
+    }
+
+    formule = fallback.sinon
+
+    if (typeof formule === 'number') {
+      // TODO: fix me engine does not fallback correctly
+      // return formule
+      return 0
+    }
+  }
+
+  if ('moyenne' in formule && Array.isArray(formule.moyenne)) {
+    const [moyenneDottedName] = formule.moyenne
+    return evaluateSituationDottedName({
+      situation,
+      dottedName: moyenneDottedName,
+      rules,
+    })
+  }
+
+  if ('somme' in formule && Array.isArray(formule.somme)) {
+    return formule.somme.reduce(
+      (acc, sommeDottedName) =>
+        acc +
+        evaluateSituationDottedName({
+          situation,
+          dottedName: sommeDottedName,
+          rules,
+        }),
+      0
+    )
+  }
+
+  if (
+    'une de ces conditions' in formule &&
+    Array.isArray(formule['une de ces conditions'])
+  ) {
+    return formule['une de ces conditions'].some((conditionDottedName) =>
+      checkIfConditionIsTrue({
+        conditionDottedName,
+        situation,
+        rules,
+      })
+    )
+      ? 1
+      : 0
+  }
+
+  if (
+    'toutes ces conditions' in formule &&
+    Array.isArray(formule['toutes ces conditions'])
+  ) {
+    return formule['toutes ces conditions'].every((conditionDottedName) =>
+      checkIfConditionIsTrue({
+        conditionDottedName,
+        situation,
+        rules,
+      })
+    )
+      ? 1
+      : 0
+  }
+
+  return 0
+}
+
 export const getSituationDottedNameValue = ({
   dottedName,
   situation,
@@ -151,7 +261,7 @@ export const getSituationDottedNameValue = ({
 }: {
   situation: SituationSchema
   dottedName: DottedName
-  rules: Rules
+  rules: Partial<NGCRules>
 }): number => {
   try {
     const rule = rules[dottedName]
@@ -162,64 +272,17 @@ export const getSituationDottedNameValue = ({
       !rule.formule ||
       typeof rule.formule !== 'object'
     ) {
+      if (typeof rule?.formule === 'number') {
+        return rule.formule
+      }
       return 0
     }
 
-    const { formule } = rule
-
-    if ('moyenne' in formule && Array.isArray(formule.moyenne)) {
-      const [moyenneDottedName] = formule.moyenne
-      return safeEvaluateSituationDottedName({
-        situation,
-        dottedName: moyenneDottedName,
-        rules,
-      })
-    }
-
-    if ('somme' in formule && Array.isArray(formule.somme)) {
-      return formule.somme.reduce(
-        (acc, sommeDottedName) =>
-          acc +
-          safeEvaluateSituationDottedName({
-            situation,
-            dottedName: sommeDottedName,
-            rules,
-          }),
-        0
-      )
-    }
-
-    if (
-      'une de ces conditions' in formule &&
-      Array.isArray(formule['une de ces conditions'])
-    ) {
-      return formule['une de ces conditions'].some((conditionDottedName) =>
-        checkIfConditionIsTrue({
-          conditionDottedName,
-          situation,
-          rules,
-        })
-      )
-        ? 1
-        : 0
-    }
-
-    if (
-      'toutes ces conditions' in formule &&
-      Array.isArray(formule['toutes ces conditions'])
-    ) {
-      return formule['toutes ces conditions'].every((conditionDottedName) =>
-        checkIfConditionIsTrue({
-          conditionDottedName,
-          situation,
-          rules,
-        })
-      )
-        ? 1
-        : 0
-    }
-
-    return 0
+    return evaluateSituationFormula({
+      formule: rule.formule,
+      situation,
+      rules,
+    })
   } catch (error) {
     logger.error(`Cannot evaluate dottedName ${dottedName}`, {
       situation,

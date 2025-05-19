@@ -1,5 +1,5 @@
-import type { DottedName, NGCRule } from '@incubateur-ademe/nosgestesclimat'
-import NGCRules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
+import type { NGCRules } from '@incubateur-ademe/nosgestesclimat'
+import modelRules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
 import Engine from 'publicodes'
 import yaml from 'yaml'
 import { MAPPING_CASES_FUNC } from '../../../../constants/change-case'
@@ -75,9 +75,9 @@ export const mapPartnerSituation = async ({
   }
 
   const rules = {
-    ...NGCRules,
+    ...modelRules,
     ...partnerRules,
-  } as Record<DottedName, NGCRule | string | null>
+  } as Partial<NGCRules>
 
   const partnerDefaultValues: Record<string, unknown> = isPartnerRecord(
     partnerDefault
