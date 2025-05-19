@@ -38,6 +38,7 @@
     "@ts-rest/core": "^3.51.0",
     "@ts-rest/express": "^3.51.0",
     "@ts-rest/open-api": "^3.51.0",
+    "@types/yargs": "^17.0.33",
     "apicache": "^1.6.3",
     "axios": "^1.6.5",
     "axios-retry": "^4.5.0",
@@ -65,6 +66,7 @@
     "winston": "^3.14.2",
     "winston-transport-sentry-node": "^3.0.0",
     "yaml": "^2.0.1",
+    "yargs": "^17.7.2",
     "zod": "^3.23.8",
     "zod-express-middleware": "^1.4.0"
   },
