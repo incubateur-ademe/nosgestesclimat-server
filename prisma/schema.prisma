@@ -107,6 +107,47 @@ model IntegrationWhitelist {
   @@schema("ngc")
 }
 
+enum MatomoStatsSource {
+  beta
+  data
+
+  @@schema("ngc")
+}
+
+enum MatomoStatsKind {
+  campaign
+  direct
+  search
+  social
+  website
+  all
+
+  @@schema("ngc")
+}
+
+enum MatomoStatsDevice {
+  desktop
+  all
+
+  @@schema("ngc")
+}
+
+model MatomoStats {
+  id                  String             @id @default(uuid()) @db.Uuid
+  date                DateTime           @db.Date
+  source              MatomoStatsSource
+  kind                MatomoStatsKind
+  referrer            String             @default("all")
+  device              MatomoStatsDevice
+  iframe              Boolean
+  visits              Int                @db.Integer
+  firstAnswer         Int                @db.Integer
+  finishedSimulations Int                @db.Integer
+
+  @@unique([date, source, kind, referrer, device, iframe])
+  @@schema("ngc")
+}
+
 enum NorthstarRatingType {
   learned
   actions
