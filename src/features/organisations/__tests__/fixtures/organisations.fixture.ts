@@ -228,3 +228,29 @@ export const createOrganisationPollSimulation = async ({
 
   return response.body
 }
+
+export const downloadOrganisationPollSimulationsResult = async ({
+  agent,
+  cookie,
+  pollId,
+  organisationId,
+}: {
+  agent: TestAgent
+  pollId: string
+  organisationId: string
+  cookie: string
+}) => {
+  const response = await agent
+    .get(
+      DOWNLOAD_ORGANISATION_POLL_SIMULATIONS_RESULT_ROUTE.replace(
+        ':organisationIdOrSlug',
+        organisationId
+      ).replace(':pollIdOrSlug', pollId)
+    )
+    .set('cookie', cookie)
+    .expect(StatusCodes.ACCEPTED)
+
+  await EventBus.flush()
+
+  return response.body
+}

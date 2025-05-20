@@ -13,7 +13,7 @@ import {
 } from '../../core/typeguards/isPrismaError'
 import { exchangeCredentialsForToken } from '../authentication/authentication.service'
 import { JobKind } from '../jobs/jobs.repository'
-import { startJob } from '../jobs/jobs.service'
+import { bootstrapJob, getPendingJobStatus } from '../jobs/jobs.service'
 import type { SimulationAsyncEvent } from '../simulations/events/SimulationUpserted.event'
 import { getPollFunFacts } from '../simulations/simulations.service'
 import { OrganisationCreatedEvent } from './events/OrganisationCreated.event'
@@ -495,7 +495,7 @@ export const startDownloadPollSimulationResultJob = async ({
           { session }
         )
 
-      return startJob(
+      return bootstrapJob(
         {
           params: {
             kind: JobKind.DOWNLOAD_ORGANISATION_POLL_SIMULATIONS_RESULT,
@@ -503,6 +503,53 @@ export const startDownloadPollSimulationResultJob = async ({
             pollId,
           },
           user,
+        },
+        {
+          session,
+        }
+      )
+    }, prisma)
+  } catch (e) {
+    if (isPrismaErrorNotFound(e)) {
+      throw new EntityNotFoundException('Poll not found')
+    }
+    throw e
+  }
+}
+
+export const getDownloadPollSimulationResultJob = async ({
+  params,
+  jobId,
+  user,
+}: {
+  user: NonNullable<Request['user']>
+  params: OrganisationPollParams
+  jobId: string
+}) => {
+  try {
+    return await transaction(async (session) => {
+      const { id: pollId, organisationId } =
+        await findOrganisationPollBySlugOrId(
+          {
+            params,
+            user,
+            select: {
+              id: true,
+              organisationId: true,
+            },
+          },
+          { session }
+        )
+
+      return getPendingJobStatus(
+        {
+          user,
+          id: jobId,
+          params: {
+            kind: JobKind.DOWNLOAD_ORGANISATION_POLL_SIMULATIONS_RESULT,
+            organisationId,
+            pollId,
+          },
         },
         {
           session,

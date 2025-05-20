@@ -7,6 +7,7 @@ import { prisma } from '../../../adapters/prisma/client'
 import * as prismaTransactionAdapter from '../../../adapters/prisma/transaction'
 import app from '../../../app'
 import { config } from '../../../config'
+import { EventBus } from '../../../core/event-bus/event-bus'
 import logger from '../../../logger'
 import { login } from '../../authentication/__tests__/fixtures/login.fixture'
 import { COOKIE_NAME } from '../../authentication/authentication.service'
@@ -14,6 +15,7 @@ import {
   createOrganisation,
   createOrganisationPoll,
   DOWNLOAD_ORGANISATION_POLL_SIMULATIONS_RESULT_ROUTE,
+  downloadOrganisationPollSimulationsResult,
 } from './fixtures/organisations.fixture'
 
 vi.mock('../../../adapters/prisma/transaction', async () => ({
@@ -212,6 +214,78 @@ describe('Given a NGC user', () => {
                 status: 'pending',
                 createdAt: expect.any(String),
                 updatedAt: expect.any(String),
+              })
+            })
+          })
+
+          describe('And polling the job result', () => {
+            let jobId: string
+
+            describe('And job is pending/running', () => {
+              beforeEach(async () => {
+                vi.spyOn(EventBus, 'emit').mockImplementationOnce(
+                  () => EventBus
+                )
+                ;({ id: jobId } =
+                  await downloadOrganisationPollSimulationsResult({
+                    agent,
+                    cookie,
+                    pollId,
+                    organisationId,
+                  }))
+              })
+
+              afterEach(() => vi.spyOn(EventBus, 'emit').mockRestore())
+
+              test(`Then it returns a ${StatusCodes.ACCEPTED} response with the job result`, async () => {
+                const response = await agent
+                  .get(
+                    url
+                      .replace(':organisationIdOrSlug', organisationId)
+                      .replace(':pollIdOrSlug', pollId)
+                  )
+                  .query({ jobId })
+                  .set('cookie', cookie)
+                  .expect(StatusCodes.ACCEPTED)
+
+                expect(response.body).toEqual({
+                  id: jobId,
+                  params: {
+                    kind: 'DOWNLOAD_ORGANISATION_POLL_SIMULATIONS_RESULT',
+                    organisationId,
+                    pollId,
+                  },
+                  result: null,
+                  status: 'pending',
+                  createdAt: expect.any(String),
+                  updatedAt: expect.any(String),
+                })
+              })
+            })
+
+            describe('And job is finished', () => {
+              beforeEach(async () => {
+                ;({ id: jobId } =
+                  await downloadOrganisationPollSimulationsResult({
+                    agent,
+                    cookie,
+                    pollId,
+                    organisationId,
+                  }))
+              })
+
+              test(`Then it returns a ${StatusCodes.OK} response with the job result`, async () => {
+                const response = await agent
+                  .get(
+                    url
+                      .replace(':organisationIdOrSlug', organisationId)
+                      .replace(':pollIdOrSlug', pollId)
+                  )
+                  .query({ jobId })
+                  .set('cookie', cookie)
+                  .expect(StatusCodes.OK)
+
+                expect(response.body).toEqual({})
               })
             })
           })

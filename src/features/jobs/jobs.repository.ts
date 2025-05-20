@@ -1,4 +1,6 @@
+import type { Job as PrismaJob } from '@prisma/client'
 import { JobStatus } from '@prisma/client'
+import type { InputJsonValue } from '@prisma/client/runtime/library'
 import { defaultJobSelection } from '../../adapters/prisma/selection'
 import type { Session } from '../../adapters/prisma/transaction'
 import type { ValueOf } from '../../types/types'
@@ -10,6 +12,10 @@ export const JobKind = {
 
 export type JobKind = ValueOf<typeof JobKind>
 
+export type Job<T extends JobKind> = Omit<PrismaJob, 'params'> & {
+  params: JobParams<T>
+}
+
 export type JobParams<T extends JobKind> =
   T extends 'DOWNLOAD_ORGANISATION_POLL_SIMULATIONS_RESULT'
     ? {
@@ -18,6 +24,14 @@ export type JobParams<T extends JobKind> =
         organisationId: string
       }
     : never
+
+const mapJob = async <T extends JobKind>(
+  request: Promise<PrismaJob>
+): Promise<Job<T>> => {
+  const job = await request
+
+  return job as Job<T>
+}
 
 export const createJob = <T extends JobKind>(
   { id, params }: { id: string; params: JobParams<T> },
@@ -47,3 +61,47 @@ export const createJob = <T extends JobKind>(
     },
     select: defaultJobSelection,
   })
+
+export const getJob = <T extends JobKind>(
+  { id }: { id: string },
+  { session }: { session: Session }
+): Promise<Job<T>> => {
+  return mapJob(
+    session.job.findUniqueOrThrow({
+      where: { id },
+      select: defaultJobSelection,
+    })
+  )
+}
+
+export const startJob = <T extends JobKind>(
+  { id }: { id: string },
+  { session }: { session: Session }
+): Promise<Job<T>> => {
+  return mapJob(
+    session.job.update({
+      where: { id, status: JobStatus.pending },
+      data: { status: JobStatus.running },
+      select: defaultJobSelection,
+    })
+  )
+}
+
+type FinishedJobStatus = Exclude<JobStatus, 'pending' | 'running'>
+
+export const stopJob = <T extends JobKind>(
+  {
+    id,
+    status,
+    result,
+  }: { id: string; status: FinishedJobStatus; result: InputJsonValue },
+  { session }: { session: Session }
+): Promise<Job<T>> => {
+  return mapJob(
+    session.job.update({
+      where: { id, status: JobStatus.running },
+      data: { status, result },
+      select: defaultJobSelection,
+    })
+  )
+}

@@ -1,15 +1,19 @@
 import { redis } from './adapters/redis/client'
 import { CHANNELS } from './adapters/redis/constant'
 import { EventBus } from './core/event-bus/event-bus'
+import { JobCreatedAsyncEvent } from './features/jobs/events/JobCreated.event'
+import { dispatchJob } from './features/jobs/handlers/dispatch-job'
 import { SimulationUpsertedAsyncEvent } from './features/simulations/events/SimulationUpserted.event'
 import { computePollFunFacts } from './features/simulations/handlers/compute-poll-fun-facts'
 import logger from './logger'
 
 const RedisApiEventMap = {
   SimulationUpsertedAsyncEvent,
+  JobCreatedAsyncEvent,
 } as const
 
 EventBus.on(SimulationUpsertedAsyncEvent, computePollFunFacts)
+EventBus.on(JobCreatedAsyncEvent, dispatchJob)
 
 const parseMessage = (message: string) => {
   const { name, attributes } = JSON.parse(message)

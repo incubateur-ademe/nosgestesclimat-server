@@ -37,6 +37,7 @@ import {
   fetchPoll,
   fetchPolls,
   fetchPublicPoll,
+  getDownloadPollSimulationResultJob,
   startDownloadPollSimulationResultJob,
   updateOrganisation,
   updatePoll,
@@ -335,8 +336,19 @@ router
   .get(
     authentificationMiddleware(),
     validateRequest(OrganisationPollSimulationsDownloadValidator),
-    async ({ params, user }, res) => {
+    async ({ params, user, query }, res) => {
       try {
+        const { jobId } = query
+        if (jobId) {
+          const { status, job } = await getDownloadPollSimulationResultJob({
+            user: user!,
+            params,
+            jobId,
+          })
+
+          return res.status(status).json(job)
+        }
+
         const job = await startDownloadPollSimulationResultJob({
           user: user!,
           params,
