@@ -1,8 +1,16 @@
+import {
+  GetObjectCommand,
+  ObjectCannedACL,
+  PutObjectCommand,
+} from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import type { Organisation } from '@prisma/client'
 import type { Request } from 'express'
+import { utils, write } from 'xlsx'
 import { prisma } from '../../adapters/prisma/client'
 import type { Session } from '../../adapters/prisma/transaction'
 import { transaction } from '../../adapters/prisma/transaction'
+import { client } from '../../adapters/scaleway/client'
 import { config } from '../../config'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
 import { ForbiddenException } from '../../core/errors/ForbiddenException'
@@ -12,10 +20,18 @@ import {
   isPrismaErrorUniqueConstraintFailed,
 } from '../../core/typeguards/isPrismaError'
 import { exchangeCredentialsForToken } from '../authentication/authentication.service'
+import type { JobParams } from '../jobs/jobs.repository'
 import { JobKind } from '../jobs/jobs.repository'
-import { bootstrapJob, getPendingJobStatus } from '../jobs/jobs.service'
+import {
+  bootstrapJob,
+  getPendingJobStatus,
+  JobFilesRootPath,
+} from '../jobs/jobs.service'
 import type { SimulationAsyncEvent } from '../simulations/events/SimulationUpserted.event'
-import { getPollFunFacts } from '../simulations/simulations.service'
+import {
+  getPollFunFacts,
+  getPollSimulationsExcelData,
+} from '../simulations/simulations.service'
 import { OrganisationCreatedEvent } from './events/OrganisationCreated.event'
 import { OrganisationUpdatedEvent } from './events/OrganisationUpdated.event'
 import { PollCreatedEvent as PollUpdatedEvent } from './events/PollCreated.event'
@@ -29,6 +45,7 @@ import {
   fetchOrganisationPublicPoll,
   fetchUserOrganisation,
   fetchUserOrganisations,
+  findOrganisationPollById,
   findOrganisationPollBySlugOrId,
   findSimulationPoll,
   setPollFunFacts,
@@ -36,6 +53,7 @@ import {
   updateOrganisationPoll,
 } from './organisations.repository'
 import {
+  OrganisationPollCustomAdditionalQuestions,
   type OrganisationCreateDto,
   type OrganisationParams,
   type OrganisationPollCreateDto,
@@ -44,6 +62,8 @@ import {
   type OrganisationUpdateDto,
   type PublicPollParams,
 } from './organisations.validator'
+
+const { bucket, rootPath } = config.thirdParty.scaleway
 
 const organisationToDto = (
   organisation: Organisation &
@@ -560,6 +580,90 @@ export const getDownloadPollSimulationResultJob = async ({
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('Poll not found')
     }
+    throw e
+  }
+}
+
+const generatePollSimulationsResultExcel = async (
+  {
+    pollId,
+  }: JobParams<typeof JobKind.DOWNLOAD_ORGANISATION_POLL_SIMULATIONS_RESULT>,
+  { session }: { session: Session }
+) => {
+  const { id, slug, customAdditionalQuestions } =
+    await findOrganisationPollById(
+      {
+        id: pollId,
+        select: {
+          id: true,
+          slug: true,
+          customAdditionalQuestions: true,
+        },
+      },
+      { session }
+    )
+
+  const excelData = await getPollSimulationsExcelData(
+    {
+      id,
+      customAdditionalQuestions:
+        OrganisationPollCustomAdditionalQuestions.parse(
+          customAdditionalQuestions
+        ),
+    },
+    { session }
+  )
+
+  const worksheet = utils.json_to_sheet(excelData)
+
+  const workbook = utils.book_new()
+
+  utils.book_append_sheet(workbook, worksheet, 'Simulations')
+
+  return {
+    buffer: write(workbook, { type: 'buffer', bookType: 'xlsx' }),
+    filename: `Export_${slug}_Simulations.xlsx`,
+  }
+}
+
+export const uploadPollSimulationsResult = async (
+  params: JobParams<
+    typeof JobKind.DOWNLOAD_ORGANISATION_POLL_SIMULATIONS_RESULT
+  >
+) => {
+  try {
+    const { buffer, filename } = await transaction(
+      async (session) =>
+        generatePollSimulationsResultExcel(params, { session }),
+      prisma
+    )
+
+    const key = `${rootPath}/${JobFilesRootPath[params.kind]}/${filename}`
+
+    await client.send(
+      new PutObjectCommand({
+        Bucket: bucket,
+        Key: key,
+        Body: buffer,
+        ACL: ObjectCannedACL.private,
+      })
+    )
+
+    const url = await getSignedUrl(
+      client,
+      new GetObjectCommand({
+        Bucket: bucket,
+        Key: key,
+      }),
+      { expiresIn: 60 * 10 } // 10 minutes
+    )
+
+    return { url }
+  } catch (e) {
+    if (isPrismaErrorNotFound(e)) {
+      throw new EntityNotFoundException('Poll not found')
+    }
+
     throw e
   }
 }

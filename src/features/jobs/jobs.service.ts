@@ -9,10 +9,21 @@ import { EntityNotFoundException } from '../../core/errors/EntityNotFoundExcepti
 import { ForbiddenException } from '../../core/errors/ForbiddenException'
 import { EventBus } from '../../core/event-bus/event-bus'
 import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError'
+import logger from '../../logger'
 import { JobCreatedEvent } from './events/JobCreated.event'
 import { publishRedisEvent } from './handlers/publish-redis-event'
-import type { Job, JobKind, JobParams } from './jobs.repository'
-import { createJob, getJob, startJob, stopJob } from './jobs.repository'
+import type { Job, JobParams } from './jobs.repository'
+import {
+  createJob,
+  getJob,
+  JobKind,
+  startJob,
+  stopJob,
+} from './jobs.repository'
+
+export const JobFilesRootPath: Record<JobKind, string> = {
+  [JobKind.DOWNLOAD_ORGANISATION_POLL_SIMULATIONS_RESULT]: `jobs/polls`,
+}
 
 EventBus.on(JobCreatedEvent, publishRedisEvent)
 
@@ -108,9 +119,8 @@ export const runJob = <T extends JobKind>(
   { session }: { session?: Session } = {}
 ) => {
   return transaction(async (session) => {
-    let job: Job<T> | undefined
     try {
-      job = await startJob<T>({ id }, { session })
+      const job = await startJob<T>({ id }, { session })
 
       const result = await callback(job)
 
@@ -129,7 +139,10 @@ export const runJob = <T extends JobKind>(
 
       const err = e instanceof Error ? e : new Error(`Unexpected error: ${e}`)
 
-      await stopJob(
+      const {
+        id: jobId,
+        params: { kind },
+      } = await stopJob(
         {
           id,
           status: JobStatus.failure,
@@ -141,6 +154,8 @@ export const runJob = <T extends JobKind>(
         },
         { session }
       )
+
+      logger.error(`Job ${jobId} ${kind} failed`, err)
     }
   }, session)
 }

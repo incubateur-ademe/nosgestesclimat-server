@@ -57,7 +57,6 @@ export const createJob = <T extends JobKind>(
       },
       status: JobStatus.pending,
       params,
-      id,
     },
     select: defaultJobSelection,
   })

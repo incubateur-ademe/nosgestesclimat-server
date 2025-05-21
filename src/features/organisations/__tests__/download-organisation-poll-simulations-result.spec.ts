@@ -1,3 +1,4 @@
+import { PutObjectCommand } from '@aws-sdk/client-s3'
 import { faker } from '@faker-js/faker'
 import crypto from 'crypto'
 import { StatusCodes } from 'http-status-codes'
@@ -5,6 +6,7 @@ import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { prisma } from '../../../adapters/prisma/client'
 import * as prismaTransactionAdapter from '../../../adapters/prisma/transaction'
+import { client } from '../../../adapters/scaleway/client'
 import app from '../../../app'
 import { config } from '../../../config'
 import { EventBus } from '../../../core/event-bus/event-bus'
@@ -128,12 +130,27 @@ describe('Given a NGC user', () => {
           let pollSlug: string
 
           beforeEach(async () => {
+            vi.spyOn(client, 'send').mockImplementationOnce((command) => {
+              if (!(command instanceof PutObjectCommand)) {
+                throw command
+              }
+
+              return Promise.resolve({
+                $metadata: {},
+              })
+            })
+
             poll = await createOrganisationPoll({
               agent,
               cookie,
               organisationId,
             })
             ;({ id: pollId, slug: pollSlug } = poll)
+          })
+
+          afterEach(async () => {
+            await EventBus.flush()
+            vi.spyOn(client, 'send').mockRestore()
           })
 
           test(`Then it returns a ${StatusCodes.ACCEPTED} response with the started job`, async () => {
@@ -275,7 +292,9 @@ describe('Given a NGC user', () => {
               })
 
               test(`Then it returns a ${StatusCodes.OK} response with the job result`, async () => {
-                const response = await agent
+                const {
+                  body: { url: rawDocumentUrl },
+                } = await agent
                   .get(
                     url
                       .replace(':organisationIdOrSlug', organisationId)
@@ -285,7 +304,59 @@ describe('Given a NGC user', () => {
                   .set('cookie', cookie)
                   .expect(StatusCodes.OK)
 
-                expect(response.body).toEqual({})
+                const baseUrl = new URL(process.env.SCALEWAY_ENDPOINT!)
+                const documentUrl = new URL(rawDocumentUrl)
+
+                expect(`${documentUrl.origin}${documentUrl.pathname}`).toBe(
+                  `${baseUrl.protocol}//${process.env.SCALEWAY_BUCKET}.${baseUrl.hostname}/${process.env.SCALEWAY_ROOT_PATH}/jobs/polls/Export_${pollSlug}_Simulations.xlsx`
+                )
+
+                expect(Object.fromEntries(documentUrl.searchParams)).toEqual({
+                  'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
+                  'X-Amz-Content-Sha256': 'UNSIGNED-PAYLOAD',
+                  'X-Amz-Credential': expect.any(String),
+                  'X-Amz-Date': expect.any(String),
+                  'X-Amz-Expires': '600',
+                  'X-Amz-Signature': expect.any(String),
+                  'X-Amz-SignedHeaders': 'host',
+                  'x-id': 'GetObject',
+                })
+              })
+            })
+
+            describe('And job is failed', () => {
+              const jobError = new Error('Scaleway upload error')
+
+              beforeEach(async () => {
+                vi.spyOn(client, 'send')
+                  .mockReset()
+                  .mockRejectedValueOnce(jobError)
+                ;({ id: jobId } =
+                  await downloadOrganisationPollSimulationsResult({
+                    agent,
+                    cookie,
+                    pollId,
+                    organisationId,
+                  }))
+              })
+
+              test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
+                await agent
+                  .get(
+                    url
+                      .replace(':organisationIdOrSlug', organisationId)
+                      .replace(':pollIdOrSlug', pollId)
+                  )
+                  .query({ jobId })
+                  .set('cookie', cookie)
+                  .expect(StatusCodes.INTERNAL_SERVER_ERROR)
+              })
+
+              test(`Then it logs the exception`, async () => {
+                expect(logger.error).toHaveBeenCalledWith(
+                  `Job ${jobId} DOWNLOAD_ORGANISATION_POLL_SIMULATIONS_RESULT failed`,
+                  jobError
+                )
               })
             })
           })

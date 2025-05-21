@@ -111,6 +111,24 @@ export const findOrganisationPollBySlugOrId = <
   })
 }
 
+export const findOrganisationPollById = <
+  T extends Prisma.PollSelect = typeof defaultPollSelection,
+>(
+  {
+    id,
+    select = defaultPollSelection as T,
+  }: {
+    id: string
+    select?: T
+  },
+  { session }: { session: Session }
+) => {
+  return session.poll.findUniqueOrThrow({
+    where: { id },
+    select,
+  })
+}
+
 export const findOrganisationPublicPollBySlugOrId = <
   T extends Prisma.PollSelect = { id: true },
 >(
