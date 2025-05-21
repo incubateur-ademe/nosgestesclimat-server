@@ -201,6 +201,60 @@ describe('Given a NGC user', () => {
       })
     })
 
+    describe('And brevo timeouts', () => {
+      test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} response after retries`, async () => {
+        mswServer.use(
+          brevoGetNewsletter(newsletterId, {
+            delayInMs: 2000,
+          })
+        )
+
+        const { body } = await agent
+          .get(url.replace(':newsletterId', newsletterId))
+          .expect(StatusCodes.INTERNAL_SERVER_ERROR)
+
+        await EventBus.flush()
+
+        expect(body).toEqual({})
+      })
+
+      describe('And expired cache does exist', () => {
+        beforeEach(async () => {
+          new Promise<void>((res, rej) =>
+            redis.set(
+              `${KEYS.brevoNewsletter}_${newsletterId}`,
+              JSON.stringify({
+                id: +newsletterId,
+                name: newsletterName,
+                totalSubscribers: newsletterTotalSubscribers,
+              }),
+              (err) => (err ? rej(err) : res())
+            )
+          )
+        })
+
+        test(`Then it returns a  ${StatusCodes.OK} response with the mapped brevo response`, async () => {
+          mswServer.use(
+            brevoGetNewsletter(newsletterId, {
+              delayInMs: 2000,
+            })
+          )
+
+          const { body } = await agent
+            .get(url.replace(':newsletterId', newsletterId))
+            .expect(StatusCodes.OK)
+
+          await EventBus.flush()
+
+          expect(body).toEqual({
+            id: +newsletterId,
+            name: newsletterName,
+            totalSubscribers: newsletterTotalSubscribers,
+          })
+        })
+      })
+    })
+
     describe('And brevo interface changes', () => {
       test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} response and logs the exception`, async () => {
         mswServer.use(
