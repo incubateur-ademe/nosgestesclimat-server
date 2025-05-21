@@ -61,6 +61,8 @@ export const isBadRequest = isBrevoClientError(ClientErrors.BAD_REQUEST)
 
 export const isNotFound = isBrevoClientError(ClientErrors.NOT_FOUND)
 
+export const isTimeout = (error: AxiosError) => error.code === 'ECONNABORTED'
+
 type BrevoNewsletterDto = {
   id: number
   name: string

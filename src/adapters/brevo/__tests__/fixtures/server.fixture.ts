@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes'
 import type { JsonBodyType } from 'msw'
-import { http, HttpResponse } from 'msw'
+import { delay, http, HttpResponse } from 'msw'
 import { expect } from 'vitest'
 
 type CustomResponse = {
@@ -164,13 +164,22 @@ export const brevoGetNewsletter = (
   {
     customResponses,
     networkError,
-  }: { customResponses?: CustomResponse[]; networkError?: true } = {}
+    delayInMs,
+  }: {
+    customResponses?: CustomResponse[]
+    networkError?: true
+    delayInMs?: number | 'random'
+  } = {}
 ) =>
   http.get(
     `${process.env.BREVO_URL}/v3/contacts/lists/${newsletterId}`,
-    ({ request }) => {
+    async ({ request }) => {
       if (request.headers.get('api-key') !== process.env.BREVO_API_KEY) {
         return HttpResponse.text('', { status: StatusCodes.UNAUTHORIZED })
+      }
+
+      if (delayInMs) {
+        await (delayInMs === 'random' ? delay() : delay(delayInMs))
       }
 
       if (networkError) {

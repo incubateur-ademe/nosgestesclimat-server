@@ -2,6 +2,7 @@ import type { Request, RequestHandler } from 'express'
 import type { ParamsDictionary, Query } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import { redis } from '../adapters/redis/client'
+import { ALIVE_SUFFIX } from '../adapters/redis/constant'
 import logger from '../logger'
 
 export const redisCacheMiddleware =
@@ -20,10 +21,13 @@ export const redisCacheMiddleware =
   async (req, res, next) => {
     try {
       const redisKey = key(req)
-      const cache = await redis.get(redisKey)
+      const cacheAlive = await redis.exists(`${redisKey}${ALIVE_SUFFIX}`)
 
-      if (cache) {
-        return res.status(status).json(JSON.parse(cache))
+      if (cacheAlive) {
+        const cache = await redis.get(redisKey)
+        if (cache) {
+          return res.status(status).json(JSON.parse(cache))
+        }
       }
     } catch (error) {
       logger.warn('Could not use redis cache', error)
