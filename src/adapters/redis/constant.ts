@@ -9,3 +9,5 @@ export const KEYS = {
   geolocationSortedIps: 'geolocationSortedIps',
   geolocationCountries: 'geolocationCountries',
 }
+
+export const ALIVE_SUFFIX = ':alive'

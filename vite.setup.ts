@@ -15,6 +15,9 @@ const pgClient = new PGlite()
 const adapter = new PrismaPGlite(pgClient)
 const redis = redisMock.createClient()
 redis.get = promisify(redis.get.bind(redis)) as unknown as (typeof redis)['get']
+redis.exists = promisify(
+  redis.exists.bind(redis)
+) as unknown as (typeof redis)['exists']
 const prisma = new PrismaClient({ adapter })
 const prismaMigrationDir = path.join(__dirname, 'prisma', 'migrations')
 
