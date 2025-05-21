@@ -15,6 +15,7 @@ import { publishRedisEvent } from './handlers/publish-redis-event'
 import type { Job, JobParams } from './jobs.repository'
 import {
   createJob,
+  getExistingJob,
   getJob,
   JobKind,
   startJob,
@@ -54,6 +55,14 @@ export const bootstrapJob = async <T extends JobKind>(
   }: { params: JobParams<T>; user?: NonNullable<Request['user']> },
   session: { session: Session }
 ) => {
+  const id = getJobId({ params, user })
+
+  const existingJob = await getExistingJob({ id }, session)
+
+  if (existingJob) {
+    return existingJob
+  }
+
   const job = await createJob(
     {
       id: getJobId({

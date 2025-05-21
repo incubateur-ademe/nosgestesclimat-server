@@ -1,6 +1,7 @@
 import type { Job as PrismaJob } from '@prisma/client'
 import { JobStatus } from '@prisma/client'
 import type { InputJsonValue } from '@prisma/client/runtime/library'
+import dayjs from 'dayjs'
 import { defaultJobSelection } from '../../adapters/prisma/selection'
 import type { Session } from '../../adapters/prisma/transaction'
 import type { ValueOf } from '../../types/types'
@@ -25,9 +26,9 @@ export type JobParams<T extends JobKind> =
       }
     : never
 
-const mapJob = async <T extends JobKind>(
-  request: Promise<PrismaJob>
-): Promise<Job<T>> => {
+const mapJob = async <T extends JobKind, U extends PrismaJob | null>(
+  request: Promise<U>
+): Promise<U extends PrismaJob ? Job<T> : Job<T> | null> => {
   const job = await request
 
   return job as Job<T>
@@ -68,6 +69,26 @@ export const getJob = <T extends JobKind>(
   return mapJob(
     session.job.findUniqueOrThrow({
       where: { id },
+      select: defaultJobSelection,
+    })
+  )
+}
+
+export const getExistingJob = <T extends JobKind>(
+  { id }: { id: string },
+  { session }: { session: Session }
+): Promise<Job<T> | null> => {
+  return mapJob(
+    session.job.findUnique({
+      where: {
+        id,
+        status: {
+          in: [JobStatus.pending, JobStatus.running],
+        },
+        createdAt: {
+          gte: dayjs().subtract(5, 'minute').toDate(),
+        },
+      },
       select: defaultJobSelection,
     })
   )

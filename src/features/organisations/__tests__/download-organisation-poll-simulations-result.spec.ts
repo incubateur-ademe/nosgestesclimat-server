@@ -254,7 +254,7 @@ describe('Given a NGC user', () => {
 
               afterEach(() => vi.spyOn(EventBus, 'emit').mockRestore())
 
-              test(`Then it returns a ${StatusCodes.ACCEPTED} response with the job result`, async () => {
+              test(`Then it returns a ${StatusCodes.ACCEPTED} response with the job status`, async () => {
                 const response = await agent
                   .get(
                     url
@@ -276,6 +276,32 @@ describe('Given a NGC user', () => {
                   status: 'pending',
                   createdAt: expect.any(String),
                   updatedAt: expect.any(String),
+                })
+              })
+
+              describe('And running the job again', () => {
+                test(`Then it returns a ${StatusCodes.ACCEPTED} response with the job status`, async () => {
+                  const response = await agent
+                    .get(
+                      url
+                        .replace(':organisationIdOrSlug', organisationId)
+                        .replace(':pollIdOrSlug', pollId)
+                    )
+                    .set('cookie', cookie)
+                    .expect(StatusCodes.ACCEPTED)
+
+                  expect(response.body).toEqual({
+                    id: jobId,
+                    params: {
+                      kind: 'DOWNLOAD_ORGANISATION_POLL_SIMULATIONS_RESULT',
+                      organisationId,
+                      pollId,
+                    },
+                    result: null,
+                    status: 'pending',
+                    createdAt: expect.any(String),
+                    updatedAt: expect.any(String),
+                  })
                 })
               })
             })
@@ -357,6 +383,68 @@ describe('Given a NGC user', () => {
                   `Job ${jobId} DOWNLOAD_ORGANISATION_POLL_SIMULATIONS_RESULT failed`,
                   jobError
                 )
+              })
+            })
+          })
+
+          describe('And an other user tries to recover the job result', () => {
+            let cookie2: string
+            let jobId: string
+
+            beforeEach(async () => {
+              ;({ cookie: cookie2 } = await login({ agent }))
+            })
+
+            describe('And the job is pending/running', () => {
+              beforeEach(async () => {
+                vi.spyOn(EventBus, 'emit').mockImplementationOnce(
+                  () => EventBus
+                )
+                ;({ id: jobId } =
+                  await downloadOrganisationPollSimulationsResult({
+                    agent,
+                    cookie,
+                    pollId,
+                    organisationId,
+                  }))
+              })
+
+              afterEach(() => vi.spyOn(EventBus, 'emit').mockRestore())
+
+              test(`Then it returns a ${StatusCodes.NOT_FOUND} error`, async () => {
+                await agent
+                  .get(
+                    url
+                      .replace(':organisationIdOrSlug', organisationId)
+                      .replace(':pollIdOrSlug', pollId)
+                  )
+                  .query({ jobId })
+                  .set('cookie', cookie2)
+                  .expect(StatusCodes.NOT_FOUND)
+              })
+            })
+
+            describe('And the job is finished', () => {
+              beforeEach(async () => {
+                ;({ id: jobId } =
+                  await downloadOrganisationPollSimulationsResult({
+                    agent,
+                    cookie,
+                    pollId,
+                    organisationId,
+                  }))
+              })
+
+              test(`Then it returns a ${StatusCodes.NOT_FOUND} error`, async () => {
+                await agent
+                  .get(
+                    url
+                      .replace(':organisationIdOrSlug', organisationId)
+                      .replace(':pollIdOrSlug', pollId)
+                  )
+                  .query({ jobId })
+                  .set('cookie', cookie2)
+                  .expect(StatusCodes.NOT_FOUND)
               })
             })
           })
