@@ -8,8 +8,8 @@ import { redis } from '../../../adapters/redis/client'
 import { KEYS } from '../../../adapters/redis/constant'
 import app from '../../../app'
 import { config } from '../../../config'
-import { EventBusError } from '../../../core/event-bus/error'
 import { EventBus } from '../../../core/event-bus/event-bus'
+import logger from '../../../logger'
 import { login } from '../../authentication/__tests__/fixtures/login.fixture'
 import {
   createOrganisation,
@@ -148,7 +148,7 @@ describe('Given a poll participation', () => {
         vi.spyOn(
           simulationRepository,
           'batchPollSimulations'
-        ).mockRejectedValue(new Error('Should not be called'))
+        ).mockRejectedValueOnce(new Error('Should not be called'))
       })
 
       afterEach(() => {
@@ -183,15 +183,14 @@ describe('Given a poll participation', () => {
         })
 
         test('Then it should loop over the simulations table', async () => {
-          try {
-            EventBus.emit(event)
+          EventBus.emit(event)
 
-            await EventBus.once(event)
+          await EventBus.once(event)
 
-            throw new Error('Should not happen')
-          } catch (e) {
-            expect(e).toBeInstanceOf(EventBusError)
-          }
+          expect(logger.error).toHaveBeenCalledWith(
+            'Poll funFacts update failed',
+            expect.any(TypeError)
+          )
         })
       })
     })

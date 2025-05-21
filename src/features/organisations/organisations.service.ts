@@ -19,6 +19,7 @@ import {
   isPrismaErrorNotFound,
   isPrismaErrorUniqueConstraintFailed,
 } from '../../core/typeguards/isPrismaError'
+import logger from '../../logger'
 import { exchangeCredentialsForToken } from '../authentication/authentication.service'
 import type { JobParams } from '../jobs/jobs.repository'
 import { JobKind } from '../jobs/jobs.repository'
@@ -467,30 +468,34 @@ export const updatePollFunFacts = async (
   }, session)
 }
 
-export const updatePollFunFactsAfterSimulationChange = ({
+export const updatePollFunFactsAfterSimulationChange = async ({
   simulation,
   created,
 }: {
   simulation: SimulationAsyncEvent
   created: boolean
 }) => {
-  return transaction(async (session) => {
-    const simulationPoll = await findSimulationPoll(
-      { simulationId: simulation.id },
-      { session }
-    )
+  try {
+    return await transaction(async (session) => {
+      const simulationPoll = await findSimulationPoll(
+        { simulationId: simulation.id },
+        { session }
+      )
 
-    if (!simulationPoll || !simulationPoll.poll.computeRealTimeStats) {
-      return
-    }
+      if (!simulationPoll || !simulationPoll.poll.computeRealTimeStats) {
+        return
+      }
 
-    const { pollId } = simulationPoll
+      const { pollId } = simulationPoll
 
-    return updatePollFunFacts(
-      { pollId, ...(created ? { simulation } : {}) },
-      { session }
-    )
-  }, prisma)
+      return updatePollFunFacts(
+        { pollId, ...(created ? { simulation } : {}) },
+        { session }
+      )
+    }, prisma)
+  } catch (e) {
+    logger.error('Poll funFacts update failed', e)
+  }
 }
 
 export const startDownloadPollSimulationResultJob = async ({
