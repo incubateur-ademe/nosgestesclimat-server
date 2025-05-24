@@ -326,13 +326,18 @@ export const fetchPollSimulations = <
   })
 }
 
-export const batchPollSimulations = (
+export const batchPollSimulations = <
+  T extends
+    Prisma.SimulationSelect = typeof defaultSimulationSelectionWithoutUser,
+>(
   {
     id,
     batchSize = 100,
+    select = defaultSimulationSelection as T,
   }: {
     id: string
     batchSize?: number
+    select?: T
   },
   { session }: { session: Session }
 ) => {
@@ -344,7 +349,7 @@ export const batchPollSimulations = (
         select: {
           id: true,
           simulation: {
-            select: defaultSimulationSelection,
+            select,
           },
         },
       }),

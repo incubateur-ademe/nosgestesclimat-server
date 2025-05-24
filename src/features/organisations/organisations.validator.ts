@@ -117,12 +117,20 @@ export const OrganisationFetchValidator = {
   query: z.object({}).strict().optional(),
 }
 
-const OrganisationPollCreateCustomAdditionalQuestion = z
+const OrganisationPollCustomAdditionalQuestion = z
   .object({
     question: z.string(),
     isEnabled: z.boolean(),
   })
   .strict()
+
+export type OrganisationPollCustomAdditionalQuestion = z.infer<
+  typeof OrganisationPollCustomAdditionalQuestion
+>
+
+export const OrganisationPollCustomAdditionalQuestions = z.array(
+  OrganisationPollCustomAdditionalQuestion
+)
 
 const MAX_CUSTOM_ADDITIONAL_QUESTIONS = 4
 
@@ -135,7 +143,7 @@ const OrganisationPollCreateDto = z
       .optional()
       .nullable(),
     customAdditionalQuestions: z
-      .array(OrganisationPollCreateCustomAdditionalQuestion)
+      .array(OrganisationPollCustomAdditionalQuestion)
       .max(MAX_CUSTOM_ADDITIONAL_QUESTIONS)
       .optional()
       .nullable(),
@@ -157,6 +165,12 @@ const OrganisationPollUpdateDto = OrganisationPollCreateDto.partial()
 export type OrganisationPollUpdateDto = z.infer<
   typeof OrganisationPollUpdateDto
 >
+
+const OrganisationPollSimulationsDownloadQuery = z
+  .object({
+    jobId: z.string().optional(),
+  })
+  .strict()
 
 export const OrganisationPollUpdateValidator = {
   body: OrganisationPollUpdateDto,
@@ -180,6 +194,12 @@ export const OrganisationPollFetchValidator = {
   body: z.object({}).strict().optional(),
   params: OrganisationPollParams,
   query: z.object({}).strict().optional(),
+}
+
+export const OrganisationPollSimulationsDownloadValidator = {
+  body: z.object({}).strict().optional(),
+  params: OrganisationPollParams,
+  query: OrganisationPollSimulationsDownloadQuery,
 }
 
 export const OrganisationPublicPollFetchValidator = {

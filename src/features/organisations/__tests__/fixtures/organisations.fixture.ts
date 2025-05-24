@@ -47,6 +47,9 @@ export const FETCH_ORGANISATION_POLLS_ROUTE =
 export const FETCH_ORGANISATION_POLL_ROUTE =
   '/organisations/v1/:organisationIdOrSlug/polls/:pollIdOrSlug'
 
+export const DOWNLOAD_ORGANISATION_POLL_SIMULATIONS_RESULT_ROUTE =
+  '/organisations/v1/:organisationIdOrSlug/polls/:pollIdOrSlug/simulations/download'
+
 export const FETCH_ORGANISATION_PUBLIC_POLL_ROUTE =
   '/organisations/v1/:userId/public-polls/:pollIdOrSlug'
 
@@ -222,6 +225,32 @@ export const createOrganisationPollSimulation = async ({
   await EventBus.flush()
 
   resetMswServer()
+
+  return response.body
+}
+
+export const downloadOrganisationPollSimulationsResult = async ({
+  agent,
+  cookie,
+  pollId,
+  organisationId,
+}: {
+  agent: TestAgent
+  pollId: string
+  organisationId: string
+  cookie: string
+}) => {
+  const response = await agent
+    .get(
+      DOWNLOAD_ORGANISATION_POLL_SIMULATIONS_RESULT_ROUTE.replace(
+        ':organisationIdOrSlug',
+        organisationId
+      ).replace(':pollIdOrSlug', pollId)
+    )
+    .set('cookie', cookie)
+    .expect(StatusCodes.ACCEPTED)
+
+  await EventBus.flush()
 
   return response.body
 }
