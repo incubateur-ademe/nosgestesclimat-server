@@ -49,6 +49,7 @@ vi.mock('./src/adapters/prisma/client', () => ({
 }))
 vi.mock('./src/adapters/redis/client', () => ({
   redis,
+  redisClientFactory: () => redis,
 }))
 vi.mock('./src/features/authentication/authentication.service', async () => ({
   ...(await vi.importActual(
