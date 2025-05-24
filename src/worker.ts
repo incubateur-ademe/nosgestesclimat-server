@@ -1,4 +1,4 @@
-import { redis } from './adapters/redis/client'
+import { redisClientFactory } from './adapters/redis/client'
 import { CHANNELS } from './adapters/redis/constant'
 import { EventBus } from './core/event-bus/event-bus'
 import { JobCreatedAsyncEvent } from './features/jobs/events/JobCreated.event'
@@ -21,11 +21,13 @@ const parseMessage = (message: string) => {
   return new RedisApiEventMap[name as keyof typeof RedisApiEventMap](attributes)
 }
 
-redis.subscribe(CHANNELS.apiEvents, () => {
+const subscriber = redisClientFactory()
+
+subscriber.subscribe(CHANNELS.apiEvents, () => {
   console.log(`Worker listening  ${CHANNELS.apiEvents}`)
 })
 
-redis.on('message', async (_, message) => {
+subscriber.on('message', async (_, message) => {
   try {
     const event = parseMessage(message)
 
