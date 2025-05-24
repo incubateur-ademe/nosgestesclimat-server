@@ -10,6 +10,6 @@ services:
     volumes:
       - ./database:/docker-entrypoint-initdb.d/
   redis:
-    image: 'redis:7.4.2@sha256:93a8d83b707d0d6a1b9186edecca2e37f83722ae0e398aee4eea0ff17c2fad0e
+    image: 'redis:7.4.2@sha256:93a8d83b707d0d6a1b9186edecca2e37f83722ae0e398aee4eea0ff17c2fad0e'
     ports:
       - '6379:6379'
