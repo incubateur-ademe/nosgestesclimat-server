@@ -190,3 +190,12 @@ export const defaultEmailWhitelistSelection = {
   createdAt: true,
   updatedAt: true,
 }
+
+export const defaultJobSelection = {
+  id: true,
+  status: true,
+  params: true,
+  result: true,
+  createdAt: true,
+  updatedAt: true,
+}

@@ -44,7 +44,7 @@ export const login = async ({
 
   return {
     cookie,
-    userId,
     email,
+    userId,
   }
 }

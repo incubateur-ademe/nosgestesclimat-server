@@ -6,6 +6,7 @@ import type {
 import modelRules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
 import modelFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRules.json'
 import type { JsonValue } from '@prisma/client/runtime/library'
+import dayjs from 'dayjs'
 import type { Request } from 'express'
 import type Engine from 'publicodes'
 import { prisma } from '../../adapters/prisma/client'
@@ -13,13 +14,17 @@ import type { Session } from '../../adapters/prisma/transaction'
 import { transaction } from '../../adapters/prisma/transaction'
 import { redis } from '../../adapters/redis/client'
 import { KEYS } from '../../adapters/redis/constant'
+import { carbonMetric, waterMetric } from '../../constants/ngc'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
 import { ForbiddenException } from '../../core/errors/ForbiddenException'
 import { EventBus } from '../../core/event-bus/event-bus'
 import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError'
 import { PollUpdatedEvent } from '../organisations/events/PollUpdated.event'
 import { findOrganisationPublicPollBySlugOrId } from '../organisations/organisations.repository'
-import type { PublicPollParams } from '../organisations/organisations.validator'
+import type {
+  OrganisationPollCustomAdditionalQuestion,
+  PublicPollParams,
+} from '../organisations/organisations.validator'
 import type { UserParams } from '../users/users.validator'
 import type { SimulationAsyncEvent } from './events/SimulationUpserted.event'
 import { SimulationUpsertedEvent } from './events/SimulationUpserted.event'
@@ -364,4 +369,96 @@ export const getPollFunFacts = async (
       return [key, value]
     })
   ) as FunFacts
+}
+
+const EXCEL_ERROR = '#####'
+
+export const getPollSimulationsExcelData = async (
+  {
+    id,
+    customAdditionalQuestions,
+  }: {
+    id: string
+    customAdditionalQuestions: OrganisationPollCustomAdditionalQuestion[]
+  },
+  session: { session: Session }
+) => {
+  const data = []
+
+  for await (const { simulation } of batchPollSimulations(
+    {
+      id,
+      batchSize: 1000,
+      select: {
+        date: true,
+        computedResults: true,
+        additionalQuestionsAnswers: {
+          select: {
+            key: true,
+            answer: true,
+          },
+        },
+      },
+    },
+    session
+  )) {
+    const computedResults = ComputedResultSchema.safeParse(
+      simulation.computedResults
+    )
+
+    const line = {}
+
+    if (computedResults.error) {
+      Object.assign(line, {
+        date: dayjs(simulation.date).format('DD/MM/YYYY'),
+        'total carbone': EXCEL_ERROR,
+        'transport carbone': EXCEL_ERROR,
+        'alimentation carbone': EXCEL_ERROR,
+        'logement carbone': EXCEL_ERROR,
+        'divers carbone': EXCEL_ERROR,
+        'services sociétaux carbone': EXCEL_ERROR,
+        'total eau': EXCEL_ERROR,
+        'transport eau': EXCEL_ERROR,
+        'alimentation eau': EXCEL_ERROR,
+        'logement eau': EXCEL_ERROR,
+        'divers eau': EXCEL_ERROR,
+        'services sociétaux eau': EXCEL_ERROR,
+      })
+    } else {
+      const carbon = computedResults.data[carbonMetric]
+      const water = computedResults.data[waterMetric]
+      Object.assign(line, {
+        date: dayjs(simulation.date).format('DD/MM/YYYY'),
+        'total carbone': Math.round(carbon.bilan),
+        'transport carbone': Math.round(carbon.categories.transport),
+        'alimentation carbone': Math.round(carbon.categories.alimentation),
+        'logement carbone': Math.round(carbon.categories.logement),
+        'divers carbone': Math.round(carbon.categories.divers),
+        'services sociétaux carbone': Math.round(
+          carbon.categories['services sociétaux']
+        ),
+        'total eau': Math.round(water.bilan),
+        'transport eau': Math.round(water.categories.transport),
+        'alimentation eau': Math.round(water.categories.alimentation),
+        'logement eau': Math.round(water.categories.logement),
+        'divers caeau': Math.round(water.categories.divers),
+        'services sociétaux eau': Math.round(
+          water.categories['services sociétaux']
+        ),
+      })
+    }
+
+    customAdditionalQuestions.forEach(({ question }) =>
+      Object.assign(line, {
+        [question]:
+          simulation.additionalQuestionsAnswers.find(
+            ({ key }) => key === question
+          )?.answer ?? '',
+      })
+    )
+
+    data.push(line)
+  }
+
+  return data
 }
