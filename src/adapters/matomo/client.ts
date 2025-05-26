@@ -20,8 +20,16 @@ export const ReferrerKind = {
 
 export const MatomoActions = {
   firstAnswer: 'Simulation First answer',
-  finishedSimulations: 'Simulation Completed',
+  finishedSimulations: ['A terminé la simulation', 'Simulation Completed'],
 } as const
+
+export const MatomoActionsSet: Record<
+  keyof typeof MatomoActions,
+  Set<string>
+> = {
+  firstAnswer: new Set(MatomoActions.firstAnswer),
+  finishedSimulations: new Set(MatomoActions.finishedSimulations),
+}
 
 const ReferrerBaseSchema = z
   .object({
@@ -177,7 +185,9 @@ export const matomoClientFactory = (client: AxiosInstance) => {
           method: 'Events.getAction',
           'label[]': [
             encodeURIComponent(MatomoActions.firstAnswer),
-            encodeURIComponent(MatomoActions.finishedSimulations),
+            ...MatomoActions.finishedSimulations.map((action) =>
+              encodeURIComponent(action)
+            ),
           ],
           period: 'day',
           date,
@@ -188,12 +198,13 @@ export const matomoClientFactory = (client: AxiosInstance) => {
       const actions = z.array(DayActionSchema).parse(data)
 
       const firstAnswer = +(
-        actions.find(({ label }) => label === MatomoActions.firstAnswer)
+        actions.find(({ label }) => MatomoActionsSet.firstAnswer.has(label))
           ?.nb_visits || '0'
       )
       const finishedSimulations = +(
-        actions.find(({ label }) => label === MatomoActions.finishedSimulations)
-          ?.nb_visits || '0'
+        actions.find(({ label }) =>
+          MatomoActionsSet.finishedSimulations.has(label)
+        )?.nb_visits || '0'
       )
 
       return { firstAnswer, finishedSimulations }
