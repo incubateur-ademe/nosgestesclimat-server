@@ -19,7 +19,7 @@ export const ReferrerKind = {
 } as const
 
 export const MatomoActions = {
-  firstAnswer: 'Simulation First answer',
+  firstAnswer: ['1ère réponse au bilan', 'Simulation First answer'],
   finishedSimulations: ['A terminé la simulation', 'Simulation Completed'],
 } as const
 
@@ -113,8 +113,7 @@ const getFullSegments = ({
     segment += segment ? ';' : ''
 
     return MatomoIframeVisits.map(
-      (visitKind) =>
-        `${segment}eventCategory==Misc;eventAction==${encodeURIComponent(visitKind)}`
+      (visitKind) => `${segment}eventAction==${encodeURIComponent(visitKind)}`
     )
   }
 
@@ -254,7 +253,9 @@ export const matomoClientFactory = (client: AxiosInstance) => {
             params: {
               method: 'Events.getAction',
               'label[]': [
-                encodeURIComponent(MatomoActions.firstAnswer),
+                ...MatomoActions.firstAnswer.map((action) =>
+                  encodeURIComponent(action)
+                ),
                 ...MatomoActions.finishedSimulations.map((action) =>
                   encodeURIComponent(action)
                 ),
