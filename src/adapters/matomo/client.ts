@@ -19,9 +19,24 @@ export const ReferrerKind = {
 } as const
 
 export const MatomoActions = {
-  firstAnswer: 'Simulation First answer',
-  finishedSimulations: 'Simulation Completed',
+  firstAnswer: ['1ère réponse au bilan', 'Simulation First answer'],
+  finishedSimulations: ['A terminé la simulation', 'Simulation Completed'],
 } as const
+
+export const MatomoActionsSet: Record<
+  keyof typeof MatomoActions,
+  Set<string>
+> = {
+  firstAnswer: new Set(MatomoActions.firstAnswer),
+  finishedSimulations: new Set(MatomoActions.finishedSimulations),
+}
+
+export const MatomoIframeVisits = [
+  'visites via iframe',
+  'Iframe visit',
+] as const
+
+export const MatomoIframeVisitsSet = new Set<string>(MatomoIframeVisits)
 
 const ReferrerBaseSchema = z
   .object({
@@ -67,9 +82,9 @@ export type DayVisitSchema = z.infer<typeof DayVisitSchema>
 const DayActionSchema = z.object({
   label: z.string(),
   nb_uniq_visitors: z.number(),
-  nb_visits: z.string(),
-  nb_events: z.string(),
-  nb_events_with_value: z.string(),
+  nb_visits: z.union([z.string(), z.number()]),
+  nb_events: z.union([z.string(), z.number()]),
+  nb_events_with_value: z.union([z.string(), z.number()]),
   sum_event_value: z.number(),
   min_event_value: z.number().nullable(),
   max_event_value: z.number().nullable(),
@@ -80,7 +95,7 @@ const DayActionSchema = z.object({
 
 export type DayActionSchema = z.infer<typeof DayActionSchema>
 
-const getFullSegment = ({
+const getFullSegments = ({
   iframe,
   device,
   segment = '',
@@ -96,10 +111,13 @@ const getFullSegment = ({
 
   if (iframe) {
     segment += segment ? ';' : ''
-    segment += `eventCategory==Misc;eventAction==${encodeURIComponent('Iframe visit')}`
+
+    return MatomoIframeVisits.map(
+      (visitKind) => `${segment}eventAction==${encodeURIComponent(visitKind)}`
+    )
   }
 
-  return segment
+  return [segment]
 }
 
 export const matomoClientFactory = (client: AxiosInstance) => {
@@ -148,18 +166,75 @@ export const matomoClientFactory = (client: AxiosInstance) => {
         iframe?: boolean
       }
     ) {
-      const segment = getFullSegment(params)
+      let segments = getFullSegments(params)
 
-      const { data } = await client('/', {
-        params: {
-          method: 'VisitsSummary.getVisits',
-          date,
-          period: 'day',
-          ...(segment ? { segment } : {}),
-        },
-      })
+      const segmentsData = await Promise.all(
+        segments.map(async (segment) => {
+          const { data } = await client('/', {
+            params: {
+              method: 'VisitsSummary.getVisits',
+              date,
+              period: 'day',
+              ...(segment ? { segment } : {}),
+            },
+          })
 
-      return DayVisitSchema.parse(data)
+          return data
+        })
+      )
+
+      const dayVisits = z
+        .array(DayVisitSchema)
+        .parse(segmentsData)
+        .reduce(
+          (acc, { value }) => {
+            acc.value += value
+            return acc
+          },
+          { value: 0 }
+        )
+
+      if (params?.iframe && dayVisits.value === 0) {
+        segments = getFullSegments({
+          ...params,
+          iframe: false,
+        })
+
+        const segmentsData = await Promise.all(
+          segments.map(async (segment) => {
+            const { data } = await client('/', {
+              params: {
+                method: 'Events.getAction',
+                date,
+                period: 'day',
+                'label[]': MatomoIframeVisits.map((visitKind) =>
+                  encodeURIComponent(visitKind)
+                ),
+                ...(segment
+                  ? {
+                      segment,
+                    }
+                  : {}),
+              },
+            })
+
+            return data
+          })
+        )
+
+        segmentsData.forEach((actions) =>
+          z
+            .array(DayActionSchema)
+            .parse(actions)
+            .forEach(({ label, nb_visits }) => {
+              if (MatomoIframeVisitsSet.has(label)) {
+                dayVisits.value += +nb_visits || 0
+              }
+            })
+        )
+      }
+
+      return dayVisits
     },
 
     async getDayActions(
@@ -170,30 +245,47 @@ export const matomoClientFactory = (client: AxiosInstance) => {
         iframe?: boolean
       }
     ) {
-      const segment = getFullSegment(params)
+      const segments = getFullSegments(params)
 
-      const { data } = await client('/', {
-        params: {
-          method: 'Events.getAction',
-          'label[]': [
-            encodeURIComponent(MatomoActions.firstAnswer),
-            encodeURIComponent(MatomoActions.finishedSimulations),
-          ],
-          period: 'day',
-          date,
-          ...(segment ? { segment } : {}),
-        },
-      })
+      const segmentsData = await Promise.all(
+        segments.map(async (segment) => {
+          const { data } = await client('/', {
+            params: {
+              method: 'Events.getAction',
+              'label[]': [
+                ...MatomoActions.firstAnswer.map((action) =>
+                  encodeURIComponent(action)
+                ),
+                ...MatomoActions.finishedSimulations.map((action) =>
+                  encodeURIComponent(action)
+                ),
+              ],
+              period: 'day',
+              date,
+              ...(segment ? { segment } : {}),
+            },
+          })
 
-      const actions = z.array(DayActionSchema).parse(data)
-
-      const firstAnswer = +(
-        actions.find(({ label }) => label === MatomoActions.firstAnswer)
-          ?.nb_visits || '0'
+          return data
+        })
       )
-      const finishedSimulations = +(
-        actions.find(({ label }) => label === MatomoActions.finishedSimulations)
-          ?.nb_visits || '0'
+
+      let firstAnswer = 0
+      let finishedSimulations = 0
+
+      segmentsData.forEach((actions) =>
+        z
+          .array(DayActionSchema)
+          .parse(actions)
+          .forEach(({ label, nb_visits }) => {
+            if (MatomoActionsSet.firstAnswer.has(label)) {
+              firstAnswer += +nb_visits || 0
+            }
+
+            if (MatomoActionsSet.finishedSimulations.has(label)) {
+              finishedSimulations += +nb_visits || 0
+            }
+          })
       )
 
       return { firstAnswer, finishedSimulations }

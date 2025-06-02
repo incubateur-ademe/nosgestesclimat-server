@@ -29,6 +29,7 @@ const recoverIframeDayStats = async ({
   iframe,
   segment,
   referrer,
+  nbVisits,
 }: RecoverIframeDayStats) => {
   const client = clients[source]
   const filterParams = {
@@ -41,6 +42,15 @@ const recoverIframeDayStats = async ({
     client.getDayVisits(date, filterParams),
     client.getDayActions(date, filterParams),
   ])
+
+  if (
+    visits.value === 0 &&
+    typeof nbVisits === 'number' &&
+    iframe === false &&
+    !device
+  ) {
+    visits.value = nbVisits
+  }
 
   await upsertStat(
     {
@@ -77,9 +87,19 @@ const recoverDeviceDayStats = (params: RecoverDeviceDayStats) => {
 
 type RecoverReferrerDayStats = BaseParams &
   (
-    | { kind: MatomoStatsKind; segment: string; referrer: string }
-    | { kind: MatomoStatsKind; segment: string; referrer: null }
-    | { kind: null; segment?: undefined; referrer: null }
+    | {
+        kind: MatomoStatsKind
+        segment: string
+        referrer: string
+        nbVisits: number
+      }
+    | {
+        kind: MatomoStatsKind
+        segment: string
+        referrer: null
+        nbVisits?: undefined
+      }
+    | { kind: null; segment?: undefined; referrer: null; nbVisits?: undefined }
   )
 
 const recoverReferrerDayStats = (params: RecoverReferrerDayStats) =>
@@ -116,6 +136,7 @@ const recoverKindDayStats = async (params: RecoverKindDayStats) => {
             ? {
                 referrer: referrerWebsite.label,
                 segment: referrerWebsite.segment,
+                nbVisits: referrerWebsite.nb_visits,
               }
             : { referrer: null }),
         })
@@ -135,6 +156,7 @@ const recoverKindDayStats = async (params: RecoverKindDayStats) => {
             ? {
                 referrer: referrerCampaign.label,
                 segment: referrerCampaign.segment,
+                nbVisits: referrerCampaign.nb_visits,
               }
             : { referrer: null }),
         })
