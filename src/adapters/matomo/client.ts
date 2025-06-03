@@ -1,6 +1,7 @@
 import { MatomoStatsDevice, MatomoStatsKind } from '@prisma/client'
 import type { AxiosInstance } from 'axios'
 import { z } from 'zod'
+import logger from '../../logger'
 
 export const ReferrerType = {
   [MatomoStatsKind.direct]: 1,
@@ -86,7 +87,7 @@ const DayActionSchema = z.object({
   nb_events: z.union([z.string(), z.number()]),
   nb_events_with_value: z.union([z.string(), z.number()]),
   sum_event_value: z.number(),
-  min_event_value: z.number().nullable(),
+  min_event_value: z.union([z.number(), z.boolean()]).nullable(),
   max_event_value: z.number().nullable(),
   avg_event_value: z.number(),
   segment: z.string(),
@@ -168,31 +169,30 @@ export const matomoClientFactory = (client: AxiosInstance) => {
     ) {
       let segments = getFullSegments(params)
 
-      const segmentsData = await Promise.all(
-        segments.map(async (segment) => {
-          const { data } = await client('/', {
-            params: {
-              method: 'VisitsSummary.getVisits',
-              date,
-              period: 'day',
-              ...(segment ? { segment } : {}),
-            },
-          })
+      const dayVisits = { value: 0 }
 
-          return data
-        })
-      )
-
-      const dayVisits = z
-        .array(DayVisitSchema)
-        .parse(segmentsData)
-        .reduce(
-          (acc, { value }) => {
-            acc.value += value
-            return acc
+      for (const segment of segments) {
+        const { data } = await client('/', {
+          params: {
+            method: 'VisitsSummary.getVisits',
+            date,
+            period: 'day',
+            ...(segment ? { segment } : {}),
           },
-          { value: 0 }
-        )
+        })
+
+        const { success, data: safeData } = DayVisitSchema.safeParse(data)
+
+        if (success) {
+          dayVisits.value += safeData.value
+        } else {
+          logger.warn('getDayVisits(): Got invalid DayVisit data', {
+            date,
+            params,
+            data,
+          })
+        }
+      }
 
       if (params?.iframe && dayVisits.value === 0) {
         segments = getFullSegments({
@@ -200,38 +200,41 @@ export const matomoClientFactory = (client: AxiosInstance) => {
           iframe: false,
         })
 
-        const segmentsData = await Promise.all(
-          segments.map(async (segment) => {
-            const { data } = await client('/', {
-              params: {
-                method: 'Events.getAction',
-                date,
-                period: 'day',
-                'label[]': MatomoIframeVisits.map((visitKind) =>
-                  encodeURIComponent(visitKind)
-                ),
-                ...(segment
-                  ? {
-                      segment,
-                    }
-                  : {}),
-              },
-            })
-
-            return data
+        for (const segment of segments) {
+          const { data } = await client('/', {
+            params: {
+              method: 'Events.getAction',
+              date,
+              period: 'day',
+              'label[]': MatomoIframeVisits.map((visitKind) =>
+                encodeURIComponent(visitKind)
+              ),
+              ...(segment
+                ? {
+                    segment,
+                  }
+                : {}),
+            },
           })
-        )
 
-        segmentsData.forEach((actions) =>
-          z
+          const { success, data: safeData } = z
             .array(DayActionSchema)
-            .parse(actions)
-            .forEach(({ label, nb_visits }) => {
+            .safeParse(data)
+
+          if (success) {
+            safeData.forEach(({ label, nb_visits }) => {
               if (MatomoIframeVisitsSet.has(label)) {
                 dayVisits.value += +nb_visits || 0
               }
             })
-        )
+          } else {
+            logger.warn('getDayVisits(): Got invalid DayAction data', {
+              date,
+              params,
+              data,
+            })
+          }
+        }
       }
 
       return dayVisits
@@ -247,37 +250,33 @@ export const matomoClientFactory = (client: AxiosInstance) => {
     ) {
       const segments = getFullSegments(params)
 
-      const segmentsData = await Promise.all(
-        segments.map(async (segment) => {
-          const { data } = await client('/', {
-            params: {
-              method: 'Events.getAction',
-              'label[]': [
-                ...MatomoActions.firstAnswer.map((action) =>
-                  encodeURIComponent(action)
-                ),
-                ...MatomoActions.finishedSimulations.map((action) =>
-                  encodeURIComponent(action)
-                ),
-              ],
-              period: 'day',
-              date,
-              ...(segment ? { segment } : {}),
-            },
-          })
-
-          return data
-        })
-      )
-
       let firstAnswer = 0
       let finishedSimulations = 0
 
-      segmentsData.forEach((actions) =>
-        z
+      for (const segment of segments) {
+        const { data } = await client('/', {
+          params: {
+            method: 'Events.getAction',
+            'label[]': [
+              ...MatomoActions.firstAnswer.map((action) =>
+                encodeURIComponent(action)
+              ),
+              ...MatomoActions.finishedSimulations.map((action) =>
+                encodeURIComponent(action)
+              ),
+            ],
+            period: 'day',
+            date,
+            ...(segment ? { segment } : {}),
+          },
+        })
+
+        const { success, data: safeData } = z
           .array(DayActionSchema)
-          .parse(actions)
-          .forEach(({ label, nb_visits }) => {
+          .safeParse(data)
+
+        if (success) {
+          safeData.forEach(({ label, nb_visits }) => {
             if (MatomoActionsSet.firstAnswer.has(label)) {
               firstAnswer += +nb_visits || 0
             }
@@ -286,7 +285,14 @@ export const matomoClientFactory = (client: AxiosInstance) => {
               finishedSimulations += +nb_visits || 0
             }
           })
-      )
+        } else {
+          logger.warn('getDayActions(): Got invalid DayAction data', {
+            date,
+            params,
+            data,
+          })
+        }
+      }
 
       return { firstAnswer, finishedSimulations }
     },
