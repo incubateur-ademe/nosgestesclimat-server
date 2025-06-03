@@ -3,6 +3,10 @@
     {
       "command": "0 0 * * * yarn jobs:computePollStats",
       "size": "M"
+    },
+    {
+      "command": "0 1 * * * yarn jobs:recoverMatomoStats",
+      "size": "M"
     }
   ]
 }

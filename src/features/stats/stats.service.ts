@@ -3,6 +3,7 @@ import {
   MatomoStatsKind,
   MatomoStatsSource,
 } from '@prisma/client'
+import { isAxiosError } from 'axios'
 import dayjs from 'dayjs'
 import { clients } from '../../adapters/matomo'
 import { ReferrerKind } from '../../adapters/matomo/client'
@@ -203,6 +204,16 @@ export const recoverDayStats = async (date: string) => {
       )
     )
   } catch (err) {
-    logger.error(`Stats ${dayjs(date).format('DD/MM/YYYY')} import failed`, err)
+    logger.error(
+      `Stats ${dayjs(date).format('DD/MM/YYYY')} import failed`,
+      isAxiosError(err)
+        ? {
+            code: err.code,
+            message: err.message,
+            stack: err.stack,
+            status: err.status,
+          }
+        : err
+    )
   }
 }
