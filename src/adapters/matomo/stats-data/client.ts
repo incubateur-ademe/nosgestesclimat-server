@@ -13,7 +13,7 @@ export const matomo = axios.create({
     module: 'API',
     token_auth: token,
   },
-  timeout: 5000,
+  timeout: 60000,
 })
 
 axiosRetry(matomo, {
