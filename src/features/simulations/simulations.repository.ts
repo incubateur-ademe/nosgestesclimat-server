@@ -100,6 +100,8 @@ export const createParticipantSimulation = async <
     ...(!!additionalQuestionsAnswers?.length
       ? {
           additionalQuestionsAnswers: {
+            // Reset the state to avoid duplicates
+            deleteMany: {},
             createMany: {
               data: additionalQuestionsAnswers.map(({ type, key, answer }) => ({
                 type,
