@@ -255,7 +255,7 @@ describe('Given a NGC user', () => {
         })
       })
 
-      describe.only('And updating it', () => {
+      describe('And updating it', () => {
         let userId: string
         let payload: SimulationCreateInputDto
 
