@@ -33,7 +33,11 @@ export const exec = async ({ redis }: { redis: Redis }) => {
       throw new Error('REST_COUNTRIES_URL is required')
     }
 
-    const { data } = await axios.get(restCountriesUrl)
+    const { data } = await axios.get(restCountriesUrl, {
+      params: {
+        fields: ['name', 'cca2', 'region'].join(','),
+      },
+    })
 
     const countries = RestCountriesValidator.parse(data)
 
