@@ -23,6 +23,8 @@ import {
   getRandomTestCase,
 } from './fixtures/simulations.fixtures'
 
+const defaultModelVersion = modelVersion.match(/^(\d+\.\d+\.\d+)/)!.pop()
+
 describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = CREATE_SIMULATION_ROUTE
@@ -127,7 +129,7 @@ describe('Given a NGC user', () => {
         const userId = faker.string.uuid()
         const payload: SimulationCreateInputDto = {
           id: faker.string.uuid(),
-          model: `FR-fr-${modelVersion}`,
+          model: `FR-fr-${defaultModelVersion}`,
           situation,
           computedResults,
           progression: 1,
@@ -263,7 +265,7 @@ describe('Given a NGC user', () => {
           userId = faker.string.uuid()
           payload = {
             id: faker.string.uuid(),
-            model: `FR-fr-${modelVersion}`,
+            model: `FR-fr-${defaultModelVersion}`,
             situation,
             computedResults,
             progression: 1,
