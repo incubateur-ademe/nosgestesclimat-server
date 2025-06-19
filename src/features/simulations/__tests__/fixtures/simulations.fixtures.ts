@@ -34,6 +34,8 @@ export const FETCH_USER_SIMULATIONS_ROUTE = '/simulations/v1/:userId'
 export const FETCH_USER_SIMULATION_ROUTE =
   '/simulations/v1/:userId/:simulationId'
 
+const defaultModelVersion = modelVersion.match(/^(\d+\.\d+\.\d+)/)!.pop()
+
 const engine = new Engine(rules, {
   logger: {
     log: () => null,
@@ -188,7 +190,7 @@ export const getSimulationPayload = ({
   situation = situation || getRandomPersonaSituation()
   computedResults =
     computedResults || getComputedResults(SituationSchema.parse(situation))
-  model = model || `FR-fr-${modelVersion}`
+  model = model || `FR-fr-${defaultModelVersion}`
 
   return {
     id: id || faker.string.uuid(),
