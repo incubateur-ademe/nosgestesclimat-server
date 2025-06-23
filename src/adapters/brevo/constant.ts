@@ -35,15 +35,17 @@ export enum Attributes {
   OPT_IN = 'OPT_IN',
 }
 
-export enum ListIds {
-  MAIN_NEWSLETTER = 22,
-  ORGANISATIONS = 27,
-  GROUP_CREATED = 29,
-  GROUP_JOINED = 30,
-  TRANSPORT_NEWSLETTER = 32,
-  LOGEMENT_NEWSLETTER = 36,
-  UNFINISHED_SIMULATION = 35,
-}
+export const ListIds = {
+  MAIN_NEWSLETTER: 22,
+  ORGANISATIONS: 27,
+  GROUP_CREATED: 29,
+  GROUP_JOINED: 30,
+  TRANSPORT_NEWSLETTER: 32,
+  LOGEMENT_NEWSLETTER: 36,
+  UNFINISHED_SIMULATION: 35,
+} as const
+
+export type ListIds = ValueOf<typeof ListIds>
 
 export const AllNewsletters = [
   ListIds.MAIN_NEWSLETTER,
