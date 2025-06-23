@@ -19,6 +19,7 @@
     "generateEnvDeclaration": "yarn run-script scripts/generateEnvDeclaration.ts",
     "jobs:computePollStats": "node dist/src/jobs/compute-poll-stats.js",
     "jobs:recoverMatomoStats": "node dist/src/jobs/recover-matomo-stats.js",
+    "jobs:recoverNewsletterStats": "node dist/src/jobs/recover-newsletter-stats.js",
     "lint": "prettier --check \"**/*.{js,ts,md,json}\" && eslint . --ext .js,.ts",
     "run-script": "ts-node --project tsconfig.json",
     "prestart": "yarn db:doc",
