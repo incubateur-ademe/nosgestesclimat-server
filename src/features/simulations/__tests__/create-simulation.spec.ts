@@ -23,6 +23,8 @@ import {
   getRandomTestCase,
 } from './fixtures/simulations.fixtures'
 
+const defaultModelVersion = modelVersion.match(/^(\d+\.\d+\.\d+)/)!.pop()
+
 describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = CREATE_SIMULATION_ROUTE
@@ -127,7 +129,7 @@ describe('Given a NGC user', () => {
         const userId = faker.string.uuid()
         const payload: SimulationCreateInputDto = {
           id: faker.string.uuid(),
-          model: `FR-fr-${modelVersion}`,
+          model: `FR-fr-${defaultModelVersion}`,
           situation,
           computedResults,
           progression: 1,
@@ -255,6 +257,61 @@ describe('Given a NGC user', () => {
         })
       })
 
+      describe('And updating it', () => {
+        let userId: string
+        let payload: SimulationCreateInputDto
+
+        beforeEach(async () => {
+          userId = faker.string.uuid()
+          payload = {
+            id: faker.string.uuid(),
+            model: `FR-fr-${defaultModelVersion}`,
+            situation,
+            computedResults,
+            progression: 1,
+            additionalQuestionsAnswers: [
+              {
+                type: SimulationAdditionalQuestionAnswerType.default,
+                key: PollDefaultAdditionalQuestionType.birthdate,
+                answer: '1970-01-01',
+              },
+              {
+                type: SimulationAdditionalQuestionAnswerType.default,
+                key: PollDefaultAdditionalQuestionType.postalCode,
+                answer: '00001',
+              },
+            ],
+          }
+
+          await agent
+            .post(url.replace(':userId', userId))
+            .send(payload)
+            .expect(StatusCodes.CREATED)
+        })
+
+        test(`Then it returns ${StatusCodes.OK} response with updated simulation`, async () => {
+          const response = await agent
+            .post(url.replace(':userId', userId))
+            .send(payload)
+            .expect(StatusCodes.CREATED)
+
+          expect(response.body).toEqual({
+            ...payload,
+            date: expect.any(String),
+            savedViaEmail: false,
+            createdAt: expect.any(String),
+            updatedAt: expect.any(String),
+            actionChoices: {},
+            foldedSteps: [],
+            polls: [],
+            user: {
+              id: userId,
+              email: null,
+              name: null,
+            },
+          })
+        })
+      })
       describe('And leaving his/her email', () => {
         describe('And simulation finished', () => {
           test('Then it adds or updates contact in brevo', async () => {

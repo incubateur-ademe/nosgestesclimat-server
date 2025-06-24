@@ -100,6 +100,13 @@ export const createParticipantSimulation = async <
     ...(!!additionalQuestionsAnswers?.length
       ? {
           additionalQuestionsAnswers: {
+            ...(!!existingSimulation
+              ? {
+                  deleteMany: {
+                    simulationId: id,
+                  },
+                }
+              : {}),
             createMany: {
               data: additionalQuestionsAnswers.map(({ type, key, answer }) => ({
                 type,
