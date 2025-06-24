@@ -29,6 +29,16 @@ model Answer {
   @@schema("ngc")
 }
 
+model BrevoNewsletterStats {
+  id            String   @id @default(uuid()) @db.Uuid
+  date          DateTime @db.Date
+  newsletter    Int
+  subscriptions Int      @db.Integer
+
+  @@unique([date, newsletter])
+  @@schema("ngc")
+}
+
 model EmailSimulation {
   id        String   @id @default(cuid())
   data      Json

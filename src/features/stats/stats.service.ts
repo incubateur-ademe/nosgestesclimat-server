@@ -5,11 +5,14 @@ import {
 } from '@prisma/client'
 import { isAxiosError } from 'axios'
 import dayjs from 'dayjs'
+import { fetchNewsletter } from '../../adapters/brevo/client'
+import { ListIds } from '../../adapters/brevo/constant'
 import { clients } from '../../adapters/matomo'
 import { ReferrerKind } from '../../adapters/matomo/client'
 import { prisma } from '../../adapters/prisma/client'
+import { isPrismaErrorUniqueConstraintFailed } from '../../core/typeguards/isPrismaError'
 import logger from '../../logger'
-import { upsertStat } from './stats.repository'
+import { createNewsLetterStats, upsertStat } from './stats.repository'
 
 const NB_VISITS_MIN = 10
 
@@ -206,6 +209,46 @@ export const recoverDayStats = async (date: string) => {
   } catch (err) {
     logger.error(
       `Stats ${dayjs(date).format('DD/MM/YYYY')} import failed`,
+      isAxiosError(err)
+        ? {
+            code: err.code,
+            message: err.message,
+            stack: err.stack,
+            status: err.status,
+          }
+        : err
+    )
+  }
+}
+
+export const recoverNewsletterSubscriptions = async (date: string) => {
+  try {
+    for (const listId of Object.values(ListIds)) {
+      try {
+        const {
+          data: { totalSubscribers },
+        } = await fetchNewsletter(listId)
+
+        await createNewsLetterStats(
+          {
+            listId,
+            subscriptions: totalSubscribers,
+            date: new Date(`${date}T00:00:00.000Z`),
+          },
+          { session: prisma }
+        )
+      } catch (err) {
+        if (!isPrismaErrorUniqueConstraintFailed(err)) {
+          throw err
+        }
+        logger.warn(
+          `Newsletter ${listId} ${dayjs(date).format('DD/MM/YYYY')} ignored. Value already exists, script is not idempotent`
+        )
+      }
+    }
+  } catch (err) {
+    logger.error(
+      `Newsletter ${dayjs(date).format('DD/MM/YYYY')} import failed`,
       isAxiosError(err)
         ? {
             code: err.code,

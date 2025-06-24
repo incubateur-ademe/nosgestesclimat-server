@@ -47,9 +47,9 @@ const getNewsletterMutation = ({
   previousContact?: BrevoContact
   wantedNewsletters?: ListIds[]
 }) => {
-  const newslettersToSubscribe = new Set<ListIds>()
-  const newslettersToUnsubscribe = new Set<ListIds>()
-  const subscribedNewsletters = new Set(
+  const newslettersToSubscribe = new Set<number>()
+  const newslettersToUnsubscribe = new Set<number>()
+  const subscribedNewsletters = new Set<number>(
     previousContact ? previousContact.listIds : contact?.listIds || []
   )
   let shouldVerifyEmail =
