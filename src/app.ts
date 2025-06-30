@@ -6,6 +6,7 @@ import requestIp from 'request-ip'
 import { createExpressEndpoints } from '@ts-rest/express'
 import { generateOpenApi } from '@ts-rest/open-api'
 import cors from 'cors'
+import path from 'path'
 import swaggerUi from 'swagger-ui-express'
 import { origin } from './config'
 import authenticationController from './features/authentication/authentication.controller'
@@ -28,6 +29,7 @@ import statsRoute from './routes/stats/statsRoute'
 
 const app = express()
 
+app.use(express.static(path.join(__dirname, 'public')))
 app.use(express.json())
 
 app.use((req, _, next) => {
