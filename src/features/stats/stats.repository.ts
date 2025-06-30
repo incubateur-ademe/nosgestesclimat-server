@@ -3,6 +3,7 @@ import type {
   MatomoStatsKind,
   MatomoStatsSource,
 } from '@prisma/client'
+import type { ListIds } from '../../adapters/brevo/constant'
 import type { Session } from '../../adapters/prisma/transaction'
 
 export const upsertStat = (
@@ -55,6 +56,23 @@ export const upsertStat = (
       visits,
       firstAnswer,
       finishedSimulations,
+    },
+  })
+}
+
+export const createNewsLetterStats = (
+  {
+    listId,
+    subscriptions,
+    date,
+  }: { listId: ListIds; subscriptions: number; date: Date },
+  { session }: { session: Session }
+) => {
+  return session.brevoNewsletterStats.create({
+    data: {
+      date,
+      newsletter: listId,
+      subscriptions,
     },
   })
 }
