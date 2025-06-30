@@ -248,23 +248,6 @@ export const createPollUserSimulation = async (
   }
 }
 
-export const getIncompleteSimulationsCount = (
-  user: {
-    userId: string
-    userEmail: string
-  },
-  { session }: { session: Session }
-) => {
-  return session.simulation.count({
-    where: {
-      ...user,
-      progression: {
-        lt: 1,
-      },
-    },
-  })
-}
-
 export const countOrganisationPublicPollSimulations = (
   {
     id,

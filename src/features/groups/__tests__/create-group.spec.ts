@@ -3,7 +3,6 @@ import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import {
-  brevoRemoveFromList,
   brevoSendEmail,
   brevoUpdateContact,
 } from '../../../adapters/brevo/__tests__/fixtures/server.fixture'
@@ -396,11 +395,7 @@ describe('Given a NGC user', () => {
           ],
         }
 
-        mswServer.use(
-          brevoSendEmail(),
-          brevoUpdateContact(),
-          brevoRemoveFromList(35)
-        )
+        mswServer.use(brevoSendEmail(), brevoUpdateContact())
 
         const {
           body: { id },
@@ -490,11 +485,6 @@ describe('Given a NGC user', () => {
             brevoSendEmail(),
             brevoUpdateContact({
               storeBodies: contactBodies,
-            }),
-            brevoRemoveFromList(35, {
-              expectBody: {
-                emails: [email],
-              },
             })
           )
 
@@ -615,8 +605,7 @@ describe('Given a NGC user', () => {
                 },
               },
             }),
-            brevoUpdateContact(),
-            brevoRemoveFromList(35)
+            brevoUpdateContact()
           )
 
           await agent.post(url).send(payload).expect(StatusCodes.CREATED)
@@ -677,8 +666,7 @@ describe('Given a NGC user', () => {
                   },
                 },
               }),
-              brevoUpdateContact(),
-              brevoRemoveFromList(35)
+              brevoUpdateContact()
             )
 
             await agent

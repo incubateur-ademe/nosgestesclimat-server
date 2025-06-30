@@ -318,10 +318,7 @@ describe('Given a NGC user', () => {
                     attributes: {
                       USER_ID: userId,
                     },
-                    listIds: [
-                      ListIds.UNFINISHED_SIMULATION,
-                      ListIds.MAIN_NEWSLETTER,
-                    ],
+                    listIds: [ListIds.MAIN_NEWSLETTER],
                   }),
                 },
               ],
@@ -339,10 +336,7 @@ describe('Given a NGC user', () => {
                   PRENOM: null,
                 },
                 updateEnabled: true,
-                listIds: expect.arrayContaining([
-                  ListIds.UNFINISHED_SIMULATION,
-                  ListIds.LOGEMENT_NEWSLETTER,
-                ]),
+                listIds: expect.arrayContaining([ListIds.LOGEMENT_NEWSLETTER]),
               },
             })
           )

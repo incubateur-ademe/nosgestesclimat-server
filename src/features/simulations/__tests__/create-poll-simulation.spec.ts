@@ -283,8 +283,7 @@ describe('Given a NGC user', () => {
           mswServer.use(
             brevoSendEmail(),
             brevoUpdateContact(),
-            brevoRemoveFromList(27),
-            brevoRemoveFromList(35)
+            brevoRemoveFromList(27)
           )
 
           const {
@@ -503,8 +502,7 @@ describe('Given a NGC user', () => {
               brevoUpdateContact({
                 storeBodies: contactBodies,
               }),
-              brevoRemoveFromList(27),
-              brevoRemoveFromList(35)
+              brevoRemoveFromList(27)
             )
 
             await agent
@@ -606,8 +604,7 @@ describe('Given a NGC user', () => {
                 },
               }),
               brevoUpdateContact(),
-              brevoRemoveFromList(27),
-              brevoRemoveFromList(35)
+              brevoRemoveFromList(27)
             )
 
             await agent
@@ -695,8 +692,7 @@ describe('Given a NGC user', () => {
                   },
                 }),
                 brevoUpdateContact(),
-                brevoRemoveFromList(27),
-                brevoRemoveFromList(35)
+                brevoRemoveFromList(27)
               )
 
               await agent
@@ -740,11 +736,7 @@ describe('Given a NGC user', () => {
               } = simulation
               const { id: _4, name: _5, ...userPayload } = user
 
-              mswServer.use(
-                brevoUpdateContact(),
-                brevoRemoveFromList(27),
-                brevoRemoveFromList(35)
-              )
+              mswServer.use(brevoUpdateContact(), brevoRemoveFromList(27))
 
               await agent
                 .post(
@@ -772,11 +764,7 @@ describe('Given a NGC user', () => {
                 } = simulation
                 const { id: _4, name: _5, ...userPayload } = user
 
-                mswServer.use(
-                  brevoUpdateContact(),
-                  brevoRemoveFromList(27),
-                  brevoRemoveFromList(35)
-                )
+                mswServer.use(brevoUpdateContact(), brevoRemoveFromList(27))
 
                 await agent
                   .post(
