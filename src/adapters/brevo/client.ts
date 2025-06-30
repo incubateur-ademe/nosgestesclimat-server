@@ -404,7 +404,7 @@ const unsubscribeContactFromList = async ({
   listId,
 }: Readonly<{
   email: string
-  listId: ListIds
+  listId: number
 }>) => {
   try {
     await brevo.post(`/v3/contacts/lists/${listId}/contacts/remove`, {
@@ -602,11 +602,7 @@ export const addOrUpdateContactAfterSimulationCreated = async ({
   name: string | null
   email: string
   userId: string
-  newsletters?: Array<
-    | ListIds.MAIN_NEWSLETTER
-    | ListIds.TRANSPORT_NEWSLETTER
-    | ListIds.LOGEMENT_NEWSLETTER
-  >
+  newsletters?: Array<ListIds>
   actionChoices?: ActionChoicesSchema
   computedResults: ComputedResultSchema
   lastSimulationDate: Date
