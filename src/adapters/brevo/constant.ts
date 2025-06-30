@@ -42,7 +42,6 @@ export const ListIds = {
   GROUP_JOINED: 30,
   TRANSPORT_NEWSLETTER: 32,
   LOGEMENT_NEWSLETTER: 36,
-  UNFINISHED_SIMULATION: 35,
 } as const
 
 export type ListIds = ValueOf<typeof ListIds>

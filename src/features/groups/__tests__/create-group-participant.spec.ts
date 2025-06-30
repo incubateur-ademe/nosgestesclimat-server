@@ -3,7 +3,6 @@ import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import {
-  brevoRemoveFromList,
   brevoSendEmail,
   brevoUpdateContact,
 } from '../../../adapters/brevo/__tests__/fixtures/server.fixture'
@@ -180,11 +179,7 @@ describe('Given a NGC user', () => {
           simulation: getSimulationPayload(),
         }
 
-        mswServer.use(
-          brevoSendEmail(),
-          brevoUpdateContact(),
-          brevoRemoveFromList(35)
-        )
+        mswServer.use(brevoSendEmail(), brevoUpdateContact())
 
         await agent
           .post(url.replace(':groupId', groupId))
@@ -287,11 +282,6 @@ describe('Given a NGC user', () => {
                 },
                 updateEnabled: true,
               },
-            }),
-            brevoRemoveFromList(35, {
-              expectBody: {
-                emails: [email],
-              },
             })
           )
 
@@ -332,8 +322,7 @@ describe('Given a NGC user', () => {
                 },
               },
             }),
-            brevoUpdateContact(),
-            brevoRemoveFromList(35)
+            brevoUpdateContact()
           )
 
           await agent
@@ -413,8 +402,7 @@ describe('Given a NGC user', () => {
                   },
                 },
               }),
-              brevoUpdateContact(),
-              brevoRemoveFromList(35)
+              brevoUpdateContact()
             )
 
             await agent
@@ -448,7 +436,7 @@ describe('Given a NGC user', () => {
               ...payload
             } = participant
 
-            mswServer.use(brevoUpdateContact(), brevoRemoveFromList(35))
+            mswServer.use(brevoUpdateContact())
 
             await agent
               .post(url.replace(':groupId', groupId))
@@ -468,7 +456,7 @@ describe('Given a NGC user', () => {
                 simulation: getSimulationPayload(),
               }
 
-              mswServer.use(brevoUpdateContact(), brevoRemoveFromList(35))
+              mswServer.use(brevoUpdateContact())
 
               await agent
                 .post(url.replace(':groupId', groupId))
@@ -699,11 +687,7 @@ describe('Given a NGC user', () => {
         simulation: getSimulationPayload(),
       }
 
-      mswServer.use(
-        brevoSendEmail(),
-        brevoUpdateContact(),
-        brevoRemoveFromList(35)
-      )
+      mswServer.use(brevoSendEmail(), brevoUpdateContact())
 
       const response = await agent
         .post(url.replace(':groupId', groupId))
@@ -746,11 +730,6 @@ describe('Given a NGC user', () => {
         brevoSendEmail(),
         brevoUpdateContact({
           storeBodies: contactBodies,
-        }),
-        brevoRemoveFromList(35, {
-          expectBody: {
-            emails: [administratorEmail],
-          },
         })
       )
 
@@ -848,8 +827,7 @@ describe('Given a NGC user', () => {
             },
           },
         }),
-        brevoUpdateContact(),
-        brevoRemoveFromList(35)
+        brevoUpdateContact()
       )
 
       await agent

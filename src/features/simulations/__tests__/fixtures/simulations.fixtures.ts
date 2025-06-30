@@ -227,7 +227,6 @@ export const createSimulation = async ({
       brevoUpdateContact(),
       brevoRemoveFromList(22, { invalid: true }),
       brevoRemoveFromList(32, { invalid: true }),
-      brevoRemoveFromList(35, { invalid: true }),
       brevoRemoveFromList(36, { invalid: true })
     )
   }

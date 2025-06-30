@@ -596,7 +596,6 @@ export const addOrUpdateContactAfterSimulationCreated = async ({
   actionChoices,
   computedResults,
   lastSimulationDate,
-  incompleteSumulations,
   subscribeToGroupNewsletter,
 }: {
   name: string | null
@@ -606,7 +605,6 @@ export const addOrUpdateContactAfterSimulationCreated = async ({
   actionChoices?: ActionChoicesSchema
   computedResults: ComputedResultSchema
   lastSimulationDate: Date
-  incompleteSumulations: number
   subscribeToGroupNewsletter: boolean
 }) => {
   const locale = 'fr-FR' // for now
@@ -672,13 +670,6 @@ export const addOrUpdateContactAfterSimulationCreated = async ({
     ...(newsletters?.length ? { listIds: newsletters } : {}),
   })
 
-  if (incompleteSumulations === 0) {
-    await unsubscribeContactFromList({
-      email,
-      listId: ListIds.UNFINISHED_SIMULATION,
-    })
-  }
-
   if (newsletters) {
     const userNewsletters = new Set(newsletters)
     for (const newsletter of AllNewsletters) {
@@ -713,6 +704,5 @@ export const addOrUpdateContactAfterIncompleteSimulationCreated = ({
   return addOrUpdateContact({
     email,
     attributes,
-    listIds: [ListIds.UNFINISHED_SIMULATION],
   })
 }
