@@ -2,7 +2,6 @@ import { faker } from '@faker-js/faker'
 import { StatusCodes } from 'http-status-codes'
 import type supertest from 'supertest'
 import {
-  brevoRemoveFromList,
   brevoSendEmail,
   brevoUpdateContact,
 } from '../../../../adapters/brevo/__tests__/fixtures/server.fixture'
@@ -53,11 +52,7 @@ export const createGroup = async ({
   }
 
   if (payload.administrator.email && participants?.length) {
-    mswServer.use(
-      brevoSendEmail(),
-      brevoUpdateContact(),
-      brevoRemoveFromList(35)
-    )
+    mswServer.use(brevoSendEmail(), brevoUpdateContact())
   }
 
   const response = await agent
@@ -142,10 +137,6 @@ export const joinGroup = async ({
   if (email || existingUser?.email) {
     if (!existingParticipant) {
       mswServer.use(brevoSendEmail())
-    }
-
-    if (payload.simulation.progression === 1) {
-      mswServer.use(brevoRemoveFromList(35))
     }
   }
 

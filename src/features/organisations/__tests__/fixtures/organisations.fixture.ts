@@ -208,8 +208,6 @@ export const createOrganisationPollSimulation = async ({
     if (!existingParticipation) {
       mswServer.use(brevoSendEmail())
     }
-
-    mswServer.use(brevoRemoveFromList(35, { invalid: true }))
   }
 
   const response = await agent

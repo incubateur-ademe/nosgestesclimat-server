@@ -327,19 +327,40 @@ export const sendPollSimulationUpsertedEmail = async ({
   email,
   origin,
   organisation: { name, slug },
+  simulation: { id },
 }: Readonly<{
   email: string
   origin: string
   organisation: Pick<Organisation, 'name' | 'slug'>
+  simulation: Pick<Simulation, 'id'>
 }>) => {
   const templateId = TemplateIds.ORGANISATION_JOINED
 
   const detailedViewUrl = new URL(
     `${origin}/organisations/${slug}/resultats-detailles`
   )
-  const { searchParams } = detailedViewUrl
-  searchParams.append(MATOMO_CAMPAIGN_KEY, MATOMO_CAMPAIGN_EMAIL_AUTOMATISE)
-  searchParams.append(MATOMO_KEYWORD_KEY, MATOMO_KEYWORDS[templateId])
+  const { searchParams: detailedViewUrlSearchParams } = detailedViewUrl
+  detailedViewUrlSearchParams.append(
+    MATOMO_CAMPAIGN_KEY,
+    MATOMO_CAMPAIGN_EMAIL_AUTOMATISE
+  )
+  detailedViewUrlSearchParams.append(
+    MATOMO_KEYWORD_KEY,
+    MATOMO_KEYWORDS[templateId]
+  )
+
+  const simulationUrl = new URL(origin)
+  simulationUrl.pathname = 'fin'
+  const { searchParams: simulationUrlSearchParams } = simulationUrl
+  simulationUrlSearchParams.append('sid', id)
+  simulationUrlSearchParams.append(
+    MATOMO_CAMPAIGN_KEY,
+    MATOMO_CAMPAIGN_EMAIL_AUTOMATISE
+  )
+  simulationUrlSearchParams.append(
+    MATOMO_KEYWORD_KEY,
+    MATOMO_KEYWORDS[TemplateIds.SIMULATION_COMPLETED]
+  )
 
   await sendEmail({
     email,
@@ -347,6 +368,7 @@ export const sendPollSimulationUpsertedEmail = async ({
     params: {
       ORGANISATION_NAME: name,
       DETAILED_VIEW_URL: detailedViewUrl.toString(),
+      SIMULATION_URL: simulationUrl.toString(),
     },
   })
 }
@@ -596,7 +618,6 @@ export const addOrUpdateContactAfterSimulationCreated = async ({
   actionChoices,
   computedResults,
   lastSimulationDate,
-  incompleteSumulations,
   subscribeToGroupNewsletter,
 }: {
   name: string | null
@@ -606,7 +627,6 @@ export const addOrUpdateContactAfterSimulationCreated = async ({
   actionChoices?: ActionChoicesSchema
   computedResults: ComputedResultSchema
   lastSimulationDate: Date
-  incompleteSumulations: number
   subscribeToGroupNewsletter: boolean
 }) => {
   const locale = 'fr-FR' // for now
@@ -672,13 +692,6 @@ export const addOrUpdateContactAfterSimulationCreated = async ({
     ...(newsletters?.length ? { listIds: newsletters } : {}),
   })
 
-  if (incompleteSumulations === 0) {
-    await unsubscribeContactFromList({
-      email,
-      listId: ListIds.UNFINISHED_SIMULATION,
-    })
-  }
-
   if (newsletters) {
     const userNewsletters = new Set(newsletters)
     for (const newsletter of AllNewsletters) {
@@ -713,6 +726,5 @@ export const addOrUpdateContactAfterIncompleteSimulationCreated = ({
   return addOrUpdateContact({
     email,
     attributes,
-    listIds: [ListIds.UNFINISHED_SIMULATION],
   })
 }

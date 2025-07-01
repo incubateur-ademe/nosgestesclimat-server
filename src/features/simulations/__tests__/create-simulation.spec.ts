@@ -194,7 +194,6 @@ describe('Given a NGC user', () => {
           brevoUpdateContact(),
           brevoRemoveFromList(22),
           brevoRemoveFromList(32),
-          brevoRemoveFromList(35),
           brevoRemoveFromList(36)
         )
 
@@ -384,9 +383,6 @@ describe('Given a NGC user', () => {
               brevoRemoveFromList(32, {
                 expectBody: { emails: [email] },
               }),
-              brevoRemoveFromList(35, {
-                expectBody: { emails: [email] },
-              }),
               brevoRemoveFromList(36, {
                 expectBody: { emails: [email] },
               })
@@ -431,7 +427,6 @@ describe('Given a NGC user', () => {
               brevoUpdateContact(),
               brevoRemoveFromList(22),
               brevoRemoveFromList(32),
-              brevoRemoveFromList(35),
               brevoRemoveFromList(36)
             )
 
@@ -476,7 +471,6 @@ describe('Given a NGC user', () => {
                 brevoUpdateContact(),
                 brevoRemoveFromList(22),
                 brevoRemoveFromList(32),
-                brevoRemoveFromList(35),
                 brevoRemoveFromList(36)
               )
 
@@ -557,8 +551,7 @@ describe('Given a NGC user', () => {
                     },
                     updateEnabled: true,
                   },
-                }),
-                brevoRemoveFromList(35)
+                })
               )
 
               await agent
@@ -593,7 +586,6 @@ describe('Given a NGC user', () => {
               brevoUpdateContact({
                 expectBody: {
                   email,
-                  listIds: [35],
                   attributes: {
                     USER_ID: userId,
                   },

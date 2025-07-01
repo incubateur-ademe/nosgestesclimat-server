@@ -283,8 +283,7 @@ describe('Given a NGC user', () => {
           mswServer.use(
             brevoSendEmail(),
             brevoUpdateContact(),
-            brevoRemoveFromList(27),
-            brevoRemoveFromList(35)
+            brevoRemoveFromList(27)
           )
 
           const {
@@ -503,8 +502,7 @@ describe('Given a NGC user', () => {
               brevoUpdateContact({
                 storeBodies: contactBodies,
               }),
-              brevoRemoveFromList(27),
-              brevoRemoveFromList(35)
+              brevoRemoveFromList(27)
             )
 
             await agent
@@ -598,16 +596,16 @@ describe('Given a NGC user', () => {
                       email,
                     },
                   ],
-                  templateId: 71,
+                  templateId: 122,
                   params: {
                     ORGANISATION_NAME: organisationName,
                     DETAILED_VIEW_URL: `https://nosgestesclimat.fr/organisations/${organisationSlug}/resultats-detailles?mtm_campaign=email-automatise&mtm_kwd=orga-invite-campagne`,
+                    SIMULATION_URL: `https://nosgestesclimat.fr/fin?sid=${payload.id}&mtm_campaign=email-automatise&mtm_kwd=fin-retrouver-simulation`,
                   },
                 },
               }),
               brevoUpdateContact(),
-              brevoRemoveFromList(27),
-              brevoRemoveFromList(35)
+              brevoRemoveFromList(27)
             )
 
             await agent
@@ -687,16 +685,16 @@ describe('Given a NGC user', () => {
                         email,
                       },
                     ],
-                    templateId: 71,
+                    templateId: 122,
                     params: {
                       ORGANISATION_NAME: organisationName,
                       DETAILED_VIEW_URL: `https://preprod.nosgestesclimat.fr/organisations/${organisationSlug}/resultats-detailles?mtm_campaign=email-automatise&mtm_kwd=orga-invite-campagne`,
+                      SIMULATION_URL: `https://preprod.nosgestesclimat.fr/fin?sid=${payload.id}&mtm_campaign=email-automatise&mtm_kwd=fin-retrouver-simulation`,
                     },
                   },
                 }),
                 brevoUpdateContact(),
-                brevoRemoveFromList(27),
-                brevoRemoveFromList(35)
+                brevoRemoveFromList(27)
               )
 
               await agent
@@ -740,11 +738,7 @@ describe('Given a NGC user', () => {
               } = simulation
               const { id: _4, name: _5, ...userPayload } = user
 
-              mswServer.use(
-                brevoUpdateContact(),
-                brevoRemoveFromList(27),
-                brevoRemoveFromList(35)
-              )
+              mswServer.use(brevoUpdateContact(), brevoRemoveFromList(27))
 
               await agent
                 .post(
@@ -772,11 +766,7 @@ describe('Given a NGC user', () => {
                 } = simulation
                 const { id: _4, name: _5, ...userPayload } = user
 
-                mswServer.use(
-                  brevoUpdateContact(),
-                  brevoRemoveFromList(27),
-                  brevoRemoveFromList(35)
-                )
+                mswServer.use(brevoUpdateContact(), brevoRemoveFromList(27))
 
                 await agent
                   .post(
