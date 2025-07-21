@@ -16,7 +16,7 @@ export const addOrUpdateBrevoContact: Handler<UserUpdatedEvent> = async ({
     return
   }
 
-  if (!!newslettersToUnsubscribe.size) {
+  if (newslettersToUnsubscribe.size) {
     await removeFromNewsletters({
       listIds: Array.from(newslettersToUnsubscribe),
       email,

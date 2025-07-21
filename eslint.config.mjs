@@ -1,0 +1,45 @@
+import eslint from '@eslint/js'
+import eslintPluginImport from 'eslint-plugin-import'
+import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
+import typescriptEslint from 'typescript-eslint'
+
+export default [
+  {
+    ignores: ['node_modules', 'coverage', 'dist'],
+    settings: {
+      'import/resolver': {
+        typescript: true,
+        node: {
+          extensions: ['.js', '.ts', '.json'],
+        },
+      },
+    },
+  },
+  eslint.configs.recommended,
+  ...typescriptEslint.configs.recommended,
+  eslintPluginImport.flatConfigs.recommended,
+  eslintPluginPrettierRecommended,
+  {
+    rules: {
+      '@typescript-eslint/consistent-type-imports': 'error',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_.*$',
+          varsIgnorePattern: '^_.*$',
+        },
+      ],
+      'import/order': [
+        'error',
+        {
+          groups: [
+            ['internal', 'external', 'builtin'],
+            'parent',
+            'sibling',
+            'index',
+          ],
+        },
+      ],
+    },
+  },
+]

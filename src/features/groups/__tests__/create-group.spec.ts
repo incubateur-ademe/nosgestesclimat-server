@@ -587,17 +587,17 @@ describe('Given a NGC user', () => {
                 params: {
                   GROUP_URL: expect.stringMatching(
                     new RegExp(
-                      `^https:\\/\\/nosgestesclimat\\.fr\\/amis\\/resultats\\?groupId=[a-zA-Z0-9\._]+&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-voir-classement$`
+                      `^https:\\/\\/nosgestesclimat\\.fr\\/amis\\/resultats\\?groupId=[a-zA-Z0-9_]+&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-voir-classement$`
                     )
                   ),
                   SHARE_URL: expect.stringMatching(
                     new RegExp(
-                      `^https:\\/\\/nosgestesclimat\\.fr\\/amis\\/invitation\\?groupId=[a-zA-Z0-9\._]+&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-url-partage$`
+                      `^https:\\/\\/nosgestesclimat\\.fr\\/amis\\/invitation\\?groupId=[a-zA-Z0-9_]+&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-url-partage$`
                     )
                   ),
                   DELETE_URL: expect.stringMatching(
                     new RegExp(
-                      `^https:\\/\\/nosgestesclimat\\.fr\\/amis\\/supprimer\\?groupId=[a-zA-Z0-9\._]+&userId=${userId}&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-delete$`
+                      `^https:\\/\\/nosgestesclimat\\.fr\\/amis\\/supprimer\\?groupId=[a-zA-Z0-9_]+&userId=${userId}&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-delete$`
                     )
                   ),
                   GROUP_NAME: payload.name,
@@ -647,17 +647,17 @@ describe('Given a NGC user', () => {
                   params: {
                     GROUP_URL: expect.stringMatching(
                       new RegExp(
-                        `^https:\\/\\/preprod\\.nosgestesclimat\\.fr\\/amis\\/resultats\\?groupId=[a-zA-Z0-9\._]+&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-voir-classement$`
+                        `^https:\\/\\/preprod\\.nosgestesclimat\\.fr\\/amis\\/resultats\\?groupId=[a-zA-Z0-9_]+&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-voir-classement$`
                       )
                     ),
                     SHARE_URL: expect.stringMatching(
                       new RegExp(
-                        `^https:\\/\\/preprod\\.nosgestesclimat\\.fr\\/amis\\/invitation\\?groupId=[a-zA-Z0-9\._]+&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-url-partage$`
+                        `^https:\\/\\/preprod\\.nosgestesclimat\\.fr\\/amis\\/invitation\\?groupId=[a-zA-Z0-9_]+&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-url-partage$`
                       )
                     ),
                     DELETE_URL: expect.stringMatching(
                       new RegExp(
-                        `^https:\\/\\/preprod\\.nosgestesclimat\\.fr\\/amis\\/supprimer\\?groupId=[a-zA-Z0-9\._]+&userId=${userId}&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-delete$`
+                        `^https:\\/\\/preprod\\.nosgestesclimat\\.fr\\/amis\\/supprimer\\?groupId=[a-zA-Z0-9_]+&userId=${userId}&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-delete$`
                       )
                     ),
 

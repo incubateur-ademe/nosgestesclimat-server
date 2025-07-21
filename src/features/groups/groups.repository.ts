@@ -11,15 +11,13 @@ import {
 import { transferOwnershipToUser } from '../users/users.repository'
 import type { UserParams } from '../users/users.validator'
 import type {
+  GroupCreateDto,
   GroupParams,
   GroupsFetchQuery,
+  GroupUpdateDto,
   ParticipantCreateDto,
+  UserGroupParams,
   UserGroupParticipantParams,
-} from './groups.validator'
-import {
-  type GroupCreateDto,
-  type GroupUpdateDto,
-  type UserGroupParams,
 } from './groups.validator'
 
 const getParticipantsWithSimulations = <T extends { simulationId: string }>(

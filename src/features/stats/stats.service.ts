@@ -126,7 +126,7 @@ const recoverKindDayStats = async (params: RecoverKindDayStats) => {
   const { source, date, kind } = params
   const client = clients[source]
   switch (kind) {
-    case MatomoStatsKind.website:
+    case MatomoStatsKind.website: {
       const referrersWebsites = await client.getReferrersWebsites(date)
       for (const referrerWebsite of [
         ...referrersWebsites.filter(
@@ -146,7 +146,8 @@ const recoverKindDayStats = async (params: RecoverKindDayStats) => {
         })
       }
       break
-    case MatomoStatsKind.campaign:
+    }
+    case MatomoStatsKind.campaign: {
       const referrersCampaigns = await client.getReferrersCampaigns(date)
       for (const referrerCampaign of [
         ...referrersCampaigns.filter(
@@ -166,6 +167,7 @@ const recoverKindDayStats = async (params: RecoverKindDayStats) => {
         })
       }
       break
+    }
     default:
       return recoverReferrerDayStats({
         ...params,

@@ -391,7 +391,7 @@ export const createOrganisationPoll = async (
           name,
           customAdditionalQuestions: customAdditionalQuestions ?? [],
           expectedNumberOfParticipants,
-          ...(!!defaultAdditionalQuestions?.length
+          ...(defaultAdditionalQuestions?.length
             ? {
                 defaultAdditionalQuestions: {
                   createMany: {
@@ -467,15 +467,15 @@ export const updateOrganisationPoll = async (
     data: {
       name,
       expectedNumberOfParticipants,
-      ...(!!customAdditionalQuestions
+      ...(customAdditionalQuestions
         ? {
             customAdditionalQuestions,
           }
         : {}),
-      ...(!!defaultAdditionalQuestions
+      ...(defaultAdditionalQuestions
         ? {
             defaultAdditionalQuestions: {
-              ...(!!existingDefaultAdditionalQuestions.length
+              ...(existingDefaultAdditionalQuestions.length
                 ? {
                     deleteMany: {
                       id: {
@@ -486,7 +486,7 @@ export const updateOrganisationPoll = async (
                     },
                   }
                 : {}),
-              ...(!!defaultAdditionalQuestions.length
+              ...(defaultAdditionalQuestions.length
                 ? {
                     createMany: {
                       data: defaultAdditionalQuestions.map((type) => ({

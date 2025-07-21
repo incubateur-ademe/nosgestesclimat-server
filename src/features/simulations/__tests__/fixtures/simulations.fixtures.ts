@@ -117,7 +117,7 @@ const evaluate = ({
 
   return typeof value === 'number'
     ? +value.toFixed(4)
-    : !!value
+    : value
       ? +value
       : undefined
 }

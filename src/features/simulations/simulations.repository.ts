@@ -97,10 +97,10 @@ export const createParticipantSimulation = async <
     actionChoices,
     savedViaEmail,
     computedResults,
-    ...(!!additionalQuestionsAnswers?.length
+    ...(additionalQuestionsAnswers?.length
       ? {
           additionalQuestionsAnswers: {
-            ...(!!existingSimulation
+            ...(existingSimulation
               ? {
                   deleteMany: {
                     simulationId: id,
@@ -119,7 +119,7 @@ export const createParticipantSimulation = async <
       : {}),
   }
 
-  const simulation = !!existingSimulation
+  const simulation = existingSimulation
     ? await session.simulation.update({
         where: {
           id,
