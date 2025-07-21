@@ -1,7 +1,7 @@
-import z from 'zod'
-import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail'
-import { SimulationParticipantCreateDto } from '../simulations/simulations.validator'
-import { UserParams } from '../users/users.validator'
+import { z } from 'zod'
+import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail.js'
+import { SimulationParticipantCreateDto } from '../simulations/simulations.validator.js'
+import { UserParams } from '../users/users.validator.js'
 
 const GroupParams = z
   .object({

@@ -1,8 +1,8 @@
 import axios from 'axios'
 import type Redis from 'ioredis'
 import { z } from 'zod'
-import { KEYS } from '../../src/adapters/redis/constant'
-import type { ValueOf } from '../../src/types/types'
+import { KEYS } from '../../src/adapters/redis/constant.js'
+import type { ValueOf } from '../../src/types/types.js'
 
 const REGIONS = {
   Antarctic: 'Antarctic',

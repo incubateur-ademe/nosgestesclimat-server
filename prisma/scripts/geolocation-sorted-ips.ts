@@ -4,8 +4,8 @@ import { isIPv4 } from 'node:net'
 import { createGunzip } from 'node:zlib'
 import Papa from 'papaparse'
 import { z } from 'zod'
-import { KEYS } from '../../src/adapters/redis/constant'
-import { convertIpToNumber } from '../../src/features/modele/geolocation.repository'
+import { KEYS } from '../../src/adapters/redis/constant.js'
+import { convertIpToNumber } from '../../src/features/modele/geolocation.repository.js'
 
 const GeoIpCsvValidator = z.object({
   ipStart: z.string(),

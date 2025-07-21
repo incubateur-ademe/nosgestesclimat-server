@@ -1,13 +1,13 @@
 import express from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { validateRequest } from 'zod-express-middleware'
-import logger from '../../logger'
-import { SituationSchema } from '../simulations/simulations.validator'
-import { exportSituation, getPartnerFeatures } from './integrations.service'
+import logger from '../../logger.js'
+import { SituationSchema } from '../simulations/simulations.validator.js'
+import { exportSituation, getPartnerFeatures } from './integrations.service.js'
 import {
   FetchExternalServiceValidator,
   SituationExportValidator,
-} from './integrations.validator'
+} from './integrations.validator.js'
 
 const router = express.Router()
 

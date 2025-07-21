@@ -1,23 +1,23 @@
 import { faker } from '@faker-js/faker'
-import modelFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRules.json'
+import modelFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRules.json' with { type: 'json' }
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import { prisma } from '../../../adapters/prisma/client'
-import { defaultSimulationSelection } from '../../../adapters/prisma/selection'
-import { redis } from '../../../adapters/redis/client'
-import { KEYS } from '../../../adapters/redis/constant'
-import app from '../../../app'
-import { config } from '../../../config'
-import { EventBus } from '../../../core/event-bus/event-bus'
-import logger from '../../../logger'
-import { login } from '../../authentication/__tests__/fixtures/login.fixture'
+import { prisma } from '../../../adapters/prisma/client.js'
+import { defaultSimulationSelection } from '../../../adapters/prisma/selection.js'
+import { redis } from '../../../adapters/redis/client.js'
+import { KEYS } from '../../../adapters/redis/constant.js'
+import app from '../../../app.js'
+import { config } from '../../../config.js'
+import { EventBus } from '../../../core/event-bus/event-bus.js'
+import logger from '../../../logger.js'
+import { login } from '../../authentication/__tests__/fixtures/login.fixture.js'
 import {
   createOrganisation,
   createOrganisationPoll,
-} from '../../organisations/__tests__/fixtures/organisations.fixture'
-import { SimulationUpsertedAsyncEvent } from '../events/SimulationUpserted.event'
-import * as simulationRepository from '../simulations.repository'
-import { getRandomTestCase } from './fixtures/simulations.fixtures'
+} from '../../organisations/__tests__/fixtures/organisations.fixture.js'
+import { SimulationUpsertedAsyncEvent } from '../events/SimulationUpserted.event.js'
+import * as simulationRepository from '../simulations.repository.js'
+import { getRandomTestCase } from './fixtures/simulations.fixtures.js'
 
 vi.mock('../simulations.repository', async () => ({
   ...(await vi.importActual('../simulations.repository')),

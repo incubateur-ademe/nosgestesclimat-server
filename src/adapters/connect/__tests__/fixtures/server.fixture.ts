@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import { http, HttpResponse } from 'msw'
 import { expect } from 'vitest'
-import { baseURL } from '../../client'
+import { baseURL } from '../../client.js'
 
 export const connectUpdateContact = ({
   expectBody,

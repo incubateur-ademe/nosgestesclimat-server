@@ -7,20 +7,20 @@ import {
   brevoRemoveFromList,
   brevoSendEmail,
   brevoUpdateContact,
-} from '../../../../adapters/brevo/__tests__/fixtures/server.fixture'
-import { connectUpdateContact } from '../../../../adapters/connect/__tests__/fixtures/server.fixture'
-import { prisma } from '../../../../adapters/prisma/client'
+} from '../../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
+import { connectUpdateContact } from '../../../../adapters/connect/__tests__/fixtures/server.fixture.js'
+import { prisma } from '../../../../adapters/prisma/client.js'
 import {
   mswServer,
   resetMswServer,
-} from '../../../../core/__tests__/fixtures/server.fixture'
-import { EventBus } from '../../../../core/event-bus/event-bus'
-import { getSimulationPayload } from '../../../simulations/__tests__/fixtures/simulations.fixtures'
-import type { SimulationCreateInputDto } from '../../../simulations/simulations.validator'
+} from '../../../../core/__tests__/fixtures/server.fixture.js'
+import { EventBus } from '../../../../core/event-bus/event-bus.js'
+import { getSimulationPayload } from '../../../simulations/__tests__/fixtures/simulations.fixtures.js'
+import type { SimulationCreateInputDto } from '../../../simulations/simulations.validator.js'
 import type {
   OrganisationCreateDto,
   OrganisationPollCreateDto,
-} from '../../organisations.validator'
+} from '../../organisations.validator.js'
 
 export const CREATE_ORGANISATION_ROUTE = '/organisations/v1'
 

@@ -1,11 +1,11 @@
 import { initContract, ZodErrorSchema } from '@ts-rest/core'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
-import { EMAIL_REGEX } from '../../../../core/typeguards/isValidEmail'
+import { EMAIL_REGEX } from '../../../../core/typeguards/isValidEmail.js'
 import {
   isValidRefreshToken,
   REFRESH_TOKEN_SCOPE,
-} from './authentication.service'
+} from './authentication.service.js'
 
 const GenerateAPITokenRequestDto = z
   .object({

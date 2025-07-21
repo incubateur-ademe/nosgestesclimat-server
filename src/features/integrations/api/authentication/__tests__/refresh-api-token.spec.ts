@@ -3,19 +3,19 @@ import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test } from 'vitest'
-import { prisma } from '../../../../../adapters/prisma/client'
-import app from '../../../../../app'
-import { config } from '../../../../../config'
-import { ExternalServiceTypeEnum } from '../../../integrations.validator'
+import { prisma } from '../../../../../adapters/prisma/client.js'
+import app from '../../../../../app.js'
+import { config } from '../../../../../config.js'
+import { ExternalServiceTypeEnum } from '../../../integrations.validator.js'
 import {
   REFRESH_TOKEN_MAX_AGE,
   REFRESH_TOKEN_SCOPE,
-} from '../authentication.service'
+} from '../authentication.service.js'
 import {
   generateApiToken,
   recoverApiToken,
   REFRESH_API_TOKEN_ROUTE,
-} from './fixtures/authentication.fixtures'
+} from './fixtures/authentication.fixtures.js'
 
 describe('Given a NGC integrations API user', () => {
   const agent = supertest(app)

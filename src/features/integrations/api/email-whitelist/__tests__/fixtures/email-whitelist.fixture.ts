@@ -1,10 +1,10 @@
 import { faker } from '@faker-js/faker'
 import type { PrismaClient } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
-import type TestAgent from 'supertest/lib/agent'
-import { EventBus } from '../../../../../../core/event-bus/event-bus'
-import { randomApiScopeName } from '../../../authentication/__tests__/fixtures/authentication.fixtures'
-import type { EmailWhitelistCreateDto } from '../../email-whitelist.contract'
+import type TestAgent from 'supertest/lib/agent.js'
+import { EventBus } from '../../../../../../core/event-bus/event-bus.js'
+import { randomApiScopeName } from '../../../authentication/__tests__/fixtures/authentication.fixtures.js'
+import type { EmailWhitelistCreateDto } from '../../email-whitelist.contract.js'
 
 export const CREATE_EMAIL_WHITELIST_ROUTE =
   '/integrations-api/v1/email-whitelists'

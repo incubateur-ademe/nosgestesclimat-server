@@ -6,14 +6,14 @@ import { vi } from 'vitest'
 import {
   brevoSendEmail,
   brevoUpdateContact,
-} from '../../../../adapters/brevo/__tests__/fixtures/server.fixture'
+} from '../../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
 import {
   mswServer,
   resetMswServer,
-} from '../../../../core/__tests__/fixtures/server.fixture'
-import { EventBus } from '../../../../core/event-bus/event-bus'
-import * as authenticationService from '../../authentication.service'
-import type { VerificationCodeCreateDto } from '../../verification-codes.validator'
+} from '../../../../core/__tests__/fixtures/server.fixture.js'
+import { EventBus } from '../../../../core/event-bus/event-bus.js'
+import * as authenticationService from '../../authentication.service.js'
+import type { VerificationCodeCreateDto } from '../../verification-codes.validator.js'
 
 type TestAgent = ReturnType<typeof supertest>
 

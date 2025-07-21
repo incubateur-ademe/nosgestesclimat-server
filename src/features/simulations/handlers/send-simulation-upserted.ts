@@ -3,9 +3,9 @@ import {
   sendGroupParticipantSimulationUpsertedEmail,
   sendPollSimulationUpsertedEmail,
   sendSimulationUpsertedEmail,
-} from '../../../adapters/brevo/client'
-import type { Handler } from '../../../core/event-bus/handler'
-import type { SimulationUpsertedEvent } from '../events/SimulationUpserted.event'
+} from '../../../adapters/brevo/client.js'
+import type { Handler } from '../../../core/event-bus/handler.js'
+import type { SimulationUpsertedEvent } from '../events/SimulationUpserted.event.js'
 
 export const sendSimulationUpserted: Handler<SimulationUpsertedEvent> = ({
   attributes,

@@ -2,16 +2,16 @@ import { faker } from '@faker-js/faker'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import { prisma } from '../../../adapters/prisma/client'
-import * as prismaTransactionAdapter from '../../../adapters/prisma/transaction'
-import app from '../../../app'
-import logger from '../../../logger'
-import { getSimulationPayload } from '../../simulations/__tests__/fixtures/simulations.fixtures'
+import { prisma } from '../../../adapters/prisma/client.js'
+import * as prismaTransactionAdapter from '../../../adapters/prisma/transaction.js'
+import app from '../../../app.js'
+import logger from '../../../logger.js'
+import { getSimulationPayload } from '../../simulations/__tests__/fixtures/simulations.fixtures.js'
 import {
   createGroup,
   FETCH_USER_GROUPS_ROUTE,
   joinGroup,
-} from './fixtures/groups.fixture'
+} from './fixtures/groups.fixture.js'
 
 vi.mock('../../../adapters/prisma/transaction', async () => ({
   ...(await vi.importActual('../../../adapters/prisma/transaction')),

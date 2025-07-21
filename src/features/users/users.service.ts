@@ -1,17 +1,20 @@
 import type { Request } from 'express'
-import type { BrevoContact } from '../../adapters/brevo/client'
-import { fetchContact, fetchContactOrThrow } from '../../adapters/brevo/client'
-import { ListIds } from '../../adapters/brevo/constant'
-import { prisma } from '../../adapters/prisma/client'
-import { transaction } from '../../adapters/prisma/transaction'
-import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
-import { ForbiddenException } from '../../core/errors/ForbiddenException'
-import { EventBus } from '../../core/event-bus/event-bus'
-import { isAuthenticated } from '../../core/typeguards/isAuthenticated'
-import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError'
-import { exchangeCredentialsForToken } from '../authentication/authentication.service'
-import { findUserVerificationCode } from '../authentication/verification-codes.repository'
-import { UserUpdatedEvent } from './events/UserUpdated.event'
+import type { BrevoContact } from '../../adapters/brevo/client.js'
+import {
+  fetchContact,
+  fetchContactOrThrow,
+} from '../../adapters/brevo/client.js'
+import { ListIds } from '../../adapters/brevo/constant.js'
+import { prisma } from '../../adapters/prisma/client.js'
+import { transaction } from '../../adapters/prisma/transaction.js'
+import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
+import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
+import { EventBus } from '../../core/event-bus/event-bus.js'
+import { isAuthenticated } from '../../core/typeguards/isAuthenticated.js'
+import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError.js'
+import { exchangeCredentialsForToken } from '../authentication/authentication.service.js'
+import { findUserVerificationCode } from '../authentication/verification-codes.repository.js'
+import { UserUpdatedEvent } from './events/UserUpdated.event.js'
 import {
   fetchUser,
   fetchUserOrThrow,
@@ -19,12 +22,12 @@ import {
   transferOwnershipToUser,
   updateUser,
   updateVerifiedUser,
-} from './users.repository'
+} from './users.repository.js'
 import type {
   NewsletterConfirmationQuery,
   UserParams,
   UserUpdateDto,
-} from './users.validator'
+} from './users.validator.js'
 
 const REACHABLE_NEWSLETTER_LIST_IDS: ListIds[] = [
   ListIds.MAIN_NEWSLETTER,

@@ -1,8 +1,8 @@
-import { sendNewsLetterConfirmationEmail } from '../../../adapters/brevo/client'
-import { config } from '../../../config'
-import type { Handler } from '../../../core/event-bus/handler'
-import { generateVerificationCode } from '../../authentication/verification-codes.service'
-import type { UserUpdatedEvent } from '../events/UserUpdated.event'
+import { sendNewsLetterConfirmationEmail } from '../../../adapters/brevo/client.js'
+import { config } from '../../../config.js'
+import type { Handler } from '../../../core/event-bus/handler.js'
+import { generateVerificationCode } from '../../authentication/verification-codes.service.js'
+import type { UserUpdatedEvent } from '../events/UserUpdated.event.js'
 
 export const sendBrevoNewsLetterConfirmationEmail: Handler<
   UserUpdatedEvent

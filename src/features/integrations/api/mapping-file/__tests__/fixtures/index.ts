@@ -1,5 +1,5 @@
-import { ExternalServiceTypeEnum } from '../../../../integrations.validator'
-import { MappingFileKind } from '../../mapping-file.contract'
+import { ExternalServiceTypeEnum } from '../../../../integrations.validator.js'
+import { MappingFileKind } from '../../mapping-file.contract.js'
 
 export const CREATE_MAPPING_FILE_ROUTE = `/integrations-api/v1/mapping-files`
 

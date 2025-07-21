@@ -2,10 +2,10 @@ import { faker } from '@faker-js/faker'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import { prisma } from '../../../adapters/prisma/client'
-import * as prismaTransactionAdapter from '../../../adapters/prisma/transaction'
-import app from '../../../app'
-import logger from '../../../logger'
+import { prisma } from '../../../adapters/prisma/client.js'
+import * as prismaTransactionAdapter from '../../../adapters/prisma/transaction.js'
+import app from '../../../app.js'
+import logger from '../../../logger.js'
 import {
   createSimulation,
   FETCH_USER_SIMULATION_ROUTE,

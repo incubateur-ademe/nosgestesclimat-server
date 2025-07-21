@@ -4,21 +4,21 @@ import crypto from 'crypto'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import { prisma } from '../../../adapters/prisma/client'
-import * as prismaTransactionAdapter from '../../../adapters/prisma/transaction'
-import { client } from '../../../adapters/scaleway/client'
-import app from '../../../app'
-import { config } from '../../../config'
-import { EventBus } from '../../../core/event-bus/event-bus'
-import logger from '../../../logger'
-import { login } from '../../authentication/__tests__/fixtures/login.fixture'
-import { COOKIE_NAME } from '../../authentication/authentication.service'
+import { prisma } from '../../../adapters/prisma/client.js'
+import * as prismaTransactionAdapter from '../../../adapters/prisma/transaction.js'
+import { client } from '../../../adapters/scaleway/client.js'
+import app from '../../../app.js'
+import { config } from '../../../config.js'
+import { EventBus } from '../../../core/event-bus/event-bus.js'
+import logger from '../../../logger.js'
+import { login } from '../../authentication/__tests__/fixtures/login.fixture.js'
+import { COOKIE_NAME } from '../../authentication/authentication.service.js'
 import {
   createOrganisation,
   createOrganisationPoll,
   DOWNLOAD_ORGANISATION_POLL_SIMULATIONS_RESULT_ROUTE,
   downloadOrganisationPollSimulationsResult,
-} from './fixtures/organisations.fixture'
+} from './fixtures/organisations.fixture.js'
 
 vi.mock('../../../adapters/prisma/transaction', async () => ({
   ...(await vi.importActual('../../../adapters/prisma/transaction')),

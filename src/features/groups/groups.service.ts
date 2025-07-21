@@ -1,18 +1,18 @@
-import { prisma } from '../../adapters/prisma/client'
-import type { Session } from '../../adapters/prisma/transaction'
-import { transaction } from '../../adapters/prisma/transaction'
-import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
-import { ForbiddenException } from '../../core/errors/ForbiddenException'
-import { EventBus } from '../../core/event-bus/event-bus'
+import { prisma } from '../../adapters/prisma/client.js'
+import type { Session } from '../../adapters/prisma/transaction.js'
+import { transaction } from '../../adapters/prisma/transaction.js'
+import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
+import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
+import { EventBus } from '../../core/event-bus/event-bus.js'
 import {
   isPrismaErrorForeignKeyConstraintFailed,
   isPrismaErrorNotFound,
-} from '../../core/typeguards/isPrismaError'
-import { SimulationUpsertedEvent } from '../simulations/events/SimulationUpserted.event'
-import type { UserParams } from '../users/users.validator'
-import { GroupCreatedEvent } from './events/GroupCreated.event'
-import { GroupDeletedEvent } from './events/GroupDeleted.event'
-import { GroupUpdatedEvent } from './events/GroupUpdated.event'
+} from '../../core/typeguards/isPrismaError.js'
+import { SimulationUpsertedEvent } from '../simulations/events/SimulationUpserted.event.js'
+import type { UserParams } from '../users/users.validator.js'
+import { GroupCreatedEvent } from './events/GroupCreated.event.js'
+import { GroupDeletedEvent } from './events/GroupDeleted.event.js'
+import { GroupUpdatedEvent } from './events/GroupUpdated.event.js'
 import {
   createGroupAndUser,
   createParticipantAndUser,
@@ -22,7 +22,7 @@ import {
   fetchUserGroups,
   findGroupAndParticipantById,
   updateUserGroup,
-} from './groups.repository'
+} from './groups.repository.js'
 import type {
   GroupCreateDto,
   GroupParams,
@@ -31,7 +31,7 @@ import type {
   ParticipantCreateDto,
   UserGroupParams,
   UserGroupParticipantParams,
-} from './groups.validator'
+} from './groups.validator.js'
 
 /**
  * Maps a database group to a dto for the UI

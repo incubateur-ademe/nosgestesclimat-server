@@ -5,18 +5,18 @@ import { StatusCodes } from 'http-status-codes'
 import path from 'path'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import { client } from '../../../../../adapters/scaleway/client'
-import app from '../../../../../app'
+import { client } from '../../../../../adapters/scaleway/client.js'
+import app from '../../../../../app.js'
 import {
   MAPPING_CASES,
   MAPPING_CASES_FUNC,
-} from '../../../../../constants/change-case'
-import logger from '../../../../../logger'
-import { getRandomPersonaSituation } from '../../../../simulations/__tests__/fixtures/simulations.fixtures'
-import type { SituationSchema } from '../../../../simulations/simulations.validator'
-import { ExternalServiceTypeEnum } from '../../../integrations.validator'
-import { randomPartner } from '../../mapping-file/__tests__/fixtures'
-import type { MappingFileKind } from '../../mapping-file/mapping-file.contract'
+} from '../../../../../constants/change-case.js'
+import logger from '../../../../../logger.js'
+import { getRandomPersonaSituation } from '../../../../simulations/__tests__/fixtures/simulations.fixtures.js'
+import type { SituationSchema } from '../../../../simulations/simulations.validator.js'
+import { ExternalServiceTypeEnum } from '../../../integrations.validator.js'
+import { randomPartner } from '../../mapping-file/__tests__/fixtures/index.js'
+import type { MappingFileKind } from '../../mapping-file/mapping-file.contract.js'
 
 const mockS3Files = (
   filesContent: Partial<
@@ -144,7 +144,7 @@ describe('Given a NGC integrations API user', () => {
 
     describe(`And ${ExternalServiceTypeEnum['2-tonnes']} config`, () => {
       const basePath = path.join(
-        __dirname,
+        import.meta.dirname,
         'fixtures',
         ExternalServiceTypeEnum['2-tonnes']
       )

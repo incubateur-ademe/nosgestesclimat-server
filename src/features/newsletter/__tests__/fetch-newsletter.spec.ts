@@ -3,17 +3,17 @@ import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test } from 'vitest'
 import { ZodError } from 'zod'
-import { formatBrevoDate } from '../../../adapters/brevo/__tests__/fixtures/formatBrevoDate'
-import { brevoGetNewsletter } from '../../../adapters/brevo/__tests__/fixtures/server.fixture'
-import { redis } from '../../../adapters/redis/client'
-import { KEYS } from '../../../adapters/redis/constant'
-import app from '../../../app'
+import { formatBrevoDate } from '../../../adapters/brevo/__tests__/fixtures/formatBrevoDate.js'
+import { brevoGetNewsletter } from '../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
+import { redis } from '../../../adapters/redis/client.js'
+import { KEYS } from '../../../adapters/redis/constant.js'
+import app from '../../../app.js'
 import {
   mswServer,
   resetMswServer,
-} from '../../../core/__tests__/fixtures/server.fixture'
-import { EventBus } from '../../../core/event-bus/event-bus'
-import logger from '../../../logger'
+} from '../../../core/__tests__/fixtures/server.fixture.js'
+import { EventBus } from '../../../core/event-bus/event-bus.js'
+import logger from '../../../logger.js'
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)

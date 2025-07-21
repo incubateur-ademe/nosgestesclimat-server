@@ -1,9 +1,9 @@
 import express from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { validateRequest } from 'zod-express-middleware'
-import logger from '../../logger'
-import { createNorthStarRating } from './northstar-ratings.service'
-import { NorthstarRatingCreateValidator } from './northstar-ratings.validator'
+import logger from '../../logger.js'
+import { createNorthStarRating } from './northstar-ratings.service.js'
+import { NorthstarRatingCreateValidator } from './northstar-ratings.validator.js'
 
 const router = express.Router()
 

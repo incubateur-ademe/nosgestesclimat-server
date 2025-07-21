@@ -6,15 +6,15 @@ import {
   defaultSimulationSelection,
   defaultSimulationSelectionWithoutPollAndSituation,
   defaultSimulationSelectionWithoutUser,
-} from '../../adapters/prisma/selection'
-import type { Session } from '../../adapters/prisma/transaction'
-import { batchFindMany } from '../../core/batchFindMany'
-import type { PublicPollParams } from '../organisations/organisations.validator'
-import type { UserParams } from '../users/users.validator'
+} from '../../adapters/prisma/selection.js'
+import type { Session } from '../../adapters/prisma/transaction.js'
+import { batchFindMany } from '../../core/batchFindMany.js'
+import type { PublicPollParams } from '../organisations/organisations.validator.js'
+import type { UserParams } from '../users/users.validator.js'
 import type {
   SimulationCreateDto,
   SimulationParticipantCreateDto,
-} from './simulations.validator'
+} from './simulations.validator.js'
 
 export const createUserSimulation = async (
   { userId }: UserParams,

@@ -1,9 +1,9 @@
 import { Server as HttpServer } from 'http'
 import type { AddressInfo } from 'net'
-import { redis } from './adapters/redis/client'
-import app from './app'
-import { config } from './config'
-import { initGeolocationStore } from './features/modele/geolocation.repository'
+import { redis } from './adapters/redis/client.js'
+import app from './app.js'
+import { config } from './config.js'
+import { initGeolocationStore } from './features/modele/geolocation.repository.js'
 
 const main = async () => {
   await redis.connect()

@@ -1,5 +1,5 @@
-import { transaction } from '../../adapters/prisma/transaction'
-import type { QuizzAnswerCreateDto } from './quizz-answers.validator'
+import { transaction } from '../../adapters/prisma/transaction.js'
+import type { QuizzAnswerCreateDto } from './quizz-answers.validator.js'
 
 export const createNorthStarRating = (quizzAnswer: QuizzAnswerCreateDto) => {
   return transaction((session) =>

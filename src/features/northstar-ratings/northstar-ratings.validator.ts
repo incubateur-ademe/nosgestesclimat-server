@@ -1,5 +1,5 @@
 import { NorthstarRatingType } from '@prisma/client'
-import z from 'zod'
+import { z } from 'zod'
 
 export const NorthstarRatingCreateDto = z.object({
   simulationId: z.string().uuid(),

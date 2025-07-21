@@ -3,21 +3,21 @@ import dayjs from 'dayjs'
 import { StatusCodes } from 'http-status-codes'
 import type supertest from 'supertest'
 import { vi } from 'vitest'
-import { formatBrevoDate } from '../../../../adapters/brevo/__tests__/fixtures/formatBrevoDate'
+import { formatBrevoDate } from '../../../../adapters/brevo/__tests__/fixtures/formatBrevoDate.js'
 import {
   brevoGetContact,
   brevoSendEmail,
   brevoUpdateContact,
-} from '../../../../adapters/brevo/__tests__/fixtures/server.fixture'
-import type { BrevoContactDto } from '../../../../adapters/brevo/client'
-import { ListIds } from '../../../../adapters/brevo/constant'
+} from '../../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
+import type { BrevoContactDto } from '../../../../adapters/brevo/client.js'
+import { ListIds } from '../../../../adapters/brevo/constant.js'
 import {
   mswServer,
   resetMswServer,
-} from '../../../../core/__tests__/fixtures/server.fixture'
-import { EventBus } from '../../../../core/event-bus/event-bus'
-import * as authenticationService from '../../../authentication/authentication.service'
-import type { UserUpdateDto } from '../../users.validator'
+} from '../../../../core/__tests__/fixtures/server.fixture.js'
+import { EventBus } from '../../../../core/event-bus/event-bus.js'
+import * as authenticationService from '../../../authentication/authentication.service.js'
+import type { UserUpdateDto } from '../../users.validator.js'
 
 type TestAgent = ReturnType<typeof supertest>
 

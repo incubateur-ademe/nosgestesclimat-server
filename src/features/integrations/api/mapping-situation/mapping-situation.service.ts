@@ -1,19 +1,19 @@
 import type { NGCRules } from '@incubateur-ademe/nosgestesclimat'
-import modelRules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
+import modelRules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json' with { type: 'json' }
 import Engine from 'publicodes'
 import yaml from 'yaml'
-import { MAPPING_CASES_FUNC } from '../../../../constants/change-case'
-import { EntityNotFoundException } from '../../../../core/errors/EntityNotFoundException'
-import type { ExternalServiceTypeEnum } from '../../integrations.validator'
+import { MAPPING_CASES_FUNC } from '../../../../constants/change-case.js'
+import { EntityNotFoundException } from '../../../../core/errors/EntityNotFoundException.js'
+import type { ExternalServiceTypeEnum } from '../../integrations.validator.js'
 import {
   MappingFileKind,
   type MappingFileParams,
-} from '../mapping-file/mapping-file.contract'
-import { getMappingFile } from '../mapping-file/mapping-file.service'
+} from '../mapping-file/mapping-file.contract.js'
+import { getMappingFile } from '../mapping-file/mapping-file.service.js'
 import type {
   MappingSituationDto,
   MappingSituationQuery,
-} from './mapping-situation.contract'
+} from './mapping-situation.contract.js'
 
 const fetchPartnerMappingFile = async (params: MappingFileParams) => {
   try {

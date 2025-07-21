@@ -5,14 +5,14 @@ import {
 } from '@prisma/client'
 import { isAxiosError } from 'axios'
 import dayjs from 'dayjs'
-import { fetchNewsletter } from '../../adapters/brevo/client'
-import { ListIds } from '../../adapters/brevo/constant'
-import { clients } from '../../adapters/matomo'
-import { ReferrerKind } from '../../adapters/matomo/client'
-import { prisma } from '../../adapters/prisma/client'
-import { isPrismaErrorUniqueConstraintFailed } from '../../core/typeguards/isPrismaError'
-import logger from '../../logger'
-import { createNewsLetterStats, upsertStat } from './stats.repository'
+import { fetchNewsletter } from '../../adapters/brevo/client.js'
+import { ListIds } from '../../adapters/brevo/constant.js'
+import { ReferrerKind } from '../../adapters/matomo/client.js'
+import { clients } from '../../adapters/matomo/index.js'
+import { prisma } from '../../adapters/prisma/client.js'
+import { isPrismaErrorUniqueConstraintFailed } from '../../core/typeguards/isPrismaError.js'
+import logger from '../../logger.js'
+import { createNewsLetterStats, upsertStat } from './stats.repository.js'
 
 const NB_VISITS_MIN = 10
 

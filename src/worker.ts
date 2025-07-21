@@ -1,11 +1,11 @@
-import { redisClientFactory } from './adapters/redis/client'
-import { CHANNELS } from './adapters/redis/constant'
-import { EventBus } from './core/event-bus/event-bus'
-import { JobCreatedAsyncEvent } from './features/jobs/events/JobCreated.event'
-import { dispatchJob } from './features/jobs/handlers/dispatch-job'
-import { SimulationUpsertedAsyncEvent } from './features/simulations/events/SimulationUpserted.event'
-import { computePollFunFacts } from './features/simulations/handlers/compute-poll-fun-facts'
-import logger from './logger'
+import { redisClientFactory } from './adapters/redis/client.js'
+import { CHANNELS } from './adapters/redis/constant.js'
+import { EventBus } from './core/event-bus/event-bus.js'
+import { JobCreatedAsyncEvent } from './features/jobs/events/JobCreated.event.js'
+import { dispatchJob } from './features/jobs/handlers/dispatch-job.js'
+import { SimulationUpsertedAsyncEvent } from './features/simulations/events/SimulationUpserted.event.js'
+import { computePollFunFacts } from './features/simulations/handlers/compute-poll-fun-facts.js'
+import logger from './logger.js'
 
 const RedisApiEventMap = {
   SimulationUpsertedAsyncEvent,

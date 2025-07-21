@@ -2,14 +2,14 @@ import {
   defaultGroupParticipantSelection,
   defaultGroupSelection,
   defaultUserSelection,
-} from '../../adapters/prisma/selection'
-import type { Session } from '../../adapters/prisma/transaction'
+} from '../../adapters/prisma/selection.js'
+import type { Session } from '../../adapters/prisma/transaction.js'
 import {
   createParticipantSimulation,
   fetchParticipantSimulation,
-} from '../simulations/simulations.repository'
-import { transferOwnershipToUser } from '../users/users.repository'
-import type { UserParams } from '../users/users.validator'
+} from '../simulations/simulations.repository.js'
+import { transferOwnershipToUser } from '../users/users.repository.js'
+import type { UserParams } from '../users/users.validator.js'
 import type {
   GroupCreateDto,
   GroupParams,
@@ -18,7 +18,7 @@ import type {
   ParticipantCreateDto,
   UserGroupParams,
   UserGroupParticipantParams,
-} from './groups.validator'
+} from './groups.validator.js'
 
 const getParticipantsWithSimulations = <T extends { simulationId: string }>(
   group: {

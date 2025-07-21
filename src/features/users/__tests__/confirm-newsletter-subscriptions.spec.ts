@@ -7,17 +7,17 @@ import {
   brevoGetContact,
   brevoRemoveFromList,
   brevoUpdateContact,
-} from '../../../adapters/brevo/__tests__/fixtures/server.fixture'
-import { ListIds } from '../../../adapters/brevo/constant'
-import { prisma } from '../../../adapters/prisma/client'
-import * as prismaTransactionAdapter from '../../../adapters/prisma/transaction'
-import app from '../../../app'
-import { mswServer } from '../../../core/__tests__/fixtures/server.fixture'
-import logger from '../../../logger'
+} from '../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
+import { ListIds } from '../../../adapters/brevo/constant.js'
+import { prisma } from '../../../adapters/prisma/client.js'
+import * as prismaTransactionAdapter from '../../../adapters/prisma/transaction.js'
+import app from '../../../app.js'
+import { mswServer } from '../../../core/__tests__/fixtures/server.fixture.js'
+import logger from '../../../logger.js'
 import {
   getBrevoContact,
   subscribeToNewsLetter,
-} from './fixtures/users.fixture'
+} from './fixtures/users.fixture.js'
 
 vi.mock('../../../adapters/prisma/transaction', async () => ({
   ...(await vi.importActual('../../../adapters/prisma/transaction')),

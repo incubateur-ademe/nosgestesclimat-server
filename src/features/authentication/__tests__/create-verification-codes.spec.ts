@@ -6,15 +6,15 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import {
   brevoSendEmail,
   brevoUpdateContact,
-} from '../../../adapters/brevo/__tests__/fixtures/server.fixture'
-import { prisma } from '../../../adapters/prisma/client'
-import app from '../../../app'
-import { mswServer } from '../../../core/__tests__/fixtures/server.fixture'
-import { EventBus } from '../../../core/event-bus/event-bus'
-import logger from '../../../logger'
-import * as authenticationService from '../authentication.service'
-import type { VerificationCodeCreateDto } from '../verification-codes.validator'
-import { CREATE_VERIFICATION_CODE_ROUTE } from './fixtures/verification-codes.fixture'
+} from '../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
+import { prisma } from '../../../adapters/prisma/client.js'
+import app from '../../../app.js'
+import { mswServer } from '../../../core/__tests__/fixtures/server.fixture.js'
+import { EventBus } from '../../../core/event-bus/event-bus.js'
+import logger from '../../../logger.js'
+import * as authenticationService from '../authentication.service.js'
+import type { VerificationCodeCreateDto } from '../verification-codes.validator.js'
+import { CREATE_VERIFICATION_CODE_ROUTE } from './fixtures/verification-codes.fixture.js'
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)

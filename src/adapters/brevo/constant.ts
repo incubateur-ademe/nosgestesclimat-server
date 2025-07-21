@@ -1,5 +1,5 @@
 import { StatusCodes } from 'http-status-codes'
-import type { ValueOf } from '../../types/types'
+import type { ValueOf } from '../../types/types.js'
 
 export enum TemplateIds {
   SIMULATION_COMPLETED = 55,

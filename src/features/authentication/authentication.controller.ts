@@ -1,14 +1,18 @@
 import express from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { validateRequest } from 'zod-express-middleware'
-import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
-import { EventBus } from '../../core/event-bus/event-bus'
-import logger from '../../logger'
-import { COOKIE_NAME, COOKIES_OPTIONS, login } from './authentication.service'
-import { LoginDto, LoginValidator } from './authentication.validator'
-import { LoginEvent } from './events/Login.event'
-import { syncUserDataAfterLogin } from './handlers/sync-user-data-after-login'
-import { updateBrevoContact } from './handlers/update-brevo-contact'
+import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
+import { EventBus } from '../../core/event-bus/event-bus.js'
+import logger from '../../logger.js'
+import {
+  COOKIE_NAME,
+  COOKIES_OPTIONS,
+  login,
+} from './authentication.service.js'
+import { LoginDto, LoginValidator } from './authentication.validator.js'
+import { LoginEvent } from './events/Login.event.js'
+import { syncUserDataAfterLogin } from './handlers/sync-user-data-after-login.js'
+import { updateBrevoContact } from './handlers/update-brevo-contact.js'
 
 const router = express.Router()
 

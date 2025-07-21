@@ -2,11 +2,11 @@ import {
   PollDefaultAdditionalQuestionType,
   SimulationAdditionalQuestionAnswerType,
 } from '@prisma/client'
-import z from 'zod'
-import { ListIds } from '../../adapters/brevo/constant'
-import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail'
-import { PublicPollParams } from '../organisations/organisations.validator'
-import { UserParams } from '../users/users.validator'
+import { z } from 'zod'
+import { ListIds } from '../../adapters/brevo/constant.js'
+import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail.js'
+import { PublicPollParams } from '../organisations/organisations.validator.js'
+import { UserParams } from '../users/users.validator.js'
 
 const MODEL_REGEX = /^[A-Z]+-[a-z]+-\d+\.\d+\.\d+$/
 

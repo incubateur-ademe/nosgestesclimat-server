@@ -3,8 +3,8 @@ import type {
   MatomoStatsKind,
   MatomoStatsSource,
 } from '@prisma/client'
-import type { ListIds } from '../../adapters/brevo/constant'
-import type { Session } from '../../adapters/prisma/transaction'
+import type { ListIds } from '../../adapters/brevo/constant.js'
+import type { Session } from '../../adapters/prisma/transaction.js'
 
 export const upsertStat = (
   {
