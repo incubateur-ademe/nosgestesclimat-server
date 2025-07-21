@@ -219,19 +219,20 @@ describe('Given a NGC user', () => {
       })
 
       describe('And expired cache does exist', () => {
-        beforeEach(async () => {
-          new Promise<void>((res, rej) =>
-            redis.set(
-              `${KEYS.brevoNewsletter}_${newsletterId}`,
-              JSON.stringify({
-                id: +newsletterId,
-                name: newsletterName,
-                totalSubscribers: newsletterTotalSubscribers,
-              }),
-              (err) => (err ? rej(err) : res())
+        beforeEach(
+          () =>
+            new Promise<void>((res, rej) =>
+              redis.set(
+                `${KEYS.brevoNewsletter}_${newsletterId}`,
+                JSON.stringify({
+                  id: +newsletterId,
+                  name: newsletterName,
+                  totalSubscribers: newsletterTotalSubscribers,
+                }),
+                (err) => (err ? rej(err) : res())
+              )
             )
-          )
-        })
+        )
 
         test(`Then it returns a  ${StatusCodes.OK} response with the mapped brevo response`, async () => {
           mswServer.use(

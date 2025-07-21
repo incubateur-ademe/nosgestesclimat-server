@@ -6,6 +6,13 @@ import typescriptEslint from 'typescript-eslint'
 export default [
   {
     ignores: ['node_modules', 'coverage', 'dist'],
+  },
+  {
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+      },
+    },
     settings: {
       'import/resolver': {
         typescript: true,
@@ -29,6 +36,7 @@ export default [
           varsIgnorePattern: '^_.*$',
         },
       ],
+      '@typescript-eslint/require-await': 'error',
       'import/order': [
         'error',
         {

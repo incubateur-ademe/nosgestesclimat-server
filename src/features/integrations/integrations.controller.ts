@@ -16,7 +16,7 @@ const router = express.Router()
  */
 router
   .route('/v1/:externalService')
-  .get(validateRequest(FetchExternalServiceValidator), async (req, res) => {
+  .get(validateRequest(FetchExternalServiceValidator), (req, res) => {
     return res
       .status(StatusCodes.OK)
       .json(getPartnerFeatures(req.params.externalService))

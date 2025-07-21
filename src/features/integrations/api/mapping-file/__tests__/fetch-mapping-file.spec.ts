@@ -210,7 +210,7 @@ describe('Given a NGC integrations API user', () => {
       })
 
       describe('And file does exist', () => {
-        beforeEach(async () => {
+        beforeEach(() => {
           vi.spyOn(client, 'send').mockImplementationOnce((command) => {
             if (!(command instanceof HeadObjectCommand)) {
               throw command

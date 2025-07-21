@@ -13,7 +13,7 @@ const router = express.Router()
  */
 router
   .route('/v1/geolocation')
-  .get(validateRequest(GeolocationFetchValidator), async (req, res) => {
+  .get(validateRequest(GeolocationFetchValidator), (req, res) => {
     try {
       const country = getModeleCountry(req.clientIp)
 

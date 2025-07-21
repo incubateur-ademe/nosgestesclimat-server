@@ -173,7 +173,7 @@ describe('Given newsletter stats recover job', () => {
       })
     })
 
-    describe('And brevo is down', async () => {
+    describe('And brevo is down', () => {
       test('Then it logs the exception', async () => {
         newsletterSubscriptions.forEach(({ listId }) =>
           mswServer.use(

@@ -174,7 +174,7 @@ describe('Given a poll participation', () => {
       })
 
       describe('And simulation has not been inserted but updated', () => {
-        beforeEach(async () => {
+        beforeEach(() => {
           event = new SimulationUpsertedAsyncEvent({
             ...event.attributes,
             updated: true,

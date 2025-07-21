@@ -41,7 +41,7 @@ router
 /**
  * Logs a user out
  */
-router.route('/v1/logout').post(async (_, res) => {
+router.route('/v1/logout').post((_, res) => {
   try {
     res.clearCookie(COOKIE_NAME, {
       httpOnly: true,
