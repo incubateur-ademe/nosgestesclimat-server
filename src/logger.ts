@@ -11,9 +11,9 @@ if (config.thirdParty.sentry.dsn) {
     new SentryTransport({
       sentry: {
         dsn: config.thirdParty.sentry.dsn,
-        enableTracing: false,
-        debug: false,
+        tracesSampleRate: 0.1,
         sampleRate: 0.1,
+        debug: false,
       },
       level: 'error',
     })

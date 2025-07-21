@@ -49,7 +49,12 @@ export const generateAuthenticationMiddleware =
 
         return next()
       } catch (err) {
-        return res.status(StatusCodes.UNAUTHORIZED).send(err.message).end()
+        return res
+          .status(StatusCodes.UNAUTHORIZED)
+          .send(
+            err instanceof UnauthorizedException ? err.message : 'Unauthorized'
+          )
+          .end()
       }
     })
   }

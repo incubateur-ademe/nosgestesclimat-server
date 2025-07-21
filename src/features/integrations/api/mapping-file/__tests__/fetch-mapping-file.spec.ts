@@ -248,6 +248,7 @@ describe('Given a NGC integrations API user', () => {
             'X-Amz-Expires': '60',
             'X-Amz-Signature': expect.any(String),
             'X-Amz-SignedHeaders': 'host',
+            'x-amz-checksum-mode': 'ENABLED',
             'x-id': 'GetObject',
           })
         })

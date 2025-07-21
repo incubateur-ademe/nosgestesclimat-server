@@ -2,7 +2,6 @@ import type { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import multer from 'multer'
 import yaml from 'yaml'
-import { ZodError } from 'zod'
 import { EntityNotFoundException } from '../../../../core/errors/EntityNotFoundException'
 import { ForbiddenException } from '../../../../core/errors/ForbiddenException'
 import { tsRestServer } from '../../../../core/ts-rest'
@@ -25,10 +24,6 @@ const validateMappingFile: RequestHandler = (req, res, next) => {
     yaml.parse(MappingFile.parse(req.file).buffer.toString())
     return next()
   } catch (err) {
-    if (!(err instanceof ZodError)) {
-      err = new ZodError(err)
-    }
-
     return res.status(StatusCodes.BAD_REQUEST).send(err).end()
   }
 }
