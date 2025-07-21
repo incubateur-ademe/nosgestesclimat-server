@@ -1,8 +1,8 @@
 import { StatusCodes } from 'http-status-codes'
-import { tsRestServer } from '../../../../core/ts-rest'
-import logger from '../../../../logger'
-import mappingSituationContract from './mapping-situation.contract'
-import { mapPartnerSituation } from './mapping-situation.service'
+import { tsRestServer } from '../../../../core/ts-rest.js'
+import logger from '../../../../logger.js'
+import mappingSituationContract from './mapping-situation.contract.js'
+import { mapPartnerSituation } from './mapping-situation.service.js'
 
 const router = tsRestServer.router(mappingSituationContract, {
   mapSituation: async ({ params, body, query }) => {

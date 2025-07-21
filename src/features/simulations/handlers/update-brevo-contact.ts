@@ -1,13 +1,13 @@
 import {
   addOrUpdateContactAfterIncompleteSimulationCreated,
   addOrUpdateContactAfterSimulationCreated,
-} from '../../../adapters/brevo/client'
-import type { Handler } from '../../../core/event-bus/handler'
-import type { SimulationUpsertedEvent } from '../events/SimulationUpserted.event'
+} from '../../../adapters/brevo/client.js'
+import type { Handler } from '../../../core/event-bus/handler.js'
+import type { SimulationUpsertedEvent } from '../events/SimulationUpserted.event.js'
 import type {
   ActionChoicesSchema,
   ComputedResultSchema,
-} from '../simulations.validator'
+} from '../simulations.validator.js'
 
 export const updateBrevoContact: Handler<SimulationUpsertedEvent> = async ({
   attributes,

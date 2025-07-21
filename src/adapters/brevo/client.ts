@@ -9,12 +9,12 @@ import type { AxiosError } from 'axios'
 import axios, { isAxiosError } from 'axios'
 import axiosRetry from 'axios-retry'
 import { z } from 'zod'
-import { config } from '../../config'
-import { isNetworkOrTimeoutOrRetryableError } from '../../core/typeguards/isRetryableAxiosError'
+import { config } from '../../config.js'
+import { isNetworkOrTimeoutOrRetryableError } from '../../core/typeguards/isRetryableAxiosError.js'
 import type {
   ActionChoicesSchema,
   ComputedResultSchema,
-} from '../../features/simulations/simulations.validator'
+} from '../../features/simulations/simulations.validator.js'
 import {
   AllNewsletters,
   Attributes,
@@ -25,7 +25,7 @@ import {
   MATOMO_KEYWORD_KEY,
   MATOMO_KEYWORDS,
   TemplateIds,
-} from './constant'
+} from './constant.js'
 
 const brevo = axios.create({
   baseURL: config.thirdParty.brevo.url,

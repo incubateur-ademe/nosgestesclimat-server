@@ -2,9 +2,9 @@ import type { Request } from 'express'
 import {
   defaultUserSelection,
   defaultVerifiedUserSelection,
-} from '../../adapters/prisma/selection'
-import type { Session } from '../../adapters/prisma/transaction'
-import type { UserParams, UserUpdateDto } from './users.validator'
+} from '../../adapters/prisma/selection.js'
+import type { Session } from '../../adapters/prisma/transaction.js'
+import type { UserParams, UserUpdateDto } from './users.validator.js'
 
 export const transferOwnershipToUser = async (
   { userId, email }: NonNullable<Request['user']>,

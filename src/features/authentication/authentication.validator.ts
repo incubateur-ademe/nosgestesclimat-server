@@ -1,5 +1,5 @@
-import z from 'zod'
-import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail'
+import { z } from 'zod'
+import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail.js'
 
 export const LoginDto = z
   .object({

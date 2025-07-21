@@ -1,9 +1,9 @@
 import express from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { validateRequest } from 'zod-express-middleware'
-import logger from '../../logger'
-import { createNorthStarRating } from './quizz-answers.service'
-import { QuizzAnswerCreateValidator } from './quizz-answers.validator'
+import logger from '../../logger.js'
+import { createNorthStarRating } from './quizz-answers.service.js'
+import { QuizzAnswerCreateValidator } from './quizz-answers.validator.js'
 
 const router = express.Router()
 

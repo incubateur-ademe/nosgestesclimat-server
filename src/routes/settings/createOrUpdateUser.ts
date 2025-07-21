@@ -1,5 +1,5 @@
-import { prisma } from '../../adapters/prisma/client'
-import { isValidEmail } from '../../core/typeguards/isValidEmail'
+import { prisma } from '../../adapters/prisma/client.js'
+import { isValidEmail } from '../../core/typeguards/isValidEmail.js'
 
 type Props = {
   userId: string

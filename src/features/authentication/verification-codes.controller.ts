@@ -1,17 +1,17 @@
 import express from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { validateRequest } from 'zod-express-middleware'
-import { config } from '../../config'
-import { EventBus } from '../../core/event-bus/event-bus'
-import logger from '../../logger'
-import { VerificationCodeCreatedEvent } from './events/VerificationCodeCreated.event'
-import { sendVerificationCode } from './handlers/send-verification-code'
-import { updateBrevoContact } from './handlers/update-brevo-contact'
-import { createVerificationCode } from './verification-codes.service'
+import { config } from '../../config.js'
+import { EventBus } from '../../core/event-bus/event-bus.js'
+import logger from '../../logger.js'
+import { VerificationCodeCreatedEvent } from './events/VerificationCodeCreated.event.js'
+import { sendVerificationCode } from './handlers/send-verification-code.js'
+import { updateBrevoContact } from './handlers/update-brevo-contact.js'
+import { createVerificationCode } from './verification-codes.service.js'
 import {
   VerificationCodeCreateDto,
   VerificationCodeCreateValidator,
-} from './verification-codes.validator'
+} from './verification-codes.validator.js'
 
 const router = express.Router()
 

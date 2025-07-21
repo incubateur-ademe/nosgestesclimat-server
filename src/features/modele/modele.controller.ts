@@ -1,10 +1,10 @@
 import express from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { validateRequest } from 'zod-express-middleware'
-import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
-import logger from '../../logger'
-import { getModeleCountry } from './geolocation.service'
-import { GeolocationFetchValidator } from './modele.validator'
+import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
+import logger from '../../logger.js'
+import { getModeleCountry } from './geolocation.service.js'
+import { GeolocationFetchValidator } from './modele.validator.js'
 
 const router = express.Router()
 
@@ -13,7 +13,7 @@ const router = express.Router()
  */
 router
   .route('/v1/geolocation')
-  .get(validateRequest(GeolocationFetchValidator), async (req, res) => {
+  .get(validateRequest(GeolocationFetchValidator), (req, res) => {
     try {
       const country = getModeleCountry(req.clientIp)
 

@@ -1,6 +1,6 @@
-import z from 'zod'
-import { ListIds } from '../../adapters/brevo/constant'
-import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail'
+import { z } from 'zod'
+import { ListIds } from '../../adapters/brevo/constant.js'
+import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail.js'
 
 export const UserParams = z
   .object({

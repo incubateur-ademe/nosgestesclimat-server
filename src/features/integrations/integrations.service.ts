@@ -1,8 +1,8 @@
-import { exportSituation as twoTonsExportSituation } from '../../adapters/2tonnes/client'
-import { exportSituation as agirExportSituation } from '../../adapters/agir/client'
-import type { SituationSchema } from '../simulations/simulations.validator'
-import type { SituationExportQueryParamsSchema } from './integrations.validator'
-import { ExternalServiceTypeEnum } from './integrations.validator'
+import { exportSituation as twoTonsExportSituation } from '../../adapters/2tonnes/client.js'
+import { exportSituation as agirExportSituation } from '../../adapters/agir/client.js'
+import type { SituationSchema } from '../simulations/simulations.validator.js'
+import type { SituationExportQueryParamsSchema } from './integrations.validator.js'
+import { ExternalServiceTypeEnum } from './integrations.validator.js'
 
 type ExternalService = keyof typeof ExternalServiceTypeEnum
 

@@ -1,7 +1,7 @@
 import type { Group, Organisation, Simulation, User } from '@prisma/client'
-import { EventBusEvent } from '../../../core/event-bus/event'
-import type { ModelToDto } from '../../../types/types'
-import type { SimulationCreateNewsletterList } from '../simulations.validator'
+import { EventBusEvent } from '../../../core/event-bus/event.js'
+import type { ModelToDto } from '../../../types/types.js'
+import type { SimulationCreateNewsletterList } from '../simulations.validator.js'
 
 export type SimulationEvent = Pick<
   Simulation,

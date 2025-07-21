@@ -1,16 +1,16 @@
 import { StatusCodes } from 'http-status-codes'
-import { EntityNotFoundException } from '../../../../core/errors/EntityNotFoundException'
-import { ForbiddenException } from '../../../../core/errors/ForbiddenException'
-import { tsRestServer } from '../../../../core/ts-rest'
-import logger from '../../../../logger'
-import { generateAuthenticationMiddleware } from '../authentication/authentication.service'
-import emailWhitelistContract from './email-whitelist.contract'
+import { EntityNotFoundException } from '../../../../core/errors/EntityNotFoundException.js'
+import { ForbiddenException } from '../../../../core/errors/ForbiddenException.js'
+import { tsRestServer } from '../../../../core/ts-rest.js'
+import logger from '../../../../logger.js'
+import { generateAuthenticationMiddleware } from '../authentication/authentication.service.js'
+import emailWhitelistContract from './email-whitelist.contract.js'
 import {
   createEmailWhitelist,
   deleteEmailWhitelist,
   fetchEmailWhitelists,
   updateEmailWhitelist,
-} from './email-whitelist.service'
+} from './email-whitelist.service.js'
 
 const router = tsRestServer.router(emailWhitelistContract, {
   createEmailWhitelist: {

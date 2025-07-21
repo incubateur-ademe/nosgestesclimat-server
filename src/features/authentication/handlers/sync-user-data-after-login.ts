@@ -1,6 +1,6 @@
-import type { Handler } from '../../../core/event-bus/handler'
-import { syncUserData } from '../../users/users.service'
-import type { LoginEvent } from '../events/Login.event'
+import type { Handler } from '../../../core/event-bus/handler.js'
+import { syncUserData } from '../../users/users.service.js'
+import type { LoginEvent } from '../events/Login.event.js'
 
 export const syncUserDataAfterLogin: Handler<LoginEvent> = ({
   attributes: {

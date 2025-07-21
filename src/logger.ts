@@ -1,6 +1,6 @@
 import winston from 'winston'
 import SentryTransport from 'winston-transport-sentry-node'
-import { config } from './config'
+import { config } from './config.js'
 
 const { combine, timestamp, json, errors } = winston.format
 

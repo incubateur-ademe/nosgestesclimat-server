@@ -3,31 +3,31 @@ import type {
   FunFacts,
   NGCRules,
 } from '@incubateur-ademe/nosgestesclimat'
-import modelRules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
-import modelFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRules.json'
+import modelRules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json' with { type: 'json' }
+import modelFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRules.json' with { type: 'json' }
 import type { JsonValue } from '@prisma/client/runtime/library'
 import dayjs from 'dayjs'
 import type { Request } from 'express'
 import type Engine from 'publicodes'
-import { prisma } from '../../adapters/prisma/client'
-import type { Session } from '../../adapters/prisma/transaction'
-import { transaction } from '../../adapters/prisma/transaction'
-import { redis } from '../../adapters/redis/client'
-import { KEYS } from '../../adapters/redis/constant'
-import { carbonMetric, waterMetric } from '../../constants/ngc'
-import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
-import { ForbiddenException } from '../../core/errors/ForbiddenException'
-import { EventBus } from '../../core/event-bus/event-bus'
-import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError'
-import { PollUpdatedEvent } from '../organisations/events/PollUpdated.event'
-import { findOrganisationPublicPollBySlugOrId } from '../organisations/organisations.repository'
+import { prisma } from '../../adapters/prisma/client.js'
+import type { Session } from '../../adapters/prisma/transaction.js'
+import { transaction } from '../../adapters/prisma/transaction.js'
+import { redis } from '../../adapters/redis/client.js'
+import { KEYS } from '../../adapters/redis/constant.js'
+import { carbonMetric, waterMetric } from '../../constants/ngc.js'
+import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
+import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
+import { EventBus } from '../../core/event-bus/event-bus.js'
+import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError.js'
+import { PollUpdatedEvent } from '../organisations/events/PollUpdated.event.js'
+import { findOrganisationPublicPollBySlugOrId } from '../organisations/organisations.repository.js'
 import type {
   OrganisationPollCustomAdditionalQuestion,
   PublicPollParams,
-} from '../organisations/organisations.validator'
-import type { UserParams } from '../users/users.validator'
-import type { SimulationAsyncEvent } from './events/SimulationUpserted.event'
-import { SimulationUpsertedEvent } from './events/SimulationUpserted.event'
+} from '../organisations/organisations.validator.js'
+import type { UserParams } from '../users/users.validator.js'
+import type { SimulationAsyncEvent } from './events/SimulationUpserted.event.js'
+import { SimulationUpsertedEvent } from './events/SimulationUpserted.event.js'
 import {
   batchPollSimulations,
   countOrganisationPublicPollSimulations,
@@ -36,17 +36,20 @@ import {
   fetchPollSimulations,
   fetchSimulationById,
   fetchUserSimulations,
-} from './simulations.repository'
+} from './simulations.repository.js'
 import type {
   SimulationCreateDto,
   SimulationCreateNewsletterList,
   UserSimulationParams,
-} from './simulations.validator'
-import { ComputedResultSchema, SituationSchema } from './simulations.validator'
+} from './simulations.validator.js'
+import {
+  ComputedResultSchema,
+  SituationSchema,
+} from './simulations.validator.js'
 import {
   getSituationDottedNameValue,
   getSituationDottedNameValueWithEngine,
-} from './situation/situation.service'
+} from './situation/situation.service.js'
 
 const frRules = modelRules as Partial<NGCRules>
 const funFactsRules = modelFunFacts as { [k in keyof FunFacts]: DottedName }

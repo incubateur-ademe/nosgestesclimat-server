@@ -4,18 +4,18 @@ import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import { prisma } from '../../../../../adapters/prisma/client'
-import app from '../../../../../app'
-import { config } from '../../../../../config'
-import logger from '../../../../../logger'
+import { prisma } from '../../../../../adapters/prisma/client.js'
+import app from '../../../../../app.js'
+import { config } from '../../../../../config.js'
+import logger from '../../../../../logger.js'
 import {
   randomApiScopeName,
   recoverApiToken,
-} from '../../authentication/__tests__/fixtures/authentication.fixtures'
+} from '../../authentication/__tests__/fixtures/authentication.fixtures.js'
 import {
   createEmailWhitelist,
   UPDATE_EMAIL_WHITELIST_ROUTE,
-} from './fixtures/email-whitelist.fixture'
+} from './fixtures/email-whitelist.fixture.js'
 
 describe('Given a NGC integrations API user', () => {
   const agent = supertest(app)

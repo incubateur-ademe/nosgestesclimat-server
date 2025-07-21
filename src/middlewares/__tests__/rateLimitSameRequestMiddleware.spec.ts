@@ -2,11 +2,11 @@ import crypto from 'crypto'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import { redis } from '../../adapters/redis/client'
-import { KEYS } from '../../adapters/redis/constant'
-import app from '../../app'
-import logger from '../../logger'
-import { rateLimitSameRequestMiddleware } from '../rateLimitSameRequestMiddleware'
+import { redis } from '../../adapters/redis/client.js'
+import { KEYS } from '../../adapters/redis/constant.js'
+import app from '../../app.js'
+import logger from '../../logger.js'
+import { rateLimitSameRequestMiddleware } from '../rateLimitSameRequestMiddleware.js'
 
 describe('rate limit same requests middleware', () => {
   app.use(rateLimitSameRequestMiddleware)

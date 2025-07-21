@@ -1,5 +1,5 @@
 import type { User } from '@prisma/client'
-import { EventBusEvent } from '../../../core/event-bus/event'
+import { EventBusEvent } from '../../../core/event-bus/event.js'
 
 export class GroupCreatedEvent extends EventBusEvent<{
   administrator: Pick<User, 'id' | 'name' | 'email'>

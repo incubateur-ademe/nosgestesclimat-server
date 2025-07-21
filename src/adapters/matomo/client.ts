@@ -1,7 +1,7 @@
 import { MatomoStatsDevice, MatomoStatsKind } from '@prisma/client'
 import type { AxiosInstance } from 'axios'
 import { z } from 'zod'
-import logger from '../../logger'
+import logger from '../../logger.js'
 
 export const ReferrerType = {
   [MatomoStatsKind.direct]: 1,

@@ -1,9 +1,9 @@
 import crypto from 'crypto'
 import type { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
-import { redis } from '../adapters/redis/client'
-import { KEYS } from '../adapters/redis/constant'
-import logger from '../logger'
+import { redis } from '../adapters/redis/client.js'
+import { KEYS } from '../adapters/redis/constant.js'
+import logger from '../logger.js'
 
 export const rateLimitSameRequestMiddleware: RequestHandler = async (
   req,

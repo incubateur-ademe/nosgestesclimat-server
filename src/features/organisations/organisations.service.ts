@@ -7,36 +7,36 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import type { Organisation } from '@prisma/client'
 import type { Request } from 'express'
 import { utils, write } from 'xlsx'
-import { prisma } from '../../adapters/prisma/client'
-import type { Session } from '../../adapters/prisma/transaction'
-import { transaction } from '../../adapters/prisma/transaction'
-import { client } from '../../adapters/scaleway/client'
-import { config } from '../../config'
-import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
-import { ForbiddenException } from '../../core/errors/ForbiddenException'
-import { EventBus } from '../../core/event-bus/event-bus'
+import { prisma } from '../../adapters/prisma/client.js'
+import type { Session } from '../../adapters/prisma/transaction.js'
+import { transaction } from '../../adapters/prisma/transaction.js'
+import { client } from '../../adapters/scaleway/client.js'
+import { config } from '../../config.js'
+import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
+import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
+import { EventBus } from '../../core/event-bus/event-bus.js'
 import {
   isPrismaErrorNotFound,
   isPrismaErrorUniqueConstraintFailed,
-} from '../../core/typeguards/isPrismaError'
-import logger from '../../logger'
-import { exchangeCredentialsForToken } from '../authentication/authentication.service'
-import type { JobParams } from '../jobs/jobs.repository'
-import { JobKind } from '../jobs/jobs.repository'
+} from '../../core/typeguards/isPrismaError.js'
+import logger from '../../logger.js'
+import { exchangeCredentialsForToken } from '../authentication/authentication.service.js'
+import type { JobParams } from '../jobs/jobs.repository.js'
+import { JobKind } from '../jobs/jobs.repository.js'
 import {
   bootstrapJob,
   getPendingJobStatus,
   JobFilesRootPath,
-} from '../jobs/jobs.service'
-import type { SimulationAsyncEvent } from '../simulations/events/SimulationUpserted.event'
+} from '../jobs/jobs.service.js'
+import type { SimulationAsyncEvent } from '../simulations/events/SimulationUpserted.event.js'
 import {
   getPollFunFacts,
   getPollSimulationsExcelData,
-} from '../simulations/simulations.service'
-import { OrganisationCreatedEvent } from './events/OrganisationCreated.event'
-import { OrganisationUpdatedEvent } from './events/OrganisationUpdated.event'
-import { PollCreatedEvent as PollUpdatedEvent } from './events/PollCreated.event'
-import { PollDeletedEvent } from './events/PollDeletedEvent'
+} from '../simulations/simulations.service.js'
+import { OrganisationCreatedEvent } from './events/OrganisationCreated.event.js'
+import { OrganisationUpdatedEvent } from './events/OrganisationUpdated.event.js'
+import { PollCreatedEvent as PollUpdatedEvent } from './events/PollCreated.event.js'
+import { PollDeletedEvent } from './events/PollDeletedEvent.js'
 import {
   createOrganisationAndAdministrator,
   createOrganisationPoll,
@@ -52,7 +52,7 @@ import {
   setPollFunFacts,
   updateAdministratorOrganisation,
   updateOrganisationPoll,
-} from './organisations.repository'
+} from './organisations.repository.js'
 import {
   OrganisationPollCustomAdditionalQuestions,
   type OrganisationCreateDto,
@@ -62,7 +62,7 @@ import {
   type OrganisationPollUpdateDto,
   type OrganisationUpdateDto,
   type PublicPollParams,
-} from './organisations.validator'
+} from './organisations.validator.js'
 
 const { bucket, rootPath } = config.thirdParty.scaleway
 

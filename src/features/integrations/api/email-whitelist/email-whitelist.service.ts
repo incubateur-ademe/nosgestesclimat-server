@@ -1,20 +1,20 @@
-import { prisma } from '../../../../adapters/prisma/client'
-import { transaction } from '../../../../adapters/prisma/transaction'
-import { EntityNotFoundException } from '../../../../core/errors/EntityNotFoundException'
-import { ForbiddenException } from '../../../../core/errors/ForbiddenException'
-import { isPrismaErrorNotFound } from '../../../../core/typeguards/isPrismaError'
+import { prisma } from '../../../../adapters/prisma/client.js'
+import { transaction } from '../../../../adapters/prisma/transaction.js'
+import { EntityNotFoundException } from '../../../../core/errors/EntityNotFoundException.js'
+import { ForbiddenException } from '../../../../core/errors/ForbiddenException.js'
+import { isPrismaErrorNotFound } from '../../../../core/typeguards/isPrismaError.js'
 import type {
   EmailWhitelistCreateDto,
   EmailWhitelistParams,
   EmailWhitelistsFetchQuery,
   EmailWhitelistUpdateDto,
-} from './email-whitelist.contract'
+} from './email-whitelist.contract.js'
 import {
   createWhitelist,
   deleteWhitelist,
   fetchWhitelists,
   updateWhitelist,
-} from './email-whitelist.repository'
+} from './email-whitelist.repository.js'
 
 const whitelistToDto = ({
   apiScopeName,

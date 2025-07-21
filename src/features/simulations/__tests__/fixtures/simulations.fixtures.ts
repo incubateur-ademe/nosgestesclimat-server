@@ -1,29 +1,29 @@
 import { faker } from '@faker-js/faker'
 import type { DottedName, NGCRuleNode } from '@incubateur-ademe/nosgestesclimat'
-import { version as modelVersion } from '@incubateur-ademe/nosgestesclimat/package.json'
-import rules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
-import personas from '@incubateur-ademe/nosgestesclimat/public/personas-fr.json'
+import { version as modelVersion } from '@incubateur-ademe/nosgestesclimat/package.json' with { type: 'json' }
+import rules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json' with { type: 'json' }
+import personas from '@incubateur-ademe/nosgestesclimat/public/personas-fr.json' with { type: 'json' }
 import { StatusCodes } from 'http-status-codes'
 import type { ParsedRules, PublicodesExpression } from 'publicodes'
 import Engine, { utils } from 'publicodes'
 import type supertest from 'supertest'
-import { carbonMetric, waterMetric } from '../../../../constants/ngc'
+import { carbonMetric, waterMetric } from '../../../../constants/ngc.js'
 
 import {
   brevoRemoveFromList,
   brevoUpdateContact,
-} from '../../../../adapters/brevo/__tests__/fixtures/server.fixture'
+} from '../../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
 import {
   mswServer,
   resetMswServer,
-} from '../../../../core/__tests__/fixtures/server.fixture'
-import { EventBus } from '../../../../core/event-bus/event-bus'
-import type { Metric } from '../../../../types/types'
+} from '../../../../core/__tests__/fixtures/server.fixture.js'
+import { EventBus } from '../../../../core/event-bus/event-bus.js'
+import type { Metric } from '../../../../types/types.js'
 import type {
   SimulationCreateInputDto,
   SimulationParticipantCreateInputDto,
-} from '../../simulations.validator'
-import { SituationSchema } from '../../simulations.validator'
+} from '../../simulations.validator.js'
+import { SituationSchema } from '../../simulations.validator.js'
 
 type TestAgent = ReturnType<typeof supertest>
 
@@ -117,7 +117,7 @@ const evaluate = ({
 
   return typeof value === 'number'
     ? +value.toFixed(4)
-    : !!value
+    : value
       ? +value
       : undefined
 }

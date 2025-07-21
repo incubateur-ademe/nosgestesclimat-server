@@ -1,5 +1,5 @@
 import dotenv from 'dotenv'
-import { ensureEnvVar } from './utils/os'
+import { ensureEnvVar } from './utils/os.js'
 
 if (process.env.NODE_ENV === 'development') {
   dotenv.config({ quiet: true })
@@ -32,7 +32,7 @@ export const config = {
   },
   security: {
     job: {
-      secret: ensureEnvVar(process.env.JWT_SECRET, ''),
+      secret: ensureEnvVar(process.env.JOB_SECRET, ''),
     },
     jwt: {
       secret: ensureEnvVar(process.env.JWT_SECRET, ''),

@@ -9,13 +9,13 @@ import dayjs from 'dayjs'
 import { StatusCodes } from 'http-status-codes'
 import type supertest from 'supertest'
 import { vi } from 'vitest'
-import { brevoSendEmail } from '../../../../../../adapters/brevo/__tests__/fixtures/server.fixture'
+import { brevoSendEmail } from '../../../../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
 import {
   mswServer,
   resetMswServer,
-} from '../../../../../../core/__tests__/fixtures/server.fixture'
-import { EventBus } from '../../../../../../core/event-bus/event-bus'
-import * as authenticationService from '../../../../../authentication/authentication.service'
+} from '../../../../../../core/__tests__/fixtures/server.fixture.js'
+import { EventBus } from '../../../../../../core/event-bus/event-bus.js'
+import * as authenticationService from '../../../../../authentication/authentication.service.js'
 
 type TestAgent = ReturnType<typeof supertest>
 

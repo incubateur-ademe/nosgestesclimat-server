@@ -1,7 +1,7 @@
 import axios from 'axios'
 import axiosRetry from 'axios-retry'
-import { config } from '../../../config'
-import { isNetworkOrTimeoutOrRetryableError } from '../../../core/typeguards/isRetryableAxiosError'
+import { config } from '../../../config.js'
+import { isNetworkOrTimeoutOrRetryableError } from '../../../core/typeguards/isRetryableAxiosError.js'
 
 const { siteId, token, url } = config.thirdParty.matomo.data
 

@@ -1,13 +1,13 @@
 import { StatusCodes } from 'http-status-codes'
 import type supertest from 'supertest'
-import { brevoUpdateContact } from '../../../../adapters/brevo/__tests__/fixtures/server.fixture'
+import { brevoUpdateContact } from '../../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
 import {
   mswServer,
   resetMswServer,
-} from '../../../../core/__tests__/fixtures/server.fixture'
-import { EventBus } from '../../../../core/event-bus/event-bus'
-import type { VerificationCodeCreateDto } from '../../verification-codes.validator'
-import { createVerificationCode } from './verification-codes.fixture'
+} from '../../../../core/__tests__/fixtures/server.fixture.js'
+import { EventBus } from '../../../../core/event-bus/event-bus.js'
+import type { VerificationCodeCreateDto } from '../../verification-codes.validator.js'
+import { createVerificationCode } from './verification-codes.fixture.js'
 
 type TestAgent = ReturnType<typeof supertest>
 

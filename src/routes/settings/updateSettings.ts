@@ -3,10 +3,10 @@ import express from 'express'
 import {
   addOrUpdateContact,
   fetchContactOrThrow,
-} from '../../adapters/brevo/client'
-import { Attributes } from '../../adapters/brevo/constant'
-import { axiosConf } from '../../constants/axios'
-import { createOrUpdateUser } from './createOrUpdateUser'
+} from '../../adapters/brevo/client.js'
+import { Attributes } from '../../adapters/brevo/constant.js'
+import { axiosConf } from '../../constants/axios.js'
+import { createOrUpdateUser } from './createOrUpdateUser.js'
 
 const router = express.Router()
 

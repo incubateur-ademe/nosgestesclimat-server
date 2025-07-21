@@ -1,6 +1,6 @@
 import type { PrismaClient } from '@prisma/client'
 import type { ITXClientDenyList } from '@prisma/client/runtime/library'
-import { prisma } from './client'
+import { prisma } from './client.js'
 
 export type Session = Omit<PrismaClient, ITXClientDenyList>
 

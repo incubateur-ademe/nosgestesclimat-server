@@ -5,15 +5,15 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import {
   brevoSendEmail,
   brevoUpdateContact,
-} from '../../../adapters/brevo/__tests__/fixtures/server.fixture'
-import { prisma } from '../../../adapters/prisma/client'
-import app from '../../../app'
-import { mswServer } from '../../../core/__tests__/fixtures/server.fixture'
-import { EventBus } from '../../../core/event-bus/event-bus'
-import logger from '../../../logger'
-import { getSimulationPayload } from '../../simulations/__tests__/fixtures/simulations.fixtures'
-import type { GroupCreateInputDto } from '../groups.validator'
-import { CREATE_GROUP_ROUTE } from './fixtures/groups.fixture'
+} from '../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
+import { prisma } from '../../../adapters/prisma/client.js'
+import app from '../../../app.js'
+import { mswServer } from '../../../core/__tests__/fixtures/server.fixture.js'
+import { EventBus } from '../../../core/event-bus/event-bus.js'
+import logger from '../../../logger.js'
+import { getSimulationPayload } from '../../simulations/__tests__/fixtures/simulations.fixtures.js'
+import type { GroupCreateInputDto } from '../groups.validator.js'
+import { CREATE_GROUP_ROUTE } from './fixtures/groups.fixture.js'
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)
@@ -587,17 +587,17 @@ describe('Given a NGC user', () => {
                 params: {
                   GROUP_URL: expect.stringMatching(
                     new RegExp(
-                      `^https:\\/\\/nosgestesclimat\\.fr\\/amis\\/resultats\\?groupId=[a-zA-Z0-9\._]+&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-voir-classement$`
+                      `^https:\\/\\/nosgestesclimat\\.fr\\/amis\\/resultats\\?groupId=[a-zA-Z0-9_]+&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-voir-classement$`
                     )
                   ),
                   SHARE_URL: expect.stringMatching(
                     new RegExp(
-                      `^https:\\/\\/nosgestesclimat\\.fr\\/amis\\/invitation\\?groupId=[a-zA-Z0-9\._]+&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-url-partage$`
+                      `^https:\\/\\/nosgestesclimat\\.fr\\/amis\\/invitation\\?groupId=[a-zA-Z0-9_]+&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-url-partage$`
                     )
                   ),
                   DELETE_URL: expect.stringMatching(
                     new RegExp(
-                      `^https:\\/\\/nosgestesclimat\\.fr\\/amis\\/supprimer\\?groupId=[a-zA-Z0-9\._]+&userId=${userId}&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-delete$`
+                      `^https:\\/\\/nosgestesclimat\\.fr\\/amis\\/supprimer\\?groupId=[a-zA-Z0-9_]+&userId=${userId}&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-delete$`
                     )
                   ),
                   GROUP_NAME: payload.name,
@@ -647,17 +647,17 @@ describe('Given a NGC user', () => {
                   params: {
                     GROUP_URL: expect.stringMatching(
                       new RegExp(
-                        `^https:\\/\\/preprod\\.nosgestesclimat\\.fr\\/amis\\/resultats\\?groupId=[a-zA-Z0-9\._]+&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-voir-classement$`
+                        `^https:\\/\\/preprod\\.nosgestesclimat\\.fr\\/amis\\/resultats\\?groupId=[a-zA-Z0-9_]+&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-voir-classement$`
                       )
                     ),
                     SHARE_URL: expect.stringMatching(
                       new RegExp(
-                        `^https:\\/\\/preprod\\.nosgestesclimat\\.fr\\/amis\\/invitation\\?groupId=[a-zA-Z0-9\._]+&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-url-partage$`
+                        `^https:\\/\\/preprod\\.nosgestesclimat\\.fr\\/amis\\/invitation\\?groupId=[a-zA-Z0-9_]+&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-url-partage$`
                       )
                     ),
                     DELETE_URL: expect.stringMatching(
                       new RegExp(
-                        `^https:\\/\\/preprod\\.nosgestesclimat\\.fr\\/amis\\/supprimer\\?groupId=[a-zA-Z0-9\._]+&userId=${userId}&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-delete$`
+                        `^https:\\/\\/preprod\\.nosgestesclimat\\.fr\\/amis\\/supprimer\\?groupId=[a-zA-Z0-9_]+&userId=${userId}&mtm_campaign=email-automatise&mtm_kwd=groupe-admin-delete$`
                       )
                     ),
 

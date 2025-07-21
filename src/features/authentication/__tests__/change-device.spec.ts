@@ -2,24 +2,24 @@ import { faker } from '@faker-js/faker'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test } from 'vitest'
-import { prisma } from '../../../adapters/prisma/client'
-import app from '../../../app'
+import { prisma } from '../../../adapters/prisma/client.js'
+import app from '../../../app.js'
 import {
   createGroup,
   FETCH_USER_GROUPS_ROUTE,
   joinGroup,
-} from '../../groups/__tests__/fixtures/groups.fixture'
+} from '../../groups/__tests__/fixtures/groups.fixture.js'
 import {
   createOrganisation,
   createOrganisationPoll,
   createOrganisationPollSimulation,
-} from '../../organisations/__tests__/fixtures/organisations.fixture'
+} from '../../organisations/__tests__/fixtures/organisations.fixture.js'
 import {
   createSimulation,
   FETCH_USER_SIMULATIONS_ROUTE,
   getSimulationPayload,
-} from '../../simulations/__tests__/fixtures/simulations.fixtures'
-import { login } from './fixtures/login.fixture'
+} from '../../simulations/__tests__/fixtures/simulations.fixtures.js'
+import { login } from './fixtures/login.fixture.js'
 
 const agent = supertest(app)
 

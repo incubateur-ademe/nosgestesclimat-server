@@ -1,5 +1,5 @@
 import express from 'express'
-import { fetchContact } from '../../adapters/brevo/client'
+import { fetchContact } from '../../adapters/brevo/client.js'
 
 const router = express.Router()
 

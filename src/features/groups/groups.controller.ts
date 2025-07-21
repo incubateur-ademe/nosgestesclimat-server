@@ -1,15 +1,15 @@
 import express from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { validateRequest } from 'zod-express-middleware'
-import { config } from '../../config'
-import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
-import { ForbiddenException } from '../../core/errors/ForbiddenException'
-import { EventBus } from '../../core/event-bus/event-bus'
-import logger from '../../logger'
-import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
-import { GroupCreatedEvent } from './events/GroupCreated.event'
-import { GroupDeletedEvent } from './events/GroupDeleted.event'
-import { GroupUpdatedEvent } from './events/GroupUpdated.event'
+import { config } from '../../config.js'
+import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
+import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
+import { EventBus } from '../../core/event-bus/event-bus.js'
+import logger from '../../logger.js'
+import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware.js'
+import { GroupCreatedEvent } from './events/GroupCreated.event.js'
+import { GroupDeletedEvent } from './events/GroupDeleted.event.js'
+import { GroupUpdatedEvent } from './events/GroupUpdated.event.js'
 import {
   createGroup,
   createParticipant,
@@ -18,7 +18,7 @@ import {
   fetchGroups,
   removeParticipant,
   updateGroup,
-} from './groups.service'
+} from './groups.service.js'
 import {
   GroupCreateDto,
   GroupCreateValidator,
@@ -29,12 +29,12 @@ import {
   ParticipantCreateDto,
   ParticipantCreateValidator,
   ParticipantDeleteValidator,
-} from './groups.validator'
+} from './groups.validator.js'
 import {
   addOrUpdateBrevoAdministratorContact,
   addOrUpdateBrevoParticipantContact,
-} from './handlers/add-or-update-brevo-contact'
-import { syncUserDataAfterGroupCreated } from './handlers/sync-user-data-after-group-created'
+} from './handlers/add-or-update-brevo-contact.js'
+import { syncUserDataAfterGroupCreated } from './handlers/sync-user-data-after-group-created.js'
 
 const router = express.Router()
 

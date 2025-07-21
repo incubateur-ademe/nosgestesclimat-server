@@ -7,9 +7,9 @@ import {
   defaultOrganisationSelectionWithoutPolls,
   defaultPollSelection,
   defaultVerifiedUserSelection,
-} from '../../adapters/prisma/selection'
-import type { Session } from '../../adapters/prisma/transaction'
-import type { SimulationParams } from '../simulations/simulations.validator'
+} from '../../adapters/prisma/selection.js'
+import type { Session } from '../../adapters/prisma/transaction.js'
+import type { SimulationParams } from '../simulations/simulations.validator.js'
 import type {
   OrganisationCreateDto,
   OrganisationParams,
@@ -19,7 +19,7 @@ import type {
   OrganisationUpdateDto,
   PollParams,
   PublicPollParams,
-} from './organisations.validator'
+} from './organisations.validator.js'
 
 const findModelUniqueSlug = (model: 'organisation' | 'poll') => {
   const findUniqueSlug = async (
@@ -391,7 +391,7 @@ export const createOrganisationPoll = async (
           name,
           customAdditionalQuestions: customAdditionalQuestions ?? [],
           expectedNumberOfParticipants,
-          ...(!!defaultAdditionalQuestions?.length
+          ...(defaultAdditionalQuestions?.length
             ? {
                 defaultAdditionalQuestions: {
                   createMany: {
@@ -467,15 +467,15 @@ export const updateOrganisationPoll = async (
     data: {
       name,
       expectedNumberOfParticipants,
-      ...(!!customAdditionalQuestions
+      ...(customAdditionalQuestions
         ? {
             customAdditionalQuestions,
           }
         : {}),
-      ...(!!defaultAdditionalQuestions
+      ...(defaultAdditionalQuestions
         ? {
             defaultAdditionalQuestions: {
-              ...(!!existingDefaultAdditionalQuestions.length
+              ...(existingDefaultAdditionalQuestions.length
                 ? {
                     deleteMany: {
                       id: {
@@ -486,7 +486,7 @@ export const updateOrganisationPoll = async (
                     },
                   }
                 : {}),
-              ...(!!defaultAdditionalQuestions.length
+              ...(defaultAdditionalQuestions.length
                 ? {
                     createMany: {
                       data: defaultAdditionalQuestions.map((type) => ({

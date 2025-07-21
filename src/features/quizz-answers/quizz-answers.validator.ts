@@ -1,5 +1,5 @@
 import { QuizzAnswerIsAnswerCorrect } from '@prisma/client'
-import z from 'zod'
+import { z } from 'zod'
 
 export const QuizzAnswerCreateDto = z.object({
   isAnswerCorrect: z.nativeEnum(QuizzAnswerIsAnswerCorrect),

@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { version as modelVersion } from '@incubateur-ademe/nosgestesclimat/package.json'
+import { version as modelVersion } from '@incubateur-ademe/nosgestesclimat/package.json' with { type: 'json' }
 import {
   PollDefaultAdditionalQuestionType,
   SimulationAdditionalQuestionAnswerType,
@@ -11,17 +11,17 @@ import {
   brevoRemoveFromList,
   brevoSendEmail,
   brevoUpdateContact,
-} from '../../../adapters/brevo/__tests__/fixtures/server.fixture'
-import { prisma } from '../../../adapters/prisma/client'
-import app from '../../../app'
-import { mswServer } from '../../../core/__tests__/fixtures/server.fixture'
-import { EventBus } from '../../../core/event-bus/event-bus'
-import logger from '../../../logger'
-import type { SimulationCreateInputDto } from '../simulations.validator'
+} from '../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
+import { prisma } from '../../../adapters/prisma/client.js'
+import app from '../../../app.js'
+import { mswServer } from '../../../core/__tests__/fixtures/server.fixture.js'
+import { EventBus } from '../../../core/event-bus/event-bus.js'
+import logger from '../../../logger.js'
+import type { SimulationCreateInputDto } from '../simulations.validator.js'
 import {
   CREATE_SIMULATION_ROUTE,
   getRandomTestCase,
-} from './fixtures/simulations.fixtures'
+} from './fixtures/simulations.fixtures.js'
 
 const defaultModelVersion = modelVersion.match(/^(\d+\.\d+\.\d+)/)!.pop()
 

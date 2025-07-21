@@ -10,17 +10,17 @@ import {
   brevoRemoveFromList,
   brevoSendEmail,
   brevoUpdateContact,
-} from '../../../adapters/brevo/__tests__/fixtures/server.fixture'
-import type { BrevoContactDto } from '../../../adapters/brevo/client'
-import { ListIds } from '../../../adapters/brevo/constant'
-import { prisma } from '../../../adapters/prisma/client'
-import app from '../../../app'
-import { mswServer } from '../../../core/__tests__/fixtures/server.fixture'
-import logger from '../../../logger'
-import { login } from '../../authentication/__tests__/fixtures/login.fixture'
-import { createVerificationCode } from '../../authentication/__tests__/fixtures/verification-codes.fixture'
-import * as authenticationService from '../../authentication/authentication.service'
-import { createSimulation } from '../../simulations/__tests__/fixtures/simulations.fixtures'
+} from '../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
+import type { BrevoContactDto } from '../../../adapters/brevo/client.js'
+import { ListIds } from '../../../adapters/brevo/constant.js'
+import { prisma } from '../../../adapters/prisma/client.js'
+import app from '../../../app.js'
+import { mswServer } from '../../../core/__tests__/fixtures/server.fixture.js'
+import logger from '../../../logger.js'
+import { login } from '../../authentication/__tests__/fixtures/login.fixture.js'
+import { createVerificationCode } from '../../authentication/__tests__/fixtures/verification-codes.fixture.js'
+import * as authenticationService from '../../authentication/authentication.service.js'
+import { createSimulation } from '../../simulations/__tests__/fixtures/simulations.fixtures.js'
 import {
   createUser,
   getBrevoContact,

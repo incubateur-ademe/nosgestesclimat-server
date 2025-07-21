@@ -1,6 +1,6 @@
-import type { Handler } from '../../../core/event-bus/handler'
-import { syncUserData } from '../../users/users.service'
-import type { GroupCreatedEvent } from '../events/GroupCreated.event'
+import type { Handler } from '../../../core/event-bus/handler.js'
+import { syncUserData } from '../../users/users.service.js'
+import type { GroupCreatedEvent } from '../events/GroupCreated.event.js'
 
 export const syncUserDataAfterGroupCreated: Handler<GroupCreatedEvent> = ({
   attributes: {
