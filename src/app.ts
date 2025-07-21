@@ -25,7 +25,6 @@ import usersController from './features/users/users.controller'
 import logger from './logger'
 import getNewsletterSubscriptions from './routes/settings/getNewsletterSubscriptions'
 import updateSettingsRoute from './routes/settings/updateSettings'
-import statsRoute from './routes/stats/statsRoute'
 
 const app = express()
 
@@ -65,9 +64,6 @@ app.use(
     }
   )
 )
-
-// Legacy routes
-app.use('/get-stats', statsRoute)
 
 // Deprecated routes
 app.use('/update-settings', updateSettingsRoute)

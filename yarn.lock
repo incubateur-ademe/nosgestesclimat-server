@@ -3779,14 +3779,6 @@
   dependencies:
     tslib "^2.4.0"
 
-"@types/apicache@^1.6.7":
-  version "1.6.7"
-  resolved "https://registry.yarnpkg.com/@types/apicache/-/apicache-1.6.7.tgz#c5b27420ed279b58c53b0b15fd2ddeefe55ba844"
-  integrity sha512-V2RIIUE0ETIQoMh79hE30+PVL+M5ulvYTZowbLz0h1nDHPucpIcYfMnmfbA24QshkFYCWlaI+7aCa7NwauZsvQ==
-  dependencies:
-    "@types/express" "*"
-    "@types/redis" "^2.8.0"
-
 "@types/body-parser@*":
   version "1.19.5"
   resolved "https://registry.yarnpkg.com/@types/body-parser/-/body-parser-1.19.5.tgz#04ce9a3b677dc8bd681a17da1ab9835dc9d3ede4"
@@ -4489,11 +4481,6 @@ anymatch@~3.1.2:
   dependencies:
     normalize-path "^3.0.0"
     picomatch "^2.0.4"
-
-apicache@^1.6.3:
-  version "1.6.3"
-  resolved "https://registry.yarnpkg.com/apicache/-/apicache-1.6.3.tgz#4441aa40f2a48c9dd6f11c73be937d563405355b"
-  integrity sha512-jS3VfUFpQ9BesFQZcdd1vVYg3ZsO2kGPmTJHqycIYPAQs54r74CRiyj8DuzJpwzLwIfCBYzh4dy9Jt8xYbo27w==
 
 app-module-path@^2.2.0:
   version "2.2.0"
