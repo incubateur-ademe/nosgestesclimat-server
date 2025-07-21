@@ -2,7 +2,7 @@ import dotenv from 'dotenv'
 import { ensureEnvVar } from './utils/os'
 
 if (process.env.NODE_ENV === 'development') {
-  dotenv.config()
+  dotenv.config({ quiet: true })
 }
 
 export const config = {

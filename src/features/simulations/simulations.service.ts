@@ -8,7 +8,7 @@ import modelFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRule
 import type { JsonValue } from '@prisma/client/runtime/library'
 import dayjs from 'dayjs'
 import type { Request } from 'express'
-import type Engine from 'publicodes'
+import Engine from 'publicodes'
 import { prisma } from '../../adapters/prisma/client'
 import type { Session } from '../../adapters/prisma/transaction'
 import { transaction } from '../../adapters/prisma/transaction'
@@ -43,10 +43,7 @@ import type {
   UserSimulationParams,
 } from './simulations.validator'
 import { ComputedResultSchema, SituationSchema } from './simulations.validator'
-import {
-  getSituationDottedNameValue,
-  getSituationDottedNameValueWithEngine,
-} from './situation/situation.service'
+import { getSituationDottedNameValueWithEngine } from './situation/situation.service'
 
 const frRules = modelRules as Partial<NGCRules>
 const funFactsRules = modelFunFacts as { [k in keyof FunFacts]: DottedName }
@@ -250,7 +247,7 @@ const isValidSimulation = <T>(
 }
 
 const computeAllFunFactValues = async (
-  { id, engine }: { id: string; engine?: Engine },
+  { id, engine }: { id: string; engine: Engine },
   { session }: { session: Session }
 ) => {
   let simulationCount = 0
@@ -270,17 +267,11 @@ const computeAllFunFactValues = async (
       if (dottedName in frRules) {
         acc[dottedName] =
           (acc[dottedName] || 0) +
-          (engine
-            ? getSituationDottedNameValueWithEngine({
-                dottedName,
-                situation,
-                engine,
-              })
-            : getSituationDottedNameValue({
-                dottedName,
-                situation,
-                rules: frRules,
-              }))
+          getSituationDottedNameValueWithEngine({
+            dottedName,
+            situation,
+            engine,
+          })
       }
       return acc
     }, funFactValues)
@@ -299,7 +290,7 @@ const getFunFactValues = async (
     id,
     simulation,
     engine,
-  }: { id: string; simulation?: SimulationAsyncEvent; engine?: Engine },
+  }: { id: string; simulation?: SimulationAsyncEvent; engine: Engine },
   { session }: { session: Session }
 ) => {
   const redisKey = `${KEYS.pollsFunFactsResults}:${id}`
@@ -317,17 +308,11 @@ const getFunFactValues = async (
           if (dottedName in frRules) {
             acc[dottedName] =
               (acc[dottedName] || 0) +
-              (engine
-                ? getSituationDottedNameValueWithEngine({
-                    dottedName,
-                    situation,
-                    engine,
-                  })
-                : getSituationDottedNameValue({
-                    dottedName,
-                    situation,
-                    rules: frRules,
-                  }))
+              getSituationDottedNameValueWithEngine({
+                dottedName,
+                situation,
+                engine,
+              })
           }
           return acc
         }, result.funFactValues)
@@ -346,11 +331,14 @@ const getFunFactValues = async (
 }
 
 export const getPollFunFacts = async (
-  params: { id: string; simulation?: SimulationAsyncEvent; engine?: Engine },
+  params: { id: string; simulation?: SimulationAsyncEvent },
   session: { session: Session }
 ) => {
   const { funFactValues, simulationCount } = await getFunFactValues(
-    params,
+    {
+      ...params,
+      engine: new Engine(frRules),
+    },
     session
   )
 

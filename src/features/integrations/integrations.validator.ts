@@ -20,6 +20,7 @@ const partnerPrefix = 'partner-'
 
 const SituationExportQueryParamsSchema = z
   .record(
+    z.string(),
     z.union([
       z.array(z.string().nullable()),
       z.number().nullable(),
