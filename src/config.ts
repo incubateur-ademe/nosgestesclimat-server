@@ -32,7 +32,7 @@ export const config = {
   },
   security: {
     job: {
-      secret: ensureEnvVar(process.env.JWT_SECRET, ''),
+      secret: ensureEnvVar(process.env.JOB_SECRET, ''),
     },
     jwt: {
       secret: ensureEnvVar(process.env.JWT_SECRET, ''),
