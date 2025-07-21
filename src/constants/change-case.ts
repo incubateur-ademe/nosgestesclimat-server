@@ -1,4 +1,4 @@
-import { camelCase, paramCase, pascalCase, snakeCase } from 'change-case'
+import { camelCase, kebabCase, pascalCase, snakeCase } from 'change-case'
 
 export const MAPPING_CASES = {
   camelCase: 'camelCase',
@@ -20,7 +20,7 @@ const changeCaseBuilder =
 
 export const MAPPING_CASES_FUNC = {
   [MAPPING_CASES.camelCase]: changeCaseBuilder(camelCase),
-  [MAPPING_CASES.kebabCase]: changeCaseBuilder(paramCase),
+  [MAPPING_CASES.kebabCase]: changeCaseBuilder(kebabCase),
   [MAPPING_CASES.pascalCase]: changeCaseBuilder(pascalCase),
   [MAPPING_CASES.snakeCase]: changeCaseBuilder(snakeCase),
 }
