@@ -1,16 +1,16 @@
 import { PrismaClient } from '@prisma/client'
-import { redis } from '../src/adapters/redis/client'
+import { redis } from '../src/adapters/redis/client.js'
 
 const prisma = new PrismaClient()
 
 const main = async () => {
   // Order matters here
   const scripts = [
-    await import('./scripts/grant-roles'),
-    await import('./scripts/add-integrations-api-scopes'),
-    await import('./scripts/add-integrations-email-whitelist'),
-    await import('./scripts/geolocation-sorted-ips'),
-    await import('./scripts/geolocation-countries'),
+    await import('./scripts/grant-roles.js'),
+    await import('./scripts/add-integrations-api-scopes.js'),
+    await import('./scripts/add-integrations-email-whitelist.js'),
+    await import('./scripts/geolocation-sorted-ips.js'),
+    await import('./scripts/geolocation-countries.js'),
   ]
 
   try {

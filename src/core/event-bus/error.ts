@@ -1,5 +1,5 @@
-import type { EventBusEvent } from './event'
-import type { Handler } from './handler'
+import type { EventBusEvent } from './event.js'
+import type { Handler } from './handler.js'
 
 export type EventBusErrorReason<FinishedEvent extends EventBusEvent> = {
   event: FinishedEvent

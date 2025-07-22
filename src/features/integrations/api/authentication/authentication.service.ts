@@ -2,20 +2,22 @@ import { ApiScopeName } from '@prisma/client'
 import type { Request, RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import type { JwtPayload } from 'jsonwebtoken'
-import jwt, { TokenExpiredError } from 'jsonwebtoken'
-import { prisma } from '../../../../adapters/prisma/client'
-import { transaction } from '../../../../adapters/prisma/transaction'
-import { config } from '../../../../config'
-import { EntityNotFoundException } from '../../../../core/errors/EntityNotFoundException'
-import { UnauthorizedException } from '../../../../core/errors/UnauthorizedException'
-import { isPrismaErrorNotFound } from '../../../../core/typeguards/isPrismaError'
-import { findUserVerificationCode } from '../../../authentication/verification-codes.repository'
-import { createVerificationCode } from '../../../authentication/verification-codes.service'
-import { fetchWhitelists } from '../email-whitelist/email-whitelist.repository'
+import jwt from 'jsonwebtoken'
+import { prisma } from '../../../../adapters/prisma/client.js'
+import { transaction } from '../../../../adapters/prisma/transaction.js'
+import { config } from '../../../../config.js'
+import { EntityNotFoundException } from '../../../../core/errors/EntityNotFoundException.js'
+import { UnauthorizedException } from '../../../../core/errors/UnauthorizedException.js'
+import { isPrismaErrorNotFound } from '../../../../core/typeguards/isPrismaError.js'
+import { findUserVerificationCode } from '../../../authentication/verification-codes.repository.js'
+import { createVerificationCode } from '../../../authentication/verification-codes.service.js'
+import { fetchWhitelists } from '../email-whitelist/email-whitelist.repository.js'
 import type {
   GenerateAPITokenRequestDto,
   RecoverApiTokenQuery,
-} from './authentication.contract'
+} from './authentication.contract.js'
+
+const { TokenExpiredError } = jwt
 
 export const TOKEN_MAX_AGE = 1000 * 60 * 15 // 15 minutes
 

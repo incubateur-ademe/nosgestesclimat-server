@@ -1,6 +1,6 @@
-import type { Handler } from '../../../core/event-bus/handler'
-import { updatePollFunFactsAfterSimulationChange } from '../../organisations/organisations.service'
-import type { SimulationUpsertedAsyncEvent } from '../events/SimulationUpserted.event'
+import type { Handler } from '../../../core/event-bus/handler.js'
+import { updatePollFunFactsAfterSimulationChange } from '../../organisations/organisations.service.js'
+import type { SimulationUpsertedAsyncEvent } from '../events/SimulationUpserted.event.js'
 
 export const computePollFunFacts: Handler<SimulationUpsertedAsyncEvent> = ({
   attributes: { simulation, created },

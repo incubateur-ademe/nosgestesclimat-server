@@ -1,5 +1,5 @@
 import type { Prisma, VerificationCode } from '@prisma/client'
-import type { Session } from '../../adapters/prisma/transaction'
+import type { Session } from '../../adapters/prisma/transaction.js'
 
 export const createUserVerificationCode = (
   data: Prisma.VerificationCodeCreateInput,

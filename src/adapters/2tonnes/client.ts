@@ -1,10 +1,10 @@
 import axios, { isAxiosError } from 'axios'
 import axiosRetry from 'axios-retry'
 import { z } from 'zod'
-import { config } from '../../config'
-import { isNetworkOrTimeoutOrRetryableError } from '../../core/typeguards/isRetryableAxiosError'
-import type { SituationExportQueryParamsSchema } from '../../features/integrations/integrations.validator'
-import type { SituationSchema } from '../../features/simulations/simulations.validator'
+import { config } from '../../config.js'
+import { isNetworkOrTimeoutOrRetryableError } from '../../core/typeguards/isRetryableAxiosError.js'
+import type { SituationExportQueryParamsSchema } from '../../features/integrations/integrations.validator.js'
+import type { SituationSchema } from '../../features/simulations/simulations.validator.js'
 
 const twoTons = axios.create({
   baseURL: config.thirdParty.twoTons.url,

@@ -1,7 +1,7 @@
-import { redis } from '../adapters/redis/client'
-import { CHANNELS } from '../adapters/redis/constant'
-import type { EventBusEvent } from './event-bus/event'
+import { redis } from '../adapters/redis/client.js'
+import { CHANNELS } from '../adapters/redis/constant.js'
+import type { EventBusEvent } from './event-bus/event.js'
 
-export const publishApiEvent = async (event: EventBusEvent) => {
-  redis.publish(CHANNELS.apiEvents, JSON.stringify(event))
+export const publishApiEvent = (event: EventBusEvent) => {
+  return redis.publish(CHANNELS.apiEvents, JSON.stringify(event))
 }

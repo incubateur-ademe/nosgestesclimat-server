@@ -1,33 +1,33 @@
 import express from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { validateRequest } from 'zod-express-middleware'
-import { config } from '../../config'
-import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
-import { ForbiddenException } from '../../core/errors/ForbiddenException'
-import { EventBus } from '../../core/event-bus/event-bus'
-import logger from '../../logger'
-import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
-import { rateLimitSameRequestMiddleware } from '../../middlewares/rateLimitSameRequestMiddleware'
+import { config } from '../../config.js'
+import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
+import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
+import { EventBus } from '../../core/event-bus/event-bus.js'
+import logger from '../../logger.js'
+import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware.js'
+import { rateLimitSameRequestMiddleware } from '../../middlewares/rateLimitSameRequestMiddleware.js'
 import {
   COOKIE_NAME,
   COOKIES_OPTIONS,
-} from '../authentication/authentication.service'
+} from '../authentication/authentication.service.js'
 import {
   createPollSimulation,
   fetchPublicPollSimulations,
-} from '../simulations/simulations.service'
+} from '../simulations/simulations.service.js'
 import {
   OrganisationPollSimulationCreateValidator,
   SimulationCreateDto,
-} from '../simulations/simulations.validator'
-import { OrganisationCreatedEvent } from './events/OrganisationCreated.event'
-import { OrganisationUpdatedEvent } from './events/OrganisationUpdated.event'
-import { PollCreatedEvent } from './events/PollCreated.event'
-import { PollDeletedEvent } from './events/PollDeletedEvent'
-import { PollUpdatedEvent } from './events/PollUpdated.event'
-import { addOrUpdateBrevoContact } from './handlers/add-or-update-brevo-contact'
-import { addOrUpdateConnectContact } from './handlers/add-or-update-connect-contact'
-import { sendOrganisationCreated } from './handlers/send-organisation-created'
+} from '../simulations/simulations.validator.js'
+import { OrganisationCreatedEvent } from './events/OrganisationCreated.event.js'
+import { OrganisationUpdatedEvent } from './events/OrganisationUpdated.event.js'
+import { PollCreatedEvent } from './events/PollCreated.event.js'
+import { PollDeletedEvent } from './events/PollDeletedEvent.js'
+import { PollUpdatedEvent } from './events/PollUpdated.event.js'
+import { addOrUpdateBrevoContact } from './handlers/add-or-update-brevo-contact.js'
+import { addOrUpdateConnectContact } from './handlers/add-or-update-connect-contact.js'
+import { sendOrganisationCreated } from './handlers/send-organisation-created.js'
 import {
   createOrganisation,
   createPoll,
@@ -41,7 +41,7 @@ import {
   startDownloadPollSimulationResultJob,
   updateOrganisation,
   updatePoll,
-} from './organisations.service'
+} from './organisations.service.js'
 import {
   OrganisationCreateValidator,
   OrganisationFetchValidator,
@@ -56,7 +56,7 @@ import {
   OrganisationsFetchValidator,
   OrganisationUpdateDto,
   OrganisationUpdateValidator,
-} from './organisations.validator'
+} from './organisations.validator.js'
 
 const router = express.Router()
 

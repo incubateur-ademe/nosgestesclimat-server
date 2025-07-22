@@ -1,13 +1,13 @@
-import { addOrUpdateContactAfterOrganisationChange } from '../../../adapters/brevo/client'
-import { prisma } from '../../../adapters/prisma/client'
-import { transaction } from '../../../adapters/prisma/transaction'
-import type { Handler } from '../../../core/event-bus/handler'
-import type { OrganisationCreatedEvent } from '../events/OrganisationCreated.event'
-import type { OrganisationUpdatedEvent } from '../events/OrganisationUpdated.event'
-import type { PollCreatedEvent } from '../events/PollCreated.event'
-import type { PollDeletedEvent } from '../events/PollDeletedEvent'
-import type { PollUpdatedEvent } from '../events/PollUpdated.event'
-import { getLastPollParticipantsCount } from '../organisations.repository'
+import { addOrUpdateContactAfterOrganisationChange } from '../../../adapters/brevo/client.js'
+import { prisma } from '../../../adapters/prisma/client.js'
+import { transaction } from '../../../adapters/prisma/transaction.js'
+import type { Handler } from '../../../core/event-bus/handler.js'
+import type { OrganisationCreatedEvent } from '../events/OrganisationCreated.event.js'
+import type { OrganisationUpdatedEvent } from '../events/OrganisationUpdated.event.js'
+import type { PollCreatedEvent } from '../events/PollCreated.event.js'
+import type { PollDeletedEvent } from '../events/PollDeletedEvent.js'
+import type { PollUpdatedEvent } from '../events/PollUpdated.event.js'
+import { getLastPollParticipantsCount } from '../organisations.repository.js'
 
 export const addOrUpdateBrevoContact: Handler<
   | OrganisationCreatedEvent

@@ -1,32 +1,32 @@
 import express from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { validateRequest } from 'zod-express-middleware'
-import { config } from '../../config'
-import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
-import { ForbiddenException } from '../../core/errors/ForbiddenException'
-import { EventBus } from '../../core/event-bus/event-bus'
-import logger from '../../logger'
-import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
+import { config } from '../../config.js'
+import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
+import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
+import { EventBus } from '../../core/event-bus/event-bus.js'
+import logger from '../../logger.js'
+import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware.js'
 import {
   COOKIE_NAME,
   COOKIES_OPTIONS,
-} from '../authentication/authentication.service'
-import { UserUpdatedEvent } from './events/UserUpdated.event'
-import { addOrUpdateBrevoContact } from './handlers/add-or-update-brevo-contact'
-import { removePreviousBrevoContact } from './handlers/remove-previous-brevo-contact'
-import { sendBrevoNewsLetterConfirmationEmail } from './handlers/send-brevo-newsletter-confirmation-email'
+} from '../authentication/authentication.service.js'
+import { UserUpdatedEvent } from './events/UserUpdated.event.js'
+import { addOrUpdateBrevoContact } from './handlers/add-or-update-brevo-contact.js'
+import { removePreviousBrevoContact } from './handlers/remove-previous-brevo-contact.js'
+import { sendBrevoNewsLetterConfirmationEmail } from './handlers/send-brevo-newsletter-confirmation-email.js'
 import {
   confirmNewsletterSubscriptions,
   fetchUserContact,
   updateUserAndContact,
-} from './users.service'
+} from './users.service.js'
 import {
   FetchUserContactValidator,
   NewsletterConfirmationQuery,
   NewsletterConfirmationValidator,
   UpdateUserValidator,
   UserUpdateDto,
-} from './users.validator'
+} from './users.validator.js'
 
 const router = express.Router()
 
@@ -73,6 +73,7 @@ router
           params: req.user || req.params,
           code: req.query.code,
           userDto: UserUpdateDto.parse(req.body),
+          origin: req.get('origin') || config.origin,
         })
 
         if (token) {
@@ -101,14 +102,15 @@ router
 router
   .route('/v1/:userId/newsletter-confirmation')
   .get(validateRequest(NewsletterConfirmationValidator), async (req, res) => {
-    const redirectUrl = new URL(req.get('origin') || config.origin)
+    const redirectUrl = new URL(req.query.origin)
     redirectUrl.pathname = '/newsletter-confirmation'
     const { searchParams: redirectSearchParams } = redirectUrl
 
     try {
       await confirmNewsletterSubscriptions({
-        params: req.params,
         query: NewsletterConfirmationQuery.parse(req.query),
+        origin: redirectUrl.origin,
+        params: req.params,
       })
 
       redirectSearchParams.append('success', 'true')

@@ -1,17 +1,17 @@
 import {
   addOrUpdateAdministratorContactAfterGroupChange,
   addOrUpdateParticipantContactAfterGroupChange,
-} from '../../../adapters/brevo/client'
-import { prisma } from '../../../adapters/prisma/client'
-import { transaction } from '../../../adapters/prisma/transaction'
-import type { Handler } from '../../../core/event-bus/handler'
-import type { GroupCreatedEvent } from '../events/GroupCreated.event'
-import { GroupDeletedEvent } from '../events/GroupDeleted.event'
-import type { GroupUpdatedEvent } from '../events/GroupUpdated.event'
+} from '../../../adapters/brevo/client.js'
+import { prisma } from '../../../adapters/prisma/client.js'
+import { transaction } from '../../../adapters/prisma/transaction.js'
+import type { Handler } from '../../../core/event-bus/handler.js'
+import type { GroupCreatedEvent } from '../events/GroupCreated.event.js'
+import { GroupDeletedEvent } from '../events/GroupDeleted.event.js'
+import type { GroupUpdatedEvent } from '../events/GroupUpdated.event.js'
 import {
   getAdministratorGroupsStats,
   getGroupsJoinedCount,
-} from '../groups.repository'
+} from '../groups.repository.js'
 
 export const addOrUpdateBrevoAdministratorContact: Handler<
   GroupCreatedEvent | GroupUpdatedEvent | GroupDeletedEvent

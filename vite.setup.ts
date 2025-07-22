@@ -19,7 +19,11 @@ redis.exists = promisify(
   redis.exists.bind(redis)
 ) as unknown as (typeof redis)['exists']
 const prisma = new PrismaClient({ adapter })
-const prismaMigrationDir = path.join(__dirname, 'prisma', 'migrations')
+const prismaMigrationDir = path.join(
+  import.meta.dirname,
+  'prisma',
+  'migrations'
+)
 
 type DelegateNames = Prisma.TypeMap['meta']['modelProps']
 type DelegateName = TuplifyUnion<DelegateNames>[0]

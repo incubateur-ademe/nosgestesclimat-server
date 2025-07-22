@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import modelFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRules.json'
+import modelFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRules.json' with { type: 'json' }
 import {
   PollDefaultAdditionalQuestionType,
   SimulationAdditionalQuestionAnswerType,
@@ -11,21 +11,21 @@ import {
   brevoRemoveFromList,
   brevoSendEmail,
   brevoUpdateContact,
-} from '../../../adapters/brevo/__tests__/fixtures/server.fixture'
-import { prisma } from '../../../adapters/prisma/client'
-import app from '../../../app'
-import { mswServer } from '../../../core/__tests__/fixtures/server.fixture'
-import { EventBus } from '../../../core/event-bus/event-bus'
-import logger from '../../../logger'
-import { login } from '../../authentication/__tests__/fixtures/login.fixture'
+} from '../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
+import { prisma } from '../../../adapters/prisma/client.js'
+import app from '../../../app.js'
+import { mswServer } from '../../../core/__tests__/fixtures/server.fixture.js'
+import { EventBus } from '../../../core/event-bus/event-bus.js'
+import logger from '../../../logger.js'
+import { login } from '../../authentication/__tests__/fixtures/login.fixture.js'
 import {
   CREATE_ORGANISATION_PUBLIC_POLL_SIMULATION_ROUTE,
   createOrganisation,
   createOrganisationPoll,
   createOrganisationPollSimulation,
-} from '../../organisations/__tests__/fixtures/organisations.fixture'
-import type { SimulationCreateInputDto } from '../simulations.validator'
-import { getRandomTestCase } from './fixtures/simulations.fixtures'
+} from '../../organisations/__tests__/fixtures/organisations.fixture.js'
+import type { SimulationCreateInputDto } from '../simulations.validator.js'
+import { getRandomTestCase } from './fixtures/simulations.fixtures.js'
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)

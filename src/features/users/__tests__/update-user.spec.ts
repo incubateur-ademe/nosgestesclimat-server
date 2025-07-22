@@ -10,17 +10,17 @@ import {
   brevoRemoveFromList,
   brevoSendEmail,
   brevoUpdateContact,
-} from '../../../adapters/brevo/__tests__/fixtures/server.fixture'
-import type { BrevoContactDto } from '../../../adapters/brevo/client'
-import { ListIds } from '../../../adapters/brevo/constant'
-import { prisma } from '../../../adapters/prisma/client'
-import app from '../../../app'
-import { mswServer } from '../../../core/__tests__/fixtures/server.fixture'
-import logger from '../../../logger'
-import { login } from '../../authentication/__tests__/fixtures/login.fixture'
-import { createVerificationCode } from '../../authentication/__tests__/fixtures/verification-codes.fixture'
-import * as authenticationService from '../../authentication/authentication.service'
-import { createSimulation } from '../../simulations/__tests__/fixtures/simulations.fixtures'
+} from '../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
+import type { BrevoContactDto } from '../../../adapters/brevo/client.js'
+import { ListIds } from '../../../adapters/brevo/constant.js'
+import { prisma } from '../../../adapters/prisma/client.js'
+import app from '../../../app.js'
+import { mswServer } from '../../../core/__tests__/fixtures/server.fixture.js'
+import logger from '../../../logger.js'
+import { login } from '../../authentication/__tests__/fixtures/login.fixture.js'
+import { createVerificationCode } from '../../authentication/__tests__/fixtures/verification-codes.fixture.js'
+import * as authenticationService from '../../authentication/authentication.service.js'
+import { createSimulation } from '../../simulations/__tests__/fixtures/simulations.fixtures.js'
 import {
   createUser,
   getBrevoContact,
@@ -171,7 +171,7 @@ describe('Given a NGC user', () => {
                 ],
                 templateId: 118,
                 params: {
-                  NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(email)}&listIds=22`,
+                  NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(email)}&origin=${encodeURIComponent('https://nosgestesclimat.fr')}&listIds=22`,
                 },
               },
             })
@@ -228,6 +228,62 @@ describe('Given a NGC user', () => {
               id: userId,
               email,
               name,
+              createdAt: expect.any(String),
+              updatedAt: expect.any(String),
+            })
+          })
+        })
+
+        describe('And custom user origin (preprod)', () => {
+          test(`Then it sends an email and returns a ${StatusCodes.ACCEPTED} response`, async () => {
+            const email = faker.internet.email().toLocaleLowerCase()
+            const userId = faker.string.uuid()
+
+            const payload = {
+              email,
+              contact: {
+                listIds: [ListIds.MAIN_NEWSLETTER],
+              },
+            }
+
+            mswServer.use(
+              brevoGetContact(email, {
+                customResponses: [
+                  {
+                    body: {
+                      code: 'document_not_found',
+                      message: 'List ID does not exist',
+                    },
+                    status: StatusCodes.NOT_FOUND,
+                  },
+                ],
+              }),
+              brevoSendEmail({
+                expectBody: {
+                  to: [
+                    {
+                      name: email,
+                      email,
+                    },
+                  ],
+                  templateId: 118,
+                  params: {
+                    NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(email)}&origin=${encodeURIComponent('https://preprod.nosgestesclimat.fr')}&listIds=22`,
+                  },
+                },
+              })
+            )
+
+            const { body } = await agent
+              .put(url.replace(':userId', userId))
+              .set('origin', 'https://preprod.nosgestesclimat.fr')
+              .send(payload)
+              .expect(StatusCodes.ACCEPTED)
+
+            expect(body).toEqual({
+              id: userId,
+              email,
+              name: null,
               createdAt: expect.any(String),
               updatedAt: expect.any(String),
             })
@@ -325,7 +381,7 @@ describe('Given a NGC user', () => {
                     ],
                     templateId: 118,
                     params: {
-                      NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(email)}&listIds=22`,
+                      NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(email)}&origin=${encodeURIComponent('https://nosgestesclimat.fr')}&listIds=22`,
                     },
                   },
                 })
@@ -381,6 +437,60 @@ describe('Given a NGC user', () => {
                   id: userId,
                   email,
                   name,
+                  createdAt: expect.any(String),
+                  updatedAt: expect.any(String),
+                })
+              })
+            })
+
+            describe('And custom user origin (preprod)', () => {
+              test(`Then it sends an email and returns a ${StatusCodes.ACCEPTED} response`, async () => {
+                const email = faker.internet.email().toLocaleLowerCase()
+                const payload = {
+                  email,
+                  contact: {
+                    listIds: [ListIds.MAIN_NEWSLETTER],
+                  },
+                }
+
+                mswServer.use(
+                  brevoGetContact(email, {
+                    customResponses: [
+                      {
+                        body: {
+                          code: 'document_not_found',
+                          message: 'List ID does not exist',
+                        },
+                        status: StatusCodes.NOT_FOUND,
+                      },
+                    ],
+                  }),
+                  brevoSendEmail({
+                    expectBody: {
+                      to: [
+                        {
+                          name: email,
+                          email,
+                        },
+                      ],
+                      templateId: 118,
+                      params: {
+                        NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(email)}&origin=${encodeURIComponent('https://preprod.nosgestesclimat.fr')}&listIds=22`,
+                      },
+                    },
+                  })
+                )
+
+                const { body } = await agent
+                  .put(url.replace(':userId', userId))
+                  .set('origin', 'https://preprod.nosgestesclimat.fr')
+                  .send(payload)
+                  .expect(StatusCodes.ACCEPTED)
+
+                expect(body).toEqual({
+                  id: userId,
+                  email,
+                  name: null,
                   createdAt: expect.any(String),
                   updatedAt: expect.any(String),
                 })
@@ -473,7 +583,7 @@ describe('Given a NGC user', () => {
                     ],
                     templateId: 118,
                     params: {
-                      NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(email)}&listIds=22`,
+                      NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(email)}&origin=${encodeURIComponent('https://nosgestesclimat.fr')}&listIds=22`,
                     },
                   },
                 })
@@ -529,6 +639,60 @@ describe('Given a NGC user', () => {
                   id: userId,
                   email,
                   name,
+                  contact: {
+                    id: contact.id,
+                    email,
+                    listIds: [],
+                  },
+                  createdAt: expect.any(String),
+                  updatedAt: expect.any(String),
+                })
+              })
+            })
+
+            describe('And custom user origin (preprod)', () => {
+              test(`Then it sends an email and returns a ${StatusCodes.ACCEPTED} response`, async () => {
+                const payload = {
+                  email,
+                  contact: {
+                    listIds: [ListIds.MAIN_NEWSLETTER],
+                  },
+                }
+
+                mswServer.use(
+                  brevoGetContact(email, {
+                    customResponses: [
+                      {
+                        body: contact,
+                      },
+                    ],
+                  }),
+                  brevoSendEmail({
+                    expectBody: {
+                      to: [
+                        {
+                          name: email,
+                          email,
+                        },
+                      ],
+                      templateId: 118,
+                      params: {
+                        NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(email)}&origin=${encodeURIComponent('https://preprod.nosgestesclimat.fr')}&listIds=22`,
+                      },
+                    },
+                  })
+                )
+
+                const { body } = await agent
+                  .put(url.replace(':userId', userId))
+                  .set('origin', 'https://preprod.nosgestesclimat.fr')
+                  .send(payload)
+                  .expect(StatusCodes.ACCEPTED)
+
+                expect(body).toEqual({
+                  id: userId,
+                  email,
+                  name: null,
                   contact: {
                     id: contact.id,
                     email,
@@ -633,7 +797,7 @@ describe('Given a NGC user', () => {
                       ],
                       templateId: 118,
                       params: {
-                        NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(email)}&listIds=22`,
+                        NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(email)}&origin=${encodeURIComponent('https://nosgestesclimat.fr')}&listIds=22`,
                       },
                     },
                   })
@@ -692,6 +856,58 @@ describe('Given a NGC user', () => {
                   })
                 })
               })
+
+              describe('And custom user origin (preprod)', () => {
+                test(`Then it sends an email and returns a ${StatusCodes.ACCEPTED} response`, async () => {
+                  const payload = {
+                    contact: {
+                      listIds: [ListIds.MAIN_NEWSLETTER],
+                    },
+                  }
+
+                  mswServer.use(
+                    brevoGetContact(email, {
+                      customResponses: [
+                        {
+                          body: {
+                            code: 'document_not_found',
+                            message: 'List ID does not exist',
+                          },
+                          status: StatusCodes.NOT_FOUND,
+                        },
+                      ],
+                    }),
+                    brevoSendEmail({
+                      expectBody: {
+                        to: [
+                          {
+                            name: email,
+                            email,
+                          },
+                        ],
+                        templateId: 118,
+                        params: {
+                          NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(email)}&origin=${encodeURIComponent('https://preprod.nosgestesclimat.fr')}&listIds=22`,
+                        },
+                      },
+                    })
+                  )
+
+                  const { body } = await agent
+                    .put(url.replace(':userId', userId))
+                    .set('origin', 'https://preprod.nosgestesclimat.fr')
+                    .send(payload)
+                    .expect(StatusCodes.ACCEPTED)
+
+                  expect(body).toEqual({
+                    id: userId,
+                    email,
+                    name: null,
+                    createdAt: expect.any(String),
+                    updatedAt: expect.any(String),
+                  })
+                })
+              })
             })
 
             describe('And new email provided', () => {
@@ -738,7 +954,7 @@ describe('Given a NGC user', () => {
                       ],
                       templateId: 118,
                       params: {
-                        NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(newEmail)}&listIds=22`,
+                        NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(newEmail)}&origin=${encodeURIComponent('https://nosgestesclimat.fr')}&listIds=22`,
                       },
                     },
                   })
@@ -861,7 +1077,7 @@ describe('Given a NGC user', () => {
                     ],
                     templateId: 118,
                     params: {
-                      NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(email)}&listIds=22`,
+                      NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(email)}&origin=${encodeURIComponent('https://nosgestesclimat.fr')}&listIds=22`,
                     },
                   },
                 })
@@ -883,6 +1099,59 @@ describe('Given a NGC user', () => {
                 },
                 createdAt: expect.any(String),
                 updatedAt: expect.any(String),
+              })
+            })
+
+            describe('And custom user origin (preprod)', () => {
+              test(`Then it sends an email and returns a ${StatusCodes.ACCEPTED} response`, async () => {
+                const payload = {
+                  contact: {
+                    listIds: [ListIds.MAIN_NEWSLETTER],
+                  },
+                }
+
+                mswServer.use(
+                  brevoGetContact(email, {
+                    customResponses: [
+                      {
+                        body: contact,
+                      },
+                    ],
+                  }),
+                  brevoSendEmail({
+                    expectBody: {
+                      to: [
+                        {
+                          name: email,
+                          email,
+                        },
+                      ],
+                      templateId: 118,
+                      params: {
+                        NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(email)}&origin=${encodeURIComponent('https://preprod.nosgestesclimat.fr')}&listIds=22`,
+                      },
+                    },
+                  })
+                )
+
+                const { body } = await agent
+                  .put(url.replace(':userId', userId))
+                  .set('origin', 'https://preprod.nosgestesclimat.fr')
+                  .send(payload)
+                  .expect(StatusCodes.ACCEPTED)
+
+                expect(body).toEqual({
+                  id: userId,
+                  email,
+                  name: null,
+                  contact: {
+                    id: contact.id,
+                    email,
+                    listIds: [],
+                  },
+                  createdAt: expect.any(String),
+                  updatedAt: expect.any(String),
+                })
               })
             })
 
@@ -1768,7 +2037,7 @@ describe('Given a NGC user', () => {
                   ],
                   templateId: 118,
                   params: {
-                    NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(newEmail)}&listIds=22`,
+                    NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(newEmail)}&origin=${encodeURIComponent('https://nosgestesclimat.fr')}&listIds=22`,
                   },
                 },
               })
@@ -1836,7 +2105,7 @@ describe('Given a NGC user', () => {
                   ],
                   templateId: 118,
                   params: {
-                    NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(newEmail)}&listIds=22`,
+                    NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(newEmail)}&origin=${encodeURIComponent('https://nosgestesclimat.fr')}&listIds=22`,
                   },
                 },
               })
@@ -1899,7 +2168,7 @@ describe('Given a NGC user', () => {
                 ],
                 templateId: 118,
                 params: {
-                  NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(newEmail)}`,
+                  NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(newEmail)}&origin=${encodeURIComponent('https://nosgestesclimat.fr')}`,
                 },
               },
             })
@@ -1960,7 +2229,7 @@ describe('Given a NGC user', () => {
                   ],
                   templateId: 118,
                   params: {
-                    NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(newEmail)}&listIds=22`,
+                    NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(newEmail)}&origin=${encodeURIComponent('https://nosgestesclimat.fr')}&listIds=22`,
                   },
                 },
               })
@@ -2029,7 +2298,7 @@ describe('Given a NGC user', () => {
                   ],
                   templateId: 118,
                   params: {
-                    NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(newEmail)}&listIds=22`,
+                    NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(newEmail)}&origin=${encodeURIComponent('https://nosgestesclimat.fr')}&listIds=22`,
                   },
                 },
               })

@@ -6,15 +6,15 @@ import {
   defaultSimulationSelection,
   defaultSimulationSelectionWithoutPollAndSituation,
   defaultSimulationSelectionWithoutUser,
-} from '../../adapters/prisma/selection'
-import type { Session } from '../../adapters/prisma/transaction'
-import { batchFindMany } from '../../core/batchFindMany'
-import type { PublicPollParams } from '../organisations/organisations.validator'
-import type { UserParams } from '../users/users.validator'
+} from '../../adapters/prisma/selection.js'
+import type { Session } from '../../adapters/prisma/transaction.js'
+import { batchFindMany } from '../../core/batchFindMany.js'
+import type { PublicPollParams } from '../organisations/organisations.validator.js'
+import type { UserParams } from '../users/users.validator.js'
 import type {
   SimulationCreateDto,
   SimulationParticipantCreateDto,
-} from './simulations.validator'
+} from './simulations.validator.js'
 
 export const createUserSimulation = async (
   { userId }: UserParams,
@@ -97,10 +97,10 @@ export const createParticipantSimulation = async <
     actionChoices,
     savedViaEmail,
     computedResults,
-    ...(!!additionalQuestionsAnswers?.length
+    ...(additionalQuestionsAnswers?.length
       ? {
           additionalQuestionsAnswers: {
-            ...(!!existingSimulation
+            ...(existingSimulation
               ? {
                   deleteMany: {
                     simulationId: id,
@@ -119,7 +119,7 @@ export const createParticipantSimulation = async <
       : {}),
   }
 
-  const simulation = !!existingSimulation
+  const simulation = existingSimulation
     ? await session.simulation.update({
         where: {
           id,

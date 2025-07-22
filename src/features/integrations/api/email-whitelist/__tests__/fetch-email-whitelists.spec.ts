@@ -4,16 +4,16 @@ import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import { prisma } from '../../../../../adapters/prisma/client'
-import * as prismaTransactionAdapter from '../../../../../adapters/prisma/transaction'
-import app from '../../../../../app'
-import { config } from '../../../../../config'
-import logger from '../../../../../logger'
+import { prisma } from '../../../../../adapters/prisma/client.js'
+import * as prismaTransactionAdapter from '../../../../../adapters/prisma/transaction.js'
+import app from '../../../../../app.js'
+import { config } from '../../../../../config.js'
+import logger from '../../../../../logger.js'
 import {
   createIntegrationEmailWhitelist,
   recoverApiToken,
-} from '../../authentication/__tests__/fixtures/authentication.fixtures'
-import { FETCH_EMAIL_WHITELISTS_ROUTE } from './fixtures/email-whitelist.fixture'
+} from '../../authentication/__tests__/fixtures/authentication.fixtures.js'
+import { FETCH_EMAIL_WHITELISTS_ROUTE } from './fixtures/email-whitelist.fixture.js'
 
 vi.mock('../../../../../adapters/prisma/transaction', async () => ({
   ...(await vi.importActual('../../../../../adapters/prisma/transaction')),

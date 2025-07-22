@@ -5,19 +5,19 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import {
   brevoRemoveFromList,
   brevoUpdateContact,
-} from '../../../adapters/brevo/__tests__/fixtures/server.fixture'
-import { prisma } from '../../../adapters/prisma/client'
-import app from '../../../app'
-import { mswServer } from '../../../core/__tests__/fixtures/server.fixture'
-import { EventBus } from '../../../core/event-bus/event-bus'
-import logger from '../../../logger'
-import { login } from '../../authentication/__tests__/fixtures/login.fixture'
-import { COOKIE_NAME } from '../../authentication/authentication.service'
+} from '../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
+import { prisma } from '../../../adapters/prisma/client.js'
+import app from '../../../app.js'
+import { mswServer } from '../../../core/__tests__/fixtures/server.fixture.js'
+import { EventBus } from '../../../core/event-bus/event-bus.js'
+import logger from '../../../logger.js'
+import { login } from '../../authentication/__tests__/fixtures/login.fixture.js'
+import { COOKIE_NAME } from '../../authentication/authentication.service.js'
 import {
   createOrganisation,
   createOrganisationPoll,
   DELETE_ORGANISATION_POLL_ROUTE,
-} from './fixtures/organisations.fixture'
+} from './fixtures/organisations.fixture.js'
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)

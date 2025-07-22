@@ -7,17 +7,17 @@ import {
   brevoGetContact,
   brevoRemoveFromList,
   brevoUpdateContact,
-} from '../../../adapters/brevo/__tests__/fixtures/server.fixture'
-import { ListIds } from '../../../adapters/brevo/constant'
-import { prisma } from '../../../adapters/prisma/client'
-import * as prismaTransactionAdapter from '../../../adapters/prisma/transaction'
-import app from '../../../app'
-import { mswServer } from '../../../core/__tests__/fixtures/server.fixture'
-import logger from '../../../logger'
+} from '../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
+import { ListIds } from '../../../adapters/brevo/constant.js'
+import { prisma } from '../../../adapters/prisma/client.js'
+import * as prismaTransactionAdapter from '../../../adapters/prisma/transaction.js'
+import app from '../../../app.js'
+import { mswServer } from '../../../core/__tests__/fixtures/server.fixture.js'
+import logger from '../../../logger.js'
 import {
   getBrevoContact,
   subscribeToNewsLetter,
-} from './fixtures/users.fixture'
+} from './fixtures/users.fixture.js'
 
 vi.mock('../../../adapters/prisma/transaction', async () => ({
   ...(await vi.importActual('../../../adapters/prisma/transaction')),
@@ -42,6 +42,7 @@ describe('Given a NGC user', () => {
           .query({
             code: faker.number.int({ min: 100000, max: 999999 }).toString(),
             email: faker.internet.email(),
+            origin: 'https://nosgestesclimat.fr',
           })
           .expect(StatusCodes.BAD_REQUEST)
       })
@@ -54,6 +55,7 @@ describe('Given a NGC user', () => {
           .query({
             code: faker.number.int({ min: 100000, max: 999999 }).toString(),
             email: 'Je ne donne jamais mon email',
+            origin: 'https://nosgestesclimat.fr',
           })
           .expect(StatusCodes.BAD_REQUEST)
       })
@@ -65,8 +67,35 @@ describe('Given a NGC user', () => {
           .get(url.replace(':userId', faker.string.uuid()))
           .query({
             code: faker.number.int({ min: 100000, max: 999999 }).toString(),
-            email: faker.internet.email,
+            email: faker.internet.email(),
+            origin: 'https://nosgestesclimat.fr',
             listIds: [-1],
+          })
+          .expect(StatusCodes.BAD_REQUEST)
+      })
+    })
+
+    describe('And invalid origin', () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
+        await agent
+          .get(url.replace(':userId', faker.string.uuid()))
+          .query({
+            code: faker.number.int({ min: 100000, max: 999999 }).toString(),
+            email: faker.internet.email(),
+            origin: 'invalid origin',
+          })
+          .expect(StatusCodes.BAD_REQUEST)
+      })
+    })
+
+    describe('And invalid base origin', () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
+        await agent
+          .get(url.replace(':userId', faker.string.uuid()))
+          .query({
+            code: faker.number.int({ min: 100000, max: 999999 }).toString(),
+            email: faker.internet.email(),
+            origin: 'https://nosgestesclimat.fr/not-root',
           })
           .expect(StatusCodes.BAD_REQUEST)
       })
@@ -91,6 +120,7 @@ describe('Given a NGC user', () => {
           .query({
             code: faker.number.int({ min: 100000, max: 999999 }).toString(),
             email: faker.internet.email().toLocaleLowerCase(),
+            origin: 'https://nosgestesclimat.fr',
             listIds: [ListIds.MAIN_NEWSLETTER],
           })
           .expect(StatusCodes.MOVED_TEMPORARILY)
@@ -106,6 +136,7 @@ describe('Given a NGC user', () => {
           .query({
             code: faker.number.int({ min: 100000, max: 999999 }).toString(),
             email: faker.internet.email().toLocaleLowerCase(),
+            origin: 'https://nosgestesclimat.fr',
             listIds: [ListIds.MAIN_NEWSLETTER],
           })
           .expect(StatusCodes.MOVED_TEMPORARILY)
@@ -169,6 +200,7 @@ describe('Given a NGC user', () => {
               code,
               email,
               listIds,
+              origin: 'https://nosgestesclimat.fr',
             })
             .expect(StatusCodes.MOVED_TEMPORARILY)
 
@@ -206,11 +238,11 @@ describe('Given a NGC user', () => {
 
             const response = await agent
               .get(url.replace(':userId', userId))
-              .set('origin', 'https://preprod.nosgestesclimat.fr')
               .query({
                 code,
                 email,
                 listIds,
+                origin: 'https://preprod.nosgestesclimat.fr',
               })
               .expect(StatusCodes.MOVED_TEMPORARILY)
 
@@ -280,6 +312,7 @@ describe('Given a NGC user', () => {
               code,
               email,
               'listIds[]': listIds,
+              origin: 'https://nosgestesclimat.fr',
             })
             .expect(StatusCodes.MOVED_TEMPORARILY)
 
@@ -347,6 +380,7 @@ describe('Given a NGC user', () => {
               code,
               email,
               listIds,
+              origin: 'https://nosgestesclimat.fr',
             })
             .expect(StatusCodes.MOVED_TEMPORARILY)
 
@@ -398,6 +432,7 @@ describe('Given a NGC user', () => {
             code,
             email,
             listIds,
+            origin: 'https://nosgestesclimat.fr',
           })
           .expect(StatusCodes.MOVED_TEMPORARILY)
 

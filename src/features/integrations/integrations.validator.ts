@@ -1,5 +1,5 @@
-import z from 'zod'
-import { SituationSchema } from '../simulations/simulations.validator'
+import { z } from 'zod'
+import { SituationSchema } from '../simulations/simulations.validator.js'
 
 export enum ExternalServiceTypeEnum {
   agir = 'agir',

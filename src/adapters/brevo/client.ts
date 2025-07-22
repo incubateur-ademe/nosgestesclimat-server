@@ -9,12 +9,12 @@ import type { AxiosError } from 'axios'
 import axios, { isAxiosError } from 'axios'
 import axiosRetry from 'axios-retry'
 import { z } from 'zod'
-import { config } from '../../config'
-import { isNetworkOrTimeoutOrRetryableError } from '../../core/typeguards/isRetryableAxiosError'
+import { config } from '../../config.js'
+import { isNetworkOrTimeoutOrRetryableError } from '../../core/typeguards/isRetryableAxiosError.js'
 import type {
   ActionChoicesSchema,
   ComputedResultSchema,
-} from '../../features/simulations/simulations.validator'
+} from '../../features/simulations/simulations.validator.js'
 import {
   AllNewsletters,
   Attributes,
@@ -25,7 +25,7 @@ import {
   MATOMO_KEYWORD_KEY,
   MATOMO_KEYWORDS,
   TemplateIds,
-} from './constant'
+} from './constant.js'
 
 const brevo = axios.create({
   baseURL: config.thirdParty.brevo.url,
@@ -377,12 +377,14 @@ export const sendNewsLetterConfirmationEmail = ({
   code,
   email,
   userId,
+  origin,
   listIds,
   newsLetterConfirmationBaseUrl,
 }: {
   code: string
   email: string
   userId: string
+  origin: string
   listIds?: number[]
   newsLetterConfirmationBaseUrl: string
 }) => {
@@ -393,6 +395,7 @@ export const sendNewsLetterConfirmationEmail = ({
   const { searchParams } = newsletterConfirmationUrl
   searchParams.append('code', code)
   searchParams.append('email', email)
+  searchParams.append('origin', origin)
   listIds?.forEach((l) => searchParams.append('listIds', l.toString()))
 
   return sendEmail({

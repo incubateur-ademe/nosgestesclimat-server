@@ -1,11 +1,11 @@
-import type { Session } from '../../adapters/prisma/transaction'
-import { transaction } from '../../adapters/prisma/transaction'
-import { EventBus } from '../../core/event-bus/event-bus'
-import type { WithOptionalProperty } from '../../types/types'
-import { generateVerificationCodeAndExpiration } from './authentication.service'
-import { VerificationCodeCreatedEvent } from './events/VerificationCodeCreated.event'
-import { createUserVerificationCode } from './verification-codes.repository'
-import type { VerificationCodeCreateDto } from './verification-codes.validator'
+import type { Session } from '../../adapters/prisma/transaction.js'
+import { transaction } from '../../adapters/prisma/transaction.js'
+import { EventBus } from '../../core/event-bus/event-bus.js'
+import type { WithOptionalProperty } from '../../types/types.js'
+import { generateVerificationCodeAndExpiration } from './authentication.service.js'
+import { VerificationCodeCreatedEvent } from './events/VerificationCodeCreated.event.js'
+import { createUserVerificationCode } from './verification-codes.repository.js'
+import type { VerificationCodeCreateDto } from './verification-codes.validator.js'
 
 export const generateVerificationCode = async (
   verificationCodeDto: WithOptionalProperty<

@@ -2,9 +2,9 @@ import {
   OrganisationType,
   PollDefaultAdditionalQuestionType,
 } from '@prisma/client'
-import z from 'zod'
-import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail'
-import { UserParams } from '../users/users.validator'
+import { z } from 'zod'
+import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail.js'
+import { UserParams } from '../users/users.validator.js'
 
 const OrganisationParams = z
   .object({

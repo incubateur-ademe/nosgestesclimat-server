@@ -5,10 +5,10 @@ import jwt from 'jsonwebtoken'
 import { faker } from '@faker-js/faker'
 import supertest from 'supertest'
 import { afterEach, describe, expect, test } from 'vitest'
-import { prisma } from '../../adapters/prisma/client'
-import { config } from '../../config'
-import { COOKIE_MAX_AGE } from '../../features/authentication/authentication.service'
-import { authentificationMiddleware } from '../authentificationMiddleware'
+import { prisma } from '../../adapters/prisma/client.js'
+import { config } from '../../config.js'
+import { COOKIE_MAX_AGE } from '../../features/authentication/authentication.service.js'
+import { authentificationMiddleware } from '../authentificationMiddleware.js'
 
 describe('authentication middleware', () => {
   const app = express()

@@ -2,17 +2,17 @@ import type { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import multer from 'multer'
 import yaml from 'yaml'
-import { EntityNotFoundException } from '../../../../core/errors/EntityNotFoundException'
-import { ForbiddenException } from '../../../../core/errors/ForbiddenException'
-import { tsRestServer } from '../../../../core/ts-rest'
-import logger from '../../../../logger'
-import { generateAuthenticationMiddleware } from '../authentication/authentication.service'
-import mappingFileContract, { MappingFile } from './mapping-file.contract'
+import { EntityNotFoundException } from '../../../../core/errors/EntityNotFoundException.js'
+import { ForbiddenException } from '../../../../core/errors/ForbiddenException.js'
+import { tsRestServer } from '../../../../core/ts-rest.js'
+import logger from '../../../../logger.js'
+import { generateAuthenticationMiddleware } from '../authentication/authentication.service.js'
+import mappingFileContract, { MappingFile } from './mapping-file.contract.js'
 import {
   deleteMappingFile,
   fetchMappingFile,
   uploadMappingFile,
-} from './mapping-file.service'
+} from './mapping-file.service.js'
 
 const upload = multer({
   storage: multer.memoryStorage(),

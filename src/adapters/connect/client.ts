@@ -1,9 +1,9 @@
 import type { VerifiedUser } from '@prisma/client'
 import axios from 'axios'
 import axiosRetry from 'axios-retry'
-import { config } from '../../config'
-import { isNetworkOrTimeoutOrRetryableError } from '../../core/typeguards/isRetryableAxiosError'
-import logger from '../../logger'
+import { config } from '../../config.js'
+import { isNetworkOrTimeoutOrRetryableError } from '../../core/typeguards/isRetryableAxiosError.js'
+import logger from '../../logger.js'
 
 /**
  * Connect url is a full url in the environment

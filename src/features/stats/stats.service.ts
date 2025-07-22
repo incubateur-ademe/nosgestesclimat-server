@@ -5,14 +5,19 @@ import {
 } from '@prisma/client'
 import { isAxiosError } from 'axios'
 import dayjs from 'dayjs'
-import { fetchNewsletter } from '../../adapters/brevo/client'
-import { ListIds } from '../../adapters/brevo/constant'
-import { clients } from '../../adapters/matomo'
-import { ReferrerKind } from '../../adapters/matomo/client'
-import { prisma } from '../../adapters/prisma/client'
-import { isPrismaErrorUniqueConstraintFailed } from '../../core/typeguards/isPrismaError'
-import logger from '../../logger'
-import { createNewsLetterStats, upsertStat } from './stats.repository'
+import { fetchNewsletter } from '../../adapters/brevo/client.js'
+import { ListIds } from '../../adapters/brevo/constant.js'
+import { ReferrerKind } from '../../adapters/matomo/client.js'
+import { clients } from '../../adapters/matomo/index.js'
+import { prisma } from '../../adapters/prisma/client.js'
+import { isPrismaErrorUniqueConstraintFailed } from '../../core/typeguards/isPrismaError.js'
+import logger from '../../logger.js'
+import {
+  createNewsLetterStats,
+  getNorthstarStats,
+  upsertStat,
+} from './stats.repository.js'
+import type { NorthstarStatsFetchQuery } from './stats.validator.js'
 
 const NB_VISITS_MIN = 10
 
@@ -126,7 +131,7 @@ const recoverKindDayStats = async (params: RecoverKindDayStats) => {
   const { source, date, kind } = params
   const client = clients[source]
   switch (kind) {
-    case MatomoStatsKind.website:
+    case MatomoStatsKind.website: {
       const referrersWebsites = await client.getReferrersWebsites(date)
       for (const referrerWebsite of [
         ...referrersWebsites.filter(
@@ -146,7 +151,8 @@ const recoverKindDayStats = async (params: RecoverKindDayStats) => {
         })
       }
       break
-    case MatomoStatsKind.campaign:
+    }
+    case MatomoStatsKind.campaign: {
       const referrersCampaigns = await client.getReferrersCampaigns(date)
       for (const referrerCampaign of [
         ...referrersCampaigns.filter(
@@ -166,6 +172,7 @@ const recoverKindDayStats = async (params: RecoverKindDayStats) => {
         })
       }
       break
+    }
     default:
       return recoverReferrerDayStats({
         ...params,
@@ -258,5 +265,14 @@ export const recoverNewsletterSubscriptions = async (date: string) => {
           }
         : err
     )
+  }
+}
+
+export const fetchNorthstarStats = async (query: NorthstarStatsFetchQuery) => {
+  const stats = await getNorthstarStats(query, { session: prisma })
+
+  return {
+    description: 'Nombre de simulations réalisées',
+    stats: stats.slice(Math.max(stats.length - query.since, 0)),
   }
 }

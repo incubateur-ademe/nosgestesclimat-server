@@ -4,10 +4,10 @@ import {
   fetchNewsletter,
   isNotFound,
   isTimeout,
-} from '../../adapters/brevo/client'
-import { redis } from '../../adapters/redis/client'
-import { ALIVE_SUFFIX, KEYS } from '../../adapters/redis/constant'
-import type { NewsletterParams } from './newsletter.validator'
+} from '../../adapters/brevo/client.js'
+import { redis } from '../../adapters/redis/client.js'
+import { ALIVE_SUFFIX, KEYS } from '../../adapters/redis/constant.js'
+import type { NewsletterParams } from './newsletter.validator.js'
 
 const BREVO_NEWSLETTER_REDIS_CACHE_TTL_SECONDS = 60
 

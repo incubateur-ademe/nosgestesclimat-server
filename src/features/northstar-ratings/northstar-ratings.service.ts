@@ -1,5 +1,5 @@
-import { transaction } from '../../adapters/prisma/transaction'
-import type { NorthstarRatingCreateDto } from './northstar-ratings.validator'
+import { transaction } from '../../adapters/prisma/transaction.js'
+import type { NorthstarRatingCreateDto } from './northstar-ratings.validator.js'
 
 export const createNorthStarRating = (
   northstarRating: NorthstarRatingCreateDto

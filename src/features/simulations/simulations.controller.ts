@@ -1,28 +1,28 @@
 import express from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { validateRequest } from 'zod-express-middleware'
-import { config } from '../../config'
-import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException'
-import { EventBus } from '../../core/event-bus/event-bus'
-import logger from '../../logger'
-import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware'
-import { SimulationUpsertedEvent } from './events/SimulationUpserted.event'
-import { publishRedisEvent } from './handlers/publish-redis-event'
-import { sendSimulationUpserted } from './handlers/send-simulation-upserted'
-import { syncUserDataAfterSimulationUpserted } from './handlers/sync-user-data-after-simulation-upserted'
-import { updateBrevoContact } from './handlers/update-brevo-contact'
+import { config } from '../../config.js'
+import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
+import { EventBus } from '../../core/event-bus/event-bus.js'
+import logger from '../../logger.js'
+import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware.js'
+import { SimulationUpsertedEvent } from './events/SimulationUpserted.event.js'
+import { publishRedisEvent } from './handlers/publish-redis-event.js'
+import { sendSimulationUpserted } from './handlers/send-simulation-upserted.js'
+import { syncUserDataAfterSimulationUpserted } from './handlers/sync-user-data-after-simulation-upserted.js'
+import { updateBrevoContact } from './handlers/update-brevo-contact.js'
 import {
   createSimulation,
   fetchSimulation,
   fetchSimulations,
-} from './simulations.service'
+} from './simulations.service.js'
 import {
   SimulationCreateDto,
   SimulationCreateNewsletterList,
   SimulationCreateValidator,
   SimulationFetchValidator,
   SimulationsFetchValidator,
-} from './simulations.validator'
+} from './simulations.validator.js'
 
 const router = express.Router()
 

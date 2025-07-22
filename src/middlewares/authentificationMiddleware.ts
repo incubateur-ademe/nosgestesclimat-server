@@ -2,15 +2,15 @@ import type { NextFunction, Request, RequestHandler, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import type { JwtPayload } from 'jsonwebtoken'
 import jwt from 'jsonwebtoken'
-import { prisma } from '../adapters/prisma/client'
-import { config } from '../config'
+import { prisma } from '../adapters/prisma/client.js'
+import { config } from '../config.js'
 import {
   COOKIE_MAX_AGE,
   COOKIE_NAME,
   COOKIES_OPTIONS,
-} from '../features/authentication/authentication.service'
-import { syncUserData } from '../features/users/users.service'
-import logger from '../logger'
+} from '../features/authentication/authentication.service.js'
+import { syncUserData } from '../features/users/users.service.js'
+import logger from '../logger.js'
 
 const isValidResult = (
   result?: string | JwtPayload | undefined

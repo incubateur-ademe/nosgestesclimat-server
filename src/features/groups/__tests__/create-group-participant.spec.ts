@@ -5,19 +5,19 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import {
   brevoSendEmail,
   brevoUpdateContact,
-} from '../../../adapters/brevo/__tests__/fixtures/server.fixture'
-import { prisma } from '../../../adapters/prisma/client'
-import app from '../../../app'
-import { mswServer } from '../../../core/__tests__/fixtures/server.fixture'
-import { EventBus } from '../../../core/event-bus/event-bus'
-import logger from '../../../logger'
-import { getSimulationPayload } from '../../simulations/__tests__/fixtures/simulations.fixtures'
-import type { ParticipantInputCreateDto } from '../groups.validator'
+} from '../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
+import { prisma } from '../../../adapters/prisma/client.js'
+import app from '../../../app.js'
+import { mswServer } from '../../../core/__tests__/fixtures/server.fixture.js'
+import { EventBus } from '../../../core/event-bus/event-bus.js'
+import logger from '../../../logger.js'
+import { getSimulationPayload } from '../../simulations/__tests__/fixtures/simulations.fixtures.js'
+import type { ParticipantInputCreateDto } from '../groups.validator.js'
 import {
   CREATE_PARTICIPANT_ROUTE,
   createGroup,
   joinGroup,
-} from './fixtures/groups.fixture'
+} from './fixtures/groups.fixture.js'
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)

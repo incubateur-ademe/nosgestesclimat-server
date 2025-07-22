@@ -7,19 +7,19 @@ import jwt from 'jsonwebtoken'
 import path from 'path'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import { prisma } from '../../../../../adapters/prisma/client'
-import { client } from '../../../../../adapters/scaleway/client'
-import app from '../../../../../app'
-import { config } from '../../../../../config'
-import logger from '../../../../../logger'
-import { ExternalServiceTypeEnum } from '../../../integrations.validator'
-import { recoverApiToken } from '../../authentication/__tests__/fixtures/authentication.fixtures'
-import { SCOPES_FOR_PARTNERS } from '../mapping-file.service'
+import { prisma } from '../../../../../adapters/prisma/client.js'
+import { client } from '../../../../../adapters/scaleway/client.js'
+import app from '../../../../../app.js'
+import { config } from '../../../../../config.js'
+import logger from '../../../../../logger.js'
+import { ExternalServiceTypeEnum } from '../../../integrations.validator.js'
+import { recoverApiToken } from '../../authentication/__tests__/fixtures/authentication.fixtures.js'
+import { SCOPES_FOR_PARTNERS } from '../mapping-file.service.js'
 import {
   CREATE_MAPPING_FILE_ROUTE,
   randomMappingFileKind,
   randomPartner,
-} from './fixtures'
+} from './fixtures/index.js'
 
 describe('Given a NGC integrations API user', () => {
   const agent = supertest(app)
@@ -106,7 +106,10 @@ describe('Given a NGC integrations API user', () => {
         test(`Then it returns a ${StatusCodes.FORBIDDEN} error`, async () => {
           await agent
             .put(url)
-            .attach('file', path.join(__dirname, 'fixtures', 'valid.yml'))
+            .attach(
+              'file',
+              path.join(import.meta.dirname, 'fixtures', 'valid.yml')
+            )
             .field('kind', randomMappingFileKind())
             .field('partner', forbiddenPartner)
             .set('authorization', `Bearer ${token}`)
@@ -126,7 +129,10 @@ describe('Given a NGC integrations API user', () => {
         test(`Then it return a ${StatusCodes.CREATED} response`, async () => {
           await agent
             .put(url)
-            .attach('file', path.join(__dirname, 'fixtures', 'valid.yml'))
+            .attach(
+              'file',
+              path.join(import.meta.dirname, 'fixtures', 'valid.yml')
+            )
             .field('kind', randomMappingFileKind())
             .field('partner', allowedPartner)
             .set('authorization', `Bearer ${token}`)
@@ -182,7 +188,10 @@ describe('Given a NGC integrations API user', () => {
         test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
           await agent
             .put(url)
-            .attach('file', path.join(__dirname, 'fixtures', 'invalid.png'))
+            .attach(
+              'file',
+              path.join(import.meta.dirname, 'fixtures', 'invalid.png')
+            )
             .field('kind', randomMappingFileKind())
             .field('partner', randomPartner())
             .set('authorization', `Bearer ${token}`)
@@ -194,7 +203,10 @@ describe('Given a NGC integrations API user', () => {
         test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
           await agent
             .put(url)
-            .attach('file', path.join(__dirname, 'fixtures', 'invalid.yml'))
+            .attach(
+              'file',
+              path.join(import.meta.dirname, 'fixtures', 'invalid.yml')
+            )
             .field('kind', randomMappingFileKind())
             .field('partner', randomPartner())
             .set('authorization', `Bearer ${token}`)
@@ -206,7 +218,10 @@ describe('Given a NGC integrations API user', () => {
         test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
           await agent
             .put(url)
-            .attach('file', path.join(__dirname, 'fixtures', 'invalid.yml'))
+            .attach(
+              'file',
+              path.join(import.meta.dirname, 'fixtures', 'invalid.yml')
+            )
             .field('kind', 'MyKind')
             .field('partner', randomPartner())
             .set('authorization', `Bearer ${token}`)
@@ -218,7 +233,10 @@ describe('Given a NGC integrations API user', () => {
         test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
           await agent
             .put(url)
-            .attach('file', path.join(__dirname, 'fixtures', 'invalid.yml'))
+            .attach(
+              'file',
+              path.join(import.meta.dirname, 'fixtures', 'invalid.yml')
+            )
             .field('kind', randomMappingFileKind())
             .field('partner', 'MyPartner')
             .set('authorization', `Bearer ${token}`)
@@ -229,7 +247,10 @@ describe('Given a NGC integrations API user', () => {
       test(`Then it returns a ${StatusCodes.CREATED} response`, async () => {
         await agent
           .put(url)
-          .attach('file', path.join(__dirname, 'fixtures', 'valid.yml'))
+          .attach(
+            'file',
+            path.join(import.meta.dirname, 'fixtures', 'valid.yml')
+          )
           .field('kind', randomMappingFileKind())
           .field('partner', randomPartner())
           .set('authorization', `Bearer ${token}`)
@@ -241,7 +262,10 @@ describe('Given a NGC integrations API user', () => {
         const partner = randomPartner()
         await agent
           .put(url)
-          .attach('file', path.join(__dirname, 'fixtures', 'valid.yml'))
+          .attach(
+            'file',
+            path.join(import.meta.dirname, 'fixtures', 'valid.yml')
+          )
           .field('kind', kind)
           .field('partner', partner)
           .set('authorization', `Bearer ${token}`)
@@ -253,7 +277,7 @@ describe('Given a NGC integrations API user', () => {
               Bucket: process.env.SCALEWAY_BUCKET,
               Key: `${process.env.SCALEWAY_ROOT_PATH}/mapping-files/${partner}/${kind}.yml`,
               Body: await readFile(
-                path.join(__dirname, 'fixtures', 'valid.yml')
+                path.join(import.meta.dirname, 'fixtures', 'valid.yml')
               ),
               ACL: ObjectCannedACL.private,
             },
@@ -273,7 +297,10 @@ describe('Given a NGC integrations API user', () => {
         test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
           await agent
             .put(url)
-            .attach('file', path.join(__dirname, 'fixtures', 'valid.yml'))
+            .attach(
+              'file',
+              path.join(import.meta.dirname, 'fixtures', 'valid.yml')
+            )
             .field('kind', randomMappingFileKind())
             .field('partner', randomPartner())
             .set('authorization', `Bearer ${token}`)
@@ -283,7 +310,10 @@ describe('Given a NGC integrations API user', () => {
         test(`Then it logs the exception`, async () => {
           await agent
             .put(url)
-            .attach('file', path.join(__dirname, 'fixtures', 'valid.yml'))
+            .attach(
+              'file',
+              path.join(import.meta.dirname, 'fixtures', 'valid.yml')
+            )
             .field('kind', randomMappingFileKind())
             .field('partner', randomPartner())
             .set('authorization', `Bearer ${token}`)

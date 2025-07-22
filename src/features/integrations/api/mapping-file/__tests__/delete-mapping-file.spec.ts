@@ -9,19 +9,19 @@ import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import { prisma } from '../../../../../adapters/prisma/client'
-import { client } from '../../../../../adapters/scaleway/client'
-import app from '../../../../../app'
-import { config } from '../../../../../config'
-import logger from '../../../../../logger'
-import { ExternalServiceTypeEnum } from '../../../integrations.validator'
-import { recoverApiToken } from '../../authentication/__tests__/fixtures/authentication.fixtures'
-import { SCOPES_FOR_PARTNERS } from '../mapping-file.service'
+import { prisma } from '../../../../../adapters/prisma/client.js'
+import { client } from '../../../../../adapters/scaleway/client.js'
+import app from '../../../../../app.js'
+import { config } from '../../../../../config.js'
+import logger from '../../../../../logger.js'
+import { ExternalServiceTypeEnum } from '../../../integrations.validator.js'
+import { recoverApiToken } from '../../authentication/__tests__/fixtures/authentication.fixtures.js'
+import { SCOPES_FOR_PARTNERS } from '../mapping-file.service.js'
 import {
   DELETE_MAPPING_FILE_ROUTE,
   randomMappingFileKind,
   randomPartner,
-} from './fixtures'
+} from './fixtures/index.js'
 
 describe('Given a NGC integrations API user', () => {
   const agent = supertest(app)
@@ -224,7 +224,7 @@ describe('Given a NGC integrations API user', () => {
       })
 
       describe('And file does exist', () => {
-        beforeEach(async () => {
+        beforeEach(() => {
           vi.spyOn(client, 'send')
             .mockImplementationOnce((command) => {
               if (!(command instanceof HeadObjectCommand)) {
