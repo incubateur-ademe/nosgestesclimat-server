@@ -181,7 +181,7 @@ describe('Given a NGC integrations API user', () => {
       beforeEach(() => {
         vi.spyOn(client, 'send')
           .mockReset()
-          .mockImplementationOnce(() => Promise.reject(bucketError))
+          .mockImplementation(() => Promise.reject(bucketError))
       })
 
       test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
