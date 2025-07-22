@@ -12,7 +12,12 @@ import { clients } from '../../adapters/matomo/index.js'
 import { prisma } from '../../adapters/prisma/client.js'
 import { isPrismaErrorUniqueConstraintFailed } from '../../core/typeguards/isPrismaError.js'
 import logger from '../../logger.js'
-import { createNewsLetterStats, upsertStat } from './stats.repository.js'
+import {
+  createNewsLetterStats,
+  getNorthstarStats,
+  upsertStat,
+} from './stats.repository.js'
+import type { NorthstarStatsFetchQuery } from './stats.validator.js'
 
 const NB_VISITS_MIN = 10
 
@@ -260,5 +265,14 @@ export const recoverNewsletterSubscriptions = async (date: string) => {
           }
         : err
     )
+  }
+}
+
+export const fetchNorthstarStats = async (query: NorthstarStatsFetchQuery) => {
+  const stats = await getNorthstarStats(query, { session: prisma })
+
+  return {
+    description: 'Nombre de simulations réalisées',
+    stats: stats.slice(Math.max(stats.length - query.since, 0)),
   }
 }
