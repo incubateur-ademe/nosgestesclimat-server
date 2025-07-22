@@ -49,20 +49,29 @@ export const UpdateUserValidator = {
   query: UserUpdateQuery,
 }
 
-export const NewsletterConfirmationQuery = z.object({
-  code: z.string().regex(/^\d{6}$/),
-  email: z
-    .string()
-    .regex(EMAIL_REGEX)
-    .transform((email) => email.toLocaleLowerCase()),
-  listIds: z
-    .union([
-      z.coerce.number().pipe(z.nativeEnum(ListIds).transform((s) => [s])),
-      z.array(z.coerce.number().pipe(z.nativeEnum(ListIds))),
-    ])
-    .optional()
-    .transform((listIds) => listIds || []),
-})
+export const NewsletterConfirmationQuery = z
+  .object({
+    code: z.string().regex(/^\d{6}$/),
+    origin: z.string().refine((url) => {
+      try {
+        return new URL(url).origin === url
+      } catch {
+        return false
+      }
+    }),
+    email: z
+      .string()
+      .regex(EMAIL_REGEX)
+      .transform((email) => email.toLocaleLowerCase()),
+    listIds: z
+      .union([
+        z.coerce.number().pipe(z.nativeEnum(ListIds).transform((s) => [s])),
+        z.array(z.coerce.number().pipe(z.nativeEnum(ListIds))),
+      ])
+      .optional()
+      .transform((listIds) => listIds || []),
+  })
+  .strict()
 
 export type NewsletterConfirmationQuery = z.infer<
   typeof NewsletterConfirmationQuery

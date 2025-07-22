@@ -102,7 +102,7 @@ router
 router
   .route('/v1/:userId/newsletter-confirmation')
   .get(validateRequest(NewsletterConfirmationValidator), async (req, res) => {
-    const redirectUrl = new URL(req.get('origin') || config.origin)
+    const redirectUrl = new URL(req.query.origin)
     redirectUrl.pathname = '/newsletter-confirmation'
     const { searchParams: redirectSearchParams } = redirectUrl
 
