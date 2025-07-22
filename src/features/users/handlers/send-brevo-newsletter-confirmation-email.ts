@@ -12,6 +12,7 @@ export const sendBrevoNewsLetterConfirmationEmail: Handler<
     newsletters: { finalNewsletters },
     nextEmail: email,
     verified,
+    origin,
   },
 }) => {
   if (verified || !email) {
@@ -23,6 +24,7 @@ export const sendBrevoNewsLetterConfirmationEmail: Handler<
   return sendNewsLetterConfirmationEmail({
     newsLetterConfirmationBaseUrl: config.serverUrl,
     listIds: Array.from(finalNewsletters),
+    origin,
     userId,
     email,
     code,

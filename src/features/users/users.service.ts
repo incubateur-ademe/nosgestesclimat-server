@@ -178,10 +178,12 @@ export const updateUserAndContact = async ({
   code,
   params,
   userDto,
+  origin,
 }: {
   params: UserParams | NonNullable<Request['user']>
   code?: string
   userDto: UserUpdateDto
+  origin: string
 }) => {
   const {
     user,
@@ -275,6 +277,7 @@ export const updateUserAndContact = async ({
     newsletters,
     nextEmail,
     verified,
+    origin,
     user,
   })
 
@@ -300,9 +303,11 @@ export const updateUserAndContact = async ({
 
 export const confirmNewsletterSubscriptions = async ({
   params,
+  origin,
   query,
 }: {
   params: UserParams
+  origin: string
   query: NewsletterConfirmationQuery
 }) => {
   try {
@@ -330,6 +335,7 @@ export const confirmNewsletterSubscriptions = async ({
     const userUpdatedEvent = new UserUpdatedEvent({
       verified: true,
       newsletters,
+      origin,
       user,
     })
 

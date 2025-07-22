@@ -377,12 +377,14 @@ export const sendNewsLetterConfirmationEmail = ({
   code,
   email,
   userId,
+  origin,
   listIds,
   newsLetterConfirmationBaseUrl,
 }: {
   code: string
   email: string
   userId: string
+  origin: string
   listIds?: number[]
   newsLetterConfirmationBaseUrl: string
 }) => {
@@ -393,6 +395,7 @@ export const sendNewsLetterConfirmationEmail = ({
   const { searchParams } = newsletterConfirmationUrl
   searchParams.append('code', code)
   searchParams.append('email', email)
+  searchParams.append('origin', origin)
   listIds?.forEach((l) => searchParams.append('listIds', l.toString()))
 
   return sendEmail({

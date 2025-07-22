@@ -73,6 +73,7 @@ router
           params: req.user || req.params,
           code: req.query.code,
           userDto: UserUpdateDto.parse(req.body),
+          origin: req.get('origin') || config.origin,
         })
 
         if (token) {
@@ -101,14 +102,15 @@ router
 router
   .route('/v1/:userId/newsletter-confirmation')
   .get(validateRequest(NewsletterConfirmationValidator), async (req, res) => {
-    const redirectUrl = new URL(req.get('origin') || config.origin)
+    const redirectUrl = new URL(req.query.origin)
     redirectUrl.pathname = '/newsletter-confirmation'
     const { searchParams: redirectSearchParams } = redirectUrl
 
     try {
       await confirmNewsletterSubscriptions({
-        params: req.params,
         query: NewsletterConfirmationQuery.parse(req.query),
+        origin: redirectUrl.origin,
+        params: req.params,
       })
 
       redirectSearchParams.append('success', 'true')
