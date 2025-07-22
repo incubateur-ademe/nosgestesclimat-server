@@ -21,7 +21,6 @@
     "jobs:recoverMatomoStats": "node dist/src/jobs/recover-matomo-stats.js",
     "jobs:recoverNewsletterStats": "node dist/src/jobs/recover-newsletter-stats.js",
     "lint": "prettier --check \"**/*.{js,ts,md,json}\" && eslint . --ext .js,.ts",
-    "run-script": "ts-node --project tsconfig.json",
     "prestart": "yarn db:doc",
     "start": "NODE_OPTIONS=--max-old-space-size=8192 node ./dist/src/index.js",
     "start:worker": "NODE_OPTIONS=--max-old-space-size=8192 node ./dist/src/worker.js",
@@ -100,7 +99,7 @@
     "prisma": "^5.18.0",
     "redis-mock": "^0.56.3",
     "rimraf": "^6.0.1",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.20.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.37.0",
     "vitest": "^3.2.4"
