@@ -18,9 +18,7 @@ import integrationsApiController from './features/integrations/api/api.controlle
 import integrationsController from './features/integrations/integrations.controller.js'
 import modeleController from './features/modele/modele.controller.js'
 import newslettersController from './features/newsletter/newsletter.controller.js'
-import northstarRatingsController from './features/northstar-ratings/northstar-ratings.controller.js'
 import organisationController from './features/organisations/organisations.controller.js'
-import quizzAnswersController from './features/quizz-answers/quizz-answers.controller.js'
 import simulationController from './features/simulations/simulations.controller.js'
 import statsController from './features/stats/stats.controller.js'
 import usersController from './features/users/users.controller.js'
@@ -77,9 +75,7 @@ app.use('/modele', modeleController)
 app.use('/groups', groupsController)
 app.use('/integrations', integrationsController)
 app.use('/newsletters', newslettersController)
-app.use('/northstar-ratings', northstarRatingsController)
 app.use('/organisations', organisationController)
-app.use('/quizz-answers', quizzAnswersController)
 app.use('/simulations', simulationController)
 app.use('/stats', statsController)
 app.use('/users', usersController)

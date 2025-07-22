@@ -84,6 +84,7 @@ beforeAll(async () => {
       }
 
       print.warning()
+      print.error()
     },
   })
 
