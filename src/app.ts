@@ -6,6 +6,7 @@ import requestIp from 'request-ip'
 import { createExpressEndpoints } from '@ts-rest/express'
 import { generateOpenApi } from '@ts-rest/open-api'
 import cors from 'cors'
+import { StatusCodes } from 'http-status-codes'
 import path from 'path'
 import swaggerUi from 'swagger-ui-express'
 import { origin } from './config.js'
@@ -21,6 +22,7 @@ import northstarRatingsController from './features/northstar-ratings/northstar-r
 import organisationController from './features/organisations/organisations.controller.js'
 import quizzAnswersController from './features/quizz-answers/quizz-answers.controller.js'
 import simulationController from './features/simulations/simulations.controller.js'
+import statsController from './features/stats/stats.controller.js'
 import usersController from './features/users/users.controller.js'
 import logger from './logger.js'
 import getNewsletterSubscriptions from './routes/settings/getNewsletterSubscriptions.js'
@@ -79,8 +81,14 @@ app.use('/northstar-ratings', northstarRatingsController)
 app.use('/organisations', organisationController)
 app.use('/quizz-answers', quizzAnswersController)
 app.use('/simulations', simulationController)
+app.use('/stats', statsController)
 app.use('/users', usersController)
 app.use('/verification-codes', verificationCodeController)
+
+// public routes
+app.get('/api/stats', (_, res) =>
+  res.redirect(StatusCodes.MOVED_PERMANENTLY, '/stats/v1/northstar')
+)
 
 createExpressEndpoints(
   integrationsApiContract,
