@@ -65,11 +65,13 @@ export const NewsletterConfirmationQuery = z
       .transform((email) => email.toLocaleLowerCase()),
     listIds: z
       .union([
-        z.coerce.number().pipe(z.nativeEnum(ListIds).transform((s) => [s])),
-        z.array(z.coerce.number().pipe(z.nativeEnum(ListIds))),
+        z.coerce.number().positive(),
+        z.array(z.coerce.number().positive()),
       ])
       .optional()
-      .transform((listIds) => listIds || []),
+      .transform((listIds) =>
+        typeof listIds === 'number' ? [listIds] : listIds || []
+      ),
   })
   .strict()
 
