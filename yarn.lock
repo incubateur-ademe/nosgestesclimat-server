@@ -1106,10 +1106,10 @@
   resolved "https://registry.yarnpkg.com/@humanwhocodes/retry/-/retry-0.4.3.tgz#c2b9d2e374ee62c586d3adbea87199b1d7a7a6ba"
   integrity sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==
 
-"@incubateur-ademe/nosgestesclimat@3.8.3":
-  version "3.8.3"
-  resolved "https://registry.yarnpkg.com/@incubateur-ademe/nosgestesclimat/-/nosgestesclimat-3.8.3.tgz#72529aee94cd7fa8a0309a518ddf4c9a6fd74113"
-  integrity sha512-6SI6+8y5XLFvzJ/PfXNKW4TLAQDi3BmtlauUdyUwLXwycvcypcUMGqb6eaqmKnYLvFBmyKL9Ohz/ZVY0noIlwQ==
+"@incubateur-ademe/nosgestesclimat@3.9.0":
+  version "3.9.0"
+  resolved "https://registry.yarnpkg.com/@incubateur-ademe/nosgestesclimat/-/nosgestesclimat-3.9.0.tgz#d28330ca4a6bf77111131bf1a01b950ebba98634"
+  integrity sha512-OyHzuUp187VPyX87qjrzbtofCXnh6iJtjky7xHPeyF6aN3n+I4LQk1PZlMFW8aVv6p2hBqjqDa6CUo7l3cYsrA==
 
 "@inquirer/confirm@^5.0.0":
   version "5.1.8"

@@ -6,65 +6,12 @@ import type { SituationSchema } from '../simulations.validator.js'
 const isDottedName = (dottedName: unknown): dottedName is DottedName =>
   typeof dottedName === 'string'
 
-const mergeDottedName = (root: DottedName, suffix: string) => {
-  const set = new Set(root.split(' . ').slice(0, -1))
-  suffix.split(' . ').forEach((s) => set.add(s))
-  return Array.from(set).join(' . ') as DottedName
-}
-
-const evaluateSituationDottedNameDefaultValue = ({
-  dottedName,
-  situation,
-  rules,
-}: {
-  situation: SituationSchema
-  dottedName: DottedName
-  rules: Partial<NGCRules>
-}): number => {
-  const rule = rules[dottedName]
-
-  if (!rule || typeof rule !== 'object') {
-    return 0
-  }
-
-  if (
-    'applicable si' in rule &&
-    typeof rule['applicable si'] === 'string' &&
-    !checkIfConditionIsTrue({
-      conditionDottedName: mergeDottedName(dottedName, rule['applicable si']),
-      situation,
-      rules,
-    })
-  ) {
-    return 0
-  }
-
-  if ('par défaut' in rule) {
-    const defaultValue = rule['par défaut']
-    if (typeof defaultValue === 'number') {
-      return defaultValue
-    }
-
-    if (typeof defaultValue === 'string') {
-      return getSituationDottedNameValue({
-        dottedName: mergeDottedName(dottedName, defaultValue),
-        situation,
-        rules,
-      })
-    }
-  }
-
-  return 0
-}
-
 const evaluateSituationDottedName = ({
   dottedName,
   situation,
-  rules,
 }: {
   situation: SituationSchema
   dottedName: unknown
-  rules: Partial<NGCRules>
 }): number => {
   if (!isDottedName(dottedName)) {
     return 0
@@ -73,17 +20,9 @@ const evaluateSituationDottedName = ({
   const rawValue = situation[dottedName]
 
   return typeof rawValue === 'object'
-    ? evaluateSituationDottedNameDefaultValue({
-        dottedName,
-        situation,
-        rules,
-      })
+    ? 0
     : Number.isNaN(+rawValue)
-      ? evaluateSituationDottedNameDefaultValue({
-          dottedName,
-          situation,
-          rules,
-        })
+      ? 0
       : +rawValue
 }
 
@@ -113,7 +52,6 @@ const evaluateConditions = (
 const checkIfConditionIsTrue = ({
   conditionDottedName,
   situation,
-  rules,
 }: {
   situation: SituationSchema
   conditionDottedName: unknown
@@ -141,7 +79,6 @@ const checkIfConditionIsTrue = ({
       : evaluateSituationDottedName({
           dottedName,
           situation,
-          rules,
         })
   if (isOperator(operator) && value) {
     if (Number.isNaN(+value)) {
@@ -204,7 +141,6 @@ const evaluateSituationFormula = ({
     return evaluateSituationDottedName({
       situation,
       dottedName: moyenneDottedName,
-      rules,
     })
   }
 
@@ -215,7 +151,6 @@ const evaluateSituationFormula = ({
         evaluateSituationDottedName({
           situation,
           dottedName: sommeDottedName,
-          rules,
         }),
       0
     )
