@@ -704,6 +704,64 @@ describe('Given a NGC user', () => {
               })
             })
 
+            describe('And contact has already subscribed an unknown newsletter', () => {
+              beforeEach(() => {
+                contact.listIds = [404]
+              })
+
+              test(`Then it sends an email and returns a ${StatusCodes.ACCEPTED} response`, async () => {
+                const payload = {
+                  email,
+                  contact: {
+                    listIds: [ListIds.MAIN_NEWSLETTER],
+                  },
+                }
+
+                mswServer.use(
+                  brevoGetContact(email, {
+                    customResponses: [
+                      {
+                        body: contact,
+                      },
+                    ],
+                  }),
+                  brevoSendEmail({
+                    expectBody: {
+                      to: [
+                        {
+                          name: email,
+                          email,
+                        },
+                      ],
+                      templateId: 118,
+                      params: {
+                        NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(email)}&origin=${encodeURIComponent('https://preprod.nosgestesclimat.fr')}&listIds=22&listIds=404`,
+                      },
+                    },
+                  })
+                )
+
+                const { body } = await agent
+                  .put(url.replace(':userId', userId))
+                  .set('origin', 'https://preprod.nosgestesclimat.fr')
+                  .send(payload)
+                  .expect(StatusCodes.ACCEPTED)
+
+                expect(body).toEqual({
+                  id: userId,
+                  email,
+                  name: null,
+                  contact: {
+                    id: contact.id,
+                    email,
+                    listIds: [404],
+                  },
+                  createdAt: expect.any(String),
+                  updatedAt: expect.any(String),
+                })
+              })
+            })
+
             describe('And no email provided', () => {
               test(`Then it returns a ${StatusCodes.OK} response with the updated user`, async () => {
                 const { body } = await agent
@@ -1148,6 +1206,62 @@ describe('Given a NGC user', () => {
                     id: contact.id,
                     email,
                     listIds: [],
+                  },
+                  createdAt: expect.any(String),
+                  updatedAt: expect.any(String),
+                })
+              })
+            })
+
+            describe('And contact has already subscribed an unknown newsletter', () => {
+              beforeEach(() => {
+                contact.listIds = [404]
+              })
+
+              test(`Then it sends an email and returns a ${StatusCodes.ACCEPTED} response`, async () => {
+                const payload = {
+                  contact: {
+                    listIds: [ListIds.MAIN_NEWSLETTER],
+                  },
+                }
+
+                mswServer.use(
+                  brevoGetContact(email, {
+                    customResponses: [
+                      {
+                        body: contact,
+                      },
+                    ],
+                  }),
+                  brevoSendEmail({
+                    expectBody: {
+                      to: [
+                        {
+                          name: email,
+                          email,
+                        },
+                      ],
+                      templateId: 118,
+                      params: {
+                        NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(email)}&origin=${encodeURIComponent('https://nosgestesclimat.fr')}&listIds=22&listIds=404`,
+                      },
+                    },
+                  })
+                )
+
+                const { body } = await agent
+                  .put(url.replace(':userId', userId))
+                  .send(payload)
+                  .expect(StatusCodes.ACCEPTED)
+
+                expect(body).toEqual({
+                  id: userId,
+                  email,
+                  name: null,
+                  contact: {
+                    id: contact.id,
+                    email,
+                    listIds: [404],
                   },
                   createdAt: expect.any(String),
                   updatedAt: expect.any(String),
@@ -1809,7 +1923,7 @@ describe('Given a NGC user', () => {
               })
             })
 
-            test(`Then it returns a ${StatusCodes.ACCEPTED} response`, async () => {
+            test(`Then it returns a ${StatusCodes.OK} response`, async () => {
               const payload = {
                 contact: {
                   listIds: [],

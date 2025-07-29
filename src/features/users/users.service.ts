@@ -48,7 +48,7 @@ const getNewsletterMutation = ({
 }: {
   contact?: BrevoContact
   previousContact?: BrevoContact
-  wantedNewsletters?: ListIds[]
+  wantedNewsletters?: number[]
 }) => {
   const newslettersToSubscribe = new Set<number>()
   const newslettersToUnsubscribe = new Set<number>()
