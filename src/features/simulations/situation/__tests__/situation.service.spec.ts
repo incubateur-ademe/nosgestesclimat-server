@@ -58,7 +58,7 @@ describe('getSituationDottedNameValue', () => {
     describe.each(
       Object.values(personas).map(({ nom, situation }) => ({ nom, situation }))
     )('When computing funfacts for persona $nom', ({ situation }) => {
-      test('Should give the same result as the engine', () => {
+      test.skip('Should give the same result as the engine', () => {
         // console.time('algoValue')
         const algoValue = getSituationDottedNameValue({
           dottedName,

@@ -324,23 +324,23 @@ describe('Given a NGC user', () => {
     })
 
     describe('And user already has a brevo contact with some subscribed news letters', () => {
-      beforeEach(async () => {
-        ;({
-          id: userId,
-          listIds,
-          email,
-          code,
-        } = await subscribeToNewsLetter({
-          agent,
-          user: {
-            contact: {
-              listIds: [ListIds.LOGEMENT_NEWSLETTER],
-            },
-          },
-        }))
-      })
-
       describe('When clicking the confirmation email link', () => {
+        beforeEach(async () => {
+          ;({
+            id: userId,
+            listIds,
+            email,
+            code,
+          } = await subscribeToNewsLetter({
+            agent,
+            user: {
+              contact: {
+                listIds: [ListIds.LOGEMENT_NEWSLETTER],
+              },
+            },
+          }))
+        })
+
         test('Then it redirects to a success page', async () => {
           mswServer.use(
             brevoGetContact(email, {
@@ -387,6 +387,77 @@ describe('Given a NGC user', () => {
           expect(response.get('location')).toBe(
             'https://nosgestesclimat.fr/newsletter-confirmation?success=true'
           )
+        })
+      })
+
+      describe('And unknown newletter', () => {
+        describe('When clicking the confirmation email link', () => {
+          beforeEach(async () => {
+            ;({
+              id: userId,
+              listIds,
+              email,
+              code,
+            } = await subscribeToNewsLetter({
+              agent,
+              user: {
+                contact: {
+                  listIds: [ListIds.LOGEMENT_NEWSLETTER],
+                },
+              },
+            }))
+          })
+
+          test('Then it redirects to a success page', async () => {
+            mswServer.use(
+              brevoGetContact(email, {
+                customResponses: [
+                  {
+                    body: getBrevoContact({
+                      email,
+                      attributes: {
+                        USER_ID: userId,
+                      },
+                      listIds: [ListIds.MAIN_NEWSLETTER, 404],
+                    }),
+                  },
+                ],
+              }),
+              brevoRemoveFromList(ListIds.MAIN_NEWSLETTER, {
+                expectBody: {
+                  emails: [email],
+                },
+              }),
+              brevoUpdateContact({
+                expectBody: {
+                  email,
+                  attributes: {
+                    USER_ID: userId,
+                    PRENOM: null,
+                  },
+                  updateEnabled: true,
+                  listIds: expect.arrayContaining([
+                    ListIds.LOGEMENT_NEWSLETTER,
+                    404,
+                  ]),
+                },
+              })
+            )
+
+            const response = await agent
+              .get(url.replace(':userId', userId))
+              .query({
+                code,
+                email,
+                listIds: [...listIds, 404],
+                origin: 'https://nosgestesclimat.fr',
+              })
+              .expect(StatusCodes.MOVED_TEMPORARILY)
+
+            expect(response.get('location')).toBe(
+              'https://nosgestesclimat.fr/newsletter-confirmation?success=true'
+            )
+          })
         })
       })
     })
