@@ -42,6 +42,9 @@ export const ListIds = {
   GROUP_JOINED: 30,
   TRANSPORT_NEWSLETTER: 32,
   LOGEMENT_NEWSLETTER: 36,
+  CONSO_NEWSLETTER: 40,
+  ALIMENTATION_NEWSLETTER: 41,
+  CITOYENS_NEWSLETTER: 42,
 } as const
 
 export type ListIds = ValueOf<typeof ListIds>
@@ -50,6 +53,9 @@ export const AllNewsletters = [
   ListIds.MAIN_NEWSLETTER,
   ListIds.LOGEMENT_NEWSLETTER,
   ListIds.TRANSPORT_NEWSLETTER,
+  ListIds.CONSO_NEWSLETTER,
+  ListIds.ALIMENTATION_NEWSLETTER,
+  ListIds.CITOYENS_NEWSLETTER,
 ] as const
 
 // Matomo campaigns & keywords
