@@ -188,17 +188,11 @@ export type SimulationCreateDto = z.infer<typeof SimulationCreateDto>
 export type SimulationCreateInputDto = z.input<typeof SimulationCreateDto>
 
 export const SimulationCreateNewsletterList = z
-  .array(
-    z.coerce
-      .number()
-      .pipe(
-        z.union([
-          z.literal(ListIds.MAIN_NEWSLETTER),
-          z.literal(ListIds.LOGEMENT_NEWSLETTER),
-          z.literal(ListIds.TRANSPORT_NEWSLETTER),
-        ])
-      )
-  )
+  .union([
+    z.coerce.number().pipe(z.nativeEnum(ListIds)),
+    z.array(z.coerce.number().pipe(z.nativeEnum(ListIds))),
+  ])
+  .transform((listIds) => (typeof listIds === 'number' ? [listIds] : listIds))
   .optional()
 
 export type SimulationCreateNewsletterList = z.infer<
