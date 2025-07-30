@@ -194,7 +194,10 @@ describe('Given a NGC user', () => {
           brevoUpdateContact(),
           brevoRemoveFromList(22),
           brevoRemoveFromList(32),
-          brevoRemoveFromList(36)
+          brevoRemoveFromList(36),
+          brevoRemoveFromList(40),
+          brevoRemoveFromList(41),
+          brevoRemoveFromList(42)
         )
 
         const {
@@ -385,6 +388,15 @@ describe('Given a NGC user', () => {
               }),
               brevoRemoveFromList(36, {
                 expectBody: { emails: [email] },
+              }),
+              brevoRemoveFromList(40, {
+                expectBody: { emails: [email] },
+              }),
+              brevoRemoveFromList(41, {
+                expectBody: { emails: [email] },
+              }),
+              brevoRemoveFromList(42, {
+                expectBody: { emails: [email] },
               })
             )
 
@@ -427,7 +439,10 @@ describe('Given a NGC user', () => {
               brevoUpdateContact(),
               brevoRemoveFromList(22),
               brevoRemoveFromList(32),
-              brevoRemoveFromList(36)
+              brevoRemoveFromList(36),
+              brevoRemoveFromList(40),
+              brevoRemoveFromList(41),
+              brevoRemoveFromList(42)
             )
 
             await agent
@@ -471,7 +486,10 @@ describe('Given a NGC user', () => {
                 brevoUpdateContact(),
                 brevoRemoveFromList(22),
                 brevoRemoveFromList(32),
-                brevoRemoveFromList(36)
+                brevoRemoveFromList(36),
+                brevoRemoveFromList(40),
+                brevoRemoveFromList(41),
+                brevoRemoveFromList(42)
               )
 
               await agent
@@ -485,7 +503,7 @@ describe('Given a NGC user', () => {
             })
           })
 
-          describe('And he subsribed to newsletters', () => {
+          describe('And he subscribed to newsletters', () => {
             test('Then it adds or updates contact in brevo', async () => {
               const date = new Date()
               const email = faker.internet.email().toLocaleLowerCase()
@@ -507,7 +525,7 @@ describe('Given a NGC user', () => {
                 brevoUpdateContact({
                   expectBody: {
                     email,
-                    listIds: [22, 32, 36],
+                    listIds: [22, 32, 36, 40, 41, 42],
                     attributes: {
                       USER_ID: userId,
                       LAST_SIMULATION_DATE: date.toISOString(),
@@ -557,7 +575,93 @@ describe('Given a NGC user', () => {
               await agent
                 .post(url.replace(':userId', userId))
                 .query({
-                  'newsletters[]': [22, 32, 36],
+                  'newsletters[]': [22, 32, 36, 40, 41, 42],
+                })
+                .send(payload)
+                .expect(StatusCodes.CREATED)
+
+              await EventBus.flush()
+            })
+          })
+
+          describe('And he subscribed to one newsletter', () => {
+            test('Then it adds or updates contact in brevo', async () => {
+              const date = new Date()
+              const email = faker.internet.email().toLocaleLowerCase()
+              const userId = faker.string.uuid()
+              const payload: SimulationCreateInputDto = {
+                id: faker.string.uuid(),
+                date,
+                situation,
+                computedResults,
+                progression: 1,
+                savedViaEmail: true,
+                user: {
+                  name: nom,
+                  email,
+                },
+              }
+
+              mswServer.use(
+                brevoUpdateContact({
+                  expectBody: {
+                    email,
+                    listIds: [22],
+                    attributes: {
+                      USER_ID: userId,
+                      LAST_SIMULATION_DATE: date.toISOString(),
+                      ACTIONS_SELECTED_NUMBER: 0,
+                      LAST_SIMULATION_BILAN_FOOTPRINT: (
+                        computedResults.carbone.bilan / 1000
+                      ).toLocaleString('fr-FR', {
+                        maximumFractionDigits: 1,
+                      }),
+                      LAST_SIMULATION_TRANSPORTS_FOOTPRINT: (
+                        computedResults.carbone.categories.transport / 1000
+                      ).toLocaleString('fr-FR', {
+                        maximumFractionDigits: 1,
+                      }),
+                      LAST_SIMULATION_ALIMENTATION_FOOTPRINT: (
+                        computedResults.carbone.categories.alimentation / 1000
+                      ).toLocaleString('fr-FR', {
+                        maximumFractionDigits: 1,
+                      }),
+                      LAST_SIMULATION_LOGEMENT_FOOTPRINT: (
+                        computedResults.carbone.categories.logement / 1000
+                      ).toLocaleString('fr-FR', {
+                        maximumFractionDigits: 1,
+                      }),
+                      LAST_SIMULATION_DIVERS_FOOTPRINT: (
+                        computedResults.carbone.categories.divers / 1000
+                      ).toLocaleString('fr-FR', {
+                        maximumFractionDigits: 1,
+                      }),
+                      LAST_SIMULATION_SERVICES_FOOTPRINT: (
+                        computedResults.carbone.categories[
+                          'services sociétaux'
+                        ] / 1000
+                      ).toLocaleString('fr-FR', {
+                        maximumFractionDigits: 1,
+                      }),
+                      LAST_SIMULATION_BILAN_WATER: Math.round(
+                        computedResults.eau.bilan / 365
+                      ).toString(),
+                      PRENOM: nom,
+                    },
+                    updateEnabled: true,
+                  },
+                }),
+                brevoRemoveFromList(32),
+                brevoRemoveFromList(36),
+                brevoRemoveFromList(40),
+                brevoRemoveFromList(41),
+                brevoRemoveFromList(42)
+              )
+
+              await agent
+                .post(url.replace(':userId', userId))
+                .query({
+                  newsletters: 22,
                 })
                 .send(payload)
                 .expect(StatusCodes.CREATED)
