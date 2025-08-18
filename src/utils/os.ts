@@ -14,6 +14,7 @@ type EnsureEnvVar = {
     defaultValue: T
   ): T
 }
+
 type primitive = boolean | number | string
 
 const ensureEnvVar_: DefaultEnsureEnvVar = (

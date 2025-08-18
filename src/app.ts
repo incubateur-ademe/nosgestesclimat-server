@@ -1,13 +1,12 @@
-import type { Request } from 'express'
-import express from 'express'
-import morgan from 'morgan'
-import requestIp from 'request-ip'
-
 import { createExpressEndpoints } from '@ts-rest/express'
 import { generateOpenApi } from '@ts-rest/open-api'
 import cors from 'cors'
+import type { Request } from 'express'
+import express from 'express'
 import { StatusCodes } from 'http-status-codes'
+import morgan from 'morgan'
 import path from 'path'
+import requestIp from 'request-ip'
 import swaggerUi from 'swagger-ui-express'
 import { origin } from './config.js'
 import authenticationController from './features/authentication/authentication.controller.js'
@@ -23,8 +22,6 @@ import simulationController from './features/simulations/simulations.controller.
 import statsController from './features/stats/stats.controller.js'
 import usersController from './features/users/users.controller.js'
 import logger from './logger.js'
-import getNewsletterSubscriptions from './routes/settings/getNewsletterSubscriptions.js'
-import updateSettingsRoute from './routes/settings/updateSettings.js'
 
 const app = express()
 
@@ -65,11 +62,6 @@ app.use(
   )
 )
 
-// Deprecated routes
-app.use('/update-settings', updateSettingsRoute)
-app.use('/get-newsletter-subscriptions', getNewsletterSubscriptions)
-
-// new API routes
 app.use('/authentication', authenticationController)
 app.use('/modele', modeleController)
 app.use('/groups', groupsController)
