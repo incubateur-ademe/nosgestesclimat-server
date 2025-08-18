@@ -1,9 +1,9 @@
 import { initContract, ZodErrorSchema } from '@ts-rest/core'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
-import { MAPPING_CASES } from '../../../../constants/change-case.js'
 import { SituationSchema } from '../../../simulations/simulations.validator.js'
 import { ExternalServiceTypeEnum } from '../../integrations.validator.js'
+import { MAPPING_CASES } from './mapping-situation.constant.js'
 
 const MappingSituationParams = z
   .object({

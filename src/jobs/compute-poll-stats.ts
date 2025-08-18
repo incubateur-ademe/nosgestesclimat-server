@@ -1,5 +1,5 @@
 import { prisma } from '../adapters/prisma/client.js'
-import { batchFindMany } from '../core/batchFindMany.js'
+import { batchFindMany } from '../core/batch-find-many.js'
 import { updatePollFunFacts } from '../features/organisations/organisations.service.js'
 import logger from '../logger.js'
 

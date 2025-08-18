@@ -7,7 +7,7 @@ import { StatusCodes } from 'http-status-codes'
 import type { ParsedRules, PublicodesExpression } from 'publicodes'
 import Engine, { utils } from 'publicodes'
 import type supertest from 'supertest'
-import { carbonMetric, waterMetric } from '../../../../constants/ngc.js'
+import { carbonMetric, waterMetric } from '../../simulation.constant.js'
 
 import {
   brevoRemoveFromList,

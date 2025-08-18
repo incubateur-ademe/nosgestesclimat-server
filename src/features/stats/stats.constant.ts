@@ -1,4 +1,4 @@
-import type { ValueOf } from '../types/types'
+import type { ValueOf } from '../../types/types'
 
 export const PERIODS = {
   year: 'year',

@@ -8,7 +8,7 @@ import {
   defaultSimulationSelectionWithoutUser,
 } from '../../adapters/prisma/selection.js'
 import type { Session } from '../../adapters/prisma/transaction.js'
-import { batchFindMany } from '../../core/batchFindMany.js'
+import { batchFindMany } from '../../core/batch-find-many.js'
 import type { PublicPollParams } from '../organisations/organisations.validator.js'
 import type { UserParams } from '../users/users.validator.js'
 import type {

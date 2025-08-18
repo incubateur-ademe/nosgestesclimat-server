@@ -14,7 +14,6 @@ import type { Session } from '../../adapters/prisma/transaction.js'
 import { transaction } from '../../adapters/prisma/transaction.js'
 import { redis } from '../../adapters/redis/client.js'
 import { KEYS } from '../../adapters/redis/constant.js'
-import { carbonMetric, waterMetric } from '../../constants/ngc.js'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
 import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
@@ -28,6 +27,7 @@ import type {
 import type { UserParams } from '../users/users.validator.js'
 import type { SimulationAsyncEvent } from './events/SimulationUpserted.event.js'
 import { SimulationUpsertedEvent } from './events/SimulationUpserted.event.js'
+import { carbonMetric, waterMetric } from './simulation.constant.js'
 import {
   batchPollSimulations,
   countOrganisationPublicPollSimulations,
