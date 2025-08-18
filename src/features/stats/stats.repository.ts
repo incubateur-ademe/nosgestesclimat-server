@@ -6,7 +6,7 @@ import {
 } from '@prisma/client'
 import type { ListIds } from '../../adapters/brevo/constant.js'
 import type { Session } from '../../adapters/prisma/transaction.js'
-import type { PERIODS } from '../../constants/period.js'
+import type { PERIODS } from './stats.constant.js'
 
 export const upsertStat = (
   {
