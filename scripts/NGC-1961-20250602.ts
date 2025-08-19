@@ -1,6 +1,6 @@
 import type { JsonObject, JsonValue } from '@prisma/client/runtime/library'
 import { prisma } from '../src/adapters/prisma/client'
-import { batchFindMany } from '../src/core/batchFindMany'
+import { batchFindMany } from '../src/core/batch-find-many'
 import logger from '../src/logger'
 
 const hasPreciseChoice = (situation: JsonValue): situation is JsonObject =>

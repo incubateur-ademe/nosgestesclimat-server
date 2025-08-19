@@ -7,7 +7,7 @@ import { StatusCodes } from 'http-status-codes'
 import type { ParsedRules, PublicodesExpression } from 'publicodes'
 import Engine, { utils } from 'publicodes'
 import type supertest from 'supertest'
-import { carbonMetric, waterMetric } from '../../../../constants/ngc.js'
+import { carbonMetric, waterMetric } from '../../simulation.constant.js'
 
 import {
   brevoRemoveFromList,
@@ -227,7 +227,10 @@ export const createSimulation = async ({
       brevoUpdateContact(),
       brevoRemoveFromList(22, { invalid: true }),
       brevoRemoveFromList(32, { invalid: true }),
-      brevoRemoveFromList(36, { invalid: true })
+      brevoRemoveFromList(36, { invalid: true }),
+      brevoRemoveFromList(40, { invalid: true }),
+      brevoRemoveFromList(41, { invalid: true }),
+      brevoRemoveFromList(42, { invalid: true })
     )
   }
 

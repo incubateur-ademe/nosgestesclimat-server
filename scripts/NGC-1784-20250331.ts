@@ -1,5 +1,5 @@
 import { prisma } from '../src/adapters/prisma/client'
-import { batchFindMany } from '../src/core/batchFindMany'
+import { batchFindMany } from '../src/core/batch-find-many'
 import { updatePollFunFacts } from '../src/features/organisations/organisations.service'
 import logger from '../src/logger'
 
