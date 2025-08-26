@@ -1,8 +1,4 @@
-import {
-  MatomoStatsDevice,
-  MatomoStatsKind,
-  MatomoStatsSource,
-} from '@prisma/client'
+import { MatomoStatsDevice, MatomoStatsSource, StatsKind } from '@prisma/client'
 import { isAxiosError } from 'axios'
 import dayjs from 'dayjs'
 import { fetchNewsletter } from '../../adapters/brevo/client.js'
@@ -66,7 +62,7 @@ const recoverIframeDayStats = async ({
       date: new Date(`${date}T00:00:00.000`),
       source,
       iframe,
-      kind: kind || MatomoStatsKind.all,
+      kind: kind || StatsKind.all,
       device: device || MatomoStatsDevice.all,
       ...(referrer ? { referrer } : {}),
       visits: visits.value,
@@ -97,13 +93,13 @@ const recoverDeviceDayStats = (params: RecoverDeviceDayStats) => {
 type RecoverReferrerDayStats = BaseParams &
   (
     | {
-        kind: MatomoStatsKind
+        kind: StatsKind
         segment: string
         referrer: string
         nbVisits: number
       }
     | {
-        kind: MatomoStatsKind
+        kind: StatsKind
         segment: string
         referrer: null
         nbVisits?: undefined
@@ -122,16 +118,13 @@ const recoverReferrerDayStats = (params: RecoverReferrerDayStats) =>
   )
 
 type RecoverKindDayStats = BaseParams &
-  (
-    | { kind: MatomoStatsKind; segment: string }
-    | { kind: null; segment?: undefined }
-  )
+  ({ kind: StatsKind; segment: string } | { kind: null; segment?: undefined })
 
 const recoverKindDayStats = async (params: RecoverKindDayStats) => {
   const { source, date, kind } = params
   const client = clients[source]
   switch (kind) {
-    case MatomoStatsKind.website: {
+    case StatsKind.website: {
       const referrersWebsites = await client.getReferrersWebsites(date)
       for (const referrerWebsite of [
         ...referrersWebsites.filter(
@@ -152,7 +145,7 @@ const recoverKindDayStats = async (params: RecoverKindDayStats) => {
       }
       break
     }
-    case MatomoStatsKind.campaign: {
+    case StatsKind.campaign: {
       const referrersCampaigns = await client.getReferrersCampaigns(date)
       for (const referrerCampaign of [
         ...referrersCampaigns.filter(

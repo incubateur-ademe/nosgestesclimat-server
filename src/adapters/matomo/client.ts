@@ -1,22 +1,22 @@
-import { MatomoStatsDevice, MatomoStatsKind } from '@prisma/client'
+import { MatomoStatsDevice, StatsKind } from '@prisma/client'
 import type { AxiosInstance } from 'axios'
 import { z } from 'zod'
 import logger from '../../logger.js'
 
 export const ReferrerType = {
-  [MatomoStatsKind.direct]: 1,
-  [MatomoStatsKind.search]: 2,
-  [MatomoStatsKind.website]: 3,
-  [MatomoStatsKind.campaign]: 6,
-  [MatomoStatsKind.social]: 7,
+  [StatsKind.direct]: 1,
+  [StatsKind.search]: 2,
+  [StatsKind.website]: 3,
+  [StatsKind.campaign]: 6,
+  [StatsKind.social]: 7,
 } as const
 
 export const ReferrerKind = {
-  1: MatomoStatsKind.direct,
-  2: MatomoStatsKind.search,
-  3: MatomoStatsKind.website,
-  6: MatomoStatsKind.campaign,
-  7: MatomoStatsKind.social,
+  1: StatsKind.direct,
+  2: StatsKind.search,
+  3: StatsKind.website,
+  6: StatsKind.campaign,
+  7: StatsKind.social,
 } as const
 
 export const MatomoActions = {
