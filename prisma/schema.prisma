@@ -39,6 +39,19 @@ model BrevoNewsletterStats {
   @@schema("ngc")
 }
 
+model BudgetStats {
+  id                String    @id @default(uuid()) @db.Uuid
+  year              Int       @db.Integer
+  month             Int       @db.Integer
+  kind              StatsKind
+  referrer          String    @default("all")
+  totalBudget       Int       @db.Integer
+  acquisitionBudget Int       @db.Integer
+
+  @@unique([year, month, kind, referrer])
+  @@schema("ngc")
+}
+
 model EmailSimulation {
   id        String   @id @default(cuid())
   data      Json
@@ -358,6 +371,17 @@ model SimulationPoll {
   @@schema("ngc")
 }
 
+enum StatsKind {
+  campaign
+  direct
+  search
+  social
+  website
+  all
+
+  @@schema("ngc")
+}
+
 model Survey {
   id          String   @id @default(cuid())
   name        String   @unique
@@ -409,7 +433,7 @@ model VerifiedUser {
 }
 
 view ComputedResultsView {
-  id                  String   @id @default(uuid()) @db.Uuid
+  id                  String   @unique @default(uuid()) @db.Uuid
   date                DateTime
   progression         Float    @db.Real
   createdAt           DateTime @default(now())
