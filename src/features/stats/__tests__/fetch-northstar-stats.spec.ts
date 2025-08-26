@@ -1,9 +1,5 @@
 import { faker } from '@faker-js/faker'
-import {
-  MatomoStatsDevice,
-  MatomoStatsKind,
-  MatomoStatsSource,
-} from '@prisma/client'
+import { MatomoStatsDevice, MatomoStatsSource, StatsKind } from '@prisma/client'
 import dayjs from 'dayjs'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
@@ -113,7 +109,7 @@ describe('Given a redirected NGC user', () => {
               device: MatomoStatsDevice.all,
               iframe: false,
               source: MatomoStatsSource.beta,
-              kind: MatomoStatsKind.all,
+              kind: StatsKind.all,
               finishedSimulations,
               firstAnswer,
               visits,

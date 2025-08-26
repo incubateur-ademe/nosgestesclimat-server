@@ -1,8 +1,8 @@
 import {
   MatomoStatsDevice,
-  MatomoStatsKind,
   MatomoStatsSource,
   Prisma,
+  StatsKind,
 } from '@prisma/client'
 import type { ListIds } from '../../adapters/brevo/constant.js'
 import type { Session } from '../../adapters/prisma/transaction.js'
@@ -22,7 +22,7 @@ export const upsertStat = (
   }: {
     date: Date
     source: MatomoStatsSource
-    kind: MatomoStatsKind
+    kind: StatsKind
     referrer?: string
     device: MatomoStatsDevice
     iframe: boolean
@@ -94,7 +94,7 @@ export const getNorthstarStats = (
       period_data AS (
         SELECT TO_CHAR(DATE_TRUNC(${periodicity}, date), 'YYYY-MM-DD') AS start_period, SUM("finishedSimulations") AS value
         FROM "ngc"."MatomoStats"
-        WHERE "source" = cast(${MatomoStatsSource.beta} as ngc."MatomoStatsSource") AND "kind" = cast(${MatomoStatsKind.all} as ngc."MatomoStatsKind") AND "referrer" = 'all' AND "device" = cast(${MatomoStatsDevice.all} as ngc."MatomoStatsDevice") AND "iframe" = false
+        WHERE "source" = cast(${MatomoStatsSource.beta} as ngc."MatomoStatsSource") AND "kind" = cast(${StatsKind.all} as ngc."StatsKind") AND "referrer" = 'all' AND "device" = cast(${MatomoStatsDevice.all} as ngc."MatomoStatsDevice") AND "iframe" = false
         GROUP BY start_period
       ),
       period_intervals AS (
@@ -102,7 +102,7 @@ export const getNorthstarStats = (
         FROM generate_series(DATE_TRUNC(${periodicity},(
           SELECT MIN(date)
           FROM "ngc"."MatomoStats"
-          WHERE "source" = cast(${MatomoStatsSource.beta} as ngc."MatomoStatsSource") AND "kind" = cast(${MatomoStatsKind.all} as ngc."MatomoStatsKind") AND "referrer" = 'all' AND "device" = cast(${MatomoStatsDevice.all} as ngc."MatomoStatsDevice") AND "iframe" = false
+          WHERE "source" = cast(${MatomoStatsSource.beta} as ngc."MatomoStatsSource") AND "kind" = cast(${StatsKind.all} as ngc."StatsKind") AND "referrer" = 'all' AND "device" = cast(${MatomoStatsDevice.all} as ngc."MatomoStatsDevice") AND "iframe" = false
         )), now(), ('1 ' || ${periodicity})::interval) AS interval_start
       )
       SELECT
