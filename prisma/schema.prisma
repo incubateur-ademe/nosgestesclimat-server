@@ -168,17 +168,6 @@ enum MatomoStatsSource {
   @@schema("ngc")
 }
 
-enum MatomoStatsKind {
-  campaign
-  direct
-  search
-  social
-  website
-  all
-
-  @@schema("ngc")
-}
-
 enum MatomoStatsDevice {
   desktop
   all
@@ -190,7 +179,7 @@ model MatomoStats {
   id                  String            @id @default(uuid()) @db.Uuid
   date                DateTime          @db.Date
   source              MatomoStatsSource
-  kind                MatomoStatsKind
+  kind                StatsKind
   referrer            String            @default("all")
   device              MatomoStatsDevice
   iframe              Boolean
