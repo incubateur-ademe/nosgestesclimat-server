@@ -1106,10 +1106,10 @@
   resolved "https://registry.yarnpkg.com/@humanwhocodes/retry/-/retry-0.4.3.tgz#c2b9d2e374ee62c586d3adbea87199b1d7a7a6ba"
   integrity sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==
 
-"@incubateur-ademe/nosgestesclimat@3.9.0":
-  version "3.9.0"
-  resolved "https://registry.yarnpkg.com/@incubateur-ademe/nosgestesclimat/-/nosgestesclimat-3.9.0.tgz#d28330ca4a6bf77111131bf1a01b950ebba98634"
-  integrity sha512-OyHzuUp187VPyX87qjrzbtofCXnh6iJtjky7xHPeyF6aN3n+I4LQk1PZlMFW8aVv6p2hBqjqDa6CUo7l3cYsrA==
+"@incubateur-ademe/nosgestesclimat@^3.10.0":
+  version "3.10.0"
+  resolved "https://registry.yarnpkg.com/@incubateur-ademe/nosgestesclimat/-/nosgestesclimat-3.10.0.tgz#dc225356a049c604d0b1157012795ec9ba48f3e6"
+  integrity sha512-cEYCo0lb0iy/oWQ71FNdWGsw01Wz8I3rEetfUAHJ5t1iG3JsQHJ8fXKDHjnkF9skoWuoMSgPl7EgkcPWI/b18Q==
 
 "@inquirer/confirm@^5.0.0":
   version "5.1.8"
@@ -6652,10 +6652,10 @@ publicodes@^1.8.2:
   resolved "https://registry.yarnpkg.com/publicodes/-/publicodes-1.8.2.tgz#d2b39c94d08649d36f29f71251828500e0f1a83a"
   integrity sha512-BpOUlp2xyUQ3xrToLjJ9lZXOWagHbMDw7Ls/AMkd1sTHhfq0RMREwCA1JdjCiRYulMJgOIMxxr6NteRCtvN2WA==
 
-publicodes@^1.9.0:
-  version "1.9.0"
-  resolved "https://registry.yarnpkg.com/publicodes/-/publicodes-1.9.0.tgz#e74914edd46820ee5a81144192bb68a7e1a15fed"
-  integrity sha512-0E2vsKAZTq3jNm+sWYDDZfHjePPaPkBIn8cMLS7qtMxC8HRyPQMEFkqowibycLwY+C/hrG0OJJt6+estMiXxYA==
+publicodes@^1.9.1:
+  version "1.9.1"
+  resolved "https://registry.yarnpkg.com/publicodes/-/publicodes-1.9.1.tgz#0c5031337e4515af81e5079fae29d34fbc8c0768"
+  integrity sha512-sXBgGuAH/bIehF8waXm4Pp/EnqjFmxZJb6FNSAZ9FRO1neACHRYKv34lxFM3qZNyJ2RaI5jwtOupGlozMW0fcA==
 
 punycode@^2.1.0, punycode@^2.1.1:
   version "2.3.1"
