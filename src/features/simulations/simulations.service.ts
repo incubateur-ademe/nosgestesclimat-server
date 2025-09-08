@@ -17,6 +17,7 @@ import { KEYS } from '../../adapters/redis/constant.js'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
 import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
+import { Locales } from '../../core/i18n/constant.js'
 import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError.js'
 import { PollUpdatedEvent } from '../organisations/events/PollUpdated.event.js'
 import { findOrganisationPublicPollBySlugOrId } from '../organisations/organisations.repository.js'
@@ -88,6 +89,7 @@ export const createSimulation = async ({
   const { user } = simulation
 
   const simulationUpsertedEvent = new SimulationUpsertedEvent({
+    locale: Locales.fr,
     newsletters,
     simulation,
     sendEmail,
@@ -130,11 +132,13 @@ export const fetchSimulation = async (params: UserSimulationParams) => {
 }
 
 export const createPollSimulation = async ({
+  locale,
   origin,
   params,
   simulationDto,
 }: {
   origin: string
+  locale: Locales
   params: PublicPollParams
   simulationDto: SimulationCreateDto
 }) => {
@@ -157,6 +161,7 @@ export const createPollSimulation = async ({
       sendEmail: created,
       organisation,
       simulation,
+      locale,
       origin,
       user,
     })

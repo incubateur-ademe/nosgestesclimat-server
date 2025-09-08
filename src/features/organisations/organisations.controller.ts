@@ -384,6 +384,7 @@ router
         const simulation = await createPollSimulation({
           simulationDto: SimulationCreateDto.parse(req.body),
           origin: req.get('origin') || config.origin,
+          locale: LocaleQuery.parse(req.query).locale,
           params: req.params,
         })
 

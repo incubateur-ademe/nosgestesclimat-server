@@ -102,6 +102,7 @@ export const MATOMO_KEYWORDS = {
   },
   [TemplateIds[Locales.en].ORGANISATION_CREATED]: 'orga-admin-creation',
   [TemplateIds[Locales.fr].ORGANISATION_CREATED]: 'orga-admin-creation',
+  [TemplateIds[Locales.en].ORGANISATION_JOINED]: 'orga-invite-campagne',
   [TemplateIds[Locales.fr].ORGANISATION_JOINED]: 'orga-invite-campagne',
 } as const
 

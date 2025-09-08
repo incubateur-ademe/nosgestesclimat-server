@@ -4,6 +4,7 @@ import { transaction } from '../../adapters/prisma/transaction.js'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
 import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
+import { Locales } from '../../core/i18n/constant.js'
 import {
   isPrismaErrorForeignKeyConstraintFailed,
   isPrismaErrorNotFound,
@@ -133,6 +134,7 @@ export const createGroup = async ({
       simulation,
       administrator,
       sendEmail: true,
+      locale: Locales.fr,
       user: administrator,
       updated: simulationUpdated,
       created: simulationCreated,
@@ -208,6 +210,7 @@ export const createParticipant = async ({
       created: simulationCreated,
       updated: simulationUpdated,
       sendEmail: created,
+      locale: Locales.fr,
       administrator,
       simulation,
       origin,

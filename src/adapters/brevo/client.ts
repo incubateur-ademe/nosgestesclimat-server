@@ -331,16 +331,18 @@ export const sendGroupParticipantSimulationUpsertedEmail = ({
 
 export const sendPollSimulationUpsertedEmail = async ({
   email,
+  locale,
   origin,
   organisation: { name, slug },
   simulation: { id },
 }: Readonly<{
   email: string
   origin: string
+  locale: Locales
   organisation: Pick<Organisation, 'name' | 'slug'>
   simulation: Pick<Simulation, 'id'>
 }>) => {
-  const templateId = TemplateIds[Locales.fr].ORGANISATION_JOINED
+  const templateId = TemplateIds[locale].ORGANISATION_JOINED
 
   const detailedViewUrl = new URL(
     `${origin}/organisations/${slug}/resultats-detailles`
