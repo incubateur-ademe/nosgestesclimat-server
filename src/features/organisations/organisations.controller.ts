@@ -5,6 +5,7 @@ import { config } from '../../config.js'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
 import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
+import { LocaleQuery } from '../../core/i18n/lang.validator.js'
 import logger from '../../logger.js'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware.js'
 import { rateLimitSameRequestMiddleware } from '../../middlewares/rateLimitSameRequestMiddleware.js'
@@ -79,6 +80,7 @@ router
         const organisation = await createOrganisation({
           organisationDto: req.body,
           origin: req.get('origin') || config.origin,
+          locale: LocaleQuery.parse(req.query).locale,
           user: req.user!,
         })
 

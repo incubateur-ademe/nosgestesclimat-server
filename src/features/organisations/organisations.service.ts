@@ -15,6 +15,7 @@ import { config } from '../../config.js'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
 import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
+import type { Locales } from '../../core/i18n/constant.js'
 import {
   isPrismaErrorNotFound,
   isPrismaErrorUniqueConstraintFailed,
@@ -113,10 +114,12 @@ const organisationToDto = (
 
 export const createOrganisation = async ({
   organisationDto,
+  locale,
   origin,
   user,
 }: {
   organisationDto: OrganisationCreateDto
+  locale: Locales
   origin: string
   user: NonNullable<Request['user']>
 }) => {
@@ -128,6 +131,7 @@ export const createOrganisation = async ({
     const organisationCreatedEvent = new OrganisationCreatedEvent({
       administrator,
       organisation,
+      locale,
       origin,
     })
 

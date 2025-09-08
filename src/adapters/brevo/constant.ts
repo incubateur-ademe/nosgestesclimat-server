@@ -100,6 +100,7 @@ export const MATOMO_KEYWORDS = {
     SHARE_URL: 'groupe-invite-url-partage',
     DELETE_URL: 'groupe-invite-delete',
   },
+  [TemplateIds[Locales.en].ORGANISATION_CREATED]: 'orga-admin-creation',
   [TemplateIds[Locales.fr].ORGANISATION_CREATED]: 'orga-admin-creation',
   [TemplateIds[Locales.fr].ORGANISATION_JOINED]: 'orga-invite-campagne',
 } as const

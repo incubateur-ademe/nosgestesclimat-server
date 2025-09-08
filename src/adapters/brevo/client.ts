@@ -255,15 +255,17 @@ export const sendGroupCreatedEmail = ({
 }
 
 export const sendOrganisationCreatedEmail = ({
+  locale,
   origin,
   organisation: { name: organisationName, slug },
   administrator: { name: administratorName, email },
 }: Readonly<{
   origin: string
+  locale: Locales
   organisation: Pick<Organisation, 'name' | 'slug'>
   administrator: Pick<VerifiedUser, 'name' | 'email'>
 }>) => {
-  const templateId = TemplateIds[Locales.fr].ORGANISATION_CREATED
+  const templateId = TemplateIds[locale].ORGANISATION_CREATED
   const dashBoardUrl = new URL(`${origin}/organisations/${slug}`)
   const { searchParams } = dashBoardUrl
   searchParams.append(MATOMO_CAMPAIGN_KEY, MATOMO_CAMPAIGN_EMAIL_AUTOMATISE)
