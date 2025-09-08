@@ -1,8 +1,8 @@
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { describe, test } from 'vitest'
-import app from '../../../app'
-import { ExternalServiceTypeEnum } from '../integrations.validator'
+import app from '../../../app.js'
+import { ExternalServiceTypeEnum } from '../integrations.validator.js'
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)

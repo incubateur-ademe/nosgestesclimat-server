@@ -16,7 +16,7 @@ import {
   createGroup,
   DELETE_USER_GROUP_ROUTE,
   joinGroup,
-} from './fixtures/groups.fixture'
+} from './fixtures/groups.fixture.js'
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)

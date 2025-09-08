@@ -9,7 +9,7 @@ import { afterAll, afterEach, beforeAll, expect, vi } from 'vitest'
 import {
   mswServer,
   resetMswServer,
-} from './src/core/__tests__/fixtures/server.fixture'
+} from './src/core/__tests__/fixtures/server.fixture.js'
 
 const pgClient = new PGlite()
 const adapter = new PrismaPGlite(pgClient)
@@ -91,7 +91,7 @@ beforeAll(async () => {
   const [migrationPaths] = await Promise.all([
     readdir(prismaMigrationDir),
     // Need to subscribe to redis channels
-    import('./src/worker'),
+    import('./src/worker.js'),
   ])
 
   await migrationPaths
