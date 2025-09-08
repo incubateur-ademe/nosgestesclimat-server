@@ -11,6 +11,7 @@ import { prisma } from '../../../adapters/prisma/client.js'
 import app from '../../../app.js'
 import { mswServer } from '../../../core/__tests__/fixtures/server.fixture.js'
 import { EventBus } from '../../../core/event-bus/event-bus.js'
+import { Locales } from '../../../core/i18n/constant.js'
 import logger from '../../../logger.js'
 import * as authenticationService from '../authentication.service.js'
 import type { VerificationCodeCreateDto } from '../verification-codes.validator.js'
@@ -149,6 +150,42 @@ describe('Given a NGC user', () => {
       })
 
       await EventBus.flush()
+    })
+
+    describe(`And ${Locales.en} locale`, () => {
+      test('Then it sends an email with the code', async () => {
+        const email = faker.internet.email().toLocaleLowerCase()
+
+        mswServer.use(
+          brevoSendEmail({
+            expectBody: {
+              to: [
+                {
+                  name: email,
+                  email,
+                },
+              ],
+              templateId: 125,
+              params: {
+                VERIFICATION_CODE: code,
+              },
+            },
+          }),
+          brevoUpdateContact()
+        )
+
+        await agent
+          .post(url)
+          .send({
+            userId: faker.string.uuid(),
+            email,
+          })
+          .query({
+            locale: Locales.en,
+          })
+
+        await EventBus.flush()
+      })
     })
 
     test('Then it updates brevo contact', async () => {

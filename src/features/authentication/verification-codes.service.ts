@@ -1,6 +1,7 @@
 import type { Session } from '../../adapters/prisma/transaction.js'
 import { transaction } from '../../adapters/prisma/transaction.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
+import type { Locales } from '../../core/i18n/constant.js'
 import type { WithOptionalProperty } from '../../types/types.js'
 import { generateVerificationCodeAndExpiration } from './authentication.service.js'
 import { VerificationCodeCreatedEvent } from './events/VerificationCodeCreated.event.js'
@@ -36,9 +37,11 @@ export const createVerificationCode = async (
   {
     verificationCodeDto,
     origin,
+    locale,
   }: {
     verificationCodeDto: Pick<VerificationCodeCreateDto, 'email'>
     origin: string
+    locale: Locales
   },
   session: { session?: Session } = {}
 ) => {
@@ -52,6 +55,7 @@ export const createVerificationCode = async (
       ...verificationCode,
       code,
     },
+    locale,
     origin,
   })
 

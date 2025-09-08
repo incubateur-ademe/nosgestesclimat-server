@@ -5,6 +5,7 @@ import { config } from '../../config.js'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
 import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
+import { LocaleQuery } from '../../core/i18n/lang.validator.js'
 import logger from '../../logger.js'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware.js'
 import { rateLimitSameRequestMiddleware } from '../../middlewares/rateLimitSameRequestMiddleware.js'
@@ -49,12 +50,14 @@ import {
   OrganisationPollDeleteValidator,
   OrganisationPollFetchValidator,
   OrganisationPollsFetchValidator,
+  OrganisationPollSimulationsDownloadQuery,
   OrganisationPollSimulationsDownloadValidator,
   OrganisationPollUpdateValidator,
   OrganisationPublicPollFetchValidator,
   OrganisationPublicPollSimulationsFetchValidator,
   OrganisationsFetchValidator,
   OrganisationUpdateDto,
+  OrganisationUpdateQuery,
   OrganisationUpdateValidator,
 } from './organisations.validator.js'
 
@@ -77,6 +80,7 @@ router
         const organisation = await createOrganisation({
           organisationDto: req.body,
           origin: req.get('origin') || config.origin,
+          locale: LocaleQuery.parse(req.query).locale,
           user: req.user!,
         })
 
@@ -109,7 +113,7 @@ router
         const { organisation, token } = await updateOrganisation({
           params,
           organisationDto: OrganisationUpdateDto.parse(body),
-          code: query.code,
+          code: OrganisationUpdateQuery.parse(query).code,
           user: user!,
         })
 
@@ -338,7 +342,7 @@ router
     validateRequest(OrganisationPollSimulationsDownloadValidator),
     async ({ params, user, query }, res) => {
       try {
-        const { jobId } = query
+        const { jobId } = OrganisationPollSimulationsDownloadQuery.parse(query)
         if (jobId) {
           const { status, job } = await getDownloadPollSimulationResultJob({
             user: user!,
@@ -380,6 +384,7 @@ router
         const simulation = await createPollSimulation({
           simulationDto: SimulationCreateDto.parse(req.body),
           origin: req.get('origin') || config.origin,
+          locale: LocaleQuery.parse(req.query).locale,
           params: req.params,
         })
 

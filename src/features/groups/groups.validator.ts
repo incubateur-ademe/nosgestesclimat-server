@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { LocaleQuery } from '../../core/i18n/lang.validator.js'
 import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail.js'
 import { SimulationParticipantCreateDto } from '../simulations/simulations.validator.js'
 import { UserParams } from '../users/users.validator.js'
@@ -65,7 +66,7 @@ export type GroupCreateInputDto = z.input<typeof GroupCreateDto>
 export const GroupCreateValidator = {
   body: GroupCreateDto,
   params: z.object({}).strict().optional(),
-  query: z.object({}).strict().optional(),
+  query: LocaleQuery.optional(),
 }
 
 const GroupUpdateDto = GroupCreateDto.omit({
@@ -80,7 +81,7 @@ export type GroupUpdateDto = z.infer<typeof GroupUpdateDto>
 export const GroupUpdateValidator = {
   body: GroupUpdateDto,
   params: UserGroupParams,
-  query: z.object({}).strict().optional(),
+  query: LocaleQuery.optional(),
 }
 
 export const ParticipantCreateDto = GroupCreateUser.merge(
@@ -94,35 +95,38 @@ export type ParticipantInputCreateDto = z.input<typeof ParticipantCreateDto>
 export const ParticipantCreateValidator = {
   body: ParticipantCreateDto,
   params: GroupParams,
-  query: z.object({}).strict().optional(),
+  query: LocaleQuery.optional(),
 }
 
 export const ParticipantDeleteValidator = {
   body: z.object({}).strict().optional(),
   params: UserGroupParticipantParams,
-  query: z.object({}).strict().optional(),
+  query: LocaleQuery.optional(),
 }
 
-const GroupsFetchQuery = z.object({
-  groupIds: z.array(z.string()).optional(),
-})
+export const GroupsFetchQuery = z
+  .object({
+    groupIds: z.array(z.string()).optional(),
+  })
+  .merge(LocaleQuery)
+  .strict()
 
 export type GroupsFetchQuery = z.infer<typeof GroupsFetchQuery>
 
 export const GroupsFetchValidator = {
   body: z.object({}).strict().optional(),
   params: UserParams,
-  query: GroupsFetchQuery,
+  query: GroupsFetchQuery.optional(),
 }
 
 export const GroupFetchValidator = {
   body: z.object({}).strict().optional(),
   params: UserGroupParams,
-  query: z.object({}).strict().optional(),
+  query: LocaleQuery.optional(),
 }
 
 export const GroupDeleteValidator = {
   body: z.object({}).strict().optional(),
   params: UserGroupParams,
-  query: z.object({}).strict().optional(),
+  query: LocaleQuery.optional(),
 }

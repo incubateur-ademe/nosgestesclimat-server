@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { ListIds } from '../../adapters/brevo/constant.js'
+import { LocaleQuery } from '../../core/i18n/lang.validator.js'
 import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail.js'
 
 export const UserParams = z
@@ -13,7 +14,7 @@ export type UserParams = z.infer<typeof UserParams>
 export const FetchUserContactValidator = {
   body: z.object({}).strict().optional(),
   params: UserParams,
-  query: z.object({}).strict().optional(),
+  query: LocaleQuery.optional(),
 }
 
 export const UserUpdateDto = z
@@ -34,19 +35,20 @@ export const UserUpdateDto = z
 
 export type UserUpdateDto = z.infer<typeof UserUpdateDto>
 
-const UserUpdateQuery = z
+export const UserUpdateQuery = z
   .object({
     code: z
       .string()
       .regex(/^\d{6}$/)
       .optional(),
   })
+  .merge(LocaleQuery)
   .strict()
 
 export const UpdateUserValidator = {
   body: UserUpdateDto,
   params: UserParams,
-  query: UserUpdateQuery,
+  query: UserUpdateQuery.optional(),
 }
 
 export const NewsletterConfirmationQuery = z
@@ -73,6 +75,7 @@ export const NewsletterConfirmationQuery = z
         typeof listIds === 'number' ? [listIds] : listIds || []
       ),
   })
+  .merge(LocaleQuery)
   .strict()
 
 export type NewsletterConfirmationQuery = z.infer<
@@ -82,5 +85,5 @@ export type NewsletterConfirmationQuery = z.infer<
 export const NewsletterConfirmationValidator = {
   body: z.object({}).optional(),
   params: UserParams,
-  query: NewsletterConfirmationQuery,
+  query: NewsletterConfirmationQuery.optional(),
 }

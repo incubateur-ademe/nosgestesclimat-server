@@ -8,6 +8,7 @@ import { transaction } from '../../../../adapters/prisma/transaction.js'
 import { config } from '../../../../config.js'
 import { EntityNotFoundException } from '../../../../core/errors/EntityNotFoundException.js'
 import { UnauthorizedException } from '../../../../core/errors/UnauthorizedException.js'
+import { Locales } from '../../../../core/i18n/constant.js'
 import { isPrismaErrorNotFound } from '../../../../core/typeguards/isPrismaError.js'
 import { findUserVerificationCode } from '../../../authentication/verification-codes.repository.js'
 import { createVerificationCode } from '../../../authentication/verification-codes.service.js'
@@ -130,6 +131,7 @@ export const generateApiToken = async ({
           verificationCodeDto: {
             email,
           },
+          locale: Locales.fr,
           origin,
         },
         { session }

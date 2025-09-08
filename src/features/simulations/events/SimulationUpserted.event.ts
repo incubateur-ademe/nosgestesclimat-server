@@ -1,5 +1,6 @@
 import type { Group, Organisation, Simulation, User } from '@prisma/client'
 import { EventBusEvent } from '../../../core/event-bus/event.js'
+import type { Locales } from '../../../core/i18n/constant.js'
 import type { ModelToDto } from '../../../types/types.js'
 import type { SimulationCreateNewsletterList } from '../simulations.validator.js'
 
@@ -17,6 +18,7 @@ export type SimulationAsyncEvent = SimulationEvent | ModelToDto<SimulationEvent>
 
 type BaseSimulationUpsertedEventAttributes = {
   origin: string
+  locale: Locales
   user: Pick<User, 'id' | 'name' | 'email'>
   simulation: SimulationEvent
   sendEmail: boolean

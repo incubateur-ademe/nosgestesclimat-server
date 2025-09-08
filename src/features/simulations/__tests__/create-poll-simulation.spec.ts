@@ -16,6 +16,7 @@ import { prisma } from '../../../adapters/prisma/client.js'
 import app from '../../../app.js'
 import { mswServer } from '../../../core/__tests__/fixtures/server.fixture.js'
 import { EventBus } from '../../../core/event-bus/event-bus.js'
+import { Locales } from '../../../core/i18n/constant.js'
 import logger from '../../../logger.js'
 import { login } from '../../authentication/__tests__/fixtures/login.fixture.js'
 import {
@@ -705,6 +706,56 @@ describe('Given a NGC user', () => {
                 )
                 .set('origin', 'https://preprod.nosgestesclimat.fr')
                 .send(payload)
+                .expect(StatusCodes.CREATED)
+
+              await EventBus.flush()
+            })
+          })
+
+          describe(`And ${Locales.en} locale`, () => {
+            test('Then it sends a creation email', async () => {
+              const email = faker.internet.email().toLocaleLowerCase()
+              const payload: SimulationCreateInputDto = {
+                id: faker.string.uuid(),
+                situation,
+                computedResults,
+                progression: 1,
+                user: {
+                  email,
+                },
+              }
+
+              mswServer.use(
+                brevoSendEmail({
+                  expectBody: {
+                    to: [
+                      {
+                        name: email,
+                        email,
+                      },
+                    ],
+                    templateId: 123,
+                    params: {
+                      ORGANISATION_NAME: organisationName,
+                      DETAILED_VIEW_URL: `https://nosgestesclimat.fr/organisations/${organisationSlug}/resultats-detailles?mtm_campaign=email-automatise&mtm_kwd=orga-invite-campagne`,
+                      SIMULATION_URL: `https://nosgestesclimat.fr/fin?sid=${payload.id}&mtm_campaign=email-automatise&mtm_kwd=fin-retrouver-simulation`,
+                    },
+                  },
+                }),
+                brevoUpdateContact(),
+                brevoRemoveFromList(27)
+              )
+
+              await agent
+                .post(
+                  url
+                    .replace(':userId', userId)
+                    .replace(':pollIdOrSlug', pollId)
+                )
+                .send(payload)
+                .query({
+                  locale: Locales.en,
+                })
                 .expect(StatusCodes.CREATED)
 
               await EventBus.flush()
