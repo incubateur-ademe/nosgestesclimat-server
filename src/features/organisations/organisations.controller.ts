@@ -49,12 +49,14 @@ import {
   OrganisationPollDeleteValidator,
   OrganisationPollFetchValidator,
   OrganisationPollsFetchValidator,
+  OrganisationPollSimulationsDownloadQuery,
   OrganisationPollSimulationsDownloadValidator,
   OrganisationPollUpdateValidator,
   OrganisationPublicPollFetchValidator,
   OrganisationPublicPollSimulationsFetchValidator,
   OrganisationsFetchValidator,
   OrganisationUpdateDto,
+  OrganisationUpdateQuery,
   OrganisationUpdateValidator,
 } from './organisations.validator.js'
 
@@ -109,7 +111,7 @@ router
         const { organisation, token } = await updateOrganisation({
           params,
           organisationDto: OrganisationUpdateDto.parse(body),
-          code: query.code,
+          code: OrganisationUpdateQuery.parse(query).code,
           user: user!,
         })
 
@@ -338,7 +340,7 @@ router
     validateRequest(OrganisationPollSimulationsDownloadValidator),
     async ({ params, user, query }, res) => {
       try {
-        const { jobId } = query
+        const { jobId } = OrganisationPollSimulationsDownloadQuery.parse(query)
         if (jobId) {
           const { status, job } = await getDownloadPollSimulationResultJob({
             user: user!,

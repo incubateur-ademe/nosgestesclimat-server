@@ -4,6 +4,7 @@ import {
 } from '@prisma/client'
 import { z } from 'zod'
 import { ListIds } from '../../adapters/brevo/constant.js'
+import { LocaleQuery } from '../../core/i18n/lang.validator.js'
 import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail.js'
 import { PublicPollParams } from '../organisations/organisations.validator.js'
 import { UserParams } from '../users/users.validator.js'
@@ -199,32 +200,34 @@ export type SimulationCreateNewsletterList = z.infer<
   typeof SimulationCreateNewsletterList
 >
 
+const SimulationCreateQuery = z
+  .object({
+    newsletters: SimulationCreateNewsletterList,
+    sendEmail: z.coerce.boolean().optional(),
+  })
+  .merge(LocaleQuery)
+  .strict()
+
 export const SimulationCreateValidator = {
   body: SimulationCreateDto,
   params: UserParams,
-  query: z
-    .object({
-      newsletters: SimulationCreateNewsletterList,
-      sendEmail: z.coerce.boolean().optional(),
-    })
-    .strict()
-    .optional(),
+  query: SimulationCreateQuery.optional(),
 }
 
 export const SimulationsFetchValidator = {
   body: z.object({}).strict().optional(),
   params: UserParams,
-  query: z.object({}).strict().optional(),
+  query: LocaleQuery.optional(),
 }
 
 export const SimulationFetchValidator = {
   body: z.object({}).strict().optional(),
   params: UserSimulationParams,
-  query: z.object({}).strict().optional(),
+  query: LocaleQuery.optional(),
 }
 
 export const OrganisationPollSimulationCreateValidator = {
   body: SimulationCreateDto,
   params: PublicPollParams,
-  query: z.object({}).strict().optional(),
+  query: LocaleQuery.optional(),
 }

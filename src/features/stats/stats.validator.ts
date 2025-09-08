@@ -13,5 +13,5 @@ export type NorthstarStatsFetchQuery = z.infer<typeof NorthstarStatsFetchQuery>
 export const NorthstarStatsFetchValidator = {
   body: z.object({}).strict().optional(),
   params: z.object({}).strict().optional(),
-  query: NorthstarStatsFetchQuery,
+  query: NorthstarStatsFetchQuery.optional(),
 }

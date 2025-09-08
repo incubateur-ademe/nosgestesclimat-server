@@ -24,6 +24,7 @@ import {
   GroupCreateValidator,
   GroupDeleteValidator,
   GroupFetchValidator,
+  GroupsFetchQuery,
   GroupsFetchValidator,
   GroupUpdateValidator,
   ParticipantCreateDto,
@@ -145,7 +146,7 @@ router
     validateRequest(GroupsFetchValidator),
     async ({ params, query }, res) => {
       try {
-        const groups = await fetchGroups(params, query)
+        const groups = await fetchGroups(params, GroupsFetchQuery.parse(query))
 
         return res.status(StatusCodes.OK).json(groups)
       } catch (err) {

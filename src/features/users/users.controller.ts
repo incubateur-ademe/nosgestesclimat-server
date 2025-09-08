@@ -26,6 +26,7 @@ import {
   NewsletterConfirmationValidator,
   UpdateUserValidator,
   UserUpdateDto,
+  UserUpdateQuery,
 } from './users.validator.js'
 
 const router = express.Router()
@@ -71,7 +72,7 @@ router
 
         const { user, verified, token } = await updateUserAndContact({
           params: req.user || req.params,
-          code: req.query.code,
+          code: UserUpdateQuery.parse(req.query).code,
           userDto: UserUpdateDto.parse(req.body),
           origin: req.get('origin') || config.origin,
         })
@@ -102,7 +103,9 @@ router
 router
   .route('/v1/:userId/newsletter-confirmation')
   .get(validateRequest(NewsletterConfirmationValidator), async (req, res) => {
-    const redirectUrl = new URL(req.query.origin)
+    const redirectUrl = new URL(
+      NewsletterConfirmationQuery.parse(req.query).origin
+    )
     redirectUrl.pathname = '/newsletter-confirmation'
     const { searchParams: redirectSearchParams } = redirectUrl
 

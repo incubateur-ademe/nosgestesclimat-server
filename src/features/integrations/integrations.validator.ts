@@ -41,7 +41,7 @@ export type SituationExportQueryParamsSchema = z.infer<
 
 export const FetchExternalServiceValidator = {
   body: z.object({}).strict(),
-  query: z.object({}).strict(),
+  query: z.object({}).strict().optional(),
   params: ExternalServiceParams,
 }
 
