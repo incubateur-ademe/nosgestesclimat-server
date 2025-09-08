@@ -5,10 +5,12 @@ import type { VerificationCodeCreatedEvent } from '../events/VerificationCodeCre
 export const sendVerificationCode: Handler<VerificationCodeCreatedEvent> = ({
   attributes: {
     verificationCode: { userId, code, email },
+    locale,
     origin,
   },
 }) =>
   sendVerificationCodeEmail({
+    locale,
     userId,
     origin,
     email,

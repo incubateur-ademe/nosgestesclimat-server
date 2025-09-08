@@ -158,6 +158,7 @@ const sendEmail = ({
 }
 
 export const sendVerificationCodeEmail = ({
+  locale,
   origin,
   userId,
   email,
@@ -167,11 +168,12 @@ export const sendVerificationCodeEmail = ({
   email: string
   code: string
   userId?: string | null
+  locale: Locales
 }>) => {
   if (userId) {
     return sendEmail({
       email,
-      templateId: TemplateIds[Locales.fr].VERIFICATION_CODE,
+      templateId: TemplateIds[locale].VERIFICATION_CODE,
       params: {
         VERIFICATION_CODE: code,
       },
