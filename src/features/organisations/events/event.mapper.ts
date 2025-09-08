@@ -1,9 +1,9 @@
 import type { VerifiedUser } from '@prisma/client'
-import type { OrganisationCreatedEventAttributes } from './OrganisationCreated.event'
-import type { OrganisationUpdatedEventAttributes } from './OrganisationUpdated.event'
-import type { PollCreatedEventAttributes } from './PollCreated.event'
-import type { PollDeletedEventAttributes } from './PollDeletedEvent'
-import type { PollUpdatedEventAttributes } from './PollUpdated.event'
+import type { OrganisationCreatedEventAttributes } from './OrganisationCreated.event.js'
+import type { OrganisationUpdatedEventAttributes } from './OrganisationUpdated.event.js'
+import type { PollCreatedEventAttributes } from './PollCreated.event.js'
+import type { PollDeletedEventAttributes } from './PollDeletedEvent.js'
+import type { PollUpdatedEventAttributes } from './PollUpdated.event.js'
 
 type OrganisationEventAttributes =
   | OrganisationCreatedEventAttributes

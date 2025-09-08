@@ -8,7 +8,6 @@ const transports: winston.transport[] = [new winston.transports.Console()]
 
 if (config.thirdParty.sentry.dsn) {
   transports.push(
-    // @ts-expect-error commonJS module
     new SentryTransport.default({
       sentry: {
         dsn: config.thirdParty.sentry.dsn,
