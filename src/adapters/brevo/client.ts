@@ -1,6 +1,7 @@
 import type {
   Group,
   Organisation,
+  Poll,
   Simulation,
   User,
   VerifiedUser,
@@ -278,6 +279,50 @@ export const sendOrganisationCreatedEmail = ({
       ADMINISTRATOR_NAME: administratorName,
       ORGANISATION_NAME: organisationName,
       DASHBOARD_URL: dashBoardUrl.toString(),
+    },
+  })
+}
+
+export const sendPollCreatedEmail = ({
+  locale,
+  origin,
+  organisation: { name: organisationName, slug: organisationSlug },
+  poll: { name: pollName, slug: pollSlug },
+  administrator: { name: administratorName, email },
+}: Readonly<{
+  origin: string
+  locale: Locales
+  organisation: Pick<Organisation, 'name' | 'slug'>
+  poll: Pick<Poll, 'name' | 'slug'>
+  administrator: Pick<VerifiedUser, 'name' | 'email'>
+}>) => {
+  const templateId = TemplateIds[locale].POLL_CREATED
+  const dashboardUrl = new URL(
+    `${origin}/organisations/${organisationSlug}/campagnes/${pollSlug}`
+  )
+  const { searchParams: dashboardSearchParams } = dashboardUrl
+  dashboardSearchParams.append(
+    MATOMO_CAMPAIGN_KEY,
+    MATOMO_CAMPAIGN_EMAIL_AUTOMATISE
+  )
+  dashboardSearchParams.append(MATOMO_KEYWORD_KEY, MATOMO_KEYWORDS[templateId])
+
+  const pollUrl = new URL(`${origin}/o/${organisationSlug}/${pollSlug}`)
+  const { searchParams: pollSearchParams } = pollUrl
+  pollSearchParams.append(
+    MATOMO_CAMPAIGN_KEY,
+    `Organisation_${organisationName}`
+  )
+  pollSearchParams.append(MATOMO_KEYWORD_KEY, pollName)
+
+  return sendEmail({
+    email,
+    templateId,
+    params: {
+      ADMINISTRATOR_NAME: administratorName,
+      DASHBOARD_URL: dashboardUrl.toString(),
+      POLL_URL: pollUrl.toString(),
+      POLL_NAME: pollName,
     },
   })
 }
