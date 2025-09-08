@@ -1,8 +1,15 @@
 import type { Organisation, VerifiedUser } from '@prisma/client'
 import { EventBusEvent } from '../../../core/event-bus/event.js'
+import { sanitizeOrganisationAdministratorName } from './event.mapper.js'
 
-export class PollDeletedEvent extends EventBusEvent<{
+export type PollDeletedEventAttributes = {
   organisation: Organisation & { administrators: Array<{ user: VerifiedUser }> }
-}> {
+}
+
+export class PollDeletedEvent extends EventBusEvent<PollDeletedEventAttributes> {
   name = 'PollDeletedEvent'
+
+  constructor(attributes: PollDeletedEventAttributes) {
+    super(sanitizeOrganisationAdministratorName(attributes))
+  }
 }

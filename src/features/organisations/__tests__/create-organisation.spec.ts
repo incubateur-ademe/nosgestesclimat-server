@@ -402,6 +402,51 @@ describe('Given a NGC user', () => {
         })
       })
 
+      describe('administrator has firstname and lastname', () => {
+        test('Then it sends a creation email', async () => {
+          const administratorPayload = {
+            optedInForCommunications: true,
+            name: `${faker.person.firstName()} _ ${faker.person.lastName()}`,
+          }
+          const payload = {
+            name: faker.company.name(),
+            type: randomOrganisationType(),
+            administrators: [administratorPayload],
+          }
+
+          mswServer.use(
+            brevoSendEmail({
+              expectBody: {
+                to: [
+                  {
+                    name: email,
+                    email,
+                  },
+                ],
+                templateId: 70,
+                params: {
+                  ADMINISTRATOR_NAME: administratorPayload.name
+                    .split(' _ ')
+                    .join(' '),
+                  ORGANISATION_NAME: payload.name,
+                  DASHBOARD_URL: `https://nosgestesclimat.fr/organisations/${slugify(payload.name.toLowerCase(), { strict: true })}?mtm_campaign=email-automatise&mtm_kwd=orga-admin-creation`,
+                },
+              },
+            }),
+            brevoUpdateContact(),
+            connectUpdateContact()
+          )
+
+          await agent
+            .post(url)
+            .set('cookie', cookie)
+            .send(payload)
+            .expect(StatusCodes.CREATED)
+
+          await EventBus.flush()
+        })
+      })
+
       describe('And opt in for communications', () => {
         test('Then it adds or updates organisation administrator in brevo', async () => {
           const administratorPayload = {
