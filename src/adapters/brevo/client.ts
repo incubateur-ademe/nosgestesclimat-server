@@ -10,11 +10,13 @@ import axios, { isAxiosError } from 'axios'
 import axiosRetry from 'axios-retry'
 import { z } from 'zod'
 import { config } from '../../config.js'
+import { Locales } from '../../core/i18n/constant.js'
 import { isNetworkOrTimeoutOrRetryableError } from '../../core/typeguards/isRetryableAxiosError.js'
 import type {
   ActionChoicesSchema,
   ComputedResultSchema,
 } from '../../features/simulations/simulations.validator.js'
+import type { GroupTemplateId, TemplateId } from './constant.js'
 import {
   AllNewsletters,
   Attributes,
@@ -140,7 +142,7 @@ const sendEmail = ({
   params,
 }: {
   email: string
-  templateId: TemplateIds
+  templateId: TemplateId
   params: { [key: string]: unknown }
 }) => {
   return brevo.post('/v3/smtp/email', {
@@ -169,7 +171,7 @@ export const sendVerificationCodeEmail = ({
   if (userId) {
     return sendEmail({
       email,
-      templateId: TemplateIds.VERIFICATION_CODE,
+      templateId: TemplateIds[Locales.fr].VERIFICATION_CODE,
       params: {
         VERIFICATION_CODE: code,
       },
@@ -183,7 +185,7 @@ export const sendVerificationCodeEmail = ({
 
   return sendEmail({
     email,
-    templateId: TemplateIds.API_VERIFICATION_CODE,
+    templateId: TemplateIds[Locales.fr].API_VERIFICATION_CODE,
     params: {
       API_TOKEN_URL: apiTokenUrl.toString(),
     },
@@ -199,7 +201,7 @@ const sendGroupEmail = ({
   origin: string
   group: Pick<Group, 'id' | 'name'>
   user: Pick<User, 'id' | 'name'> & { email: string }
-  templateId: TemplateIds.GROUP_CREATED | TemplateIds.GROUP_JOINED
+  templateId: GroupTemplateId
 }>) => {
   const groupUrl = new URL(`${origin}/amis/resultats`)
   const { searchParams: groupSp } = groupUrl
@@ -243,7 +245,7 @@ export const sendGroupCreatedEmail = ({
   user: Pick<User, 'id' | 'name'> & { email: string }
 }>) => {
   return sendGroupEmail({
-    templateId: TemplateIds.GROUP_CREATED,
+    templateId: TemplateIds[Locales.fr].GROUP_CREATED,
     origin,
     group,
     user,
@@ -259,7 +261,7 @@ export const sendOrganisationCreatedEmail = ({
   organisation: Pick<Organisation, 'name' | 'slug'>
   administrator: Pick<VerifiedUser, 'name' | 'email'>
 }>) => {
-  const templateId = TemplateIds.ORGANISATION_CREATED
+  const templateId = TemplateIds[Locales.fr].ORGANISATION_CREATED
   const dashBoardUrl = new URL(`${origin}/organisations/${slug}`)
   const { searchParams } = dashBoardUrl
   searchParams.append(MATOMO_CAMPAIGN_KEY, MATOMO_CAMPAIGN_EMAIL_AUTOMATISE)
@@ -287,8 +289,8 @@ export const sendSimulationUpsertedEmail = ({
 }>) => {
   const isSimulationCompleted = simulation.progression === 1
   const templateId = isSimulationCompleted
-    ? TemplateIds.SIMULATION_COMPLETED
-    : TemplateIds.SIMULATION_IN_PROGRESS
+    ? TemplateIds[Locales.fr].SIMULATION_COMPLETED
+    : TemplateIds[Locales.fr].SIMULATION_IN_PROGRESS
 
   const simulationUrl = new URL(origin)
   simulationUrl.pathname = isSimulationCompleted ? 'fin' : 'simulateur/bilan'
@@ -316,7 +318,7 @@ export const sendGroupParticipantSimulationUpsertedEmail = ({
   user: Pick<User, 'id' | 'name'> & { email: string }
 }>) => {
   return sendGroupEmail({
-    templateId: TemplateIds.GROUP_JOINED,
+    templateId: TemplateIds[Locales.fr].GROUP_JOINED,
     origin,
     group,
     user,
@@ -334,7 +336,7 @@ export const sendPollSimulationUpsertedEmail = async ({
   organisation: Pick<Organisation, 'name' | 'slug'>
   simulation: Pick<Simulation, 'id'>
 }>) => {
-  const templateId = TemplateIds.ORGANISATION_JOINED
+  const templateId = TemplateIds[Locales.fr].ORGANISATION_JOINED
 
   const detailedViewUrl = new URL(
     `${origin}/organisations/${slug}/resultats-detailles`
@@ -359,7 +361,7 @@ export const sendPollSimulationUpsertedEmail = async ({
   )
   simulationUrlSearchParams.append(
     MATOMO_KEYWORD_KEY,
-    MATOMO_KEYWORDS[TemplateIds.SIMULATION_COMPLETED]
+    MATOMO_KEYWORDS[TemplateIds[Locales.fr].SIMULATION_COMPLETED]
   )
 
   await sendEmail({
@@ -403,7 +405,7 @@ export const sendNewsLetterConfirmationEmail = ({
     params: {
       NEWSLETTER_CONFIRMATION_URL: newsletterConfirmationUrl.toString(),
     },
-    templateId: TemplateIds.NEWSLETTER_CONFIRMATION,
+    templateId: TemplateIds[Locales.fr].NEWSLETTER_CONFIRMATION,
   })
 }
 
