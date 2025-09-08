@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type Redis from 'ioredis'
+import type { Redis } from 'ioredis'
 import { isIPv4 } from 'node:net'
 import { createGunzip } from 'node:zlib'
 import Papa from 'papaparse'

@@ -1,7 +1,7 @@
-import { prisma } from '../src/adapters/prisma/client'
-import { batchFindMany } from '../src/core/batch-find-many'
-import { updatePollFunFacts } from '../src/features/organisations/organisations.service'
-import logger from '../src/logger'
+import { prisma } from '../src/adapters/prisma/client.js'
+import { batchFindMany } from '../src/core/batch-find-many.js'
+import { updatePollFunFacts } from '../src/features/organisations/organisations.service.js'
+import logger from '../src/logger.js'
 
 const main = async () => {
   try {
