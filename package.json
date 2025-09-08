@@ -20,7 +20,7 @@
     "jobs:computePollStats": "node dist/src/jobs/compute-poll-stats.js",
     "jobs:recoverMatomoStats": "node dist/src/jobs/recover-matomo-stats.js",
     "jobs:recoverNewsletterStats": "node dist/src/jobs/recover-newsletter-stats.js",
-    "lint": "prettier --check \"**/*.{js,ts,md,json}\" && eslint . --ext .js,.ts",
+    "lint": "prettier --check \"**/*.{js,ts,md,json}\" && eslint . --ext .js,.ts && tsc -p .",
     "prestart": "yarn db:doc",
     "start": "NODE_OPTIONS=--max-old-space-size=8192 node ./dist/src/index.js",
     "start:worker": "NODE_OPTIONS=--max-old-space-size=8192 node ./dist/src/worker.js",

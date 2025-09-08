@@ -21,7 +21,7 @@ import {
   CREATE_ORGANISATION_POLL_ROUTE,
   createOrganisation,
   createOrganisationPoll,
-} from './fixtures/organisations.fixture'
+} from './fixtures/organisations.fixture.js'
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)
@@ -254,7 +254,7 @@ describe('Given a NGC user', () => {
             ...payload,
             id: expect.any(String),
             organisation,
-            slug: slugify(payload.name.toLowerCase(), { strict: true }),
+            slug: slugify.default(payload.name.toLowerCase(), { strict: true }),
             defaultAdditionalQuestions: [],
             customAdditionalQuestions: [],
             expectedNumberOfParticipants: null,
@@ -319,7 +319,7 @@ describe('Given a NGC user', () => {
             ...payload,
             id,
             funFacts: null,
-            slug: slugify(payload.name.toLowerCase(), { strict: true }),
+            slug: slugify.default(payload.name.toLowerCase(), { strict: true }),
             organisationId,
             createdAt: expect.any(Date),
             updatedAt: expect.any(Date),
@@ -389,7 +389,9 @@ describe('Given a NGC user', () => {
               ...payload,
               organisation,
               id: expect.any(String),
-              slug: slugify(payload.name.toLowerCase(), { strict: true }),
+              slug: slugify.default(payload.name.toLowerCase(), {
+                strict: true,
+              }),
               defaultAdditionalQuestions: [],
               customAdditionalQuestions: [],
               expectedNumberOfParticipants: null,
@@ -512,7 +514,7 @@ describe('Given a NGC user', () => {
             ...payload,
             organisation,
             id: expect.any(String),
-            slug: `${slugify(payload.name.toLowerCase(), { strict: true })}-1`,
+            slug: `${slugify.default(payload.name.toLowerCase(), { strict: true })}-1`,
             defaultAdditionalQuestions: [],
             customAdditionalQuestions: [],
             expectedNumberOfParticipants: null,
