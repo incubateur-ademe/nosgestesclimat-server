@@ -141,6 +141,7 @@ describe('Given a NGC user', () => {
                 finished: 1,
                 hasParticipated: true,
               },
+              computedResults: expect.any(Object),
               funFacts: Object.fromEntries(
                 Object.entries(modelFunFacts).map(([k]) => [
                   k,
@@ -173,6 +174,7 @@ describe('Given a NGC user', () => {
                   finished: 1,
                   hasParticipated: true,
                 },
+                computedResults: expect.any(Object),
                 funFacts: Object.fromEntries(
                   Object.entries(modelFunFacts).map(([k]) => [
                     k,
@@ -393,6 +395,7 @@ describe('Given a NGC user', () => {
                 finished: 3,
                 hasParticipated: false,
               },
+              computedResults: expect.any(Object),
               funFacts: Object.fromEntries(
                 Object.entries(modelFunFacts).map(([k]) => [
                   k,

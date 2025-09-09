@@ -18,6 +18,7 @@ import {
 } from '../../organisations/__tests__/fixtures/organisations.fixture.js'
 import { SimulationUpsertedAsyncEvent } from '../events/SimulationUpserted.event.js'
 import * as simulationRepository from '../simulations.repository.js'
+import { ComputedResultSchema } from '../simulations.validator.js'
 import { getRandomTestCase } from './fixtures/simulations.fixtures.js'
 
 vi.mock('../simulations.repository', async () => ({
@@ -122,23 +123,26 @@ describe('Given a poll participation', () => {
 
       await EventBus.once(event)
 
-      const rawCache = await redis.get(
-        `${KEYS.pollsFunFactsResults}:${poll.id}`
-      )
+      const rawCache = await redis.get(`${KEYS.pollsStatsResults}:${poll.id}`)
       const cache = JSON.parse(rawCache!)
 
       expect(cache).toEqual({
+        computedResults: expect.any(Object),
         simulationCount: 1,
         funFactValues: Object.fromEntries(
           Object.entries(modelFunFacts).map(([_, v]) => [v, expect.any(Number)])
         ),
       })
+
+      expect(
+        ComputedResultSchema.safeParse(cache.computedResults).error
+      ).toBeUndefined()
     })
 
     describe('And redis cache already exists', () => {
       beforeEach(async () => {
         await redis.set(
-          `${KEYS.pollsFunFactsResults}:${poll.id}`,
+          `${KEYS.pollsStatsResults}:${poll.id}`,
           JSON.stringify({
             simulationCount: 0,
             funFactValues: Object.fromEntries(

@@ -1,6 +1,6 @@
 import { prisma } from '../adapters/prisma/client.js'
 import { batchFindMany } from '../core/batch-find-many.js'
-import { updatePollFunFacts } from '../features/organisations/organisations.service.js'
+import { updatePollStats } from '../features/organisations/organisations.service.js'
 import logger from '../logger.js'
 
 const main = async () => {
@@ -19,7 +19,7 @@ const main = async () => {
 
     for await (const poll of batchPolls) {
       logger.info(`Update poll ${poll.id}`)
-      await updatePollFunFacts({ pollId: poll.id }, { session: prisma })
+      await updatePollStats({ pollId: poll.id }, { session: prisma })
     }
 
     process.exit(0)
