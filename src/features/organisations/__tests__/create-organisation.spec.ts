@@ -406,7 +406,7 @@ describe('Given a NGC user', () => {
         test('Then it sends a creation email', async () => {
           const administratorPayload = {
             optedInForCommunications: true,
-            name: `${faker.person.firstName()} _ ${faker.person.lastName()}`,
+            name: `${faker.person.firstName()}\n_\n${faker.person.lastName()}`,
           }
           const payload = {
             name: faker.company.name(),
@@ -426,7 +426,7 @@ describe('Given a NGC user', () => {
                 templateId: 70,
                 params: {
                   ADMINISTRATOR_NAME: administratorPayload.name
-                    .split(' _ ')
+                    .split('\n_\n')
                     .join(' '),
                   ORGANISATION_NAME: payload.name,
                   DASHBOARD_URL: `https://nosgestesclimat.fr/organisations/${slugify.default(payload.name.toLowerCase(), { strict: true })}?mtm_campaign=email-automatise&mtm_kwd=orga-admin-creation`,
