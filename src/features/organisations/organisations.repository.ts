@@ -9,7 +9,10 @@ import {
   defaultVerifiedUserSelection,
 } from '../../adapters/prisma/selection.js'
 import type { Session } from '../../adapters/prisma/transaction.js'
-import type { SimulationParams } from '../simulations/simulations.validator.js'
+import type {
+  ComputedResultSchema,
+  SimulationParams,
+} from '../simulations/simulations.validator.js'
 import type {
   OrganisationCreateDto,
   OrganisationParams,
@@ -713,7 +716,10 @@ export const findSimulationPoll = (
 
 export const setPollStats = (
   id: string,
-  { funFacts }: { funFacts: FunFacts },
+  {
+    computedResults,
+    funFacts,
+  }: { computedResults: ComputedResultSchema; funFacts: FunFacts },
   { session }: { session: Session }
 ) => {
   return session.poll.update({
@@ -721,11 +727,13 @@ export const setPollStats = (
       id,
     },
     data: {
+      computedResults,
       funFacts,
     },
     select: {
       id: true,
       funFacts: true,
+      computedResults: true,
     },
   })
 }

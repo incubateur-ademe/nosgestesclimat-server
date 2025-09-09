@@ -5,7 +5,7 @@ export const CHANNELS = {
 export const KEYS = {
   brevoNewsletter: 'brevoNewsletter',
   rateLimitSameRequests: 'rateLimitSameRequests',
-  pollsFunFactsResults: 'pollsFunFactsResults',
+  pollsStatsResults: 'pollsStatsResults',
   geolocationSortedIps: 'geolocationSortedIps',
   geolocationCountries: 'geolocationCountries',
 }
