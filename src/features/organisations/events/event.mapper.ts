@@ -15,9 +15,11 @@ type PollEventAttributes = { administrator?: undefined } & (
   | PollUpdatedEventAttributes
 )
 
+const ADMINISTRATOR_SEPARATOR = '\n_\n'
+
 const sanitizeName = (user?: VerifiedUser) => {
   if (user?.name) {
-    user.name = user.name.split(' _ ').join(' ')
+    user.name = user.name.split(ADMINISTRATOR_SEPARATOR).join(' ')
   }
 }
 
