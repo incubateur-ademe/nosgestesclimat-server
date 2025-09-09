@@ -353,7 +353,7 @@ const getFunFactValues = async (
   return result
 }
 
-export const getPollFunFacts = async (
+export const getPollStats = async (
   params: { id: string; simulation?: SimulationAsyncEvent; engine?: Engine },
   session: { session: Session }
 ) => {
@@ -362,21 +362,23 @@ export const getPollFunFacts = async (
     session
   )
 
-  return Object.fromEntries(
-    Object.entries(funFactsRules).map(([key, dottedName]) => {
-      let value = funFactValues[dottedName] || 0
+  return {
+    funFacts: Object.fromEntries(
+      Object.entries(funFactsRules).map(([key, dottedName]) => {
+        let value = funFactValues[dottedName] || 0
 
-      if (key.startsWith('average')) {
-        value = value / simulationCount
-      }
+        if (key.startsWith('average')) {
+          value = value / simulationCount
+        }
 
-      if (key.startsWith('percentage')) {
-        value = (value / simulationCount) * 100
-      }
+        if (key.startsWith('percentage')) {
+          value = (value / simulationCount) * 100
+        }
 
-      return [key, value]
-    })
-  ) as FunFacts
+        return [key, value]
+      })
+    ) as FunFacts,
+  }
 }
 
 const EXCEL_ERROR = '#####'

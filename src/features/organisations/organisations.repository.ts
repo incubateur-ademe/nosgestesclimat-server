@@ -711,9 +711,9 @@ export const findSimulationPoll = (
   })
 }
 
-export const setPollFunFacts = (
+export const setPollStats = (
   id: string,
-  funFacts: FunFacts,
+  { funFacts }: { funFacts: FunFacts },
   { session }: { session: Session }
 ) => {
   return session.poll.update({

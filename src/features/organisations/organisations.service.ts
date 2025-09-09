@@ -31,8 +31,8 @@ import {
 } from '../jobs/jobs.service.js'
 import type { SimulationAsyncEvent } from '../simulations/events/SimulationUpserted.event.js'
 import {
-  getPollFunFacts,
   getPollSimulationsExcelData,
+  getPollStats,
 } from '../simulations/simulations.service.js'
 import { OrganisationCreatedEvent } from './events/OrganisationCreated.event.js'
 import { OrganisationUpdatedEvent } from './events/OrganisationUpdated.event.js'
@@ -51,7 +51,7 @@ import {
   findOrganisationPollById,
   findOrganisationPollBySlugOrId,
   findSimulationPoll,
-  setPollFunFacts,
+  setPollStats,
   updateAdministratorOrganisation,
   updateOrganisationPoll,
 } from './organisations.repository.js'
@@ -468,21 +468,18 @@ export const fetchPublicPoll = async ({
   }
 }
 
-export const updatePollFunFacts = async (
+export const updatePollStats = async (
   { pollId, simulation }: { pollId: string; simulation?: SimulationAsyncEvent },
   { session }: { session?: Session } = {}
 ) => {
   return transaction(async (session) => {
-    const funFacts = await getPollFunFacts(
-      { id: pollId, simulation },
-      { session }
-    )
+    const stats = await getPollStats({ id: pollId, simulation }, { session })
 
-    await setPollFunFacts(pollId, funFacts, { session })
+    await setPollStats(pollId, stats, { session })
   }, session)
 }
 
-export const updatePollFunFactsAfterSimulationChange = async ({
+export const updatePollStatsAfterSimulationChange = async ({
   simulation,
   created,
 }: {
@@ -502,7 +499,7 @@ export const updatePollFunFactsAfterSimulationChange = async ({
 
       const { pollId } = simulationPoll
 
-      return updatePollFunFacts(
+      return updatePollStats(
         { pollId, ...(created ? { simulation } : {}) },
         { session }
       )
