@@ -9,7 +9,7 @@ import logger from '../../../logger.js'
 import {
   createSimulation,
   FETCH_USER_SIMULATION_ROUTE,
-} from './fixtures/simulations.fixtures'
+} from './fixtures/simulations.fixtures.js'
 
 vi.mock('../../../adapters/prisma/transaction', async () => ({
   ...(await vi.importActual('../../../adapters/prisma/transaction')),

@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { version as modelVersion } from '@incubateur-ademe/nosgestesclimat/package.json' with { type: 'json' }
+import modelPackage from '@incubateur-ademe/nosgestesclimat/package.json' with { type: 'json' }
 import {
   PollDefaultAdditionalQuestionType,
   SimulationAdditionalQuestionAnswerType,
@@ -23,7 +23,9 @@ import {
   getRandomTestCase,
 } from './fixtures/simulations.fixtures.js'
 
-const defaultModelVersion = modelVersion.match(/^(\d+\.\d+\.\d+)/)!.pop()
+const defaultModelVersion = modelPackage.version
+  .match(/^(\d+\.\d+\.\d+)/)!
+  .pop()
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)

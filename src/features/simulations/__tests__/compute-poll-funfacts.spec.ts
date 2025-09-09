@@ -9,6 +9,7 @@ import { KEYS } from '../../../adapters/redis/constant.js'
 import app from '../../../app.js'
 import { config } from '../../../config.js'
 import { EventBus } from '../../../core/event-bus/event-bus.js'
+import { Locales } from '../../../core/i18n/constant.js'
 import logger from '../../../logger.js'
 import { login } from '../../authentication/__tests__/fixtures/login.fixture.js'
 import {
@@ -88,6 +89,7 @@ describe('Given a poll participation', () => {
 
       event = new SimulationUpsertedAsyncEvent({
         origin: config.origin,
+        locale: Locales.fr,
         sendEmail: false,
         updated: false,
         created: true,

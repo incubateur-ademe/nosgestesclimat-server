@@ -1,10 +1,10 @@
 import { faker } from '@faker-js/faker'
 import type { DottedName, NGCRuleNode } from '@incubateur-ademe/nosgestesclimat'
-import { version as modelVersion } from '@incubateur-ademe/nosgestesclimat/package.json' with { type: 'json' }
+import modelPackage from '@incubateur-ademe/nosgestesclimat/package.json' with { type: 'json' }
 import rules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json' with { type: 'json' }
 import personas from '@incubateur-ademe/nosgestesclimat/public/personas-fr.json' with { type: 'json' }
 import { StatusCodes } from 'http-status-codes'
-import type { ParsedRules, PublicodesExpression } from 'publicodes'
+import type { PublicodesExpression } from 'publicodes'
 import Engine, { utils } from 'publicodes'
 import type supertest from 'supertest'
 import { carbonMetric, waterMetric } from '../../simulation.constant.js'
@@ -34,7 +34,9 @@ export const FETCH_USER_SIMULATIONS_ROUTE = '/simulations/v1/:userId'
 export const FETCH_USER_SIMULATION_ROUTE =
   '/simulations/v1/:userId/:simulationId'
 
-const defaultModelVersion = modelVersion.match(/^(\d+\.\d+\.\d+)/)!.pop()
+const defaultModelVersion = modelPackage.version
+  .match(/^(\d+\.\d+\.\d+)/)!
+  .pop()
 
 const engine = new Engine(rules, {
   logger: {
@@ -43,6 +45,8 @@ const engine = new Engine(rules, {
     error: console.error,
   },
 })
+
+type RuleName = ReturnType<typeof engine.getParsedRules>
 
 const categories = [
   'transport',
@@ -57,8 +61,8 @@ const getSubcategories = ({
   getRule,
   parsedRules,
 }: {
-  dottedName: DottedName
-  getRule: (dottedName: DottedName) => NGCRuleNode | null
+  dottedName: string
+  getRule: (dottedName: string) => NGCRuleNode | null
   parsedRules: Record<string, NGCRuleNode>
 }): DottedName[] => {
   const ruleNode = getRule(dottedName)
@@ -75,7 +79,8 @@ const getSubcategories = ({
   if (
     !dottedNameSomme && // No `somme` directly in the rule
     (!dottedNameFormula ||
-      typeof dottedNameFormula === 'string' ||
+      typeof dottedNameFormula !== 'object' ||
+      !('somme' in dottedNameFormula) ||
       !Array.isArray(dottedNameFormula.somme)) // No `somme` in the formula or invalid format
   ) {
     return []
@@ -122,10 +127,7 @@ const evaluate = ({
       : undefined
 }
 
-const computeMetricResults = (
-  metric: Metric,
-  parsedRules: ParsedRules<DottedName>
-) => ({
+const computeMetricResults = (metric: Metric, parsedRules: RuleName) => ({
   bilan: evaluate({ expr: 'bilan', metric }) ?? 0,
   categories: Object.fromEntries(
     categories.map((category) => [
@@ -137,6 +139,7 @@ const computeMetricResults = (
     categories.flatMap((category) =>
       getSubcategories({
         dottedName: category,
+        // @ts-expect-error categories are not rules
         getRule: (dottedName) => engine.getRule(dottedName),
         parsedRules,
       }).map((subcategory) => [

@@ -25,7 +25,7 @@ import {
   createUser,
   getBrevoContact,
   UPDATE_USER_ROUTE,
-} from './fixtures/users.fixture'
+} from './fixtures/users.fixture.js'
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)

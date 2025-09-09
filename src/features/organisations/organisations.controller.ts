@@ -5,6 +5,7 @@ import { config } from '../../config.js'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
 import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
+import { LocaleQuery } from '../../core/i18n/lang.validator.js'
 import logger from '../../logger.js'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware.js'
 import { rateLimitSameRequestMiddleware } from '../../middlewares/rateLimitSameRequestMiddleware.js'
@@ -28,6 +29,7 @@ import { PollUpdatedEvent } from './events/PollUpdated.event.js'
 import { addOrUpdateBrevoContact } from './handlers/add-or-update-brevo-contact.js'
 import { addOrUpdateConnectContact } from './handlers/add-or-update-connect-contact.js'
 import { sendOrganisationCreated } from './handlers/send-organisation-created.js'
+import { sendPollCreated } from './handlers/send-poll-created.js'
 import {
   createOrganisation,
   createPoll,
@@ -49,12 +51,14 @@ import {
   OrganisationPollDeleteValidator,
   OrganisationPollFetchValidator,
   OrganisationPollsFetchValidator,
+  OrganisationPollSimulationsDownloadQuery,
   OrganisationPollSimulationsDownloadValidator,
   OrganisationPollUpdateValidator,
   OrganisationPublicPollFetchValidator,
   OrganisationPublicPollSimulationsFetchValidator,
   OrganisationsFetchValidator,
   OrganisationUpdateDto,
+  OrganisationUpdateQuery,
   OrganisationUpdateValidator,
 } from './organisations.validator.js'
 
@@ -77,6 +81,7 @@ router
         const organisation = await createOrganisation({
           organisationDto: req.body,
           origin: req.get('origin') || config.origin,
+          locale: LocaleQuery.parse(req.query).locale,
           user: req.user!,
         })
 
@@ -109,7 +114,7 @@ router
         const { organisation, token } = await updateOrganisation({
           params,
           organisationDto: OrganisationUpdateDto.parse(body),
-          code: query.code,
+          code: OrganisationUpdateQuery.parse(query).code,
           user: user!,
         })
 
@@ -181,6 +186,7 @@ router
   )
 
 EventBus.on(PollCreatedEvent, addOrUpdateBrevoContact)
+EventBus.on(PollCreatedEvent, sendPollCreated)
 
 /**
  * Creates a new poll for an organisation
@@ -190,12 +196,14 @@ router
   .post(
     authentificationMiddleware(),
     validateRequest(OrganisationPollCreateValidator),
-    async ({ body, params, user }, res) => {
+    async (req, res) => {
       try {
         const poll = await createPoll({
-          pollDto: body,
-          user: user!,
-          params,
+          origin: req.get('origin') || config.origin,
+          locale: LocaleQuery.parse(req.query).locale,
+          pollDto: req.body,
+          user: req.user!,
+          params: req.params,
         })
 
         return res.status(StatusCodes.CREATED).json(poll)
@@ -338,7 +346,7 @@ router
     validateRequest(OrganisationPollSimulationsDownloadValidator),
     async ({ params, user, query }, res) => {
       try {
-        const { jobId } = query
+        const { jobId } = OrganisationPollSimulationsDownloadQuery.parse(query)
         if (jobId) {
           const { status, job } = await getDownloadPollSimulationResultJob({
             user: user!,
@@ -380,6 +388,7 @@ router
         const simulation = await createPollSimulation({
           simulationDto: SimulationCreateDto.parse(req.body),
           origin: req.get('origin') || config.origin,
+          locale: LocaleQuery.parse(req.query).locale,
           params: req.params,
         })
 

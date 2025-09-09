@@ -7,12 +7,14 @@ import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import {
   brevoRemoveFromList,
+  brevoSendEmail,
   brevoUpdateContact,
 } from '../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
 import { prisma } from '../../../adapters/prisma/client.js'
 import app from '../../../app.js'
 import { mswServer } from '../../../core/__tests__/fixtures/server.fixture.js'
 import { EventBus } from '../../../core/event-bus/event-bus.js'
+import { Locales } from '../../../core/i18n/constant.js'
 import logger from '../../../logger.js'
 import { login } from '../../authentication/__tests__/fixtures/login.fixture.js'
 import { COOKIE_NAME } from '../../authentication/authentication.service.js'
@@ -21,7 +23,7 @@ import {
   CREATE_ORGANISATION_POLL_ROUTE,
   createOrganisation,
   createOrganisationPoll,
-} from './fixtures/organisations.fixture'
+} from './fixtures/organisations.fixture.js'
 
 describe('Given a NGC user', () => {
   const agent = supertest(app)
@@ -242,7 +244,11 @@ describe('Given a NGC user', () => {
             name: faker.company.buzzNoun(),
           }
 
-          mswServer.use(brevoUpdateContact(), brevoRemoveFromList(27))
+          mswServer.use(
+            brevoSendEmail(),
+            brevoUpdateContact(),
+            brevoRemoveFromList(27)
+          )
 
           const response = await agent
             .post(url.replace(':organisationIdOrSlug', organisationId))
@@ -254,7 +260,7 @@ describe('Given a NGC user', () => {
             ...payload,
             id: expect.any(String),
             organisation,
-            slug: slugify(payload.name.toLowerCase(), { strict: true }),
+            slug: slugify.default(payload.name.toLowerCase(), { strict: true }),
             defaultAdditionalQuestions: [],
             customAdditionalQuestions: [],
             expectedNumberOfParticipants: null,
@@ -284,7 +290,11 @@ describe('Given a NGC user', () => {
             expectedNumberOfParticipants: faker.number.int({ max: 100 }),
           }
 
-          mswServer.use(brevoUpdateContact(), brevoRemoveFromList(27))
+          mswServer.use(
+            brevoSendEmail(),
+            brevoUpdateContact(),
+            brevoRemoveFromList(27)
+          )
 
           const {
             body: { id },
@@ -319,7 +329,7 @@ describe('Given a NGC user', () => {
             ...payload,
             id,
             funFacts: null,
-            slug: slugify(payload.name.toLowerCase(), { strict: true }),
+            slug: slugify.default(payload.name.toLowerCase(), { strict: true }),
             organisationId,
             createdAt: expect.any(Date),
             updatedAt: expect.any(Date),
@@ -345,6 +355,7 @@ describe('Given a NGC user', () => {
           }
 
           mswServer.use(
+            brevoSendEmail(),
             brevoUpdateContact({
               expectBody: {
                 email,
@@ -371,13 +382,166 @@ describe('Given a NGC user', () => {
           await EventBus.flush()
         })
 
+        test('Then it sends a creation email', async () => {
+          const payload = {
+            name: faker.company.buzzNoun(),
+          }
+
+          const orgaSlug = slugify.default(organisation.name.toLowerCase(), {
+            strict: true,
+          })
+          const pollSlug = slugify.default(payload.name.toLowerCase(), {
+            strict: true,
+          })
+
+          const searchParams = new URLSearchParams()
+          searchParams.set('mtm_campaign', `Organisation_${organisation.name}`)
+          searchParams.set('mtm_kwd', payload.name)
+
+          mswServer.use(
+            brevoSendEmail({
+              expectBody: {
+                to: [
+                  {
+                    name: email,
+                    email,
+                  },
+                ],
+                templateId: 126,
+                params: {
+                  ADMINISTRATOR_NAME: null,
+                  DASHBOARD_URL: `https://nosgestesclimat.fr/organisations/${orgaSlug}/campagnes/${pollSlug}?mtm_campaign=email-automatise&mtm_kwd=poll-admin-creation`,
+                  POLL_NAME: payload.name,
+                  POLL_URL: `https://nosgestesclimat.fr/o/${orgaSlug}/${pollSlug}?${searchParams.toString()}`,
+                },
+              },
+            }),
+            brevoUpdateContact(),
+            brevoRemoveFromList(27)
+          )
+
+          await agent
+            .post(url.replace(':organisationIdOrSlug', organisationId))
+            .set('cookie', cookie)
+            .send(payload)
+            .expect(StatusCodes.CREATED)
+        })
+
+        describe('And custom user origin (preprod)', () => {
+          test('Then it sends a creation email', async () => {
+            const payload = {
+              name: faker.company.buzzNoun(),
+            }
+
+            const orgaSlug = slugify.default(organisation.name.toLowerCase(), {
+              strict: true,
+            })
+            const pollSlug = slugify.default(payload.name.toLowerCase(), {
+              strict: true,
+            })
+
+            const searchParams = new URLSearchParams()
+            searchParams.set(
+              'mtm_campaign',
+              `Organisation_${organisation.name}`
+            )
+            searchParams.set('mtm_kwd', payload.name)
+
+            mswServer.use(
+              brevoSendEmail({
+                expectBody: {
+                  to: [
+                    {
+                      name: email,
+                      email,
+                    },
+                  ],
+                  templateId: 126,
+                  params: {
+                    ADMINISTRATOR_NAME: null,
+                    DASHBOARD_URL: `https://preprod.nosgestesclimat.fr/organisations/${orgaSlug}/campagnes/${pollSlug}?mtm_campaign=email-automatise&mtm_kwd=poll-admin-creation`,
+                    POLL_NAME: payload.name,
+                    POLL_URL: `https://preprod.nosgestesclimat.fr/o/${orgaSlug}/${pollSlug}?${searchParams.toString()}`,
+                  },
+                },
+              }),
+              brevoUpdateContact(),
+              brevoRemoveFromList(27)
+            )
+
+            await agent
+              .post(url.replace(':organisationIdOrSlug', organisationId))
+              .set('cookie', cookie)
+              .send(payload)
+              .set('origin', 'https://preprod.nosgestesclimat.fr')
+              .expect(StatusCodes.CREATED)
+          })
+        })
+
+        describe(`And ${Locales.en} locale`, () => {
+          test('Then it sends a creation email', async () => {
+            const payload = {
+              name: faker.company.buzzNoun(),
+            }
+
+            const orgaSlug = slugify.default(organisation.name.toLowerCase(), {
+              strict: true,
+            })
+            const pollSlug = slugify.default(payload.name.toLowerCase(), {
+              strict: true,
+            })
+
+            const searchParams = new URLSearchParams()
+            searchParams.set(
+              'mtm_campaign',
+              `Organisation_${organisation.name}`
+            )
+            searchParams.set('mtm_kwd', payload.name)
+
+            mswServer.use(
+              brevoSendEmail({
+                expectBody: {
+                  to: [
+                    {
+                      name: email,
+                      email,
+                    },
+                  ],
+                  templateId: 127,
+                  params: {
+                    ADMINISTRATOR_NAME: null,
+                    DASHBOARD_URL: `https://nosgestesclimat.fr/organisations/${orgaSlug}/campagnes/${pollSlug}?mtm_campaign=email-automatise&mtm_kwd=poll-admin-creation`,
+                    POLL_NAME: payload.name,
+                    POLL_URL: `https://nosgestesclimat.fr/o/${orgaSlug}/${pollSlug}?${searchParams.toString()}`,
+                  },
+                },
+              }),
+              brevoUpdateContact(),
+              brevoRemoveFromList(27)
+            )
+
+            await agent
+              .post(url.replace(':organisationIdOrSlug', organisationId))
+              .set('cookie', cookie)
+              .send(payload)
+              .query({
+                locale: Locales.en,
+              })
+              .expect(StatusCodes.CREATED)
+          })
+        })
+
         describe('And using the organisation slug', () => {
           test(`Then it returns a ${StatusCodes.CREATED} response with the created poll`, async () => {
             const payload = {
               name: faker.company.buzzNoun(),
             }
 
-            mswServer.use(brevoUpdateContact(), brevoRemoveFromList(27))
+            mswServer.use(
+              brevoSendEmail(),
+              brevoUpdateContact(),
+              brevoRemoveFromList(27)
+            )
 
             const response = await agent
               .post(url.replace(':organisationIdOrSlug', organisationSlug))
@@ -389,7 +553,9 @@ describe('Given a NGC user', () => {
               ...payload,
               organisation,
               id: expect.any(String),
-              slug: slugify(payload.name.toLowerCase(), { strict: true }),
+              slug: slugify.default(payload.name.toLowerCase(), {
+                strict: true,
+              }),
               defaultAdditionalQuestions: [],
               customAdditionalQuestions: [],
               expectedNumberOfParticipants: null,
@@ -446,6 +612,7 @@ describe('Given a NGC user', () => {
           }
 
           mswServer.use(
+            brevoSendEmail(),
             brevoUpdateContact({
               expectBody: {
                 email,
@@ -500,7 +667,11 @@ describe('Given a NGC user', () => {
             name,
           }
 
-          mswServer.use(brevoUpdateContact(), brevoRemoveFromList(27))
+          mswServer.use(
+            brevoSendEmail(),
+            brevoUpdateContact(),
+            brevoRemoveFromList(27)
+          )
 
           const response = await agent
             .post(url.replace(':organisationIdOrSlug', organisationId))
@@ -512,7 +683,7 @@ describe('Given a NGC user', () => {
             ...payload,
             organisation,
             id: expect.any(String),
-            slug: `${slugify(payload.name.toLowerCase(), { strict: true })}-1`,
+            slug: `${slugify.default(payload.name.toLowerCase(), { strict: true })}-1`,
             defaultAdditionalQuestions: [],
             customAdditionalQuestions: [],
             expectedNumberOfParticipants: null,

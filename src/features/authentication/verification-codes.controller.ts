@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes'
 import { validateRequest } from 'zod-express-middleware'
 import { config } from '../../config.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
+import { LocaleQuery } from '../../core/i18n/lang.validator.js'
 import logger from '../../logger.js'
 import { VerificationCodeCreatedEvent } from './events/VerificationCodeCreated.event.js'
 import { sendVerificationCode } from './handlers/send-verification-code.js'
@@ -28,6 +29,7 @@ router
       const verificationCode = await createVerificationCode({
         verificationCodeDto: VerificationCodeCreateDto.parse(req.body),
         origin: req.get('origin') || config.origin,
+        locale: LocaleQuery.parse(req.query).locale,
       })
 
       return res.status(StatusCodes.CREATED).json(verificationCode)

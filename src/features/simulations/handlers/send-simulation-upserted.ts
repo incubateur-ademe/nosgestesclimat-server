@@ -9,7 +9,7 @@ import type { SimulationUpsertedEvent } from '../events/SimulationUpserted.event
 
 export const sendSimulationUpserted: Handler<SimulationUpsertedEvent> = ({
   attributes,
-  attributes: { origin, user, organisation, simulation, sendEmail },
+  attributes: { origin, user, organisation, simulation, sendEmail, locale },
 }) => {
   if (!user.email || !sendEmail) {
     return
@@ -22,6 +22,7 @@ export const sendSimulationUpserted: Handler<SimulationUpsertedEvent> = ({
       return sendPollSimulationUpsertedEmail({
         organisation,
         simulation,
+        locale,
         origin,
         email,
       })

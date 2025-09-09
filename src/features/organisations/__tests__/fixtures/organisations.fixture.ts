@@ -126,7 +126,7 @@ export const createOrganisationPoll = async ({
     expectedNumberOfParticipants,
   }
 
-  mswServer.use(brevoUpdateContact())
+  mswServer.use(brevoSendEmail(), brevoUpdateContact())
 
   const {
     administrators: [administrator],

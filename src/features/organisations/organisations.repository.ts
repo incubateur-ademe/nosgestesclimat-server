@@ -29,7 +29,7 @@ const findModelUniqueSlug = (model: 'organisation' | 'poll') => {
   ): Promise<string> => {
     const slug =
       counter === 0
-        ? slugify(name.toLowerCase(), {
+        ? slugify.default(name.toLowerCase(), {
             strict: true,
           })
         : name

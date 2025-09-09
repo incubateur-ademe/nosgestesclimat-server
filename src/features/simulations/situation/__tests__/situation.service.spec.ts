@@ -3,14 +3,14 @@ import type {
   FunFacts,
   NGCRules,
 } from '@incubateur-ademe/nosgestesclimat'
-import modelRules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json'
-import modelFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRules.json'
-import personas from '@incubateur-ademe/nosgestesclimat/public/personas-fr.json'
+import modelRules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json' with { type: 'json' }
+import modelFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRules.json' with { type: 'json' }
+import personas from '@incubateur-ademe/nosgestesclimat/public/personas-fr.json' with { type: 'json' }
 import Engine from 'publicodes'
 
 import { describe, expect, test } from 'vitest'
-import type { SituationSchema } from '../../simulations.validator'
-import { getSituationDottedNameValue } from '../situation.service'
+import type { SituationSchema } from '../../simulations.validator.js'
+import { getSituationDottedNameValue } from '../situation.service.js'
 
 const frRules = modelRules as Partial<NGCRules>
 const funFactsRules = modelFunFacts as { [k in keyof FunFacts]: DottedName }

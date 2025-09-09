@@ -14,6 +14,7 @@ import { prisma } from '../../../adapters/prisma/client.js'
 import app from '../../../app.js'
 import { mswServer } from '../../../core/__tests__/fixtures/server.fixture.js'
 import { EventBus } from '../../../core/event-bus/event-bus.js'
+import { Locales } from '../../../core/i18n/constant.js'
 import logger from '../../../logger.js'
 import { login } from '../../authentication/__tests__/fixtures/login.fixture.js'
 import { COOKIE_NAME } from '../../authentication/authentication.service.js'
@@ -132,7 +133,7 @@ describe('Given a NGC user', () => {
           ...payload,
           type: OrganisationType.other,
           id: expect.any(String),
-          slug: slugify(payload.name.toLowerCase(), { strict: true }),
+          slug: slugify.default(payload.name.toLowerCase(), { strict: true }),
           hasCustomQuestionEnabled: false,
           numberOfCollaborators: null,
           createdAt: expect.any(String),
@@ -217,7 +218,7 @@ describe('Given a NGC user', () => {
         expect(createdOrganisation).toEqual({
           ...payload,
           id,
-          slug: slugify(payload.name.toLowerCase(), { strict: true }),
+          slug: slugify.default(payload.name.toLowerCase(), { strict: true }),
           createdAt: expect.any(Date),
           updatedAt: expect.any(Date),
           polls: [],
@@ -294,7 +295,7 @@ describe('Given a NGC user', () => {
               params: {
                 ADMINISTRATOR_NAME: administratorPayload.name,
                 ORGANISATION_NAME: payload.name,
-                DASHBOARD_URL: `https://nosgestesclimat.fr/organisations/${slugify(payload.name.toLowerCase(), { strict: true })}?mtm_campaign=email-automatise&mtm_kwd=orga-admin-creation`,
+                DASHBOARD_URL: `https://nosgestesclimat.fr/organisations/${slugify.default(payload.name.toLowerCase(), { strict: true })}?mtm_campaign=email-automatise&mtm_kwd=orga-admin-creation`,
               },
             },
           }),
@@ -309,6 +310,141 @@ describe('Given a NGC user', () => {
           .expect(StatusCodes.CREATED)
 
         await EventBus.flush()
+      })
+
+      describe('And custom user origin (preprod)', () => {
+        test('Then it sends a creation email', async () => {
+          const administratorPayload = {
+            optedInForCommunications: true,
+            name: faker.person.fullName(),
+          }
+          const payload = {
+            name: faker.company.name(),
+            type: randomOrganisationType(),
+            administrators: [administratorPayload],
+          }
+
+          mswServer.use(
+            brevoSendEmail({
+              expectBody: {
+                to: [
+                  {
+                    name: email,
+                    email,
+                  },
+                ],
+                templateId: 70,
+                params: {
+                  ADMINISTRATOR_NAME: administratorPayload.name,
+                  ORGANISATION_NAME: payload.name,
+                  DASHBOARD_URL: `https://preprod.nosgestesclimat.fr/organisations/${slugify.default(payload.name.toLowerCase(), { strict: true })}?mtm_campaign=email-automatise&mtm_kwd=orga-admin-creation`,
+                },
+              },
+            }),
+            brevoUpdateContact(),
+            connectUpdateContact()
+          )
+
+          await agent
+            .post(url)
+            .set('cookie', cookie)
+            .send(payload)
+            .set('origin', 'https://preprod.nosgestesclimat.fr')
+            .expect(StatusCodes.CREATED)
+
+          await EventBus.flush()
+        })
+      })
+
+      describe(`And ${Locales.en} locale`, () => {
+        test('Then it sends a creation email', async () => {
+          const administratorPayload = {
+            optedInForCommunications: true,
+            name: faker.person.fullName(),
+          }
+          const payload = {
+            name: faker.company.name(),
+            type: randomOrganisationType(),
+            administrators: [administratorPayload],
+          }
+
+          mswServer.use(
+            brevoSendEmail({
+              expectBody: {
+                to: [
+                  {
+                    name: email,
+                    email,
+                  },
+                ],
+                templateId: 124,
+                params: {
+                  ADMINISTRATOR_NAME: administratorPayload.name,
+                  ORGANISATION_NAME: payload.name,
+                  DASHBOARD_URL: `https://nosgestesclimat.fr/organisations/${slugify.default(payload.name.toLowerCase(), { strict: true })}?mtm_campaign=email-automatise&mtm_kwd=orga-admin-creation`,
+                },
+              },
+            }),
+            brevoUpdateContact(),
+            connectUpdateContact()
+          )
+
+          await agent
+            .post(url)
+            .set('cookie', cookie)
+            .send(payload)
+            .query({
+              locale: Locales.en,
+            })
+            .expect(StatusCodes.CREATED)
+
+          await EventBus.flush()
+        })
+      })
+
+      describe('administrator has firstname and lastname', () => {
+        test('Then it sends a creation email', async () => {
+          const administratorPayload = {
+            optedInForCommunications: true,
+            name: `${faker.person.firstName()}\n_\n${faker.person.lastName()}`,
+          }
+          const payload = {
+            name: faker.company.name(),
+            type: randomOrganisationType(),
+            administrators: [administratorPayload],
+          }
+
+          mswServer.use(
+            brevoSendEmail({
+              expectBody: {
+                to: [
+                  {
+                    name: email,
+                    email,
+                  },
+                ],
+                templateId: 70,
+                params: {
+                  ADMINISTRATOR_NAME: administratorPayload.name
+                    .split('\n_\n')
+                    .join(' '),
+                  ORGANISATION_NAME: payload.name,
+                  DASHBOARD_URL: `https://nosgestesclimat.fr/organisations/${slugify.default(payload.name.toLowerCase(), { strict: true })}?mtm_campaign=email-automatise&mtm_kwd=orga-admin-creation`,
+                },
+              },
+            }),
+            brevoUpdateContact(),
+            connectUpdateContact()
+          )
+
+          await agent
+            .post(url)
+            .set('cookie', cookie)
+            .send(payload)
+            .expect(StatusCodes.CREATED)
+
+          await EventBus.flush()
+        })
       })
 
       describe('And opt in for communications', () => {
@@ -334,9 +470,12 @@ describe('Given a NGC user', () => {
                   USER_ID: userId,
                   IS_ORGANISATION_ADMIN: true,
                   ORGANISATION_NAME: payload.name,
-                  ORGANISATION_SLUG: slugify(payload.name.toLowerCase(), {
-                    strict: true,
-                  }),
+                  ORGANISATION_SLUG: slugify.default(
+                    payload.name.toLowerCase(),
+                    {
+                      strict: true,
+                    }
+                  ),
                   LAST_POLL_PARTICIPANTS_NUMBER: 0,
                   OPT_IN: true,
                   PRENOM: administratorPayload.name,
@@ -379,9 +518,12 @@ describe('Given a NGC user', () => {
                   USER_ID: userId,
                   IS_ORGANISATION_ADMIN: true,
                   ORGANISATION_NAME: payload.name,
-                  ORGANISATION_SLUG: slugify(payload.name.toLowerCase(), {
-                    strict: true,
-                  }),
+                  ORGANISATION_SLUG: slugify.default(
+                    payload.name.toLowerCase(),
+                    {
+                      strict: true,
+                    }
+                  ),
                   LAST_POLL_PARTICIPANTS_NUMBER: 0,
                   OPT_IN: false,
                   PRENOM: administratorPayload.name,
@@ -432,7 +574,7 @@ describe('Given a NGC user', () => {
                 params: {
                   ADMINISTRATOR_NAME: administratorPayload.name,
                   ORGANISATION_NAME: payload.name,
-                  DASHBOARD_URL: `https://preprod.nosgestesclimat.preprod.fr/organisations/${slugify(payload.name.toLowerCase(), { strict: true })}?mtm_campaign=email-automatise&mtm_kwd=orga-admin-creation`,
+                  DASHBOARD_URL: `https://preprod.nosgestesclimat.preprod.fr/organisations/${slugify.default(payload.name.toLowerCase(), { strict: true })}?mtm_campaign=email-automatise&mtm_kwd=orga-admin-creation`,
                 },
               },
             }),
@@ -507,7 +649,7 @@ describe('Given a NGC user', () => {
           expect(response.body).toEqual({
             ...payload,
             id: expect.any(String),
-            slug: `${slugify(payload.name.toLowerCase(), { strict: true })}-1`,
+            slug: `${slugify.default(payload.name.toLowerCase(), { strict: true })}-1`,
             numberOfCollaborators: null,
             hasCustomQuestionEnabled: false,
             createdAt: expect.any(String),
