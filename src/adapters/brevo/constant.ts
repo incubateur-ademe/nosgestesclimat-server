@@ -27,8 +27,9 @@ const EnTemplateIds = {
 type EnTemplateIds = ValueOf<typeof EnTemplateIds>
 
 export const TemplateIds = {
-  [Locales.fr]: FrTemplateIds,
   [Locales.en]: EnTemplateIds,
+  [Locales.es]: EnTemplateIds,
+  [Locales.fr]: FrTemplateIds,
 } as const
 
 export type TemplateIds = ValueOf<typeof TemplateIds>
