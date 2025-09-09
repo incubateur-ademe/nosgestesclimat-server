@@ -36,8 +36,9 @@ import {
 } from '../simulations/simulations.service.js'
 import { OrganisationCreatedEvent } from './events/OrganisationCreated.event.js'
 import { OrganisationUpdatedEvent } from './events/OrganisationUpdated.event.js'
-import { PollCreatedEvent as PollUpdatedEvent } from './events/PollCreated.event.js'
+import { PollCreatedEvent } from './events/PollCreated.event.js'
 import { PollDeletedEvent } from './events/PollDeletedEvent.js'
+import { PollUpdatedEvent } from './events/PollUpdated.event.js'
 import {
   createOrganisationAndAdministrator,
   createOrganisationPoll,
@@ -296,20 +297,29 @@ const pollToDto = ({
 })
 
 export const createPoll = async ({
+  user,
+  locale,
+  origin,
   params,
   pollDto,
-  user,
 }: {
+  origin: string
   params: OrganisationParams
   pollDto: OrganisationPollCreateDto
   user: NonNullable<Request['user']>
+  locale: Locales
 }) => {
   try {
     const { poll, organisation, simulationsInfos } = await transaction(
       (session) => createOrganisationPoll(params, pollDto, user, { session })
     )
 
-    const pollCreatedEvent = new PollUpdatedEvent({ poll, organisation })
+    const pollCreatedEvent = new PollCreatedEvent({
+      organisation,
+      locale,
+      origin,
+      poll,
+    })
 
     EventBus.emit(pollCreatedEvent)
 

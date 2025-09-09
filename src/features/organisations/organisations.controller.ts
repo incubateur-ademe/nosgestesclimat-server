@@ -29,6 +29,7 @@ import { PollUpdatedEvent } from './events/PollUpdated.event.js'
 import { addOrUpdateBrevoContact } from './handlers/add-or-update-brevo-contact.js'
 import { addOrUpdateConnectContact } from './handlers/add-or-update-connect-contact.js'
 import { sendOrganisationCreated } from './handlers/send-organisation-created.js'
+import { sendPollCreated } from './handlers/send-poll-created.js'
 import {
   createOrganisation,
   createPoll,
@@ -185,6 +186,7 @@ router
   )
 
 EventBus.on(PollCreatedEvent, addOrUpdateBrevoContact)
+EventBus.on(PollCreatedEvent, sendPollCreated)
 
 /**
  * Creates a new poll for an organisation
@@ -194,12 +196,14 @@ router
   .post(
     authentificationMiddleware(),
     validateRequest(OrganisationPollCreateValidator),
-    async ({ body, params, user }, res) => {
+    async (req, res) => {
       try {
         const poll = await createPoll({
-          pollDto: body,
-          user: user!,
-          params,
+          origin: req.get('origin') || config.origin,
+          locale: LocaleQuery.parse(req.query).locale,
+          pollDto: req.body,
+          user: req.user!,
+          params: req.params,
         })
 
         return res.status(StatusCodes.CREATED).json(poll)

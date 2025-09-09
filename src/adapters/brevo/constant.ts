@@ -9,6 +9,7 @@ const FrTemplateIds = {
   VERIFICATION_CODE: 66,
   ORGANISATION_CREATED: 70,
   ORGANISATION_JOINED: 122,
+  POLL_CREATED: 126,
   SIMULATION_IN_PROGRESS: 102,
   API_VERIFICATION_CODE: 116,
   NEWSLETTER_CONFIRMATION: 118,
@@ -20,6 +21,7 @@ const EnTemplateIds = {
   VERIFICATION_CODE: 125,
   ORGANISATION_CREATED: 124,
   ORGANISATION_JOINED: 123,
+  POLL_CREATED: 127,
 } as const
 
 type EnTemplateIds = ValueOf<typeof EnTemplateIds>
@@ -104,6 +106,8 @@ export const MATOMO_KEYWORDS = {
   [TemplateIds[Locales.fr].ORGANISATION_CREATED]: 'orga-admin-creation',
   [TemplateIds[Locales.en].ORGANISATION_JOINED]: 'orga-invite-campagne',
   [TemplateIds[Locales.fr].ORGANISATION_JOINED]: 'orga-invite-campagne',
+  [TemplateIds[Locales.en].POLL_CREATED]: 'poll-admin-creation',
+  [TemplateIds[Locales.fr].POLL_CREATED]: 'poll-admin-creation',
 } as const
 
 export const ClientErrors = {
