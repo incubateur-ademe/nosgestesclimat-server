@@ -6,9 +6,11 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { prisma } from '../../../adapters/prisma/client.js'
 import * as prismaTransactionAdapter from '../../../adapters/prisma/transaction.js'
 import app from '../../../app.js'
+import { deepMergeSubstract, deepMergeSum } from '../../../core/deep-merge.js'
 import logger from '../../../logger.js'
 import { login } from '../../authentication/__tests__/fixtures/login.fixture.js'
 import { COOKIE_NAME } from '../../authentication/authentication.service.js'
+import type { ComputedResultSchema } from '../../simulations/simulations.validator.js'
 import {
   createOrganisation,
   createOrganisationPoll,
@@ -111,10 +113,12 @@ describe('Given a NGC user', () => {
         })
 
         describe('And he did participate to the poll', () => {
+          let computedResults: ComputedResultSchema
           let userId: string
 
           beforeEach(async () => {
             ;({
+              computedResults,
               user: { id: userId },
             } = await createOrganisationPollSimulation({
               agent,
@@ -141,7 +145,12 @@ describe('Given a NGC user', () => {
                 finished: 1,
                 hasParticipated: true,
               },
-              computedResults: expect.any(Object),
+              computedResults,
+              userComputedResults: computedResults,
+              otherComputedResults: deepMergeSubstract(
+                computedResults,
+                computedResults
+              ),
               funFacts: Object.fromEntries(
                 Object.entries(modelFunFacts).map(([k]) => [
                   k,
@@ -174,7 +183,12 @@ describe('Given a NGC user', () => {
                   finished: 1,
                   hasParticipated: true,
                 },
-                computedResults: expect.any(Object),
+                computedResults,
+                userComputedResults: computedResults,
+                otherComputedResults: deepMergeSubstract(
+                  computedResults,
+                  computedResults
+                ),
                 funFacts: Object.fromEntries(
                   Object.entries(modelFunFacts).map(([k]) => [
                     k,
@@ -395,7 +409,11 @@ describe('Given a NGC user', () => {
                 finished: 3,
                 hasParticipated: false,
               },
-              computedResults: expect.any(Object),
+              computedResults: simulations.reduce(
+                (acc, { computedResults }) =>
+                  deepMergeSum(acc, computedResults),
+                {}
+              ),
               funFacts: Object.fromEntries(
                 Object.entries(modelFunFacts).map(([k]) => [
                   k,
