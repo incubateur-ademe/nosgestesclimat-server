@@ -20,6 +20,7 @@ import {
 import { EventBus } from '../../../../core/event-bus/event-bus.js'
 import type { Metric } from '../../../../types/types.js'
 import type {
+  ExtendedSituationSchema,
   SimulationCreateInputDto,
   SimulationParticipantCreateInputDto,
 } from '../../simulations.validator.js'
@@ -169,10 +170,11 @@ const getRandomPersona = () =>
 export const getRandomPersonaSituation = () => getRandomPersona().situation
 
 export const getRandomTestCase = () => {
-  const { nom, situation } = getRandomPersona()
+  const { nom, situation, extendedSituation } = getRandomPersona()
 
   return {
     computedResults: getComputedResults(situation),
+    extendedSituation: extendedSituation as ExtendedSituationSchema,
     situation,
     nom,
   }
