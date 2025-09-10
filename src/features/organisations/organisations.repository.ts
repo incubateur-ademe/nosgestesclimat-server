@@ -1,5 +1,6 @@
 import type { FunFacts } from '@incubateur-ademe/nosgestesclimat'
 import type { Prisma } from '@prisma/client'
+import type { JsonValue } from '@prisma/client/runtime/library'
 import type { Request } from 'express'
 import slugify from 'slugify'
 import {
@@ -9,10 +10,8 @@ import {
   defaultVerifiedUserSelection,
 } from '../../adapters/prisma/selection.js'
 import type { Session } from '../../adapters/prisma/transaction.js'
-import type {
-  ComputedResultSchema,
-  SimulationParams,
-} from '../simulations/simulations.validator.js'
+import type { SimulationParams } from '../simulations/simulations.validator.js'
+import { ComputedResultSchema } from '../simulations/simulations.validator.js'
 import type {
   OrganisationCreateDto,
   OrganisationParams,
@@ -329,14 +328,27 @@ export const fetchUserOrganisation = (
 
 const findUniquePollSlug = findModelUniqueSlug('poll')
 
+type SimulationsInfo = {
+  count: number
+  finished: number
+} & (
+  | {
+      hasParticipated: false
+    }
+  | {
+      hasParticipated: true
+      userComputedResults: ComputedResultSchema
+    }
+)
+
 const fetchPollSimulationsInfo = async (
   {
     poll: { id },
     user: { userId },
   }: { poll: { id: string }; user: { userId: string } },
   { session }: { session: Session }
-) => {
-  const [count, finished, userCount] = await Promise.all([
+): Promise<SimulationsInfo> => {
+  const [count, finished, userSimulation] = await Promise.all([
     session.simulationPoll.count({
       where: {
         pollId: id,
@@ -350,7 +362,7 @@ const fetchPollSimulationsInfo = async (
         },
       },
     }),
-    session.simulationPoll.count({
+    session.simulationPoll.findFirst({
       where: {
         pollId: id,
         simulation: {
@@ -359,13 +371,51 @@ const fetchPollSimulationsInfo = async (
           },
         },
       },
+      select: {
+        simulation: {
+          select: {
+            computedResults: true,
+          },
+        },
+      },
+      orderBy: {
+        simulation: {
+          createdAt: 'desc',
+        },
+      },
     }),
   ])
+
+  const userComputedResults = ComputedResultSchema.safeParse(
+    userSimulation?.simulation.computedResults
+  )
 
   return {
     count,
     finished,
-    hasParticipated: !!userCount,
+    ...(userComputedResults.success
+      ? {
+          hasParticipated: true,
+          userComputedResults: userComputedResults.data,
+        }
+      : {
+          hasParticipated: false,
+        }),
+  }
+}
+
+const sanitizePollComputedResults = <T extends { computedResults: JsonValue }>({
+  computedResults: rawComputedResults,
+  ...poll
+}: T): Omit<T, 'computedResults'> & {
+  computedResults: ComputedResultSchema | null
+} => {
+  const computedResults = ComputedResultSchema.safeParse(rawComputedResults)
+  return {
+    ...poll,
+    ...(computedResults.success
+      ? { computedResults: computedResults.data }
+      : { computedResults: null }),
   }
 }
 
@@ -428,9 +478,9 @@ export const createOrganisationPoll = async (
   )
 
   return {
+    poll: sanitizePollComputedResults(poll),
     simulationsInfos,
     organisation,
-    poll,
   }
 }
 
@@ -519,9 +569,9 @@ export const updateOrganisationPoll = async (
   )
 
   return {
+    poll: sanitizePollComputedResults(poll),
     simulationsInfos,
     organisation,
-    poll,
   }
 }
 
@@ -564,7 +614,7 @@ export const fetchOrganisationPolls = async (
     organisation,
     polls: await Promise.all(
       polls.map(async (poll) => ({
-        poll,
+        poll: sanitizePollComputedResults(poll),
         simulationsInfos: await fetchPollSimulationsInfo(
           { poll, user },
           { session }
@@ -604,7 +654,7 @@ export const fetchOrganisationPoll = async (
   return {
     simulationsInfos,
     organisation,
-    poll,
+    poll: sanitizePollComputedResults(poll),
   }
 }
 
@@ -644,9 +694,9 @@ export const fetchOrganisationPublicPoll = async (
   )
 
   return {
+    poll: sanitizePollComputedResults(poll),
     simulationsInfos,
     organisation,
-    poll,
   }
 }
 
