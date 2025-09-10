@@ -4,7 +4,7 @@ import { PERIODS } from './stats.constant.js'
 export const NorthstarStatsFetchQuery = z
   .object({
     periodicity: z.nativeEnum(PERIODS).default(PERIODS.month),
-    since: z.coerce.number().int().positive().default(Number.MAX_VALUE),
+    since: z.coerce.number().int().positive().nullable().default(null),
   })
   .strict()
 

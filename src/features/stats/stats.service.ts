@@ -266,6 +266,6 @@ export const fetchNorthstarStats = async (query: NorthstarStatsFetchQuery) => {
 
   return {
     description: 'Nombre de simulations réalisées',
-    stats: stats.slice(Math.max(stats.length - query.since, 0)),
+    stats,
   }
 }
