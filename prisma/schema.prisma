@@ -252,6 +252,7 @@ model Poll {
   name                         String                          @db.VarChar(150)
   slug                         String                          @unique @db.VarChar(155)
   funFacts                     Json?
+  computedResults              Json?
   expectedNumberOfParticipants Int?                            @db.Integer
   customAdditionalQuestions    Json
   defaultAdditionalQuestions   PollDefaultAdditionalQuestion[]
@@ -313,6 +314,7 @@ model Simulation {
   computedResults            Json
   actionChoices              Json
   situation                  Json
+  extendedSituation          Json?
   foldedSteps                Json[]
   additionalQuestionsAnswers SimulationAdditionalQuestionAnswer[]
   polls                      SimulationPoll[]

@@ -116,6 +116,7 @@ export const defaultPollSelection = {
   slug: true,
   organisationId: true,
   funFacts: true,
+  computedResults: true,
   defaultAdditionalQuestions: true,
   customAdditionalQuestions: true,
   expectedNumberOfParticipants: true,

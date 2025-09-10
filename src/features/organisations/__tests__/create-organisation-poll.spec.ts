@@ -266,6 +266,7 @@ describe('Given a NGC user', () => {
             expectedNumberOfParticipants: null,
             createdAt: expect.any(String),
             updatedAt: expect.any(String),
+            computedResults: null,
             funFacts: null,
             simulations: {
               count: 0,
@@ -318,6 +319,7 @@ describe('Given a NGC user', () => {
                   type: true,
                 },
               },
+              computedResults: true,
               funFacts: true,
               organisationId: true,
               expectedNumberOfParticipants: true,
@@ -328,6 +330,7 @@ describe('Given a NGC user', () => {
           expect(createdPoll).toEqual({
             ...payload,
             id,
+            computedResults: null,
             funFacts: null,
             slug: slugify.default(payload.name.toLowerCase(), { strict: true }),
             organisationId,
@@ -561,6 +564,7 @@ describe('Given a NGC user', () => {
               expectedNumberOfParticipants: null,
               createdAt: expect.any(String),
               updatedAt: expect.any(String),
+              computedResults: null,
               funFacts: null,
               simulations: {
                 count: 0,
@@ -689,6 +693,7 @@ describe('Given a NGC user', () => {
             expectedNumberOfParticipants: null,
             createdAt: expect.any(String),
             updatedAt: expect.any(String),
+            computedResults: null,
             funFacts: null,
             simulations: {
               count: 0,

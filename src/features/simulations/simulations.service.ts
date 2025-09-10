@@ -14,6 +14,7 @@ import type { Session } from '../../adapters/prisma/transaction.js'
 import { transaction } from '../../adapters/prisma/transaction.js'
 import { redis } from '../../adapters/redis/client.js'
 import { KEYS } from '../../adapters/redis/constant.js'
+import { deepMergeSum } from '../../core/deep-merge-sum.js'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
 import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
@@ -257,11 +258,47 @@ const isValidSimulation = <T>(
   ].every((v) => v <= MAX_VALUE)
 }
 
-const computeAllFunFactValues = async (
+const getEmptyComputedResults = (): ComputedResultSchema => ({
+  carbone: {
+    bilan: 0,
+    categories: {
+      'services sociétaux': 0,
+      alimentation: 0,
+      divers: 0,
+      logement: 0,
+      transport: 0,
+    },
+    subcategories: {},
+  },
+  eau: {
+    bilan: 0,
+    categories: {
+      'services sociétaux': 0,
+      alimentation: 0,
+      divers: 0,
+      logement: 0,
+      transport: 0,
+    },
+    subcategories: {},
+  },
+})
+
+const mergeComputedResults = (
+  computedResults1: ComputedResultSchema,
+  computedResults2: ComputedResultSchema
+) => {
+  return deepMergeSum(
+    computedResults1,
+    computedResults2
+  ) as ComputedResultSchema
+}
+
+const computeAllStatValues = async (
   { id, engine }: { id: string; engine?: Engine },
   { session }: { session: Session }
 ) => {
   let simulationCount = 0
+  let computedResults = getEmptyComputedResults()
   const funFactValues: { [key in DottedName]?: number } = {}
   for await (const { simulation } of batchPollSimulations(
     { id },
@@ -273,6 +310,11 @@ const computeAllFunFactValues = async (
     simulationCount++
 
     const { situation } = simulation
+
+    computedResults = mergeComputedResults(
+      computedResults,
+      simulation.computedResults
+    )
 
     Object.values(funFactsRules).reduce((acc, dottedName) => {
       if (dottedName in frRules) {
@@ -294,15 +336,16 @@ const computeAllFunFactValues = async (
     }, funFactValues)
   }
 
-  return { simulationCount, funFactValues }
+  return { simulationCount, funFactValues, computedResults }
 }
 
 type RedisPollFunFactsCache = {
   simulationCount: number
   funFactValues: { [key in DottedName]?: number }
+  computedResults: ComputedResultSchema
 }
 
-const getFunFactValues = async (
+const getStatValues = async (
   {
     id,
     simulation,
@@ -310,7 +353,7 @@ const getFunFactValues = async (
   }: { id: string; simulation?: SimulationAsyncEvent; engine?: Engine },
   { session }: { session: Session }
 ) => {
-  const redisKey = `${KEYS.pollsFunFactsResults}:${id}`
+  const redisKey = `${KEYS.pollsStatsResults}:${id}`
 
   let result: RedisPollFunFactsCache | undefined
   if (simulation) {
@@ -320,6 +363,12 @@ const getFunFactValues = async (
 
       if (isValidSimulation(simulation)) {
         const { situation } = simulation
+
+        result.computedResults = mergeComputedResults(
+          result.computedResults,
+          simulation.computedResults
+        )
+
         result.simulationCount++
         Object.values(funFactsRules).reduce((acc, dottedName) => {
           if (dottedName in frRules) {
@@ -344,7 +393,7 @@ const getFunFactValues = async (
   }
 
   if (!result) {
-    result = await computeAllFunFactValues({ id, engine }, { session })
+    result = await computeAllStatValues({ id, engine }, { session })
   }
 
   await redis.set(redisKey, JSON.stringify(result))
@@ -353,30 +402,31 @@ const getFunFactValues = async (
   return result
 }
 
-export const getPollFunFacts = async (
+export const getPollStats = async (
   params: { id: string; simulation?: SimulationAsyncEvent; engine?: Engine },
   session: { session: Session }
 ) => {
-  const { funFactValues, simulationCount } = await getFunFactValues(
-    params,
-    session
-  )
+  const { computedResults, funFactValues, simulationCount } =
+    await getStatValues(params, session)
 
-  return Object.fromEntries(
-    Object.entries(funFactsRules).map(([key, dottedName]) => {
-      let value = funFactValues[dottedName] || 0
+  return {
+    computedResults,
+    funFacts: Object.fromEntries(
+      Object.entries(funFactsRules).map(([key, dottedName]) => {
+        let value = funFactValues[dottedName] || 0
 
-      if (key.startsWith('average')) {
-        value = value / simulationCount
-      }
+        if (key.startsWith('average')) {
+          value = value / simulationCount
+        }
 
-      if (key.startsWith('percentage')) {
-        value = (value / simulationCount) * 100
-      }
+        if (key.startsWith('percentage')) {
+          value = (value / simulationCount) * 100
+        }
 
-      return [key, value]
-    })
-  ) as FunFacts
+        return [key, value]
+      })
+    ) as FunFacts,
+  }
 }
 
 const EXCEL_ERROR = '#####'
