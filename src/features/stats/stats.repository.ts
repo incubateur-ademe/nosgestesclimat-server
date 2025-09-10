@@ -80,39 +80,83 @@ export const createNewsLetterStats = (
 }
 
 export type NorthstarStat = {
-  date: string
+  /**
+   * Timestamp (in ms) of the start of the period (UTC)
+   */
+  date: number
   value: number
 }
 
 export const getNorthstarStats = (
-  { periodicity }: { periodicity: PERIODS },
+  { periodicity, since }: { periodicity: PERIODS; since: number | null },
   { session }: { session: Session }
 ) => {
+  const unit = Prisma.raw(`'${periodicity}'`)
+  const oneUnit = Prisma.raw(`INTERVAL '1 ${periodicity}'`)
+
   return session.$queryRaw<NorthstarStat[]>(
     Prisma.sql`
       WITH
-      period_data AS (
-        SELECT TO_CHAR(DATE_TRUNC(${periodicity}, date), 'YYYY-MM-DD') AS start_period, SUM("finishedSimulations") AS value
-        FROM "ngc"."MatomoStats"
-        WHERE "source" = cast(${MatomoStatsSource.beta} as ngc."MatomoStatsSource") AND "kind" = cast(${StatsKind.all} as ngc."StatsKind") AND "referrer" = 'all' AND "device" = cast(${MatomoStatsDevice.all} as ngc."MatomoStatsDevice") AND "iframe" = false
-        GROUP BY start_period
+      filters AS (
+        SELECT
+          cast(${MatomoStatsSource.beta} as ngc."MatomoStatsSource") AS src,
+          cast(${StatsKind.all} as ngc."StatsKind")                  AS knd,
+          cast(${MatomoStatsDevice.all} as ngc."MatomoStatsDevice")  AS dev
+      ),
+      min_trunc AS (
+        SELECT date_trunc(
+                ${unit},
+                (MIN(m.date)::timestamp AT TIME ZONE 'UTC')
+              ) AS first_period
+        FROM "ngc"."MatomoStats" m, filters f
+        WHERE m."source" = f.src
+          AND m."kind"   = f.knd
+          AND m."referrer" = 'all'
+          AND m."device" = f.dev
+          AND m."iframe" = false
+      ),
+      bounds AS (
+        SELECT
+          CASE
+            WHEN ${since}::int IS NOT NULL
+              THEN date_trunc(${unit}, now()) - ((${since}::int - 1) * ${oneUnit})
+            ELSE (SELECT first_period FROM min_trunc)
+          END AS start_at,
+          CASE
+            WHEN ${since}::int IS NOT NULL
+              THEN date_trunc(${unit}, now())
+            ELSE CASE WHEN (SELECT first_period FROM min_trunc) IS NOT NULL
+              THEN date_trunc(${unit}, now())
+              ELSE NULL
+            END
+          END AS end_at
       ),
       period_intervals AS (
-        SELECT TO_CHAR(DATE_TRUNC(${periodicity}, interval_start), 'YYYY-MM-DD') as start_period
-        FROM generate_series(DATE_TRUNC(${periodicity},(
-          SELECT MIN(date)
-          FROM "ngc"."MatomoStats"
-          WHERE "source" = cast(${MatomoStatsSource.beta} as ngc."MatomoStatsSource") AND "kind" = cast(${StatsKind.all} as ngc."StatsKind") AND "referrer" = 'all' AND "device" = cast(${MatomoStatsDevice.all} as ngc."MatomoStatsDevice") AND "iframe" = false
-        )), now(), ('1 ' || ${periodicity})::interval) AS interval_start
+        SELECT gs AS start_period_utc
+        FROM bounds b
+        CROSS JOIN LATERAL generate_series(b.start_at, b.end_at, ${oneUnit}) AS gs
+        WHERE b.start_at IS NOT NULL AND b.end_at IS NOT NULL
+      ),
+      period_data AS (
+        SELECT
+          date_trunc(${unit}, (m.date::timestamp AT TIME ZONE 'UTC')) AS start_period_utc,
+          SUM(m."finishedSimulations")::int AS value
+        FROM "ngc"."MatomoStats" m, filters f, bounds b
+        WHERE m."source" = f.src
+          AND m."kind"   = f.knd
+          AND m."referrer" = 'all'
+          AND m."device" = f.dev
+          AND m."iframe" = false
+          AND date_trunc(${unit}, (m.date::timestamp AT TIME ZONE 'UTC')) >= b.start_at
+          AND date_trunc(${unit}, (m.date::timestamp AT TIME ZONE 'UTC')) <= b.end_at
+        GROUP BY 1
       )
       SELECT
-        period_intervals.start_period as "date",
-        (SUM(coalesce(period_data.value, 0)) OVER (ORDER BY period_intervals.start_period))::integer AS "value"
-      FROM
-        period_data
-      RIGHT OUTER JOIN period_intervals on period_intervals.start_period = period_data.start_period
-      ORDER BY
-        period_intervals.start_period;
+        (EXTRACT(EPOCH FROM pi.start_period_utc) * 1000)::double precision AS "date",
+        COALESCE(pd.value, 0) AS "value"
+      FROM period_intervals pi
+      LEFT JOIN period_data pd USING (start_period_utc)
+      ORDER BY pi.start_period_utc;
     `
   )
 }
