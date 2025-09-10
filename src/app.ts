@@ -21,7 +21,7 @@ import organisationController from './features/organisations/organisations.contr
 import simulationController from './features/simulations/simulations.controller.js'
 import statsController from './features/stats/stats.controller.js'
 import usersController from './features/users/users.controller.js'
-import logger from './logger.js'
+import logger, { redactBody } from './logger.js'
 
 const app = express()
 
@@ -30,9 +30,9 @@ app.use(express.json())
 
 app.use((req, _, next) => {
   req.requestParams = JSON.stringify({
-    body: req.body,
-    query: req.query,
-    params: req.params,
+    body: redactBody({ ...req.body }),
+    query: { ...req.query },
+    params: { ...req.params },
   })
 
   return next()
