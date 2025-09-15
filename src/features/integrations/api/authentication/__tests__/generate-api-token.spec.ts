@@ -80,8 +80,11 @@ describe('Given a NGC integrations API user', () => {
           .expect(StatusCodes.CREATED)
       })
 
-      test(`Then it stores a verification code in database`, async () => {
+      test(`Then it stores a verification code valid 1 hour in database`, async () => {
         mswServer.use(brevoSendEmail())
+
+        const now = Date.now()
+        const oneHour = 1000 * 60 * 60
 
         await agent
           .post(url)
@@ -107,6 +110,16 @@ describe('Given a NGC integrations API user', () => {
           createdAt: expect.any(Date),
           updatedAt: expect.any(Date),
         })
+
+        // Hopefully code gets created under 1 second
+        expect(
+          Math.floor(
+            (createdVerificationCode!.expirationDate.getTime() -
+              now -
+              oneHour) /
+              1000
+          )
+        ).toBe(0)
       })
 
       test(`Then it sends an email to recover the API token`, async () => {

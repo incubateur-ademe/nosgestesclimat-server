@@ -90,13 +90,16 @@ describe('Given a NGC user', () => {
       })
     })
 
-    test('Then it stores a verification code in database', async () => {
+    test('Then it stores a verification code valid 1 hour in database', async () => {
       const payload: VerificationCodeCreateDto = {
         userId: faker.string.uuid(),
         email: faker.internet.email().toLocaleLowerCase(),
       }
 
       mswServer.use(brevoSendEmail(), brevoUpdateContact())
+
+      const now = Date.now()
+      const oneHour = 1000 * 60 * 60
 
       await agent.post(url).send(payload)
 
@@ -115,6 +118,14 @@ describe('Given a NGC user', () => {
         updatedAt: expect.any(Date),
         ...payload,
       })
+
+      // Hopefully code gets created under 1 second
+      expect(
+        Math.floor(
+          (createdVerificationCode!.expirationDate.getTime() - now - oneHour) /
+            1000
+        )
+      ).toBe(0)
     })
 
     test('Then it sends an email with the code', async () => {
