@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import { sendNewsLetterConfirmationEmail } from '../../../adapters/brevo/client.js'
 import { config } from '../../../config.js'
 import type { Handler } from '../../../core/event-bus/handler.js'
@@ -21,6 +22,7 @@ export const sendBrevoNewsLetterConfirmationEmail: Handler<
 
   const { code } = await generateVerificationCode({
     verificationCodeDto: { email, userId },
+    expirationDate: dayjs().add(1, 'day').toDate(),
   })
 
   return sendNewsLetterConfirmationEmail({

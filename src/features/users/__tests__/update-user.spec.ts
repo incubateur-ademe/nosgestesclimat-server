@@ -185,6 +185,60 @@ describe('Given a NGC user', () => {
           })
         })
 
+        test('Then it stores a verification code valid 1 day in database', async () => {
+          const email = faker.internet.email().toLocaleLowerCase()
+          const userId = faker.string.uuid()
+
+          const payload = {
+            email,
+            contact: {
+              listIds: [ListIds.MAIN_NEWSLETTER],
+            },
+          }
+
+          mswServer.use(
+            brevoGetContact(email, {
+              customResponses: [
+                {
+                  body: {
+                    code: 'document_not_found',
+                    message: 'List ID does not exist',
+                  },
+                  status: StatusCodes.NOT_FOUND,
+                },
+              ],
+            }),
+            brevoSendEmail()
+          )
+
+          const now = Date.now()
+          const oneDay = 1000 * 60 * 60 * 24
+
+          await agent
+            .put(url.replace(':userId', userId))
+            .send(payload)
+            .expect(StatusCodes.ACCEPTED)
+
+          const [verificationCode] = await prisma.verificationCode.findMany()
+
+          expect(verificationCode).toEqual({
+            id: expect.any(String),
+            code,
+            userId,
+            email,
+            expirationDate: expect.any(Date),
+            createdAt: expect.any(Date),
+            updatedAt: expect.any(Date),
+          })
+
+          // Hopefully code gets created under 1 second
+          expect(
+            Math.floor(
+              (verificationCode.expirationDate.getTime() - now - oneDay) / 1000
+            )
+          ).toBe(0)
+        })
+
         describe('And name', () => {
           test(`Then it sends an email and returns a ${StatusCodes.ACCEPTED} response but stores the name`, async () => {
             const userId = faker.string.uuid()
@@ -395,6 +449,60 @@ describe('Given a NGC user', () => {
               })
             })
 
+            test('Then it stores a verification code valid 1 day in database', async () => {
+              const email = faker.internet.email().toLocaleLowerCase()
+              const payload = {
+                email,
+                contact: {
+                  listIds: [ListIds.MAIN_NEWSLETTER],
+                },
+              }
+
+              mswServer.use(
+                brevoGetContact(email, {
+                  customResponses: [
+                    {
+                      body: {
+                        code: 'document_not_found',
+                        message: 'List ID does not exist',
+                      },
+                      status: StatusCodes.NOT_FOUND,
+                    },
+                  ],
+                }),
+                brevoSendEmail()
+              )
+
+              const now = Date.now()
+              const oneDay = 1000 * 60 * 60 * 24
+
+              await agent
+                .put(url.replace(':userId', userId))
+                .send(payload)
+                .expect(StatusCodes.ACCEPTED)
+
+              const [verificationCode] =
+                await prisma.verificationCode.findMany()
+
+              expect(verificationCode).toEqual({
+                id: expect.any(String),
+                code,
+                userId,
+                email,
+                expirationDate: expect.any(Date),
+                createdAt: expect.any(Date),
+                updatedAt: expect.any(Date),
+              })
+
+              // Hopefully code gets created under 1 second
+              expect(
+                Math.floor(
+                  (verificationCode.expirationDate.getTime() - now - oneDay) /
+                    1000
+                )
+              ).toBe(0)
+            })
+
             describe('And name', () => {
               test(`Then it sends an email and returns a ${StatusCodes.ACCEPTED} response but stores the name`, async () => {
                 const email = faker.internet.email().toLocaleLowerCase()
@@ -600,6 +708,55 @@ describe('Given a NGC user', () => {
                 createdAt: expect.any(String),
                 updatedAt: expect.any(String),
               })
+            })
+
+            test('Then it stores a verification code valid 1 day in database', async () => {
+              const payload = {
+                email,
+                contact: {
+                  listIds: [ListIds.MAIN_NEWSLETTER],
+                },
+              }
+
+              mswServer.use(
+                brevoGetContact(email, {
+                  customResponses: [
+                    {
+                      body: contact,
+                    },
+                  ],
+                }),
+                brevoSendEmail()
+              )
+
+              const now = Date.now()
+              const oneDay = 1000 * 60 * 60 * 24
+
+              await agent
+                .put(url.replace(':userId', userId))
+                .send(payload)
+                .expect(StatusCodes.ACCEPTED)
+
+              const [verificationCode] =
+                await prisma.verificationCode.findMany()
+
+              expect(verificationCode).toEqual({
+                id: expect.any(String),
+                code,
+                userId,
+                email,
+                expirationDate: expect.any(Date),
+                createdAt: expect.any(Date),
+                updatedAt: expect.any(Date),
+              })
+
+              // Hopefully code gets created under 1 second
+              expect(
+                Math.floor(
+                  (verificationCode.expirationDate.getTime() - now - oneDay) /
+                    1000
+                )
+              ).toBe(0)
             })
 
             describe('And name', () => {
@@ -869,6 +1026,58 @@ describe('Given a NGC user', () => {
                 })
               })
 
+              test('Then it stores a verification code valid 1 day in database', async () => {
+                const payload = {
+                  contact: {
+                    listIds: [ListIds.MAIN_NEWSLETTER],
+                  },
+                }
+
+                mswServer.use(
+                  brevoGetContact(email, {
+                    customResponses: [
+                      {
+                        body: {
+                          code: 'document_not_found',
+                          message: 'List ID does not exist',
+                        },
+                        status: StatusCodes.NOT_FOUND,
+                      },
+                    ],
+                  }),
+                  brevoSendEmail()
+                )
+
+                const now = Date.now()
+                const oneDay = 1000 * 60 * 60 * 24
+
+                await agent
+                  .put(url.replace(':userId', userId))
+                  .send(payload)
+                  .expect(StatusCodes.ACCEPTED)
+
+                const [verificationCode] =
+                  await prisma.verificationCode.findMany()
+
+                expect(verificationCode).toEqual({
+                  id: expect.any(String),
+                  code,
+                  userId,
+                  email,
+                  expirationDate: expect.any(Date),
+                  createdAt: expect.any(Date),
+                  updatedAt: expect.any(Date),
+                })
+
+                // Hopefully code gets created under 1 second
+                expect(
+                  Math.floor(
+                    (verificationCode.expirationDate.getTime() - now - oneDay) /
+                      1000
+                  )
+                ).toBe(0)
+              })
+
               describe('And name', () => {
                 test(`Then it sends an email and returns a ${StatusCodes.ACCEPTED} response but stores the name`, async () => {
                   const name = faker.person.fullName()
@@ -1029,6 +1238,72 @@ describe('Given a NGC user', () => {
                   createdAt: expect.any(String),
                   updatedAt: expect.any(String),
                 })
+              })
+
+              test('Then it stores a verification code valid 1 day in database', async () => {
+                const newEmail = faker.internet.email().toLocaleLowerCase()
+                const payload = {
+                  email: newEmail,
+                  contact: {
+                    listIds: [ListIds.MAIN_NEWSLETTER],
+                  },
+                }
+
+                mswServer.use(
+                  brevoGetContact(email, {
+                    customResponses: [
+                      {
+                        body: getBrevoContact({
+                          email,
+                          attributes: {
+                            USER_ID: userId,
+                          },
+                        }),
+                      },
+                    ],
+                  }),
+                  brevoGetContact(newEmail, {
+                    customResponses: [
+                      {
+                        body: {
+                          code: 'document_not_found',
+                          message: 'List ID does not exist',
+                        },
+                        status: StatusCodes.NOT_FOUND,
+                      },
+                    ],
+                  }),
+                  brevoSendEmail()
+                )
+
+                const now = Date.now()
+                const oneDay = 1000 * 60 * 60 * 24
+
+                await agent
+                  .put(url.replace(':userId', userId))
+                  .send(payload)
+                  .expect(StatusCodes.ACCEPTED)
+
+                const [verificationCode] =
+                  await prisma.verificationCode.findMany()
+
+                expect(verificationCode).toEqual({
+                  id: expect.any(String),
+                  code,
+                  userId,
+                  email: newEmail,
+                  expirationDate: expect.any(Date),
+                  createdAt: expect.any(Date),
+                  updatedAt: expect.any(Date),
+                })
+
+                // Hopefully code gets created under 1 second
+                expect(
+                  Math.floor(
+                    (verificationCode.expirationDate.getTime() - now - oneDay) /
+                      1000
+                  )
+                ).toBe(0)
               })
 
               describe('And name', () => {
