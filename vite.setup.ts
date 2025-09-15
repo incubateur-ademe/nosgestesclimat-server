@@ -59,7 +59,7 @@ vi.mock('./src/features/authentication/authentication.service', async () => ({
   ...(await vi.importActual(
     './src/features/authentication/authentication.service'
   )),
-  generateVerificationCodeAndExpiration: vi.fn(),
+  generateRandomVerificationCode: vi.fn(),
 }))
 
 const models = Prisma.dmmf.datamodel.models

@@ -5,11 +5,11 @@ import {
   type IntegrationWhitelist,
   type PrismaClient,
 } from '@prisma/client'
-import dayjs from 'dayjs'
 import { StatusCodes } from 'http-status-codes'
 import type supertest from 'supertest'
 import { vi } from 'vitest'
 import { brevoSendEmail } from '../../../../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
+import { prisma } from '../../../../../../adapters/prisma/client.js'
 import {
   mswServer,
   resetMswServer,
@@ -98,17 +98,13 @@ export const generateApiToken = async ({
   agent: TestAgent
 }) => {
   code = code || faker.number.int({ min: 100000, max: 999999 }).toString()
-  expirationDate = expirationDate || dayjs().add(1, 'hour').toDate()
 
   const emailWhitelist =
     await createIntegrationEmailWhitelist(emailWhiteListParams)
 
   vi.mocked(
     authenticationService
-  ).generateVerificationCodeAndExpiration.mockReturnValueOnce({
-    code,
-    expirationDate,
-  })
+  ).generateRandomVerificationCode.mockReturnValueOnce(code)
 
   const payload = {
     email: email || emailWhitelist.emailPattern,
@@ -121,13 +117,19 @@ export const generateApiToken = async ({
     .send(payload)
     .expect(StatusCodes.CREATED)
 
+  if (expirationDate) {
+    await prisma.verificationCode.updateMany({
+      data: {
+        expirationDate,
+      },
+    })
+  }
+
   await EventBus.flush()
 
   resetMswServer()
 
-  vi.mocked(
-    authenticationService
-  ).generateVerificationCodeAndExpiration.mockRestore()
+  vi.mocked(authenticationService).generateRandomVerificationCode.mockRestore()
 
   return {
     emailWhitelist,

@@ -1,5 +1,4 @@
 import { faker } from '@faker-js/faker'
-import dayjs from 'dayjs'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
@@ -25,23 +24,18 @@ describe('Given a NGC user', () => {
 
   describe('When creating a verification-code', () => {
     let code: string
-    let expirationDate: Date
 
     beforeEach(() => {
       code = faker.number.int({ min: 100000, max: 999999 }).toString()
-      expirationDate = dayjs().add(1, 'hour').toDate()
       vi.mocked(
         authenticationService
-      ).generateVerificationCodeAndExpiration.mockReturnValueOnce({
-        code,
-        expirationDate,
-      })
+      ).generateRandomVerificationCode.mockReturnValueOnce(code)
     })
 
     afterEach(() => {
       vi.mocked(
         authenticationService
-      ).generateVerificationCodeAndExpiration.mockRestore()
+      ).generateRandomVerificationCode.mockRestore()
     })
 
     describe('And no data provided', () => {
@@ -91,18 +85,21 @@ describe('Given a NGC user', () => {
         id: expect.any(String),
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
-        expirationDate: expirationDate.toISOString(),
+        expirationDate: expect.any(String),
         ...payload,
       })
     })
 
-    test('Then it stores a verification code in database', async () => {
+    test('Then it stores a verification code valid 1 hour in database', async () => {
       const payload: VerificationCodeCreateDto = {
         userId: faker.string.uuid(),
         email: faker.internet.email().toLocaleLowerCase(),
       }
 
       mswServer.use(brevoSendEmail(), brevoUpdateContact())
+
+      const now = Date.now()
+      const oneHour = 1000 * 60 * 60
 
       await agent.post(url).send(payload)
 
@@ -116,11 +113,19 @@ describe('Given a NGC user', () => {
       expect(createdVerificationCode).toEqual({
         id: expect.any(String),
         code,
-        expirationDate,
+        expirationDate: expect.any(Date),
         createdAt: expect.any(Date),
         updatedAt: expect.any(Date),
         ...payload,
       })
+
+      // Hopefully code gets created under 1 second
+      expect(
+        Math.floor(
+          (createdVerificationCode!.expirationDate.getTime() - now - oneHour) /
+            1000
+        )
+      ).toBe(0)
     })
 
     test('Then it sends an email with the code', async () => {
