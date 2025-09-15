@@ -1,4 +1,3 @@
-import dayjs from 'dayjs'
 import type { CookieOptions } from 'express'
 import jwt from 'jsonwebtoken'
 import { prisma } from '../../adapters/prisma/client.js'
@@ -23,12 +22,10 @@ export const COOKIES_OPTIONS: CookieOptions = {
 
 export const COOKIE_NAME = 'ngcjwt'
 
-export const generateVerificationCodeAndExpiration = () => ({
-  code: Math.floor(
+export const generateRandomVerificationCode = () =>
+  Math.floor(
     Math.pow(10, 5) + Math.random() * (Math.pow(10, 6) - Math.pow(10, 5) - 1)
-  ).toString(),
-  expirationDate: dayjs().add(1, 'hour').toDate(),
-})
+  ).toString()
 
 export const exchangeCredentialsForToken = async (
   loginDto: LoginDto,

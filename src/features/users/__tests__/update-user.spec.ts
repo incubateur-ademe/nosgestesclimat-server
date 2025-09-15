@@ -1,5 +1,4 @@
 import { faker } from '@faker-js/faker'
-import dayjs from 'dayjs'
 import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
 import supertest from 'supertest'
@@ -116,24 +115,19 @@ describe('Given a NGC user', () => {
 
   describe('And logged out', () => {
     let code: string
-    let expirationDate: Date
 
     beforeEach(() => {
       code = faker.number.int({ min: 100000, max: 999999 }).toString()
-      expirationDate = dayjs().add(1, 'hour').toDate()
 
       vi.mocked(
         authenticationService
-      ).generateVerificationCodeAndExpiration.mockReturnValueOnce({
-        code,
-        expirationDate,
-      })
+      ).generateRandomVerificationCode.mockReturnValueOnce(code)
     })
 
     afterEach(() => {
       vi.mocked(
         authenticationService
-      ).generateVerificationCodeAndExpiration.mockRestore()
+      ).generateRandomVerificationCode.mockRestore()
     })
 
     describe('When subscribing to newsletter', () => {

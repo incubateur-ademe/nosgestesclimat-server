@@ -1,5 +1,4 @@
 import { faker } from '@faker-js/faker'
-import dayjs from 'dayjs'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
@@ -59,20 +58,15 @@ describe('Given a NGC integrations API user', () => {
     describe('And email is whitelisted', () => {
       let code: string
       let email: string
-      let expirationDate: Date
 
       beforeEach(async () => {
         ;({ emailPattern: email } = await createIntegrationEmailWhitelist({
           prisma,
         }))
         code = faker.number.int({ min: 100000, max: 999999 }).toString()
-        expirationDate = dayjs().add(1, 'hour').toDate()
         vi.mocked(
           authenticationService
-        ).generateVerificationCodeAndExpiration.mockReturnValueOnce({
-          code,
-          expirationDate,
-        })
+        ).generateRandomVerificationCode.mockReturnValueOnce(code)
       })
 
       test(`Then it returns a ${StatusCodes.CREATED} response`, async () => {
@@ -108,7 +102,7 @@ describe('Given a NGC integrations API user', () => {
           id: expect.any(String),
           code,
           email,
-          expirationDate,
+          expirationDate: expect.any(Date),
           userId: null,
           createdAt: expect.any(Date),
           updatedAt: expect.any(Date),
@@ -178,7 +172,6 @@ describe('Given a NGC integrations API user', () => {
     describe('And email domain whitelist', () => {
       let code: string
       let email: string
-      let expirationDate: Date
 
       beforeEach(async () => {
         email = faker.internet.email().toLocaleLowerCase()
@@ -190,13 +183,9 @@ describe('Given a NGC integrations API user', () => {
           prisma,
         })
         code = faker.number.int({ min: 100000, max: 999999 }).toString()
-        expirationDate = dayjs().add(1, 'hour').toDate()
         vi.mocked(
           authenticationService
-        ).generateVerificationCodeAndExpiration.mockReturnValueOnce({
-          code,
-          expirationDate,
-        })
+        ).generateRandomVerificationCode.mockReturnValueOnce(code)
       })
 
       test(`Then it returns a ${StatusCodes.CREATED} response`, async () => {
