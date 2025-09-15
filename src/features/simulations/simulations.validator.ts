@@ -75,72 +75,92 @@ export type AdditionalQuestionsAnswersSchema = z.infer<
 
 const FoldedStepsSchema = z.array(z.string())
 
-export const SituationSchema = z.record(
+const SituationNodeValue = z.union([
   z.string(),
-  z.union([
-    z.string(),
-    z.number(),
-    z
-      .object({
-        valeur: z.union([
-          z.coerce.number(),
-          z
-            .string()
-            .transform((s) => +s.replace(/\s/g, ''))
-            .pipe(z.coerce.number()),
-        ]),
-        unité: z.string().optional(),
-      })
-      .strict(),
-    z
-      .object({
-        type: z.literal('number'),
-        fullPrecision: z.boolean(),
-        nodeValue: z.number(),
-        nodeKind: z.literal('constant'),
-        rawNode: z.number(),
-        isNullable: z.boolean().optional(),
-        missingVariables: z.object({}).optional(),
-      })
-      .strict(),
-    z
-      .object({
-        explanation: z
-          .object({
-            type: z.literal('number'),
-            fullPrecision: z.boolean(),
-            nodeValue: z.number(),
-            nodeKind: z.literal('constant'),
-            rawNode: z
-              .object({
-                constant: z
-                  .object({
-                    type: z.union([z.literal('constant'), z.literal('number')]),
-                    nodeValue: z.number(),
-                  })
-                  .strict(),
-              })
-              .strict(),
-            isNullable: z.boolean().optional(),
-            missingVariables: z.object({}).optional(),
-          })
-          .strict(),
-        unit: z
-          .object({
-            numerators: z.string(),
-            denominators: z.string().optional(),
-          })
-          .strict(),
-        nodeKind: z.literal('unité'),
-        rawNode: z.string(),
-      })
-      .strict(),
-  ])
-)
+  z.number(),
+  z
+    .object({
+      valeur: z.union([
+        z.coerce.number(),
+        z
+          .string()
+          .transform((s) => +s.replace(/\s/g, ''))
+          .pipe(z.coerce.number()),
+      ]),
+      unité: z.string().optional(),
+    })
+    .strict(),
+  z
+    .object({
+      type: z.literal('number'),
+      fullPrecision: z.boolean(),
+      nodeValue: z.number(),
+      nodeKind: z.literal('constant'),
+      rawNode: z.number(),
+      isNullable: z.boolean().optional(),
+      missingVariables: z.object({}).optional(),
+    })
+    .strict(),
+  z
+    .object({
+      explanation: z
+        .object({
+          type: z.literal('number'),
+          fullPrecision: z.boolean(),
+          nodeValue: z.number(),
+          nodeKind: z.literal('constant'),
+          rawNode: z
+            .object({
+              constant: z
+                .object({
+                  type: z.union([z.literal('constant'), z.literal('number')]),
+                  nodeValue: z.number(),
+                })
+                .strict(),
+            })
+            .strict(),
+          isNullable: z.boolean().optional(),
+          missingVariables: z.object({}).optional(),
+        })
+        .strict(),
+      unit: z
+        .object({
+          numerators: z.string(),
+          denominators: z.string().optional(),
+        })
+        .strict(),
+      nodeKind: z.literal('unité'),
+      rawNode: z.string(),
+    })
+    .strict(),
+])
+
+const ExtendedSituationNodeValue = z
+  .union([SituationNodeValue, z.boolean()])
+  .nullable()
+
+export const SituationSchema = z.record(z.string(), SituationNodeValue)
 
 export type SituationSchemaInput = z.input<typeof SituationSchema>
 
 export type SituationSchema = z.infer<typeof SituationSchema>
+
+const ExtendedSituationSchema = z.record(
+  z.string(),
+  z.union([
+    z
+      .object({
+        source: z.literal('omitted'),
+      })
+      .strict(),
+    z.object({
+      source: z.union([z.literal('answered'), z.literal('default')]),
+      nodeValue: ExtendedSituationNodeValue,
+    }),
+  ])
+)
+
+export type ExtendedSituationSchema = z.infer<typeof ExtendedSituationSchema>
 
 const SimulationCreateUser = z
   .object({
@@ -166,6 +186,7 @@ export const SimulationParticipantCreateDto = z.object({
   additionalQuestionsAnswers: AdditionalQuestionsAnswersSchema.optional(),
   foldedSteps: FoldedStepsSchema.default([]),
   situation: SituationSchema,
+  extendedSituation: ExtendedSituationSchema.optional(),
 })
 
 export type SimulationParticipantCreateDto = z.infer<

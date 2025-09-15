@@ -63,7 +63,8 @@ describe('Given a poll participation', () => {
         },
       })
 
-      const { computedResults, situation } = getRandomTestCase()
+      const { computedResults, situation, extendedSituation } =
+        getRandomTestCase()
 
       const simulation = await prisma.simulation.create({
         data: {
@@ -73,6 +74,7 @@ describe('Given a poll participation', () => {
           date: new Date(),
           progression: 1,
           situation,
+          extendedSituation,
           savedViaEmail: false,
           polls: {
             create: {

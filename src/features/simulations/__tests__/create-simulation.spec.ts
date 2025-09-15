@@ -30,7 +30,8 @@ const defaultModelVersion = modelPackage.version
 describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = CREATE_SIMULATION_ROUTE
-  const { computedResults, nom, situation } = getRandomTestCase()
+  const { computedResults, nom, situation, extendedSituation } =
+    getRandomTestCase()
 
   afterEach(() => prisma.user.deleteMany())
 
@@ -51,8 +52,9 @@ describe('Given a NGC user', () => {
             .send({
               id: faker.string.uuid(),
               situation,
-              computedResults,
               progression: 1,
+              computedResults,
+              extendedSituation,
             })
             .expect(StatusCodes.BAD_REQUEST)
         })
@@ -65,8 +67,9 @@ describe('Given a NGC user', () => {
             .send({
               id: faker.string.uuid(),
               situation,
-              computedResults,
               progression: 1,
+              computedResults,
+              extendedSituation,
               user: {
                 name: nom,
                 email: 'Je ne donne jamais mon email',
@@ -83,8 +86,9 @@ describe('Given a NGC user', () => {
             .send({
               id: faker.database.mongodbObjectId(),
               situation,
-              computedResults,
               progression: 1,
+              computedResults,
+              extendedSituation,
               user: {
                 name: nom,
               },
@@ -99,9 +103,10 @@ describe('Given a NGC user', () => {
             .post(url.replace(':userId', faker.string.uuid()))
             .send({
               id: faker.string.uuid(),
-              situation: null,
-              computedResults,
               progression: 1,
+              computedResults,
+              situation: null,
+              extendedSituation,
               user: {
                 name: nom,
               },
@@ -117,8 +122,9 @@ describe('Given a NGC user', () => {
             .send({
               id: faker.string.uuid(),
               situation,
-              computedResults: null,
               progression: 1,
+              extendedSituation,
+              computedResults: null,
               user: {
                 name: nom,
               },
@@ -129,12 +135,16 @@ describe('Given a NGC user', () => {
 
       test(`Then it returns a ${StatusCodes.CREATED} response with the created simulation`, async () => {
         const userId = faker.string.uuid()
-        const payload: SimulationCreateInputDto = {
+        const expected = {
           id: faker.string.uuid(),
           model: `FR-fr-${defaultModelVersion}`,
           situation,
-          computedResults,
           progression: 1,
+          computedResults,
+        }
+        const payload: SimulationCreateInputDto = {
+          ...expected,
+          extendedSituation,
         }
 
         const response = await agent
@@ -143,7 +153,7 @@ describe('Given a NGC user', () => {
           .expect(StatusCodes.CREATED)
 
         expect(response.body).toEqual({
-          ...payload,
+          ...expected,
           date: expect.any(String),
           savedViaEmail: false,
           createdAt: expect.any(String),
@@ -166,8 +176,9 @@ describe('Given a NGC user', () => {
           id: faker.string.uuid(),
           date: new Date(),
           situation,
-          computedResults,
           progression: 1,
+          computedResults,
+          extendedSituation,
           actionChoices: {
             myAction: true,
           },
@@ -224,6 +235,7 @@ describe('Given a NGC user', () => {
             actionChoices: true,
             savedViaEmail: true,
             computedResults: true,
+            extendedSituation: true,
             additionalQuestionsAnswers: {
               select: {
                 key: true,
@@ -271,8 +283,9 @@ describe('Given a NGC user', () => {
             id: faker.string.uuid(),
             model: `FR-fr-${defaultModelVersion}`,
             situation,
-            computedResults,
             progression: 1,
+            computedResults,
+            extendedSituation,
             additionalQuestionsAnswers: [
               {
                 type: SimulationAdditionalQuestionAnswerType.default,
@@ -299,8 +312,10 @@ describe('Given a NGC user', () => {
             .send(payload)
             .expect(StatusCodes.CREATED)
 
+          const { extendedSituation: _, ...expected } = payload
+
           expect(response.body).toEqual({
-            ...payload,
+            ...expected,
             date: expect.any(String),
             savedViaEmail: false,
             createdAt: expect.any(String),
@@ -326,8 +341,9 @@ describe('Given a NGC user', () => {
               id: faker.string.uuid(),
               date,
               situation,
-              computedResults,
               progression: 1,
+              computedResults,
+              extendedSituation,
               savedViaEmail: true,
               user: {
                 name: nom,
@@ -416,8 +432,9 @@ describe('Given a NGC user', () => {
             const payload: SimulationCreateInputDto = {
               id,
               situation,
-              computedResults,
               progression: 1,
+              computedResults,
+              extendedSituation,
               user: {
                 email,
               },
@@ -463,8 +480,9 @@ describe('Given a NGC user', () => {
               const payload: SimulationCreateInputDto = {
                 id,
                 situation,
-                computedResults,
                 progression: 1,
+                computedResults,
+                extendedSituation,
                 user: {
                   email,
                 },
@@ -514,8 +532,9 @@ describe('Given a NGC user', () => {
                 id: faker.string.uuid(),
                 date,
                 situation,
-                computedResults,
                 progression: 1,
+                computedResults,
+                extendedSituation,
                 savedViaEmail: true,
                 user: {
                   name: nom,
@@ -595,8 +614,9 @@ describe('Given a NGC user', () => {
                 id: faker.string.uuid(),
                 date,
                 situation,
-                computedResults,
                 progression: 1,
+                computedResults,
+                extendedSituation,
                 savedViaEmail: true,
                 user: {
                   name: nom,
@@ -683,6 +703,7 @@ describe('Given a NGC user', () => {
               situation,
               computedResults,
               progression: 0.5,
+              extendedSituation,
               user: {
                 email,
               },
@@ -716,6 +737,7 @@ describe('Given a NGC user', () => {
               situation,
               computedResults,
               progression: 0.5,
+              extendedSituation,
               user: {
                 email,
               },
@@ -767,8 +789,9 @@ describe('Given a NGC user', () => {
             .send({
               id: faker.string.uuid(),
               situation,
-              computedResults,
               progression: 1,
+              computedResults,
+              extendedSituation,
             })
             .expect(StatusCodes.INTERNAL_SERVER_ERROR)
         })
@@ -777,8 +800,9 @@ describe('Given a NGC user', () => {
           await agent.post(url.replace(':userId', faker.string.uuid())).send({
             id: faker.string.uuid(),
             situation,
-            computedResults,
             progression: 1,
+            computedResults,
+            extendedSituation,
           })
 
           expect(logger.error).toHaveBeenCalledWith(

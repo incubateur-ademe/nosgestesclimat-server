@@ -68,6 +68,7 @@ export const createParticipantSimulation = async <
       progression,
       situation,
       savedViaEmail,
+      extendedSituation,
       additionalQuestionsAnswers,
     },
     select = defaultSimulationSelectionWithoutUser as T,
@@ -87,16 +88,21 @@ export const createParticipantSimulation = async <
     },
   })
 
-  const payload = {
+  const payload: Omit<Prisma.SimulationCreateInput, 'id'> = {
     date,
     model,
-    userId,
+    user: {
+      connect: {
+        id: userId,
+      },
+    },
     situation,
     foldedSteps,
     progression,
     actionChoices,
     savedViaEmail,
     computedResults,
+    extendedSituation,
     ...(additionalQuestionsAnswers?.length
       ? {
           additionalQuestionsAnswers: {
