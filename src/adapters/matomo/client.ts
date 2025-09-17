@@ -39,6 +39,101 @@ export const MatomoIframeVisits = [
 
 export const MatomoIframeVisitsSet = new Set<string>(MatomoIframeVisits)
 
+const PagesUrlSchema = z
+  .object({
+    label: z.string(),
+    nb_visits: z.number(),
+    nb_uniq_visitors: z.number().optional(),
+    nb_hits: z.number(),
+    sum_time_spent: z.number(),
+    entry_nb_visits: z.union([z.number(), z.string()]).optional(),
+    entry_nb_uniq_visitors: z.number().optional(),
+    entry_nb_actions: z.union([z.number(), z.string()]).optional(),
+    entry_sum_visit_length: z.union([z.number(), z.string()]).optional(),
+    entry_bounce_count: z.union([z.number(), z.string()]).optional(),
+    exit_nb_visits: z.union([z.number(), z.string()]).optional(),
+    exit_nb_uniq_visitors: z.number().optional(),
+    goals: z.record(z.string(), z.unknown()).optional(),
+    avg_page_load_time: z.number(),
+    avg_time_on_page: z.number(),
+    bounce_rate: z.string(),
+    exit_rate: z.string(),
+    url: z
+      .string()
+      .optional()
+      .transform((val) => {
+        if (typeof val === 'undefined') {
+          return val
+        }
+
+        if (val === '') {
+          return new URL('https://nosgestesclimat.fr')
+        }
+
+        try {
+          return new URL(val)
+        } catch (e) {
+          if (val.includes('category=services%20soci%c3%a9taux/actions/')) {
+            return new URL(`https://yahoo.com/actions?${val.split('?')[1]}`)
+          }
+
+          throw e
+        }
+      }),
+    segment: z
+      .string()
+      .optional()
+      .transform((val) => {
+        if (typeof val === 'undefined') {
+          return val
+        }
+
+        const pageUrl = decodeURIComponent(
+          decodeURIComponent(
+            val.replace('pageUrl==', '').replace('pageUrl=^', '')
+          )
+        )
+
+        if (pageUrl === '') {
+          return new URL('https://nosgestesclimat.fr')
+        }
+
+        try {
+          return new URL(pageUrl)
+        } catch (e) {
+          if (pageUrl.includes('category=services%20soci%c3%a9taux/actions/')) {
+            return new URL(`https://yahoo.com/actions?${pageUrl.split('?')[1]}`)
+          }
+
+          throw e
+        }
+      }),
+    idsubdatatable: z.number().optional(),
+    nb_hits_with_time_network: z.union([z.number(), z.string()]).optional(),
+    nb_hits_following_search: z.number().optional(),
+    min_time_network: z.string().nullable().optional(),
+    max_time_network: z.string().nullable().optional(),
+    nb_hits_with_time_server: z.union([z.number(), z.string()]).optional(),
+    min_time_server: z.string().nullable().optional(),
+    max_time_server: z.string().nullable().optional(),
+    nb_hits_with_time_transfer: z.union([z.number(), z.string()]).optional(),
+    min_time_transfer: z.string().nullable().optional(),
+    max_time_transfer: z.string().nullable().optional(),
+    nb_hits_with_time_dom_processing: z
+      .union([z.number(), z.string()])
+      .optional(),
+    min_time_dom_processing: z.string().nullable().optional(),
+    max_time_dom_processing: z.string().nullable().optional(),
+    avg_time_network: z.number().optional(),
+    avg_time_server: z.number().optional(),
+    avg_time_transfer: z.number().optional(),
+    avg_time_dom_processing: z.number().optional(),
+    sum_daily_nb_uniq_visitors: z.number().optional(),
+    sum_daily_entry_nb_uniq_visitors: z.number().optional(),
+    sum_daily_exit_nb_uniq_visitors: z.number().optional(),
+  })
+  .strict()
+
 const ReferrerBaseSchema = z
   .object({
     label: z.string(),
@@ -123,6 +218,25 @@ const getFullSegments = ({
 
 export const matomoClientFactory = (client: AxiosInstance) => {
   return {
+    async getPageUrls({
+      date,
+      idsubdatatable: idSubtable,
+    }: {
+      date: string
+      idsubdatatable?: number
+    }) {
+      const { data } = await client('/', {
+        params: {
+          method: 'Actions.getPageUrls',
+          period: 'day',
+          idSubtable,
+          date,
+        },
+      })
+
+      return z.array(PagesUrlSchema).parse(data)
+    },
+
     async getReferrers(date: string) {
       const { data } = await client('/', {
         params: {
