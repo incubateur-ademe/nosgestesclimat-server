@@ -12,6 +12,7 @@ import type { Session } from '../../adapters/prisma/transaction.js'
 import { transaction } from '../../adapters/prisma/transaction.js'
 import { client } from '../../adapters/scaleway/client.js'
 import { config } from '../../config.js'
+import { deepMergeSubstract } from '../../core/deep-merge.js'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
 import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
@@ -269,7 +270,8 @@ const isOrganisationAdmin = (
 
 const pollToDto = ({
   poll: { organisationId: _1, computeRealTimeStats: _2, ...poll },
-  simulationsInfos: simulations,
+  simulationsInfos: { count, finished, hasParticipated },
+  simulationsInfos,
   organisation,
   user,
 }: {
@@ -293,7 +295,24 @@ const pollToDto = ({
   defaultAdditionalQuestions: poll.defaultAdditionalQuestions?.map(
     ({ type }) => type
   ),
-  simulations,
+  simulations: {
+    count,
+    finished,
+    hasParticipated,
+  },
+  ...(simulationsInfos.hasParticipated
+    ? {
+        userComputedResults: simulationsInfos.userComputedResults,
+        ...(poll.computedResults
+          ? {
+              otherComputedResults: deepMergeSubstract(
+                poll.computedResults,
+                simulationsInfos.userComputedResults
+              ),
+            }
+          : {}),
+      }
+    : {}),
 })
 
 export const createPoll = async ({

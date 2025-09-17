@@ -1,5 +1,4 @@
 import { faker } from '@faker-js/faker'
-import dayjs from 'dayjs'
 import { StatusCodes } from 'http-status-codes'
 import type supertest from 'supertest'
 import { vi } from 'vitest'
@@ -11,6 +10,7 @@ import {
 } from '../../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
 import type { BrevoContactDto } from '../../../../adapters/brevo/client.js'
 import { ListIds } from '../../../../adapters/brevo/constant.js'
+import { prisma } from '../../../../adapters/prisma/client.js'
 import {
   mswServer,
   resetMswServer,
@@ -105,14 +105,10 @@ export const subscribeToNewsLetter = async ({
   expirationDate?: Date
 }) => {
   code = code || faker.number.int({ min: 100000, max: 999999 }).toString()
-  expirationDate = expirationDate || dayjs().add(1, 'hour').toDate()
 
   vi.mocked(
     authenticationService
-  ).generateVerificationCodeAndExpiration.mockReturnValueOnce({
-    code,
-    expirationDate,
-  })
+  ).generateRandomVerificationCode.mockReturnValueOnce(code)
 
   email = email || faker.internet.email().toLocaleLowerCase()
 
@@ -146,13 +142,19 @@ export const subscribeToNewsLetter = async ({
     .send(payload)
     .expect(StatusCodes.ACCEPTED)
 
+  if (expirationDate) {
+    await prisma.verificationCode.updateMany({
+      data: {
+        expirationDate,
+      },
+    })
+  }
+
   await EventBus.flush()
 
   resetMswServer()
 
-  vi.mocked(
-    authenticationService
-  ).generateVerificationCodeAndExpiration.mockRestore()
+  vi.mocked(authenticationService).generateRandomVerificationCode.mockRestore()
 
   return {
     ...response.body,

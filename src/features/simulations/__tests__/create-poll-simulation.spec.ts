@@ -31,7 +31,8 @@ import { getRandomTestCase } from './fixtures/simulations.fixtures.js'
 describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = CREATE_ORGANISATION_PUBLIC_POLL_SIMULATION_ROUTE
-  const { computedResults, nom, situation } = getRandomTestCase()
+  const { computedResults, nom, situation, extendedSituation } =
+    getRandomTestCase()
 
   afterEach(async () => {
     await EventBus.flush()
@@ -84,8 +85,9 @@ describe('Given a NGC user', () => {
             .send({
               id: faker.string.uuid(),
               situation,
-              computedResults,
               progression: 1,
+              computedResults,
+              extendedSituation,
               user: {
                 name: nom,
                 email: 'Je ne donne jamais mon email',
@@ -106,8 +108,9 @@ describe('Given a NGC user', () => {
             .send({
               id: faker.database.mongodbObjectId(),
               situation,
-              computedResults,
               progression: 1,
+              computedResults,
+              extendedSituation,
               user: {
                 name: nom,
               },
@@ -127,8 +130,9 @@ describe('Given a NGC user', () => {
             .send({
               id: faker.string.uuid(),
               situation: null,
-              computedResults,
               progression: 1,
+              computedResults,
+              extendedSituation,
               user: {
                 name: nom,
               },
@@ -148,8 +152,9 @@ describe('Given a NGC user', () => {
             .send({
               id: faker.string.uuid(),
               situation,
-              computedResults: null,
               progression: 1,
+              computedResults: null,
+              extendedSituation,
               user: {
                 name: nom,
               },
@@ -169,8 +174,9 @@ describe('Given a NGC user', () => {
             .send({
               id: faker.string.uuid(),
               situation,
-              computedResults,
               progression: 1,
+              computedResults,
+              extendedSituation,
             })
             .expect(StatusCodes.NOT_FOUND)
         })
@@ -210,11 +216,16 @@ describe('Given a NGC user', () => {
         })
 
         test(`Then it returns a ${StatusCodes.CREATED} response with the created simulation`, async () => {
-          const payload: SimulationCreateInputDto = {
+          const expected = {
             id: faker.string.uuid(),
             situation,
-            computedResults,
             progression: 1,
+            computedResults,
+          }
+
+          const payload: SimulationCreateInputDto = {
+            ...expected,
+            extendedSituation,
           }
 
           mswServer.use(brevoUpdateContact(), brevoRemoveFromList(27))
@@ -227,7 +238,7 @@ describe('Given a NGC user', () => {
             .expect(StatusCodes.CREATED)
 
           expect(response.body).toEqual({
-            ...payload,
+            ...expected,
             date: expect.any(String),
             model: 'FR-fr-0.0.0',
             savedViaEmail: false,
@@ -255,8 +266,9 @@ describe('Given a NGC user', () => {
             id: faker.string.uuid(),
             date: new Date(),
             situation,
-            computedResults,
             progression: 1,
+            computedResults,
+            extendedSituation,
             actionChoices: {
               myAction: true,
             },
@@ -309,6 +321,7 @@ describe('Given a NGC user', () => {
               actionChoices: true,
               savedViaEmail: true,
               computedResults: true,
+              extendedSituation: true,
               additionalQuestionsAnswers: {
                 select: {
                   key: true,
@@ -362,8 +375,9 @@ describe('Given a NGC user', () => {
           const payload: SimulationCreateInputDto = {
             id: faker.string.uuid(),
             situation,
-            computedResults,
             progression: 1,
+            computedResults,
+            extendedSituation,
           }
 
           mswServer.use(
@@ -402,8 +416,9 @@ describe('Given a NGC user', () => {
           const payload: SimulationCreateInputDto = {
             id: faker.string.uuid(),
             situation,
-            computedResults,
             progression: 1,
+            computedResults,
+            extendedSituation,
           }
 
           mswServer.use(brevoUpdateContact(), brevoRemoveFromList(27))
@@ -438,11 +453,16 @@ describe('Given a NGC user', () => {
 
         describe('And using organisation and poll slugs', () => {
           test(`Then it returns a ${StatusCodes.CREATED} response with the created simulation`, async () => {
-            const payload: SimulationCreateInputDto = {
+            const expected = {
               id: faker.string.uuid(),
               situation,
-              computedResults,
               progression: 1,
+              computedResults,
+            }
+
+            const payload: SimulationCreateInputDto = {
+              ...expected,
+              extendedSituation,
             }
 
             mswServer.use(brevoUpdateContact(), brevoRemoveFromList(27))
@@ -457,7 +477,7 @@ describe('Given a NGC user', () => {
               .expect(StatusCodes.CREATED)
 
             expect(response.body).toEqual({
-              ...payload,
+              ...expected,
               date: expect.any(String),
               model: 'FR-fr-0.0.0',
               savedViaEmail: false,
@@ -488,8 +508,9 @@ describe('Given a NGC user', () => {
             const payload: SimulationCreateInputDto = {
               id: faker.string.uuid(),
               situation,
-              computedResults,
               progression: 1,
+              computedResults,
+              extendedSituation,
               date,
               user: {
                 email,
@@ -581,8 +602,9 @@ describe('Given a NGC user', () => {
             const payload: SimulationCreateInputDto = {
               id: faker.string.uuid(),
               situation,
-              computedResults,
               progression: 1,
+              computedResults,
+              extendedSituation,
               user: {
                 email,
               },
@@ -627,6 +649,7 @@ describe('Given a NGC user', () => {
                 situation,
                 computedResults,
                 progression: 0.5,
+                extendedSituation,
                 user: {
                   email,
                 },
@@ -670,8 +693,9 @@ describe('Given a NGC user', () => {
               const payload: SimulationCreateInputDto = {
                 id: faker.string.uuid(),
                 situation,
-                computedResults,
                 progression: 1,
+                computedResults,
+                extendedSituation,
                 user: {
                   email,
                 },
@@ -718,8 +742,9 @@ describe('Given a NGC user', () => {
               const payload: SimulationCreateInputDto = {
                 id: faker.string.uuid(),
                 situation,
-                computedResults,
                 progression: 1,
+                computedResults,
+                extendedSituation,
                 user: {
                   email,
                 },
@@ -881,8 +906,9 @@ describe('Given a NGC user', () => {
           const payload: SimulationCreateInputDto = {
             id: faker.string.uuid(),
             situation,
-            computedResults,
             progression: 1,
+            computedResults,
+            extendedSituation,
           }
 
           mswServer.use(
@@ -935,8 +961,9 @@ describe('Given a NGC user', () => {
             .send({
               id: faker.string.uuid(),
               situation,
-              computedResults,
               progression: 1,
+              computedResults,
+              extendedSituation,
             })
             .expect(StatusCodes.INTERNAL_SERVER_ERROR)
         })
@@ -951,8 +978,9 @@ describe('Given a NGC user', () => {
             .send({
               id: faker.string.uuid(),
               situation,
-              computedResults,
               progression: 1,
+              computedResults,
+              extendedSituation,
             })
             .expect(StatusCodes.INTERNAL_SERVER_ERROR)
 

@@ -20,6 +20,16 @@ if (config.thirdParty.sentry.dsn) {
   )
 }
 
+export const redactBody = <T = unknown>(body: T) => {
+  if (typeof body === 'object' && !!body) {
+    if ('extendedSituation' in body) {
+      body.extendedSituation = '[REDACTED]'
+    }
+  }
+
+  return body
+}
+
 const logger = winston.createLogger({
   level: process.env.LOG_LEVEL ?? 'info',
   defaultMeta: {
