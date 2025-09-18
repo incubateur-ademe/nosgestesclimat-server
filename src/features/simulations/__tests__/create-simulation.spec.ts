@@ -262,6 +262,7 @@ describe('Given a NGC user', () => {
 
         expect(createdSimulation).toEqual({
           ...payload,
+          extendedSituation: null,
           createdAt: expect.any(Date),
           date: expect.any(Date),
           updatedAt: expect.any(Date),
