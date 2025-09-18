@@ -97,6 +97,7 @@ describe('Given a poll participation', () => {
         updated: false,
         created: true,
         organisation,
+        poll: { slug: 'test-poll' },
         simulation,
         user,
       })
