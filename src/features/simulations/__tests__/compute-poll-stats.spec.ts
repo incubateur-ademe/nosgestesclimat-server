@@ -98,6 +98,7 @@ describe('Given a poll participation', () => {
         created: true,
         organisation,
         simulation,
+        poll,
         user,
       })
     })

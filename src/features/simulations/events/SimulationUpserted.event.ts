@@ -1,4 +1,10 @@
-import type { Group, Organisation, Simulation, User } from '@prisma/client'
+import type {
+  Group,
+  Organisation,
+  Poll,
+  Simulation,
+  User,
+} from '@prisma/client'
 import { EventBusEvent } from '../../../core/event-bus/event.js'
 import type { Locales } from '../../../core/i18n/constant.js'
 import type { ModelToDto } from '../../../types/types.js'
@@ -32,18 +38,21 @@ type SimulationAttributes = BaseSimulationUpsertedEventAttributes &
         group?: undefined
         administrator?: undefined
         organisation?: undefined
+        poll?: undefined
         newsletters: SimulationCreateNewsletterList
       }
     | {
         group: Pick<Group, 'id' | 'name'>
         administrator: Pick<User, 'id'>
         organisation?: undefined
+        poll?: undefined
         newsletters?: undefined
       }
     | {
         group?: undefined
         administrator?: undefined
         organisation: Pick<Organisation, 'name' | 'slug'>
+        poll: Pick<Poll, 'slug'>
         newsletters?: undefined
       }
   )
