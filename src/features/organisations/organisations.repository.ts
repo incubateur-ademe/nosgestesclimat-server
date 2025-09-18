@@ -11,7 +11,11 @@ import {
 } from '../../adapters/prisma/selection.js'
 import type { Session } from '../../adapters/prisma/transaction.js'
 import type { SimulationParams } from '../simulations/simulations.validator.js'
-import { ComputedResultSchema } from '../simulations/simulations.validator.js'
+import {
+  ComputedResultSchema,
+  SituationSchema,
+} from '../simulations/simulations.validator.js'
+import type { SimulationAsyncEvent } from '../simulations/events/SimulationUpserted.event.js'
 import type {
   OrganisationCreateDto,
   OrganisationParams,
@@ -22,6 +26,43 @@ import type {
   PollParams,
   PublicPollParams,
 } from './organisations.validator.js'
+
+const MAX_VALUE = 100000
+
+const isValidSimulation = <T>(
+  simulation: T &
+    (
+      | {
+          progression: number
+          computedResults: JsonValue
+          situation: JsonValue
+        }
+      | SimulationAsyncEvent
+    )
+): simulation is T & {
+  progression: number
+  computedResults: ComputedResultSchema
+  situation: SituationSchema
+} => {
+  if (simulation.progression !== 1) {
+    return false
+  }
+
+  const computedResults = ComputedResultSchema.safeParse(
+    simulation.computedResults
+  )
+
+  const situation = SituationSchema.safeParse(simulation.situation)
+
+  if (computedResults.error || situation.error) {
+    return false
+  }
+
+  return [
+    computedResults.data.carbone.bilan,
+    ...Object.values(computedResults.data.carbone.categories),
+  ].every((v) => v <= MAX_VALUE)
+}
 
 const findModelUniqueSlug = (model: 'organisation' | 'poll') => {
   const findUniqueSlug = async (
@@ -348,52 +389,49 @@ const fetchPollSimulationsInfo = async (
   }: { poll: { id: string }; user: { userId: string } },
   { session }: { session: Session }
 ): Promise<SimulationsInfo> => {
-  const [count, finished, userSimulation] = await Promise.all([
-    session.simulationPoll.count({
-      where: {
-        pollId: id,
-      },
-    }),
-    session.simulationPoll.count({
-      where: {
-        pollId: id,
-        simulation: {
-          progression: 1,
-        },
-      },
-    }),
-    session.simulationPoll.findFirst({
-      where: {
-        pollId: id,
-        simulation: {
+  // Récupérer toutes les simulations avec leurs données complètes
+  const simulations = await session.simulationPoll.findMany({
+    where: {
+      pollId: id,
+    },
+    select: {
+      simulation: {
+        select: {
+          progression: true,
+          computedResults: true,
+          situation: true,
           user: {
-            id: userId,
+            select: {
+              id: true,
+            },
           },
         },
       },
-      select: {
-        simulation: {
-          select: {
-            computedResults: true,
-          },
-        },
-      },
-      orderBy: {
-        simulation: {
-          createdAt: 'desc',
-        },
-      },
-    }),
-  ])
+    },
+  })
 
-  const userComputedResults = ComputedResultSchema.safeParse(
-    userSimulation?.simulation.computedResults
+  // Compter toutes les simulations (count reste inchangé)
+  const count = simulations.length
+
+  // Appliquer le filtre isValidSimulation pour finished
+  const validSimulations = simulations.filter(({ simulation }) =>
+    isValidSimulation(simulation)
   )
+  const finished = validSimulations.length
+
+  // Trouver la simulation de l'utilisateur
+  const userSimulation = simulations.find(
+    ({ simulation }) => simulation.user.id === userId
+  )
+
+  const userComputedResults = userSimulation?.simulation
+    ? ComputedResultSchema.safeParse(userSimulation.simulation.computedResults)
+    : { success: false }
 
   return {
     count,
     finished,
-    ...(userComputedResults.success
+    ...(userComputedResults.success && 'data' in userComputedResults
       ? {
           hasParticipated: true,
           userComputedResults: userComputedResults.data,

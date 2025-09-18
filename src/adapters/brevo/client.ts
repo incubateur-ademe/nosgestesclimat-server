@@ -378,19 +378,21 @@ export const sendPollSimulationUpsertedEmail = async ({
   email,
   locale,
   origin,
-  organisation: { name, slug },
+  organisation: { name, slug: organisationSlug },
+  poll: { slug: pollSlug },
   simulation: { id },
 }: Readonly<{
   email: string
   origin: string
   locale: Locales
   organisation: Pick<Organisation, 'name' | 'slug'>
+  poll: Pick<Poll, 'slug'>
   simulation: Pick<Simulation, 'id'>
 }>) => {
   const templateId = TemplateIds[locale].ORGANISATION_JOINED
 
   const detailedViewUrl = new URL(
-    `${origin}/organisations/${slug}/resultats-detailles`
+    `${origin}/organisations/${organisationSlug}/campagnes/${pollSlug}`
   )
   const { searchParams: detailedViewUrlSearchParams } = detailedViewUrl
   detailedViewUrlSearchParams.append(
