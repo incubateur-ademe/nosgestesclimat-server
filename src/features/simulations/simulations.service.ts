@@ -164,6 +164,7 @@ export const createPollSimulation = async ({
       simulation,
       locale,
       origin,
+      poll,
       user,
     })
 
