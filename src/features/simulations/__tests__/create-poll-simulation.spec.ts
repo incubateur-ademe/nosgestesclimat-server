@@ -353,6 +353,7 @@ describe('Given a NGC user', () => {
 
           expect(createdSimulation).toEqual({
             ...payload,
+            extendedSituation: null,
             createdAt: expect.any(Date),
             date: expect.any(Date),
             updatedAt: expect.any(Date),
@@ -622,7 +623,7 @@ describe('Given a NGC user', () => {
                   templateId: 122,
                   params: {
                     ORGANISATION_NAME: organisationName,
-                    DETAILED_VIEW_URL: `https://nosgestesclimat.fr/organisations/${organisationSlug}/resultats-detailles?mtm_campaign=email-automatise&mtm_kwd=orga-invite-campagne`,
+                    DETAILED_VIEW_URL: `https://nosgestesclimat.fr/organisations/${organisationSlug}/campagnes/${pollSlug}?mtm_campaign=email-automatise&mtm_kwd=orga-invite-campagne`,
                     SIMULATION_URL: `https://nosgestesclimat.fr/fin?sid=${payload.id}&mtm_campaign=email-automatise&mtm_kwd=fin-retrouver-simulation`,
                   },
                 },
@@ -713,7 +714,7 @@ describe('Given a NGC user', () => {
                     templateId: 122,
                     params: {
                       ORGANISATION_NAME: organisationName,
-                      DETAILED_VIEW_URL: `https://preprod.nosgestesclimat.fr/organisations/${organisationSlug}/resultats-detailles?mtm_campaign=email-automatise&mtm_kwd=orga-invite-campagne`,
+                      DETAILED_VIEW_URL: `https://preprod.nosgestesclimat.fr/organisations/${organisationSlug}/campagnes/${pollSlug}?mtm_campaign=email-automatise&mtm_kwd=orga-invite-campagne`,
                       SIMULATION_URL: `https://preprod.nosgestesclimat.fr/fin?sid=${payload.id}&mtm_campaign=email-automatise&mtm_kwd=fin-retrouver-simulation`,
                     },
                   },
@@ -762,7 +763,7 @@ describe('Given a NGC user', () => {
                     templateId: 123,
                     params: {
                       ORGANISATION_NAME: organisationName,
-                      DETAILED_VIEW_URL: `https://nosgestesclimat.fr/organisations/${organisationSlug}/resultats-detailles?mtm_campaign=email-automatise&mtm_kwd=orga-invite-campagne`,
+                      DETAILED_VIEW_URL: `https://nosgestesclimat.fr/organisations/${organisationSlug}/campagnes/${pollSlug}?mtm_campaign=email-automatise&mtm_kwd=orga-invite-campagne`,
                       SIMULATION_URL: `https://nosgestesclimat.fr/fin?sid=${payload.id}&mtm_campaign=email-automatise&mtm_kwd=fin-retrouver-simulation`,
                     },
                   },

@@ -161,6 +161,7 @@ export const createPollSimulation = async ({
       updated: simulationUpdated,
       sendEmail: created,
       organisation,
+      poll: { slug: poll.slug },
       simulation,
       locale,
       origin,

@@ -11,6 +11,7 @@ export const sendSimulationUpserted: Handler<SimulationUpsertedEvent> = ({
   attributes,
   attributes: { origin, user, organisation, simulation, sendEmail, locale },
 }) => {
+  const poll = 'poll' in attributes ? attributes.poll : undefined
   if (!user.email || !sendEmail) {
     return
   }
@@ -18,9 +19,10 @@ export const sendSimulationUpserted: Handler<SimulationUpsertedEvent> = ({
   const { email } = user
 
   if (simulation?.progression === 1) {
-    if (organisation) {
+    if (organisation && poll) {
       return sendPollSimulationUpsertedEmail({
         organisation,
+        poll,
         simulation,
         locale,
         origin,
