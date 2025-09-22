@@ -20,11 +20,11 @@ export const initGeolocationStore = async (): Promise<void> => {
   ])
 
   if (!countries) {
-    logger.warn(`Could not load geolocation countries redis store`)
+    logger.warn('Could not load geolocation countries redis store')
   }
 
   if (!sortedIps) {
-    logger.warn(`Could not load geolocation ip adresses redis store`)
+    logger.warn('Could not load geolocation ip adresses redis store')
   }
 
   store = {

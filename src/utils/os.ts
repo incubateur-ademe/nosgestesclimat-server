@@ -30,7 +30,7 @@ const ensureEnvVar_: DefaultEnsureEnvVar = (
     typeof envVar === 'undefined' &&
     typeof defaultValueToTest === 'undefined'
   ) {
-    throw new Error(`Some env var are not found.`)
+    throw new Error('Some env var are not found.')
   }
 
   if (typeof envVar === 'undefined' && typeof defaultValue !== 'undefined')

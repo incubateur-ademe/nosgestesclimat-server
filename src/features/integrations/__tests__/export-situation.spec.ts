@@ -58,7 +58,7 @@ describe('Given a NGC user', () => {
         })
       })
 
-      test(`Then it sends situation on agir service`, async () => {
+      test('Then it sends situation on agir service', async () => {
         mswServer.use(
           agirExportSituation({
             expectBody: { situation },
@@ -80,8 +80,8 @@ describe('Given a NGC user', () => {
         await EventBus.flush()
       })
 
-      describe(`And agir interface changes`, () => {
-        test(`Then it raises an exception`, async () => {
+      describe('And agir interface changes', () => {
+        test('Then it raises an exception', async () => {
           mswServer.use(
             agirExportSituation({
               customResponses: [{ body: {} }],
@@ -94,7 +94,7 @@ describe('Given a NGC user', () => {
             .expect(StatusCodes.INTERNAL_SERVER_ERROR)
         })
 
-        test(`Then it logs the exception`, async () => {
+        test('Then it logs the exception', async () => {
           mswServer.use(
             agirExportSituation({
               customResponses: [{ body: {} }],
@@ -113,8 +113,8 @@ describe('Given a NGC user', () => {
         })
       })
 
-      describe(`And service is down`, () => {
-        test(`Then it retries several times and then raises the exception`, async () => {
+      describe('And service is down', () => {
+        test('Then it retries several times and then raises the exception', async () => {
           mswServer.use(
             agirExportSituation({
               customResponses: [
@@ -132,7 +132,7 @@ describe('Given a NGC user', () => {
             .expect(StatusCodes.INTERNAL_SERVER_ERROR)
         })
 
-        test(`Then it logs the exception`, async () => {
+        test('Then it logs the exception', async () => {
           mswServer.use(
             agirExportSituation({
               customResponses: [
@@ -199,7 +199,7 @@ describe('Given a NGC user', () => {
         })
       })
 
-      test(`Then it sends situation on 2 tonnes service`, async () => {
+      test('Then it sends situation on 2 tonnes service', async () => {
         mswServer.use(
           twoTonsExportSituation({
             expectBody: { situation },
@@ -222,7 +222,7 @@ describe('Given a NGC user', () => {
       })
 
       describe('And valid external Service queryParams', () => {
-        test(`Then it sends situation on 2 tonnes service`, async () => {
+        test('Then it sends situation on 2 tonnes service', async () => {
           mswServer.use(
             twoTonsExportSituation({
               expectParams: {
@@ -281,8 +281,8 @@ describe('Given a NGC user', () => {
           })
         })
 
-        describe(`And 2 tonnes interface changes`, () => {
-          test(`Then it raises the exception`, async () => {
+        describe('And 2 tonnes interface changes', () => {
+          test('Then it raises the exception', async () => {
             mswServer.use(
               twoTonsExportSituation({
                 customResponses: [
@@ -300,7 +300,7 @@ describe('Given a NGC user', () => {
               .expect(StatusCodes.INTERNAL_SERVER_ERROR)
           })
 
-          test(`Then it logs the exception`, async () => {
+          test('Then it logs the exception', async () => {
             mswServer.use(
               twoTonsExportSituation({
                 customResponses: [
@@ -329,8 +329,8 @@ describe('Given a NGC user', () => {
         })
       })
 
-      describe(`And 2 tonnes interface changes`, () => {
-        test(`Then it raises the exception`, async () => {
+      describe('And 2 tonnes interface changes', () => {
+        test('Then it raises the exception', async () => {
           mswServer.use(
             twoTonsExportSituation({
               customResponses: [{ body: {} }],
@@ -343,7 +343,7 @@ describe('Given a NGC user', () => {
             .expect(StatusCodes.INTERNAL_SERVER_ERROR)
         })
 
-        test(`Then it logs the exception`, async () => {
+        test('Then it logs the exception', async () => {
           mswServer.use(
             twoTonsExportSituation({
               customResponses: [{ body: {} }],
@@ -362,7 +362,7 @@ describe('Given a NGC user', () => {
         })
 
         describe('And fallback parameter', () => {
-          test(`Then it redirects to the fallback`, async () => {
+          test('Then it redirects to the fallback', async () => {
             mswServer.use(
               twoTonsExportSituation({
                 customResponses: [{ body: {} }],
@@ -384,8 +384,8 @@ describe('Given a NGC user', () => {
         })
       })
 
-      describe(`And service is down`, () => {
-        test(`Then it retries several times and then raises the exception`, async () => {
+      describe('And service is down', () => {
+        test('Then it retries several times and then raises the exception', async () => {
           mswServer.use(
             twoTonsExportSituation({
               customResponses: [
@@ -403,7 +403,7 @@ describe('Given a NGC user', () => {
             .expect(StatusCodes.INTERNAL_SERVER_ERROR)
         })
 
-        test(`Then it logs the exception`, async () => {
+        test('Then it logs the exception', async () => {
           mswServer.use(
             twoTonsExportSituation({
               customResponses: [
@@ -431,7 +431,7 @@ describe('Given a NGC user', () => {
         })
 
         describe('And fallback parameter', () => {
-          test(`Then it redirects to the fallback`, async () => {
+          test('Then it redirects to the fallback', async () => {
             mswServer.use(
               twoTonsExportSituation({
                 customResponses: [

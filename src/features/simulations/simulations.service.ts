@@ -202,7 +202,7 @@ export const fetchPublicPollSimulations = async ({
       )
 
       if (simulationsCount > 500) {
-        throw new ForbiddenException(`Cannot fetch more than 500 simulations`)
+        throw new ForbiddenException('Cannot fetch more than 500 simulations')
       }
 
       const simulations = await fetchPollSimulations(

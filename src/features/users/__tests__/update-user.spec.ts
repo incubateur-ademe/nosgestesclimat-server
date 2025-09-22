@@ -99,7 +99,7 @@ describe('Given a NGC user', () => {
           .expect(StatusCodes.INTERNAL_SERVER_ERROR)
       })
 
-      test(`Then it logs the exception`, async () => {
+      test('Then it logs the exception', async () => {
         await agent
           .put(url.replace(':userId', faker.string.uuid()))
           .send({})

@@ -287,7 +287,7 @@ describe('Given a ngc user', () => {
       })
     })
 
-    describe(`And he/she creates another group on device 2 leaving his/her email`, () => {
+    describe('And he/she creates another group on device 2 leaving his/her email', () => {
       let groupDevice2: Awaited<ReturnType<typeof createGroup>>
       let userId: string
 
@@ -354,7 +354,7 @@ describe('Given a ngc user', () => {
       })
     })
 
-    describe(`And he/she joins the same group on device 2 not leaving his/her email`, () => {
+    describe('And he/she joins the same group on device 2 not leaving his/her email', () => {
       let participantDevice2: Awaited<ReturnType<typeof joinGroup>>
       let simulationDevice2: Awaited<ReturnType<typeof createSimulation>>
       let userIdDevice2: string
@@ -371,7 +371,7 @@ describe('Given a ngc user', () => {
           participantDevice2)
       })
 
-      describe(`And he/she leaves his/her email posting a simulation`, () => {
+      describe('And he/she leaves his/her email posting a simulation', () => {
         beforeEach(async () => {
           await createSimulation({
             agent,
@@ -551,7 +551,7 @@ describe('Given a ngc user', () => {
       })
     })
 
-    describe(`And he/she creates another simulation on device 2 leaving his/her email`, () => {
+    describe('And he/she creates another simulation on device 2 leaving his/her email', () => {
       let simulationDevice2: Awaited<ReturnType<typeof createSimulation>>
       let userId: string
 

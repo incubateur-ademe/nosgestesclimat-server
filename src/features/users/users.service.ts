@@ -18,7 +18,6 @@ import { UserUpdatedEvent } from './events/UserUpdated.event.js'
 import {
   fetchUser,
   fetchUserOrThrow,
-  fetchVerifiedUser,
   transferOwnershipToUser,
   updateUser,
   updateVerifiedUser,
@@ -197,12 +196,12 @@ export const updateUserAndContact = async ({
     const isVerifiedUser = isAuthenticated(params)
 
     const previousUser = await (isVerifiedUser
-      ? fetchVerifiedUser(params, { session })
+      ? params
       : fetchUser(params, { session }))
 
     const { emailChanged, nextEmail, previousEmail } = getEmailMutation(
       userDto,
-      isVerifiedUser ? params : previousUser
+      previousUser
     )
 
     let token: string | undefined

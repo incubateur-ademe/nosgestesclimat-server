@@ -171,7 +171,7 @@ describe('Given a NGC user', () => {
         })
       })
 
-      test(`Then it stores a participant in database`, async () => {
+      test('Then it stores a participant in database', async () => {
         const payload: ParticipantInputCreateDto = {
           userId: faker.string.uuid(),
           name: faker.person.fullName(),
@@ -333,7 +333,7 @@ describe('Given a NGC user', () => {
           await EventBus.flush()
         })
 
-        describe(`And incomplete simulation`, () => {
+        describe('And incomplete simulation', () => {
           test('Then it sends a continuation email', async () => {
             const email = faker.internet.email().toLocaleLowerCase()
             const userId = faker.string.uuid()
@@ -428,7 +428,7 @@ describe('Given a NGC user', () => {
             })
           })
 
-          test(`Then it does not send email twice`, async () => {
+          test('Then it does not send email twice', async () => {
             const {
               id: _1,
               createdAt: _2,
@@ -447,7 +447,7 @@ describe('Given a NGC user', () => {
           })
 
           describe('And from another device', () => {
-            test(`Then it does not send email twice`, async () => {
+            test('Then it does not send email twice', async () => {
               const { email } = participant
               const payload = {
                 email,
@@ -491,7 +491,7 @@ describe('Given a NGC user', () => {
             .expect(StatusCodes.INTERNAL_SERVER_ERROR)
         })
 
-        test(`Then it logs the exception`, async () => {
+        test('Then it logs the exception', async () => {
           await agent.post(url.replace(':groupId', groupId)).send({
             name: faker.person.fullName(),
             userId: faker.string.uuid(),
