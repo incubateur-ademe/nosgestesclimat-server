@@ -426,7 +426,7 @@ describe('Given a NGC user', () => {
             await EventBus.flush()
           })
 
-          test(`Then it sends a SIMULATION_COMPLETED email`, async () => {
+          test('Then it sends a SIMULATION_COMPLETED email', async () => {
             const id = faker.string.uuid()
             const email = faker.internet.email().toLocaleLowerCase()
             const payload: SimulationCreateInputDto = {
@@ -474,7 +474,7 @@ describe('Given a NGC user', () => {
           })
 
           describe('And custom user origin (preprod)', () => {
-            test(`Then it sends a SIMULATION_COMPLETED email`, async () => {
+            test('Then it sends a SIMULATION_COMPLETED email', async () => {
               const id = faker.string.uuid()
               const email = faker.internet.email().toLocaleLowerCase()
               const payload: SimulationCreateInputDto = {
@@ -694,7 +694,7 @@ describe('Given a NGC user', () => {
         })
 
         describe('And simulation incomplete', () => {
-          test(`Then it adds or updates contact in brevo`, async () => {
+          test('Then it adds or updates contact in brevo', async () => {
             const id = faker.string.uuid()
             const email = faker.internet.email().toLocaleLowerCase()
             const userId = faker.string.uuid()
@@ -729,7 +729,7 @@ describe('Given a NGC user', () => {
               .expect(StatusCodes.CREATED)
           })
 
-          test(`Then it sends a SIMULATION_IN_PROGRESS email`, async () => {
+          test('Then it sends a SIMULATION_IN_PROGRESS email', async () => {
             const id = faker.string.uuid()
             const email = faker.internet.email().toLocaleLowerCase()
             const payload: SimulationCreateInputDto = {
@@ -772,7 +772,7 @@ describe('Given a NGC user', () => {
         })
       })
 
-      describe(`And database failure`, () => {
+      describe('And database failure', () => {
         const databaseError = new Error('Something went wrong')
 
         beforeEach(() => {
@@ -796,7 +796,7 @@ describe('Given a NGC user', () => {
             .expect(StatusCodes.INTERNAL_SERVER_ERROR)
         })
 
-        test(`Then it logs the exception`, async () => {
+        test('Then it logs the exception', async () => {
           await agent.post(url.replace(':userId', faker.string.uuid())).send({
             id: faker.string.uuid(),
             situation,

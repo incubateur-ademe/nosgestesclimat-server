@@ -40,7 +40,7 @@ describe('Given a NGC integrations API user', () => {
       test(`Then it returns a ${StatusCodes.UNAUTHORIZED} error`, async () => {
         await agent
           .post(url)
-          .set('authorization', `Bearer invalid token`)
+          .set('authorization', 'Bearer invalid token')
           .expect(StatusCodes.UNAUTHORIZED)
       })
     })

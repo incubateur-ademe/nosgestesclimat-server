@@ -55,7 +55,7 @@ const mockS3Files = (
 
 describe('Given a NGC integrations API user', () => {
   const agent = supertest(app)
-  const url = `/integrations-api/v1/mapping-situation/:partner`
+  const url = '/integrations-api/v1/mapping-situation/:partner'
 
   describe('When mapping a ngc situation', () => {
     let partner: ExternalServiceTypeEnum
@@ -98,8 +98,8 @@ describe('Given a NGC integrations API user', () => {
     describe('And rules & default files exist for partner', () => {
       beforeEach(() =>
         mockS3Files({
-          conversion: `myRule: "'default'"`,
-          default: `myRule: 1`,
+          conversion: 'myRule: "\'default\'"',
+          default: 'myRule: 1',
         })
       )
 
@@ -121,7 +121,7 @@ describe('Given a NGC integrations API user', () => {
         })
       })
 
-      describe(`And a special mapping case`, () => {
+      describe('And a special mapping case', () => {
         test(`Then it return a ${StatusCodes.OK} response with mapped object`, async () => {
           const mappingCase = faker.helpers.enumValue(MAPPING_CASES)
           partner = randomPartner()
@@ -191,7 +191,7 @@ describe('Given a NGC integrations API user', () => {
           .expect(StatusCodes.INTERNAL_SERVER_ERROR)
       })
 
-      test(`Then it logs the exception`, async () => {
+      test('Then it logs the exception', async () => {
         await agent
           .put(url.replace(':partner', randomPartner()))
           .send({ situation: getRandomPersonaSituation() })

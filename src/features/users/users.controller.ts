@@ -67,7 +67,7 @@ router
     async (req, res) => {
       try {
         if (req.user && req.user.userId !== req.params.userId) {
-          throw new ForbiddenException(`Different user ids found`)
+          throw new ForbiddenException('Different user ids found')
         }
 
         const { user, verified, token } = await updateUserAndContact({

@@ -29,6 +29,7 @@ export default [
   {
     rules: {
       '@typescript-eslint/consistent-type-imports': 'error',
+      '@typescript-eslint/no-unnecessary-template-expression': 'error',
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
@@ -37,6 +38,7 @@ export default [
         },
       ],
       '@typescript-eslint/require-await': 'error',
+      '@typescript-eslint/restrict-template-expressions': 'error',
       'import/order': [
         'error',
         {
@@ -48,6 +50,8 @@ export default [
           ],
         },
       ],
+      'prefer-template': 'error',
+      quotes: ['error', 'single', { avoidEscape: true }],
     },
   },
 ]

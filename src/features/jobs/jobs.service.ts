@@ -23,7 +23,7 @@ import {
 } from './jobs.repository.js'
 
 export const JobFilesRootPath: Record<JobKind, string> = {
-  [JobKind.DOWNLOAD_ORGANISATION_POLL_SIMULATIONS_RESULT]: `jobs/polls`,
+  [JobKind.DOWNLOAD_ORGANISATION_POLL_SIMULATIONS_RESULT]: 'jobs/polls',
 }
 
 EventBus.on(JobCreatedEvent, publishRedisEvent)
@@ -146,7 +146,7 @@ export const runJob = <T extends JobKind>(
         throw new EntityNotFoundException('Job not found')
       }
 
-      const err = e instanceof Error ? e : new Error(`Unexpected error: ${e}`)
+      const err = e instanceof Error ? e : new Error('Unexpected error')
 
       const {
         id: jobId,
