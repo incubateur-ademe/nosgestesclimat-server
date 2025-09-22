@@ -85,6 +85,7 @@ router
           ? res.status(StatusCodes.OK).json(user)
           : res.status(StatusCodes.ACCEPTED).json(user)
       } catch (err) {
+        console.error(err)
         if (err instanceof EntityNotFoundException) {
           return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
         }

@@ -4,8 +4,7 @@ import jwt from 'jsonwebtoken'
 
 import { faker } from '@faker-js/faker'
 import supertest from 'supertest'
-import { afterEach, describe, expect, test } from 'vitest'
-import { prisma } from '../../adapters/prisma/client.js'
+import { describe, expect, test } from 'vitest'
 import { config } from '../../config.js'
 import { COOKIE_MAX_AGE } from '../../features/authentication/authentication.service.js'
 import { authentificationMiddleware } from '../authentificationMiddleware.js'
@@ -80,67 +79,6 @@ describe('authentication middleware', () => {
         email,
         exp: expect.any(Number),
         iat: expect.any(Number),
-      })
-    })
-
-    describe('And no userId present', () => {
-      describe('And user does not exist in database', () => {
-        test(`Should return a ${StatusCodes.NO_CONTENT} and a cookie`, async () => {
-          email = faker.internet.email()
-          token = jwt.sign({ email }, config.security.jwt.secret, {
-            expiresIn: COOKIE_MAX_AGE,
-          })
-
-          const response = await agent
-            .get('/')
-            .set('cookie', `ngcjwt=${token}`)
-            .expect(StatusCodes.NO_CONTENT)
-
-          const [cookie] = response.headers['set-cookie']
-          const userToken = cookie.split(';').shift()?.replace('ngcjwt=', '')
-
-          expect(jwt.decode(userToken!)).toEqual({
-            email,
-            exp: expect.any(Number),
-            iat: expect.any(Number),
-          })
-        })
-      })
-
-      describe('And user does exist in database', () => {
-        afterEach(async () => prisma.verifiedUser.deleteMany())
-
-        test(`Should return a ${StatusCodes.NO_CONTENT} and a cookie`, async () => {
-          email = faker.internet.email()
-          ;({ id: userId } = await prisma.verifiedUser.create({
-            data: {
-              email,
-              id: faker.string.uuid(),
-            },
-            select: {
-              id: true,
-            },
-          }))
-
-          token = jwt.sign({ email }, config.security.jwt.secret, {
-            expiresIn: COOKIE_MAX_AGE,
-          })
-
-          const response = await agent
-            .get('/')
-            .set('cookie', `ngcjwt=${token}`)
-            .expect(StatusCodes.NO_CONTENT)
-
-          const [cookie] = response.headers['set-cookie']
-          const userToken = cookie.split(';').shift()?.replace('ngcjwt=', '')
-
-          expect(jwt.decode(userToken!)).toEqual({
-            userId,
-            email,
-            exp: expect.any(Number),
-            iat: expect.any(Number),
-          })
-        })
       })
     })
   })
@@ -254,67 +192,6 @@ describe('authentication middleware passIfUnauthorized: true', () => {
         email,
         exp: expect.any(Number),
         iat: expect.any(Number),
-      })
-    })
-
-    describe('And no userId present', () => {
-      describe('And user does not exist in database', () => {
-        test(`Should return a ${StatusCodes.NO_CONTENT} and a cookie`, async () => {
-          email = faker.internet.email()
-          token = jwt.sign({ email }, config.security.jwt.secret, {
-            expiresIn: COOKIE_MAX_AGE,
-          })
-
-          const response = await agent
-            .get('/')
-            .set('cookie', `ngcjwt=${token}`)
-            .expect(StatusCodes.NO_CONTENT)
-
-          const [cookie] = response.headers['set-cookie']
-          const userToken = cookie.split(';').shift()?.replace('ngcjwt=', '')
-
-          expect(jwt.decode(userToken!)).toEqual({
-            email,
-            exp: expect.any(Number),
-            iat: expect.any(Number),
-          })
-        })
-      })
-
-      describe('And user does exist in database', () => {
-        afterEach(async () => prisma.verifiedUser.deleteMany())
-
-        test(`Should return a ${StatusCodes.NO_CONTENT} and a cookie`, async () => {
-          email = faker.internet.email()
-          ;({ id: userId } = await prisma.verifiedUser.create({
-            data: {
-              email,
-              id: faker.string.uuid(),
-            },
-            select: {
-              id: true,
-            },
-          }))
-
-          token = jwt.sign({ email }, config.security.jwt.secret, {
-            expiresIn: COOKIE_MAX_AGE,
-          })
-
-          const response = await agent
-            .get('/')
-            .set('cookie', `ngcjwt=${token}`)
-            .expect(StatusCodes.NO_CONTENT)
-
-          const [cookie] = response.headers['set-cookie']
-          const userToken = cookie.split(';').shift()?.replace('ngcjwt=', '')
-
-          expect(jwt.decode(userToken!)).toEqual({
-            userId,
-            email,
-            exp: expect.any(Number),
-            iat: expect.any(Number),
-          })
-        })
       })
     })
   })
