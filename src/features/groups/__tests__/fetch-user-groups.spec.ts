@@ -240,7 +240,7 @@ describe('Given a NGC user', () => {
         ])
       })
 
-      describe(`And filtering the list by groupIds`, () => {
+      describe('And filtering the list by groupIds', () => {
         test(`Then it returns a ${StatusCodes.OK} response with a list containing the filtered groups`, async () => {
           const response = await agent
             .get(url.replace(':userId', user1Id))
@@ -320,7 +320,7 @@ describe('Given a NGC user', () => {
           .expect(StatusCodes.INTERNAL_SERVER_ERROR)
       })
 
-      test(`Then it logs the exception`, async () => {
+      test('Then it logs the exception', async () => {
         await agent
           .get(url.replace(':userId', faker.string.uuid()))
           .expect(StatusCodes.INTERNAL_SERVER_ERROR)

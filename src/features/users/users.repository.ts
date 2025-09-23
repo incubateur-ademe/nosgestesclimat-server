@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client'
 import type { Request } from 'express'
 import {
   defaultUserSelection,
@@ -210,15 +211,32 @@ export const updateUser = (
   })
 }
 
-export const fetchVerifiedUser = (
-  { email }: NonNullable<Request['user']>,
+export const fetchVerifiedUser = <
+  T extends Prisma.VerifiedUserSelect = { id: true },
+>(
+  {
+    user: { email },
+    select = { id: true } as T,
+  }: { user: Pick<NonNullable<Request['user']>, 'email'>; select?: T },
   { session }: { session: Session }
 ) => {
-  return session.verifiedUser.findUnique({
+  return session.verifiedUser.findUniqueOrThrow({
     where: {
       email,
     },
-    select: defaultVerifiedUserSelection,
+    select,
+  })
+}
+
+export const fetchUsersForEmail = (
+  { email }: Pick<NonNullable<Request['user']>, 'email'>,
+  { session }: { session: Session }
+) => {
+  return session.user.findMany({
+    where: {
+      email,
+    },
+    select: defaultUserSelection,
   })
 }
 

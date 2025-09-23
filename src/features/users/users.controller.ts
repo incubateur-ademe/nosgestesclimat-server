@@ -67,7 +67,7 @@ router
     async (req, res) => {
       try {
         if (req.user && req.user.userId !== req.params.userId) {
-          throw new ForbiddenException(`Different user ids found`)
+          throw new ForbiddenException('Different user ids found')
         }
 
         const { user, verified, token } = await updateUserAndContact({
@@ -85,6 +85,7 @@ router
           ? res.status(StatusCodes.OK).json(user)
           : res.status(StatusCodes.ACCEPTED).json(user)
       } catch (err) {
+        console.error(err)
         if (err instanceof EntityNotFoundException) {
           return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
         }

@@ -2,7 +2,6 @@ import type { NextFunction, Request, RequestHandler, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import type { JwtPayload } from 'jsonwebtoken'
 import jwt from 'jsonwebtoken'
-import { prisma } from '../adapters/prisma/client.js'
 import { config } from '../config.js'
 import {
   COOKIE_MAX_AGE,
@@ -14,8 +13,8 @@ import logger from '../logger.js'
 
 const isValidResult = (
   result?: string | JwtPayload | undefined
-): result is JwtPayload & { email: string; userId?: string } =>
-  typeof result === 'object' && 'email' in result
+): result is JwtPayload & { email: string; userId: string } =>
+  typeof result === 'object' && 'email' in result && 'userId' in result
 
 export const authentificationMiddleware =
   ({
@@ -45,25 +44,9 @@ export const authentificationMiddleware =
           : res.status(StatusCodes.UNAUTHORIZED).end()
       }
 
-      const { email } = result
-      let { userId } = result
+      const { email, userId } = result
 
-      if (!userId) {
-        try {
-          const { id } = await prisma.verifiedUser.findUniqueOrThrow({
-            where: {
-              email: result.email,
-            },
-            select: {
-              id: true,
-            },
-          })
-
-          userId = id
-        } catch (e) {
-          logger.warn(`Could not find verified user for ${result.email}`, e)
-        }
-      } else if (passIfUnauthorized && userId === req.params.userId) {
+      if (passIfUnauthorized && userId === req.params.userId) {
         try {
           await syncUserData({ userId, email })
         } catch (err) {
@@ -75,7 +58,7 @@ export const authentificationMiddleware =
 
       req.user = {
         email,
-        userId: userId!,
+        userId,
       }
 
       const newToken = jwt.sign({ email, userId }, config.security.jwt.secret, {

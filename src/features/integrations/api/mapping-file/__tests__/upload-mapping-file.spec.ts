@@ -44,7 +44,7 @@ describe('Given a NGC integrations API user', () => {
       test(`Then it returns a ${StatusCodes.UNAUTHORIZED} error`, async () => {
         await agent
           .put(url)
-          .set('authorization', `Bearer invalid token`)
+          .set('authorization', 'Bearer invalid token')
           .expect(StatusCodes.UNAUTHORIZED)
       })
     })
@@ -70,7 +70,7 @@ describe('Given a NGC integrations API user', () => {
       Object.values(ApiScopeName)
         .filter((scopeName) => scopeName != ApiScopeName.ngc)
         .map((scope) => ({ scope }))
-    )(`And valid $scope token`, ({ scope }) => {
+    )('And valid $scope token', ({ scope }) => {
       let token: string
 
       beforeEach(async () => {
@@ -257,7 +257,7 @@ describe('Given a NGC integrations API user', () => {
           .expect(StatusCodes.CREATED)
       })
 
-      test(`Then it uploads the file`, async () => {
+      test('Then it uploads the file', async () => {
         const kind = randomMappingFileKind()
         const partner = randomPartner()
         await agent
@@ -307,7 +307,7 @@ describe('Given a NGC integrations API user', () => {
             .expect(StatusCodes.INTERNAL_SERVER_ERROR)
         })
 
-        test(`Then it logs the exception`, async () => {
+        test('Then it logs the exception', async () => {
           await agent
             .put(url)
             .attach(

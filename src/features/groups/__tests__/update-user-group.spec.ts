@@ -215,7 +215,7 @@ describe('Given a NGC user', () => {
         } = group)
       })
 
-      test(`Then it does not update group administrator in brevo`, async () => {
+      test('Then it does not update group administrator in brevo', async () => {
         const payload: GroupUpdateDto = {
           name: faker.company.name(),
           emoji: faker.internet.emoji(),
@@ -255,7 +255,7 @@ describe('Given a NGC user', () => {
           .expect(StatusCodes.INTERNAL_SERVER_ERROR)
       })
 
-      test(`Then it logs the exception`, async () => {
+      test('Then it logs the exception', async () => {
         await agent
           .put(
             url

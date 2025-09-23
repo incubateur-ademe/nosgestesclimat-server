@@ -11,7 +11,7 @@ import {
 } from '../geolocation.repository.js'
 
 const agent = supertest(app)
-const url = `/modele/v1/geolocation`
+const url = '/modele/v1/geolocation'
 
 describe('Given no redis store', () => {
   beforeEach(() => initGeolocationStore())
@@ -27,7 +27,7 @@ describe('Given no redis store', () => {
     })
   })
 
-  describe(`And ip v6 address`, () => {
+  describe('And ip v6 address', () => {
     describe('When a user wants its country according to his/her ip', () => {
       test(`Then it returns a ${StatusCodes.NOT_FOUND} error`, async () => {
         const { text } = await agent
@@ -41,16 +41,16 @@ describe('Given no redis store', () => {
   })
 })
 
-describe(`Given redis store`, () => {
+describe('Given redis store', () => {
   const frIP = faker.internet.ipv4()
   const sortedIps = [
     {
       ipStartNum: 0,
-      countryCode: `BE`,
+      countryCode: 'BE',
     },
     {
       ipStartNum: convertIpToNumber(frIP),
-      countryCode: `FR`,
+      countryCode: 'FR',
     },
   ]
   const countries = {
@@ -100,7 +100,7 @@ describe(`Given redis store`, () => {
     })
   })
 
-  describe(`And could not determine ip country`, () => {
+  describe('And could not determine ip country', () => {
     beforeEach(
       () =>
         new Promise<void>((resolve) =>
@@ -109,7 +109,7 @@ describe(`Given redis store`, () => {
             JSON.stringify([
               {
                 ipStartNum: 0,
-                countryCode: `ZZ`,
+                countryCode: 'ZZ',
               },
             ]),
             () => {
@@ -130,7 +130,7 @@ describe(`Given redis store`, () => {
     })
   })
 
-  describe(`And ip v6 address`, () => {
+  describe('And ip v6 address', () => {
     describe('When a user wants its country according to his/her ip', () => {
       test(`Then it returns a ${StatusCodes.NOT_FOUND} error`, async () => {
         const { text } = await agent
@@ -143,7 +143,7 @@ describe(`Given redis store`, () => {
     })
   })
 
-  describe(`And localhost`, () => {
+  describe('And localhost', () => {
     describe('When a user wants its country according to his/her ip', () => {
       test(`Then it returns a ${StatusCodes.NOT_FOUND} error`, async () => {
         const { text } = await agent.get(url).expect(StatusCodes.NOT_FOUND)

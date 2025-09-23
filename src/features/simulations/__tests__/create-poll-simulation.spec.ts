@@ -412,7 +412,7 @@ describe('Given a NGC user', () => {
           await EventBus.flush()
         })
 
-        test(`Then it updates poll fun facts`, async () => {
+        test('Then it updates poll fun facts', async () => {
           const payload: SimulationCreateInputDto = {
             id: faker.string.uuid(),
             situation,
@@ -641,7 +641,7 @@ describe('Given a NGC user', () => {
             await EventBus.flush()
           })
 
-          describe(`And incomplete simulation`, () => {
+          describe('And incomplete simulation', () => {
             test('Then it sends a continuation email', async () => {
               const email = faker.internet.email().toLocaleLowerCase()
               const payload: SimulationCreateInputDto = {
@@ -804,7 +804,7 @@ describe('Given a NGC user', () => {
               })
             })
 
-            test(`Then it does not send email twice`, async () => {
+            test('Then it does not send email twice', async () => {
               const {
                 createdAt: _1,
                 updatedAt: _2,
@@ -832,7 +832,7 @@ describe('Given a NGC user', () => {
             })
 
             describe('And from another device', () => {
-              test(`Then it does not send email twice`, async () => {
+              test('Then it does not send email twice', async () => {
                 const {
                   createdAt: _1,
                   updatedAt: _2,
@@ -968,7 +968,7 @@ describe('Given a NGC user', () => {
             .expect(StatusCodes.INTERNAL_SERVER_ERROR)
         })
 
-        test(`Then it logs the exception`, async () => {
+        test('Then it logs the exception', async () => {
           await agent
             .post(
               url

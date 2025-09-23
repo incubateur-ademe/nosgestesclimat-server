@@ -80,7 +80,7 @@ describe('Given a NGC integrations API user', () => {
           .expect(StatusCodes.CREATED)
       })
 
-      test(`Then it stores a verification code valid 1 hour in database`, async () => {
+      test('Then it stores a verification code valid 1 hour in database', async () => {
         mswServer.use(brevoSendEmail())
 
         const now = Date.now()
@@ -122,7 +122,7 @@ describe('Given a NGC integrations API user', () => {
         ).toBe(0)
       })
 
-      test(`Then it sends an email to recover the API token`, async () => {
+      test('Then it sends an email to recover the API token', async () => {
         mswServer.use(
           brevoSendEmail({
             expectBody: {
@@ -233,7 +233,7 @@ describe('Given a NGC integrations API user', () => {
           .expect(StatusCodes.INTERNAL_SERVER_ERROR)
       })
 
-      test(`Then it logs the exception`, async () => {
+      test('Then it logs the exception', async () => {
         await agent
           .post(url)
           .send({

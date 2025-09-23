@@ -201,7 +201,7 @@ describe('Given a redirected NGC user', () => {
         })
       })
 
-      describe(`And since query`, () => {
+      describe('And since query', () => {
         test(`Then it returns a ${StatusCodes.OK} response with stats since the given periods`, async () => {
           // since strict: on construit la série calendaire N dernières périodes (zéro-remplie)
           const since = faker.number.int({ min: 1, max: 10 }) // libre: pas besoin de le borner à 1..stats.length maintenant
@@ -263,7 +263,7 @@ describe('Given a redirected NGC user', () => {
         await agent.get(url).expect(StatusCodes.INTERNAL_SERVER_ERROR)
       })
 
-      test(`Then it logs the exception`, async () => {
+      test('Then it logs the exception', async () => {
         await agent.get(url)
 
         expect(logger.error).toHaveBeenCalledWith(
