@@ -55,6 +55,7 @@ const ConnectSchema = z
 const MatomoInstanceBaseSchema = z
   .object({
     token: z.string(),
+    timeout: z.coerce.number().default(60000),
     secure: z
       .string()
       .optional()
@@ -152,9 +153,11 @@ const {
     JOB_SECRET,
     JWT_SECRET,
     MATOMO_BETA_SITE_ID,
+    MATOMO_BETA_TIMEOUT,
     MATOMO_BETA_TOKEN,
     MATOMO_BETA_URL,
     MATOMO_DATA_SITE_ID,
+    MATOMO_DATA_TIMEOUT,
     MATOMO_DATA_TOKEN,
     MATOMO_DATA_URL,
     NODE_ENV,
@@ -212,11 +215,13 @@ export const config = ConfigSchema.parse({
     matomo: {
       beta: {
         siteId: MATOMO_BETA_SITE_ID,
+        timeout: MATOMO_BETA_TIMEOUT,
         token: MATOMO_BETA_TOKEN,
         url: MATOMO_BETA_URL,
       },
       data: {
         siteId: MATOMO_DATA_SITE_ID,
+        timeout: MATOMO_DATA_TIMEOUT,
         token: MATOMO_DATA_TOKEN,
         url: MATOMO_DATA_URL,
       },
