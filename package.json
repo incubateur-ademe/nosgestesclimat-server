@@ -30,11 +30,15 @@
   },
   "author": "",
   "license": "MIT",
+  "resolutions": {
+    "@prisma/driver-adapter-utils": "^6.16.2"
+  },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.895.0",
     "@aws-sdk/s3-request-presigner": "^3.895.0",
     "@incubateur-ademe/nosgestesclimat": "^3.12.0",
-    "@prisma/client": "^6.0.0",
+    "@prisma/client": "^6.16.2",
+    "@prisma/driver-adapter-utils": "^6.16.2",
     "@publicodes/tools": "^1.8.0",
     "@sentry/node": "^10.14.0",
     "@ts-rest/core": "^3.52.1",
@@ -53,7 +57,7 @@
     "morgan": "^1.10.1",
     "multer": "^2.0.2",
     "papaparse": "^5.5.3",
-    "prisma": "^5.18.0",
+    "prisma": "^6.16.2",
     "publicodes": "^1.9.1",
     "request-ip": "^3.3.0",
     "slugify": "^1.6.6",
@@ -67,7 +71,7 @@
     "zod-express-middleware": "^1.4.0"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "^0.3.7",
+    "@electric-sql/pglite": "^0.3.10",
     "@faker-js/faker": "^10.0.0",
     "@tsconfig/node22": "^22.0.2",
     "@types/cors": "^2.8.19",
@@ -91,7 +95,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.2.0",
     "msw": "^2.11.3",
-    "pglite-prisma-adapter": "^0.3.0",
+    "pglite-prisma-adapter": "^0.6.1",
     "prettier": "^3.6.2",
     "redis-mock": "^0.56.3",
     "rimraf": "^6.0.1",
