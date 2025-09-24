@@ -80,7 +80,7 @@ router
       try {
         const organisation = await createOrganisation({
           organisationDto: req.body,
-          origin: req.get('origin') || config.origin,
+          origin: req.get('origin') || config.app.origin,
           locale: LocaleQuery.parse(req.query).locale,
           user: req.user!,
         })
@@ -199,7 +199,7 @@ router
     async (req, res) => {
       try {
         const poll = await createPoll({
-          origin: req.get('origin') || config.origin,
+          origin: req.get('origin') || config.app.origin,
           locale: LocaleQuery.parse(req.query).locale,
           pollDto: req.body,
           user: req.user!,
@@ -387,7 +387,7 @@ router
       try {
         const simulation = await createPollSimulation({
           simulationDto: SimulationCreateDto.parse(req.body),
-          origin: req.get('origin') || config.origin,
+          origin: req.get('origin') || config.app.origin,
           locale: LocaleQuery.parse(req.query).locale,
           params: req.params,
         })

@@ -28,7 +28,7 @@ router
     try {
       const verificationCode = await createVerificationCode({
         verificationCodeDto: VerificationCodeCreateDto.parse(req.body),
-        origin: req.get('origin') || config.origin,
+        origin: req.get('origin') || config.app.origin,
         locale: LocaleQuery.parse(req.query).locale,
       })
 

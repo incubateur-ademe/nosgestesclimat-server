@@ -19,7 +19,7 @@ const router = tsRestServer.router(authenticationContract, {
     try {
       await generateApiToken({
         generateApiTokenDto: body,
-        origin: req.get('origin') || config.origin,
+        origin: req.get('origin') || config.app.origin,
       })
 
       return {

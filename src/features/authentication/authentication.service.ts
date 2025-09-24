@@ -11,13 +11,17 @@ import type { LoginDto } from './authentication.validator.js'
 import { LoginEvent } from './events/Login.event.js'
 import { findUserVerificationCode } from './verification-codes.repository.js'
 
+const {
+  app: { env },
+} = config
+
 export const COOKIE_MAX_AGE = 1000 * 60 * 60 * 24 * 61 // 2 months
 
 export const COOKIES_OPTIONS: CookieOptions = {
   maxAge: COOKIE_MAX_AGE,
   httpOnly: true,
-  secure: config.env === 'production',
-  sameSite: config.env === 'production' ? 'none' : 'lax',
+  secure: env === 'production',
+  sameSite: env === 'production' ? 'none' : 'lax',
 }
 
 export const COOKIE_NAME = 'ngcjwt'

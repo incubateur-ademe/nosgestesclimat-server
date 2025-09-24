@@ -5,18 +5,20 @@ import { config } from '../../config.js'
 import { isNetworkOrTimeoutOrRetryableError } from '../../core/typeguards/isRetryableAxiosError.js'
 import logger from '../../logger.js'
 
+const { clientId, clientSecret, url } = config.thirdParty.connect
 /**
  * Connect url is a full url in the environment
  * We use a URL to extract the baseUrl here
  * safe to remove once env is updated
  */
-export const baseURL = new URL(config.connect.url).origin
+
+export const baseURL = new URL(url).origin
 
 const connect = axios.create({
   baseURL,
   headers: {
-    client_id: config.connect.clientId,
-    client_secret: config.connect.clientSecret,
+    client_id: clientId,
+    client_secret: clientSecret,
   },
   timeout: 1000,
 })
