@@ -3,7 +3,7 @@ import { config } from '../../config.js'
 import logger from '../../logger.js'
 
 export const redisClientFactory = () =>
-  new Redis(config.thirdParty.redis.url, {
+  new Redis(config.app.redis.url, {
     lazyConnect: true,
   }).on('error', (err) => {
     logger.error('Redis error', err)

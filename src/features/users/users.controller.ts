@@ -74,7 +74,7 @@ router
           params: req.user || req.params,
           code: UserUpdateQuery.parse(req.query).code,
           userDto: UserUpdateDto.parse(req.body),
-          origin: req.get('origin') || config.origin,
+          origin: req.get('origin') || config.app.origin,
         })
 
         if (token) {
@@ -85,7 +85,6 @@ router
           ? res.status(StatusCodes.OK).json(user)
           : res.status(StatusCodes.ACCEPTED).json(user)
       } catch (err) {
-        console.error(err)
         if (err instanceof EntityNotFoundException) {
           return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
         }

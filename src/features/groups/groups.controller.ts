@@ -51,7 +51,7 @@ router
     try {
       const group = await createGroup({
         groupDto: GroupCreateDto.parse(req.body), // default values are not set in middleware
-        origin: req.get('origin') || config.origin,
+        origin: req.get('origin') || config.app.origin,
       })
 
       return res.status(StatusCodes.CREATED).json(group)
@@ -95,7 +95,7 @@ router
     try {
       const participant = await createParticipant({
         params: req.params,
-        origin: req.get('origin') || config.origin,
+        origin: req.get('origin') || config.app.origin,
         participantDto: ParticipantCreateDto.parse(req.body), // default values are not set in middleware
       })
 

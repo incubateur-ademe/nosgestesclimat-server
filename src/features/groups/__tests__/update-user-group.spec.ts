@@ -4,6 +4,7 @@ import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { brevoUpdateContact } from '../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
 import { prisma } from '../../../adapters/prisma/client.js'
+import * as prismaTransactionAdapter from '../../../adapters/prisma/transaction.js'
 import app from '../../../app.js'
 import { mswServer } from '../../../core/__tests__/fixtures/server.fixture.js'
 import { EventBus } from '../../../core/event-bus/event-bus.js'
@@ -234,11 +235,13 @@ describe('Given a NGC user', () => {
       const databaseError = new Error('Something went wrong')
 
       beforeEach(() => {
-        vi.spyOn(prisma, '$transaction').mockRejectedValueOnce(databaseError)
+        vi.spyOn(prismaTransactionAdapter, 'transaction').mockRejectedValueOnce(
+          databaseError
+        )
       })
 
       afterEach(() => {
-        vi.spyOn(prisma, '$transaction').mockRestore()
+        vi.spyOn(prismaTransactionAdapter, 'transaction').mockRestore()
       })
 
       test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {

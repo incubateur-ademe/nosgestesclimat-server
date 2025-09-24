@@ -94,13 +94,13 @@ type RecoverReferrerDayStats = BaseParams &
   (
     | {
         kind: StatsKind
-        segment: string
+        segment?: string
         referrer: string
         nbVisits: number
       }
     | {
         kind: StatsKind
-        segment: string
+        segment?: string
         referrer: null
         nbVisits?: undefined
       }
@@ -118,7 +118,7 @@ const recoverReferrerDayStats = (params: RecoverReferrerDayStats) =>
   )
 
 type RecoverKindDayStats = BaseParams &
-  ({ kind: StatsKind; segment: string } | { kind: null; segment?: undefined })
+  ({ kind: StatsKind; segment?: string } | { kind: null; segment?: undefined })
 
 const recoverKindDayStats = async (params: RecoverKindDayStats) => {
   const { source, date, kind } = params

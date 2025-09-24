@@ -45,7 +45,7 @@ router
         ),
         sendEmail: !!req.query?.sendEmail,
         params: req.params,
-        origin: req.get('origin') || config.origin,
+        origin: req.get('origin') || config.app.origin,
       })
 
       return res.status(StatusCodes.CREATED).json(simulation)

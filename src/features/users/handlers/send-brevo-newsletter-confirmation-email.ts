@@ -26,7 +26,7 @@ export const sendBrevoNewsLetterConfirmationEmail: Handler<
   })
 
   return sendNewsLetterConfirmationEmail({
-    newsLetterConfirmationBaseUrl: config.serverUrl,
+    newsLetterConfirmationBaseUrl: config.app.serverUrl,
     listIds: Array.from(finalNewsletters),
     origin,
     userId,
