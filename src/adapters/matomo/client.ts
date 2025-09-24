@@ -1,6 +1,8 @@
 import { MatomoStatsDevice, StatsKind } from '@prisma/client'
-import type { AxiosInstance } from 'axios'
+import axios from 'axios'
+import axiosRetry from 'axios-retry'
 import { z } from 'zod'
+import { isNetworkOrTimeoutOrRetryableError } from '../../core/typeguards/isRetryableAxiosError.js'
 import logger from '../../logger.js'
 
 export const ReferrerType = {
@@ -43,7 +45,7 @@ const ReferrerBaseSchema = z
   .object({
     label: z.string(),
     nb_visits: z.number(),
-    segment: z.string(),
+    segment: z.string().optional(),
     nb_uniq_visitors: z.number().optional(),
     nb_actions: z.number().optional(),
     nb_users: z.number().optional(),
@@ -121,7 +123,54 @@ const getFullSegments = ({
   return [segment]
 }
 
-export const matomoClientFactory = (client: AxiosInstance) => {
+export const matomoClientFactory = ({
+  timeout,
+  secure,
+  siteId,
+  token,
+  url,
+}: {
+  siteId: string
+  token: string
+  url: string
+  secure: boolean
+  timeout: number
+}) => {
+  const client = axios.create({
+    baseURL: url,
+    ...(secure
+      ? {
+          method: 'post',
+          headers: {
+            'content-type': 'application/json',
+          },
+        }
+      : {}),
+    params: {
+      idSite: siteId,
+      format: 'json',
+      module: 'API',
+      ...(secure ? {} : { token_auth: token }),
+    },
+    timeout,
+  })
+
+  if (secure) {
+    client.interceptors.request.use((req) => {
+      req.data = JSON.stringify({
+        token_auth: token,
+      })
+
+      return req
+    })
+  }
+
+  axiosRetry(client, {
+    retryCondition: isNetworkOrTimeoutOrRetryableError,
+    retryDelay: () => 200,
+    shouldResetTimeout: true,
+  })
+
   return {
     async getReferrers(date: string) {
       const { data } = await client('/', {

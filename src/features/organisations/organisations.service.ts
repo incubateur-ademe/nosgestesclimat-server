@@ -76,7 +76,7 @@ const organisationToDto = (
 ) => ({
   ...organisation,
   hasCustomQuestionEnabled:
-    config.organisationIdsWithCustomQuestionsEnabled.has(organisation.id),
+    config.app.organisationIdsWithCustomQuestionsEnabled.has(organisation.id),
   administrators: organisation.administrators?.map(
     ({
       id,

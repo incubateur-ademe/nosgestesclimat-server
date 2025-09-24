@@ -1,8 +1,9 @@
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
+import type { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 import { PrismaErrorCodes } from '../../adapters/prisma/constant.js'
 
 const isPrismaError = (err: unknown): err is PrismaClientKnownRequestError =>
-  err instanceof PrismaClientKnownRequestError
+  err instanceof Error &&
+  err.constructor.name === 'PrismaClientKnownRequestError'
 
 export const isPrismaErrorNotFound = (
   err: unknown
