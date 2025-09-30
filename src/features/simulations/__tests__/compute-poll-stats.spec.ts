@@ -91,7 +91,7 @@ describe('Given a poll participation', () => {
       })
 
       event = new SimulationUpsertedAsyncEvent({
-        origin: config.origin,
+        origin: config.app.origin,
         locale: Locales.fr,
         sendEmail: false,
         updated: false,
