@@ -103,6 +103,12 @@ export const createParticipantSimulation = async <
     savedViaEmail,
     computedResults,
     extendedSituation,
+    states: {
+      create: {
+        date: new Date(),
+        progression,
+      },
+    },
     ...(additionalQuestionsAnswers?.length
       ? {
           additionalQuestionsAnswers: {
