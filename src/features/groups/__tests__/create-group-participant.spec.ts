@@ -220,6 +220,66 @@ describe('Given a NGC user', () => {
         })
       })
 
+      test('Then it stores the participant simulation in database', async () => {
+        const payload: ParticipantInputCreateDto = {
+          userId: faker.string.uuid(),
+          name: faker.person.fullName(),
+          email: faker.internet.email().toLocaleLowerCase(),
+          simulation: getSimulationPayload(),
+        }
+
+        mswServer.use(brevoSendEmail(), brevoUpdateContact())
+
+        await agent
+          .post(url.replace(':groupId', groupId))
+          .send(payload)
+          .expect(StatusCodes.CREATED)
+
+        const createdSimulation = await prisma.simulation.findUnique({
+          where: {
+            id: payload.simulation.id,
+          },
+          select: {
+            id: true,
+            date: true,
+            model: true,
+            situation: true,
+            progression: true,
+            computedResults: true,
+            states: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+            createdAt: true,
+            updatedAt: true,
+          },
+        })
+
+        expect(createdSimulation).toEqual({
+          ...payload.simulation,
+          createdAt: expect.any(Date),
+          date: expect.any(Date),
+          updatedAt: expect.any(Date),
+          states: [
+            {
+              id: expect.any(String),
+              date: expect.any(Date),
+              simulationId: payload.simulation.id,
+              progression: 1,
+            },
+          ],
+          user: {
+            name: payload.name,
+            email: payload.email,
+            id: payload.userId,
+          },
+        })
+      })
+
       describe('And leaving his/her email', () => {
         test('Then it adds or updates contact in brevo', async () => {
           const date = new Date()
