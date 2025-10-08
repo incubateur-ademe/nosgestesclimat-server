@@ -316,6 +316,7 @@ model Simulation {
   situation                  Json
   extendedSituation          Json?
   foldedSteps                Json[]
+  states                     SimulationState[]
   additionalQuestionsAnswers SimulationAdditionalQuestionAnswer[]
   polls                      SimulationPoll[]
   userId                     String                               @db.Uuid
@@ -326,6 +327,17 @@ model Simulation {
   updatedAt                  DateTime                             @updatedAt
 
   @@index([userId])
+  @@schema("ngc")
+}
+
+model SimulationState {
+  id           String     @id @default(uuid()) @db.Uuid
+  date         DateTime
+  simulationId String     @db.Uuid
+  simulation   Simulation @relation(fields: [simulationId], references: [id], onDelete: Cascade)
+  progression  Float      @db.Real
+
+  @@unique([date, simulationId])
   @@schema("ngc")
 }
 
