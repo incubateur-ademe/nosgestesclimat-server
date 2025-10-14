@@ -2,6 +2,7 @@ import express from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { validateRequest } from 'zod-express-middleware'
 import { config } from '../../config.js'
+import { ConflictException } from '../../core/errors/ConflictException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
 import logger from '../../logger.js'
 import { VerificationCodeCreatedEvent } from './events/VerificationCodeCreated.event.js'
@@ -29,11 +30,15 @@ router
       const verificationCode = await createVerificationCode({
         verificationCodeDto: VerificationCodeCreateDto.parse(req.body),
         origin: req.get('origin') || config.app.origin,
-        locale: VerificationCodeCreateQuery.parse(req.query).locale,
+        ...VerificationCodeCreateQuery.parse(req.query),
       })
 
       return res.status(StatusCodes.CREATED).json(verificationCode)
     } catch (err) {
+      if (err instanceof ConflictException) {
+        return res.status(StatusCodes.CONFLICT).send(err.message).end()
+      }
+
       logger.error('VerificationCode creation failed', err)
 
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
