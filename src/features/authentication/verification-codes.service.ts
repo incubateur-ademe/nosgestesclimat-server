@@ -70,6 +70,9 @@ export const createVerificationCode = (
       if (!isPrismaErrorNotFound(e)) {
         throw e
       }
+      if (mode === AUTHENTICATION_MODE.signIn) {
+        throw new ConflictException('User does not exist')
+      }
     }
 
     const { verificationCode, code } = await generateVerificationCode(
