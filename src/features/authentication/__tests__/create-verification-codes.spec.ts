@@ -285,6 +285,25 @@ describe('Given a NGC user', () => {
       })
     })
 
+    describe(`And ${AUTHENTICATION_MODE.signIn} mode`, () => {
+      describe('And new user', () => {
+        test(`Then it returns a ${StatusCodes.CONFLICT} error`, async () => {
+          const payload = {
+            userId: faker.string.uuid(),
+            email: faker.internet.email().toLocaleLowerCase(),
+          }
+
+          await agent
+            .post(url)
+            .send(payload)
+            .query({
+              mode: AUTHENTICATION_MODE.signIn,
+            })
+            .expect(StatusCodes.CONFLICT)
+        })
+      })
+    })
+
     describe('And database failure', () => {
       const databaseError = new Error('Something went wrong')
 
