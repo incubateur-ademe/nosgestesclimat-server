@@ -5,6 +5,7 @@ import { config } from '../../config.js'
 import { ConflictException } from '../../core/errors/ConflictException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
 import logger from '../../logger.js'
+import { rateLimitSameRequestMiddleware } from '../../middlewares/rateLimitSameRequestMiddleware.js'
 import { VerificationCodeCreatedEvent } from './events/VerificationCodeCreated.event.js'
 import { sendVerificationCode } from './handlers/send-verification-code.js'
 import { updateBrevoContact } from './handlers/update-brevo-contact.js'
@@ -23,9 +24,19 @@ EventBus.on(VerificationCodeCreatedEvent, updateBrevoContact)
 /**
  * Creates a verification code
  */
-router
-  .route('/v1/')
-  .post(validateRequest(VerificationCodeCreateValidator), async (req, res) => {
+router.route('/v1/').post(
+  rateLimitSameRequestMiddleware({
+    ttlInSeconds: 30,
+    hashRequest: ({ method, url, clientIp }) => {
+      if (!clientIp) {
+        return
+      }
+
+      return `${method}_${url}_${clientIp}`
+    },
+  }),
+  validateRequest(VerificationCodeCreateValidator),
+  async (req, res) => {
     try {
       const verificationCode = await createVerificationCode({
         verificationCodeDto: VerificationCodeCreateDto.parse(req.body),
@@ -43,6 +54,7 @@ router
 
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
     }
-  })
+  }
+)
 
 export default router

@@ -344,6 +344,28 @@ describe('Given a NGC user', () => {
       })
     })
 
+    describe('And several times', () => {
+      let payload: VerificationCodeCreateDto
+
+      beforeEach(async () => {
+        payload = {
+          userId: faker.string.uuid(),
+          email: faker.internet.email().toLocaleLowerCase(),
+        }
+
+        mswServer.use(brevoSendEmail(), brevoUpdateContact())
+
+        await agent.post(url).send(payload).expect(StatusCodes.CREATED)
+      })
+
+      test(`Then it returns a ${StatusCodes.TOO_MANY_REQUESTS} error`, async () => {
+        await agent
+          .post(url)
+          .send(payload)
+          .expect(StatusCodes.TOO_MANY_REQUESTS)
+      })
+    })
+
     describe('And database failure', () => {
       const databaseError = new Error('Something went wrong')
 
