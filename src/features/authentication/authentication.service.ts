@@ -26,6 +26,11 @@ export const COOKIES_OPTIONS: CookieOptions = {
 
 export const COOKIE_NAME = 'ngcjwt'
 
+export const AUTHENTICATION_MODE = {
+  signIn: 'signIn',
+  signUp: 'signUp',
+} as const
+
 export const generateRandomVerificationCode = () =>
   Math.floor(
     Math.pow(10, 5) + Math.random() * (Math.pow(10, 6) - Math.pow(10, 5) - 1)
