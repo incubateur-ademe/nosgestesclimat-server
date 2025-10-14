@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker'
+import type { VerifiedUser } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
@@ -22,7 +23,12 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = CREATE_VERIFICATION_CODE_ROUTE
 
-  afterEach(() => prisma.verificationCode.deleteMany())
+  afterEach(() =>
+    Promise.all([
+      prisma.verificationCode.deleteMany(),
+      prisma.verifiedUser.deleteMany(),
+    ])
+  )
 
   describe('When creating a verification-code', () => {
     let code: string
@@ -245,6 +251,36 @@ describe('Given a NGC user', () => {
             expirationDate: expect.any(String),
             ...payload,
           })
+        })
+      })
+
+      describe('And existing user', () => {
+        let user: Pick<VerifiedUser, 'id' | 'email'>
+
+        beforeEach(async () => {
+          user = {
+            id: faker.string.uuid(),
+            email: faker.internet.email().toLocaleLowerCase(),
+          }
+
+          await prisma.verifiedUser.create({
+            data: user,
+          })
+        })
+
+        test(`Then it returns a ${StatusCodes.CONFLICT} error`, async () => {
+          const payload = {
+            userId: faker.string.uuid(),
+            email: user.email,
+          }
+
+          await agent
+            .post(url)
+            .send(payload)
+            .query({
+              mode: AUTHENTICATION_MODE.signUp,
+            })
+            .expect(StatusCodes.CONFLICT)
         })
       })
     })
