@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { LocaleQuery } from '../../core/i18n/lang.validator.js'
 import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail.js'
-import { AUTHENTICATION_MODE } from './authentication.service.js'
+import { AUTHENTICATION_MODE } from './verification-codes.service.js'
 
 export const VerificationCodeCreateDto = z
   .object({

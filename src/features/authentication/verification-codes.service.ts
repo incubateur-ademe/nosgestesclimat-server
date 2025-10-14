@@ -5,15 +5,38 @@ import { ConflictException } from '../../core/errors/ConflictException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
 import type { Locales } from '../../core/i18n/constant.js'
 import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError.js'
-import type { WithOptionalProperty } from '../../types/types.js'
+import type { ValueOf, WithOptionalProperty } from '../../types/types.js'
 import { fetchVerifiedUser } from '../users/users.repository.js'
-import {
-  AUTHENTICATION_MODE,
-  generateRandomVerificationCode,
-} from './authentication.service.js'
+import { generateRandomVerificationCode } from './authentication.service.js'
 import { VerificationCodeCreatedEvent } from './events/VerificationCodeCreated.event.js'
 import { createUserVerificationCode } from './verification-codes.repository.js'
 import type { VerificationCodeCreateDto } from './verification-codes.validator.js'
+
+export const AUTHENTICATION_MODE = {
+  signIn: 'signIn',
+  signUp: 'signUp',
+} as const
+
+export type AUTHENTICATION_MODE = ValueOf<typeof AUTHENTICATION_MODE>
+
+const checkSignMode = async (
+  { email, mode }: { email: string; mode: AUTHENTICATION_MODE },
+  { session }: { session: Session }
+) => {
+  try {
+    await fetchVerifiedUser({ user: { email } }, { session })
+    if (mode === AUTHENTICATION_MODE.signUp) {
+      throw new ConflictException('User already exists')
+    }
+  } catch (e) {
+    if (!isPrismaErrorNotFound(e)) {
+      throw e
+    }
+    if (mode === AUTHENTICATION_MODE.signIn) {
+      throw new ConflictException('User does not exist')
+    }
+  }
+}
 
 export const generateVerificationCode = async (
   {
@@ -61,18 +84,11 @@ export const createVerificationCode = (
   { session: parentSession }: { session?: Session } = {}
 ) => {
   return transaction(async (session) => {
-    try {
-      await fetchVerifiedUser({ user: verificationCodeDto }, { session })
-      if (mode === AUTHENTICATION_MODE.signUp) {
-        throw new ConflictException('User already exists')
-      }
-    } catch (e) {
-      if (!isPrismaErrorNotFound(e)) {
-        throw e
-      }
-      if (mode === AUTHENTICATION_MODE.signIn) {
-        throw new ConflictException('User does not exist')
-      }
+    if (mode) {
+      await checkSignMode(
+        { email: verificationCodeDto.email, mode },
+        { session }
+      )
     }
 
     const { verificationCode, code } = await generateVerificationCode(
