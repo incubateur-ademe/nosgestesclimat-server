@@ -7,6 +7,7 @@ import { config } from '../../config.js'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
 import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError.js'
+import type { ValueOf } from '../../types/types.js'
 import type { LoginDto } from './authentication.validator.js'
 import { LoginEvent } from './events/Login.event.js'
 import { findUserVerificationCode } from './verification-codes.repository.js'
@@ -30,6 +31,8 @@ export const AUTHENTICATION_MODE = {
   signIn: 'signIn',
   signUp: 'signUp',
 } as const
+
+export type AUTHENTICATION_MODE = ValueOf<typeof AUTHENTICATION_MODE>
 
 export const generateRandomVerificationCode = () =>
   Math.floor(
