@@ -15,7 +15,7 @@ import { EventBus } from '../../../core/event-bus/event-bus.js'
 import { Locales } from '../../../core/i18n/constant.js'
 import logger from '../../../logger.js'
 import * as authenticationService from '../authentication.service.js'
-import { AUTHENTICATION_MODE } from '../authentication.service.js'
+import { AUTHENTICATION_MODE } from '../verification-codes.service.js'
 import type { VerificationCodeCreateDto } from '../verification-codes.validator.js'
 import { CREATE_VERIFICATION_CODE_ROUTE } from './fixtures/verification-codes.fixture.js'
 
