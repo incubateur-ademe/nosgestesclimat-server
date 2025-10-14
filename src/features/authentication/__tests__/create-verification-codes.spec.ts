@@ -302,6 +302,46 @@ describe('Given a NGC user', () => {
             .expect(StatusCodes.CONFLICT)
         })
       })
+
+      describe('And existing user', () => {
+        let user: Pick<VerifiedUser, 'id' | 'email'>
+
+        beforeEach(async () => {
+          user = {
+            id: faker.string.uuid(),
+            email: faker.internet.email().toLocaleLowerCase(),
+          }
+
+          await prisma.verifiedUser.create({
+            data: user,
+          })
+        })
+
+        test(`Then it returns a ${StatusCodes.CREATED} response with the created verification code`, async () => {
+          const payload = {
+            userId: faker.string.uuid(),
+            email: user.email,
+          }
+
+          mswServer.use(brevoSendEmail(), brevoUpdateContact())
+
+          const response = await agent
+            .post(url)
+            .send(payload)
+            .query({
+              mode: AUTHENTICATION_MODE.signIn,
+            })
+            .expect(StatusCodes.CREATED)
+
+          expect(response.body).toEqual({
+            id: expect.any(String),
+            createdAt: expect.any(String),
+            updatedAt: expect.any(String),
+            expirationDate: expect.any(String),
+            ...payload,
+          })
+        })
+      })
     })
 
     describe('And database failure', () => {
