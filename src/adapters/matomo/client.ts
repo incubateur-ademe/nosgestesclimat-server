@@ -197,6 +197,8 @@ export const matomoClientFactory = ({
     },
 
     async getReferrersCampaigns(date: string) {
+      const referrersCampaignsByKeyWord = []
+
       const { data } = await client('/', {
         params: {
           method: 'Referrers.getCampaigns',
@@ -205,7 +207,36 @@ export const matomoClientFactory = ({
         },
       })
 
-      return z.array(ReferrerWebsiteSchema).parse(data)
+      const campaigns = z.array(ReferrerWebsiteSchema).parse(data)
+
+      for (const campaign of campaigns) {
+        const { idsubdatatable: idSubtable } = campaign
+        if (!idSubtable) {
+          referrersCampaignsByKeyWord.push(campaign)
+          continue
+        }
+
+        const { data: dataWithKeyWords } = await client('/', {
+          params: {
+            method: 'Referrers.getKeywordsFromCampaignId',
+            idSubtable,
+            period: 'day',
+            date,
+          },
+        })
+
+        referrersCampaignsByKeyWord.push(
+          ...z
+            .array(ReferrerCampaignSchema)
+            .parse(dataWithKeyWords)
+            .map((referrerWithKeyWords) => ({
+              ...referrerWithKeyWords,
+              label: `${campaign.label} - ${referrerWithKeyWords.label}`,
+            }))
+        )
+      }
+
+      return referrersCampaignsByKeyWord
     },
 
     async getDayVisits(
