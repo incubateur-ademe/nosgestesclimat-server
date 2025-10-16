@@ -116,8 +116,8 @@ afterAll(async () => {
 afterEach(async () => {
   resetMswServer()
 
-  await Promise.all(
-    models.map(async ({ delegate, name }) => {
+  await Promise.all([
+    ...models.map(async ({ delegate, name }) => {
       try {
         expect(await delegate.count({})).toBe(0)
       } catch {
@@ -125,6 +125,9 @@ afterEach(async () => {
           `${name} resources found after the test, please clean database after each test to avoid flaky tests`
         )
       }
-    })
-  )
+    }),
+    new Promise<void>((res, rej) =>
+      redis.flushall((err) => (err ? rej(err) : res()))
+    ),
+  ])
 })
