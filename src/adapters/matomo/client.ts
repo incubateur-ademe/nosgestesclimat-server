@@ -11,6 +11,7 @@ export const ReferrerType = {
   [StatsKind.website]: 3,
   [StatsKind.campaign]: 6,
   [StatsKind.social]: 7,
+  [StatsKind.aiAgent]: 8,
 } as const
 
 export const ReferrerKind = {
@@ -19,6 +20,7 @@ export const ReferrerKind = {
   3: StatsKind.website,
   6: StatsKind.campaign,
   7: StatsKind.social,
+  8: StatsKind.aiAgent,
 } as const
 
 export const MatomoActions = {
