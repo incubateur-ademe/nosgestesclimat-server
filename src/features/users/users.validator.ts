@@ -17,6 +17,12 @@ export const FetchUserContactValidator = {
   query: LocaleQuery.optional(),
 }
 
+export const FetchMeValidator = {
+  body: z.object({}).strict().optional(),
+  params: z.object({}).strict().optional(),
+  query: z.object({}).strict().optional(),
+}
+
 export const UserUpdateDto = z
   .object({
     email: z
