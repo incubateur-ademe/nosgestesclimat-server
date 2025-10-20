@@ -380,6 +380,7 @@ enum StatsKind {
   search
   social
   website
+  aiAgent
   all
 
   @@schema("ngc")
