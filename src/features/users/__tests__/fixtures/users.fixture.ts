@@ -23,6 +23,8 @@ type TestAgent = ReturnType<typeof supertest>
 
 export const UPDATE_USER_ROUTE = '/users/v1/:userId'
 
+export const ME_ROUTE = '/users/v1/me'
+
 export const getBrevoContact = (
   contact: Partial<BrevoContactDto> = {}
 ): BrevoContactDto => ({
