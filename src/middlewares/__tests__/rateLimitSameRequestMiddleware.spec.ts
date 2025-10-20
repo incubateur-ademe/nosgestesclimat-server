@@ -9,7 +9,7 @@ import logger from '../../logger.js'
 import { rateLimitSameRequestMiddleware } from '../rateLimitSameRequestMiddleware.js'
 
 describe('rate limit same requests middleware', () => {
-  app.use(rateLimitSameRequestMiddleware)
+  app.use(rateLimitSameRequestMiddleware())
   app.use((_, res) => res.status(StatusCodes.NO_CONTENT).end())
   const agent = supertest(app)
 

@@ -249,6 +249,7 @@ describe('Given a NGC user', () => {
                 pollId: true,
               },
             },
+            states: true,
             user: {
               select: {
                 id: true,
@@ -267,6 +268,14 @@ describe('Given a NGC user', () => {
           date: expect.any(Date),
           updatedAt: expect.any(Date),
           polls: [],
+          states: [
+            {
+              id: expect.any(String),
+              date: expect.any(Date),
+              simulationId: id,
+              progression: 1,
+            },
+          ],
           user: {
             ...payload.user,
             id: userId,
@@ -330,6 +339,21 @@ describe('Given a NGC user', () => {
               name: null,
             },
           })
+        })
+
+        test('Then it creates a new simulation state', async () => {
+          await agent
+            .post(url.replace(':userId', userId))
+            .send(payload)
+            .expect(StatusCodes.CREATED)
+
+          expect(
+            await prisma.simulationState.count({
+              where: {
+                simulationId: payload.id,
+              },
+            })
+          ).toBe(2)
         })
       })
       describe('And leaving his/her email', () => {

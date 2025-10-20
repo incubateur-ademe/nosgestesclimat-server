@@ -21,6 +21,7 @@ import {
   updateUserAndContact,
 } from './users.service.js'
 import {
+  FetchMeValidator,
   FetchUserContactValidator,
   NewsletterConfirmationQuery,
   NewsletterConfirmationValidator,
@@ -51,6 +52,24 @@ router
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
     }
   })
+
+/**
+ * Returns current user data
+ */
+router
+  .route('/v1/me')
+  .get(
+    authentificationMiddleware(),
+    validateRequest(FetchMeValidator),
+    (req, res) => {
+      const user = req.user!
+
+      return res.status(StatusCodes.OK).json({
+        id: user.userId,
+        email: user.email,
+      })
+    }
+  )
 
 EventBus.on(UserUpdatedEvent, addOrUpdateBrevoContact)
 EventBus.on(UserUpdatedEvent, sendBrevoNewsLetterConfirmationEmail)
