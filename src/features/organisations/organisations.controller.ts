@@ -381,7 +381,7 @@ router
 router
   .route('/v1/:userId/public-polls/:pollIdOrSlug/simulations')
   .post(
-    rateLimitSameRequestMiddleware,
+    rateLimitSameRequestMiddleware(),
     validateRequest(OrganisationPollSimulationCreateValidator),
     async (req, res) => {
       try {

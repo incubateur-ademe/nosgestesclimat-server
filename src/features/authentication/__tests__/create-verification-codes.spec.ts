@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker'
+import type { VerifiedUser } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
@@ -14,6 +15,7 @@ import { EventBus } from '../../../core/event-bus/event-bus.js'
 import { Locales } from '../../../core/i18n/constant.js'
 import logger from '../../../logger.js'
 import * as authenticationService from '../authentication.service.js'
+import { AUTHENTICATION_MODE } from '../verification-codes.service.js'
 import type { VerificationCodeCreateDto } from '../verification-codes.validator.js'
 import { CREATE_VERIFICATION_CODE_ROUTE } from './fixtures/verification-codes.fixture.js'
 
@@ -21,7 +23,12 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = CREATE_VERIFICATION_CODE_ROUTE
 
-  afterEach(() => prisma.verificationCode.deleteMany())
+  afterEach(() =>
+    Promise.all([
+      prisma.verificationCode.deleteMany(),
+      prisma.verifiedUser.deleteMany(),
+    ])
+  )
 
   describe('When creating a verification-code', () => {
     let code: string
@@ -158,6 +165,31 @@ describe('Given a NGC user', () => {
       await EventBus.flush()
     })
 
+    test('Then it updates brevo contact', async () => {
+      const email = faker.internet.email().toLocaleLowerCase()
+      const userId = faker.string.uuid()
+
+      mswServer.use(
+        brevoSendEmail(),
+        brevoUpdateContact({
+          expectBody: {
+            email,
+            attributes: {
+              USER_ID: userId,
+            },
+            updateEnabled: true,
+          },
+        })
+      )
+
+      await agent.post(url).send({
+        userId,
+        email,
+      })
+
+      await EventBus.flush()
+    })
+
     describe(`And ${Locales.en} locale`, () => {
       test('Then it sends an email with the code', async () => {
         const email = faker.internet.email().toLocaleLowerCase()
@@ -194,29 +226,144 @@ describe('Given a NGC user', () => {
       })
     })
 
-    test('Then it updates brevo contact', async () => {
-      const email = faker.internet.email().toLocaleLowerCase()
-      const userId = faker.string.uuid()
+    describe(`And ${AUTHENTICATION_MODE.signUp} mode`, () => {
+      describe('And new user', () => {
+        test(`Then it returns a ${StatusCodes.CREATED} response with the created verification code`, async () => {
+          const payload = {
+            userId: faker.string.uuid(),
+            email: faker.internet.email().toLocaleLowerCase(),
+          }
 
-      mswServer.use(
-        brevoSendEmail(),
-        brevoUpdateContact({
-          expectBody: {
-            email,
-            attributes: {
-              USER_ID: userId,
-            },
-            updateEnabled: true,
-          },
+          mswServer.use(brevoSendEmail(), brevoUpdateContact())
+
+          const response = await agent
+            .post(url)
+            .send(payload)
+            .query({
+              mode: AUTHENTICATION_MODE.signUp,
+            })
+            .expect(StatusCodes.CREATED)
+
+          expect(response.body).toEqual({
+            id: expect.any(String),
+            createdAt: expect.any(String),
+            updatedAt: expect.any(String),
+            expirationDate: expect.any(String),
+            ...payload,
+          })
         })
-      )
-
-      await agent.post(url).send({
-        userId,
-        email,
       })
 
-      await EventBus.flush()
+      describe('And existing user', () => {
+        let user: Pick<VerifiedUser, 'id' | 'email'>
+
+        beforeEach(async () => {
+          user = {
+            id: faker.string.uuid(),
+            email: faker.internet.email().toLocaleLowerCase(),
+          }
+
+          await prisma.verifiedUser.create({
+            data: user,
+          })
+        })
+
+        test(`Then it returns a ${StatusCodes.CONFLICT} error`, async () => {
+          const payload = {
+            userId: faker.string.uuid(),
+            email: user.email,
+          }
+
+          await agent
+            .post(url)
+            .send(payload)
+            .query({
+              mode: AUTHENTICATION_MODE.signUp,
+            })
+            .expect(StatusCodes.CONFLICT)
+        })
+      })
+    })
+
+    describe(`And ${AUTHENTICATION_MODE.signIn} mode`, () => {
+      describe('And new user', () => {
+        test(`Then it returns a ${StatusCodes.CONFLICT} error`, async () => {
+          const payload = {
+            userId: faker.string.uuid(),
+            email: faker.internet.email().toLocaleLowerCase(),
+          }
+
+          await agent
+            .post(url)
+            .send(payload)
+            .query({
+              mode: AUTHENTICATION_MODE.signIn,
+            })
+            .expect(StatusCodes.CONFLICT)
+        })
+      })
+
+      describe('And existing user', () => {
+        let user: Pick<VerifiedUser, 'id' | 'email'>
+
+        beforeEach(async () => {
+          user = {
+            id: faker.string.uuid(),
+            email: faker.internet.email().toLocaleLowerCase(),
+          }
+
+          await prisma.verifiedUser.create({
+            data: user,
+          })
+        })
+
+        test(`Then it returns a ${StatusCodes.CREATED} response with the created verification code`, async () => {
+          const payload = {
+            userId: faker.string.uuid(),
+            email: user.email,
+          }
+
+          mswServer.use(brevoSendEmail(), brevoUpdateContact())
+
+          const response = await agent
+            .post(url)
+            .send(payload)
+            .query({
+              mode: AUTHENTICATION_MODE.signIn,
+            })
+            .expect(StatusCodes.CREATED)
+
+          expect(response.body).toEqual({
+            id: expect.any(String),
+            createdAt: expect.any(String),
+            updatedAt: expect.any(String),
+            expirationDate: expect.any(String),
+            ...payload,
+          })
+        })
+      })
+    })
+
+    describe('And several times', () => {
+      let payload: VerificationCodeCreateDto
+
+      beforeEach(async () => {
+        payload = {
+          userId: faker.string.uuid(),
+          email: faker.internet.email().toLocaleLowerCase(),
+        }
+
+        mswServer.use(brevoSendEmail(), brevoUpdateContact())
+
+        await agent.post(url).send(payload).expect(StatusCodes.CREATED)
+      })
+
+      test(`Then it returns a ${StatusCodes.TOO_MANY_REQUESTS} error`, async () => {
+        await agent
+          .post(url)
+          .send(payload)
+          .expect(StatusCodes.TOO_MANY_REQUESTS)
+      })
     })
 
     describe('And database failure', () => {

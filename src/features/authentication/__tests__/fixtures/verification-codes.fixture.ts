@@ -7,6 +7,8 @@ import {
   brevoUpdateContact,
 } from '../../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
 import { prisma } from '../../../../adapters/prisma/client.js'
+import { redis } from '../../../../adapters/redis/client.js'
+import { KEYS } from '../../../../adapters/redis/constant.js'
 import {
   mswServer,
   resetMswServer,
@@ -48,15 +50,25 @@ export const createVerificationCode = async ({
     .send(payload)
     .expect(StatusCodes.CREATED)
 
-  if (expirationDate) {
-    await prisma.verificationCode.updateMany({
-      data: {
-        expirationDate,
-      },
-    })
-  }
-
-  await EventBus.flush()
+  await Promise.all([
+    EventBus.flush(),
+    new Promise<void>((res, rej) => {
+      redis.keys(`${KEYS.rateLimitSameRequests}_*`, async (err, keys) =>
+        err
+          ? rej(err)
+          : redis.del(keys || [], (err) => (err ? rej(err) : res()))
+      )
+    }),
+    ...(expirationDate
+      ? [
+          prisma.verificationCode.updateMany({
+            data: {
+              expirationDate,
+            },
+          }),
+        ]
+      : []),
+  ])
 
   resetMswServer()
 
