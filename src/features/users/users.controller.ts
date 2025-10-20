@@ -52,6 +52,11 @@ router
     }
   })
 
+/**
+ * Returns current user data
+ */
+router.route('/v1/me').get(authentificationMiddleware())
+
 EventBus.on(UserUpdatedEvent, addOrUpdateBrevoContact)
 EventBus.on(UserUpdatedEvent, sendBrevoNewsLetterConfirmationEmail)
 EventBus.on(UserUpdatedEvent, removePreviousBrevoContact)
