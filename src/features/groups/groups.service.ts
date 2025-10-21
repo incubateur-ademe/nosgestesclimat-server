@@ -109,8 +109,8 @@ export const createGroup = async ({
 }) => {
   const {
     group,
-    administrator,
     simulation,
+    administrator,
     simulationUpdated,
     simulationCreated,
   } = await transaction((session) => createGroupAndUser(groupDto, { session }))
