@@ -34,6 +34,7 @@ export const findUserVerificationCode = (
     select: {
       email: true,
       userId: true,
+      mode: true,
     },
   })
 }

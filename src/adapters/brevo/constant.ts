@@ -13,6 +13,7 @@ const FrTemplateIds = {
   SIMULATION_IN_PROGRESS: 102,
   API_VERIFICATION_CODE: 116,
   NEWSLETTER_CONFIRMATION: 118,
+  SIGN_UP: 137,
 } as const
 
 type FrTemplateIds = ValueOf<typeof FrTemplateIds>
@@ -22,6 +23,7 @@ const EnTemplateIds = {
   ORGANISATION_CREATED: 124,
   ORGANISATION_JOINED: 123,
   POLL_CREATED: 127,
+  SIGN_UP: 139,
 } as const
 
 type EnTemplateIds = ValueOf<typeof EnTemplateIds>
