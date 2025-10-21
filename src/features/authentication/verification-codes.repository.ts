@@ -6,9 +6,7 @@ export const createUserVerificationCode = (
   { session }: { session: Session }
 ) => {
   return session.verificationCode.create({
-    data: {
-      ...data,
-    },
+    data,
     select: {
       id: true,
       email: true,

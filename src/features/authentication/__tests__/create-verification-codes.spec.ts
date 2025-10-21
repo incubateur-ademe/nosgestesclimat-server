@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import type { VerifiedUser } from '@prisma/client'
+import { VerificationCodeMode, type VerifiedUser } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
@@ -15,7 +15,6 @@ import { EventBus } from '../../../core/event-bus/event-bus.js'
 import { Locales } from '../../../core/i18n/constant.js'
 import logger from '../../../logger.js'
 import * as authenticationService from '../authentication.service.js'
-import { AUTHENTICATION_MODE } from '../verification-codes.service.js'
 import type { VerificationCodeCreateDto } from '../verification-codes.validator.js'
 import { CREATE_VERIFICATION_CODE_ROUTE } from './fixtures/verification-codes.fixture.js'
 
@@ -227,7 +226,7 @@ describe('Given a NGC user', () => {
       })
     })
 
-    describe(`And ${AUTHENTICATION_MODE.signUp} mode`, () => {
+    describe(`And ${VerificationCodeMode.signUp} mode`, () => {
       describe('And new user', () => {
         test(`Then it returns a ${StatusCodes.CREATED} response with the created verification code`, async () => {
           const payload = {
@@ -241,7 +240,7 @@ describe('Given a NGC user', () => {
             .post(url)
             .send(payload)
             .query({
-              mode: AUTHENTICATION_MODE.signUp,
+              mode: VerificationCodeMode.signUp,
             })
             .expect(StatusCodes.CREATED)
 
@@ -252,6 +251,45 @@ describe('Given a NGC user', () => {
             expirationDate: expect.any(String),
             ...payload,
           })
+        })
+
+        test('Then it stores a verification code valid 1 hour in database', async () => {
+          const payload = {
+            userId: faker.string.uuid(),
+            email: faker.internet.email().toLocaleLowerCase(),
+          }
+
+          mswServer.use(brevoSendEmail(), brevoUpdateContact())
+
+          const now = Date.now()
+          const oneHour = 1000 * 60 * 60
+
+          await agent
+            .post(url)
+            .send(payload)
+            .query({
+              mode: VerificationCodeMode.signUp,
+            })
+            .expect(StatusCodes.CREATED)
+
+          const [verificationCode] = await prisma.verificationCode.findMany()
+
+          expect(verificationCode).toEqual({
+            ...payload,
+            id: expect.any(String),
+            code,
+            mode: VerificationCodeMode.signUp,
+            expirationDate: expect.any(Date),
+            createdAt: expect.any(Date),
+            updatedAt: expect.any(Date),
+          })
+
+          // Hopefully code gets created under 1 second
+          expect(
+            Math.floor(
+              (verificationCode.expirationDate.getTime() - now - oneHour) / 1000
+            )
+          ).toBe(0)
         })
       })
 
@@ -279,14 +317,14 @@ describe('Given a NGC user', () => {
             .post(url)
             .send(payload)
             .query({
-              mode: AUTHENTICATION_MODE.signUp,
+              mode: VerificationCodeMode.signUp,
             })
             .expect(StatusCodes.CONFLICT)
         })
       })
     })
 
-    describe(`And ${AUTHENTICATION_MODE.signIn} mode`, () => {
+    describe(`And ${VerificationCodeMode.signIn} mode`, () => {
       describe('And new user', () => {
         test(`Then it returns a ${StatusCodes.CONFLICT} error`, async () => {
           const payload = {
@@ -298,7 +336,7 @@ describe('Given a NGC user', () => {
             .post(url)
             .send(payload)
             .query({
-              mode: AUTHENTICATION_MODE.signIn,
+              mode: VerificationCodeMode.signIn,
             })
             .expect(StatusCodes.CONFLICT)
         })
@@ -330,7 +368,7 @@ describe('Given a NGC user', () => {
             .post(url)
             .send(payload)
             .query({
-              mode: AUTHENTICATION_MODE.signIn,
+              mode: VerificationCodeMode.signIn,
             })
             .expect(StatusCodes.CREATED)
 
@@ -341,6 +379,45 @@ describe('Given a NGC user', () => {
             expirationDate: expect.any(String),
             ...payload,
           })
+        })
+
+        test('Then it stores a verification code valid 1 hour in database', async () => {
+          const payload = {
+            userId: faker.string.uuid(),
+            email: user.email,
+          }
+
+          mswServer.use(brevoSendEmail(), brevoUpdateContact())
+
+          const now = Date.now()
+          const oneHour = 1000 * 60 * 60
+
+          await agent
+            .post(url)
+            .send(payload)
+            .query({
+              mode: VerificationCodeMode.signIn,
+            })
+            .expect(StatusCodes.CREATED)
+
+          const [verificationCode] = await prisma.verificationCode.findMany()
+
+          expect(verificationCode).toEqual({
+            ...payload,
+            id: expect.any(String),
+            code,
+            mode: VerificationCodeMode.signIn,
+            expirationDate: expect.any(Date),
+            createdAt: expect.any(Date),
+            updatedAt: expect.any(Date),
+          })
+
+          // Hopefully code gets created under 1 second
+          expect(
+            Math.floor(
+              (verificationCode.expirationDate.getTime() - now - oneHour) / 1000
+            )
+          ).toBe(0)
         })
       })
     })
