@@ -1,8 +1,10 @@
 import express from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { validateRequest } from 'zod-express-middleware'
+import { config } from '../../config.js'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
+import { LocaleQuery } from '../../core/i18n/lang.validator.js'
 import logger from '../../logger.js'
 import {
   COOKIE_NAME,
@@ -11,6 +13,8 @@ import {
 } from './authentication.service.js'
 import { LoginDto, LoginValidator } from './authentication.validator.js'
 import { LoginEvent } from './events/Login.event.js'
+import { sendBrevoWelcomeEmail } from './handlers/send-welcome-email.js'
+import { storeVerifiedUser } from './handlers/store-verified-user.js'
 import { syncUserDataAfterLogin } from './handlers/sync-user-data-after-login.js'
 import { updateBrevoContact } from './handlers/update-brevo-contact.js'
 
@@ -18,6 +22,8 @@ const router = express.Router()
 
 EventBus.on(LoginEvent, updateBrevoContact)
 EventBus.on(LoginEvent, syncUserDataAfterLogin)
+EventBus.on(LoginEvent, sendBrevoWelcomeEmail)
+EventBus.on(LoginEvent, storeVerifiedUser)
 
 /**
  * Logs a user in
@@ -26,7 +32,11 @@ router
   .route('/v1/login')
   .post(validateRequest(LoginValidator), async (req, res) => {
     try {
-      const token = await login(LoginDto.parse(req.body))
+      const token = await login({
+        loginDto: LoginDto.parse(req.body),
+        origin: req.get('origin') || config.app.origin,
+        locale: LocaleQuery.parse(req.query).locale,
+      })
 
       res.cookie(COOKIE_NAME, token, COOKIES_OPTIONS)
 

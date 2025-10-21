@@ -6,6 +6,7 @@ import { transaction } from '../../adapters/prisma/transaction.js'
 import { config } from '../../config.js'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
+import type { Locales } from '../../core/i18n/constant.js'
 import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError.js'
 import type { LoginDto } from './authentication.validator.js'
 import { LoginEvent } from './events/Login.event.js'
@@ -36,14 +37,15 @@ export const exchangeCredentialsForToken = async (
   { session }: { session?: Session } = {}
 ) => {
   try {
-    const { email, userId } = await transaction(
+    const verificationCode = await transaction(
       (session) => findUserVerificationCode(loginDto, { session }),
       session || prisma
     )
 
+    const { email, userId } = verificationCode
+
     return {
-      email,
-      userId,
+      verificationCode: verificationCode,
       token: jwt.sign({ email, userId }, config.security.jwt.secret, {
         expiresIn: COOKIE_MAX_AGE,
       }),
@@ -56,12 +58,22 @@ export const exchangeCredentialsForToken = async (
   }
 }
 
-export const login = async (loginDto: LoginDto) => {
-  const { token, ...verificationCode } =
+export const login = async ({
+  loginDto,
+  locale,
+  origin,
+}: {
+  loginDto: LoginDto
+  locale: Locales
+  origin: string
+}) => {
+  const { token, verificationCode } =
     await exchangeCredentialsForToken(loginDto)
 
   const loginEvent = new LoginEvent({
     verificationCode,
+    locale,
+    origin,
   })
 
   EventBus.emit(loginEvent)

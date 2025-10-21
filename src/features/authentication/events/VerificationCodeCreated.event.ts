@@ -3,7 +3,7 @@ import { EventBusEvent } from '../../../core/event-bus/event.js'
 import type { Locales } from '../../../core/i18n/constant.js'
 
 export class VerificationCodeCreatedEvent extends EventBusEvent<{
-  verificationCode: VerificationCode
+  verificationCode: Omit<VerificationCode, 'mode'>
   locale: Locales
   origin: string
 }> {

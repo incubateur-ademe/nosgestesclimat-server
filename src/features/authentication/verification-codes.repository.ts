@@ -1,14 +1,42 @@
-import type { Prisma, VerificationCode } from '@prisma/client'
+import type {
+  Prisma,
+  VerificationCode,
+  VerificationCodeMode,
+} from '@prisma/client'
 import type { Session } from '../../adapters/prisma/transaction.js'
+
+type SignVerificationCode = {
+  id: string
+  email: string
+  userId: string
+  mode: VerificationCodeMode
+}
+
+type RegisterOrganisationVerificationCode = {
+  id: string
+  email: string
+  userId: string
+  mode?: undefined
+}
+
+type RegisterApiVerificationCode = {
+  id: string
+  email: string
+  userId: null
+  mode?: undefined
+}
+
+export type UserVerificationCode =
+  | SignVerificationCode
+  | RegisterOrganisationVerificationCode
+  | RegisterApiVerificationCode
 
 export const createUserVerificationCode = (
   data: Prisma.VerificationCodeCreateInput,
   { session }: { session: Session }
 ) => {
   return session.verificationCode.create({
-    data: {
-      ...data,
-    },
+    data,
     select: {
       id: true,
       email: true,
@@ -23,7 +51,7 @@ export const createUserVerificationCode = (
 export const findUserVerificationCode = (
   { userId, email, code }: Pick<VerificationCode, 'email' | 'code' | 'userId'>,
   { session }: { session: Session }
-) => {
+): Promise<UserVerificationCode> => {
   return session.verificationCode.findFirstOrThrow({
     where: {
       code,
@@ -34,8 +62,22 @@ export const findUserVerificationCode = (
       },
     },
     select: {
+      id: true,
       email: true,
       userId: true,
+      mode: true,
+    },
+  }) as Promise<UserVerificationCode>
+}
+
+export const invalidateVerificationCode = (
+  { id }: Pick<VerificationCode, 'id'>,
+  { session }: { session: Session }
+) => {
+  return session.verificationCode.update({
+    where: { id },
+    data: {
+      expirationDate: new Date(Date.now() - 1),
     },
   })
 }

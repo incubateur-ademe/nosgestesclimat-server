@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker'
+import type { VerificationCodeMode } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import type supertest from 'supertest'
 import { vi } from 'vitest'
@@ -23,6 +24,7 @@ export const CREATE_VERIFICATION_CODE_ROUTE = '/verification-codes/v1'
 
 export const createVerificationCode = async ({
   code,
+  mode,
   agent,
   expirationDate,
   verificationCode: { email, userId } = {},
@@ -30,6 +32,7 @@ export const createVerificationCode = async ({
   code?: string
   agent: TestAgent
   expirationDate?: Date
+  mode?: VerificationCodeMode
   verificationCode?: Partial<VerificationCodeCreateDto>
 }) => {
   code = code || faker.number.int({ min: 100000, max: 999999 }).toString()
@@ -48,6 +51,9 @@ export const createVerificationCode = async ({
   const response = await agent
     .post(CREATE_VERIFICATION_CODE_ROUTE)
     .send(payload)
+    .query({
+      mode,
+    })
     .expect(StatusCodes.CREATED)
 
   await Promise.all([
