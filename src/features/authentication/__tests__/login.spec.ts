@@ -27,7 +27,12 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = LOGIN_ROUTE
 
-  afterEach(() => prisma.verificationCode.deleteMany())
+  afterEach(() =>
+    Promise.all([
+      prisma.verificationCode.deleteMany(),
+      prisma.verifiedUser.deleteMany(),
+    ])
+  )
 
   describe('When logging in', () => {
     describe('And no data provided', () => {
@@ -161,6 +166,65 @@ describe('Given a NGC user', () => {
       })
 
       describe(`And is ${VerificationCodeMode.signUp} mode`, () => {
+        test('Then it creates the verified user', async () => {
+          const { email, userId, code } = await createVerificationCode({
+            agent,
+            mode: VerificationCodeMode.signUp,
+          })
+
+          const payload = {
+            userId,
+            email,
+            code,
+          }
+
+          mswServer.use(brevoUpdateContact(), brevoSendEmail())
+
+          await agent.post(url).send(payload).expect(StatusCodes.OK)
+
+          const createdUser = await prisma.verifiedUser.findUnique({
+            where: { email },
+          })
+
+          expect(createdUser).toEqual({
+            email,
+            id: userId,
+            name: null,
+            optedInForCommunications: false,
+            position: null,
+            telephone: null,
+            createdAt: expect.any(Date),
+            updatedAt: expect.any(Date),
+          })
+        })
+
+        test('Then it invalidates the verification code', async () => {
+          const { email, userId, code } = await createVerificationCode({
+            agent,
+            mode: VerificationCodeMode.signUp,
+          })
+
+          const payload = {
+            userId,
+            email,
+            code,
+          }
+
+          mswServer.use(brevoUpdateContact(), brevoSendEmail())
+
+          await agent.post(url).send(payload).expect(StatusCodes.OK)
+
+          const [verificationCode] = await prisma.verificationCode.findMany({
+            where: { email },
+          })
+
+          expect(
+            Math.floor(
+              (Date.now() - verificationCode.expirationDate.getTime()) / 1000
+            )
+          ).toBe(0)
+        })
+
         test('Then it sends a welcome email', async () => {
           const { email, userId, code } = await createVerificationCode({
             agent,

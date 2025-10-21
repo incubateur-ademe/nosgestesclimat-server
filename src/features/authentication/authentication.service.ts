@@ -37,15 +37,15 @@ export const exchangeCredentialsForToken = async (
   { session }: { session?: Session } = {}
 ) => {
   try {
-    const { email, userId, mode } = await transaction(
+    const verificationCode = await transaction(
       (session) => findUserVerificationCode(loginDto, { session }),
       session || prisma
     )
 
+    const { email, userId } = verificationCode
+
     return {
-      mode,
-      email,
-      userId,
+      verificationCode: verificationCode,
       token: jwt.sign({ email, userId }, config.security.jwt.secret, {
         expiresIn: COOKIE_MAX_AGE,
       }),
@@ -67,7 +67,7 @@ export const login = async ({
   locale: Locales
   origin: string
 }) => {
-  const { token, ...verificationCode } =
+  const { token, verificationCode } =
     await exchangeCredentialsForToken(loginDto)
 
   const loginEvent = new LoginEvent({
