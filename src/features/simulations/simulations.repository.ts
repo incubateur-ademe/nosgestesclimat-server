@@ -180,18 +180,6 @@ export const fetchSimulationById = (
   })
 }
 
-export const fetchParticipantSimulation = (
-  simulationId: string,
-  { session }: { session: Session }
-) => {
-  return session.simulation.findUnique({
-    where: {
-      id: simulationId,
-    },
-    select: defaultSimulationSelectionWithoutUser,
-  })
-}
-
 export const createPollUserSimulation = async (
   params: PublicPollParams,
   simulationDto: SimulationCreateDto,
