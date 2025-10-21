@@ -1,13 +1,11 @@
 import {
   defaultGroupParticipantSelection,
   defaultGroupSelection,
+  defaultSimulationSelectionWithoutUser,
   defaultUserSelection,
 } from '../../adapters/prisma/selection.js'
 import type { Session } from '../../adapters/prisma/transaction.js'
-import {
-  createParticipantSimulation,
-  fetchParticipantSimulation,
-} from '../simulations/simulations.repository.js'
+import { createParticipantSimulation } from '../simulations/simulations.repository.js'
 import { transferOwnershipToUser } from '../users/users.repository.js'
 import type { UserParams } from '../users/users.validator.js'
 import type {
@@ -19,27 +17,6 @@ import type {
   UserGroupParams,
   UserGroupParticipantParams,
 } from './groups.validator.js'
-
-const getParticipantsWithSimulations = <T extends { simulationId: string }>(
-  group: {
-    participants: T[]
-  },
-  session: { session: Session }
-): Promise<
-  Array<
-    T & {
-      simulation: NonNullable<
-        Awaited<ReturnType<typeof fetchParticipantSimulation>>
-      >
-    }
-  >
-> =>
-  Promise.all(
-    group.participants.map(async (p) => ({
-      ...p,
-      simulation: (await fetchParticipantSimulation(p.simulationId, session))!,
-    }))
-  )
 
 export const createGroupAndUser = async (
   {
@@ -68,70 +45,74 @@ export const createGroupAndUser = async (
 
   const [participantDto] = participants || []
 
-  // For now no relation
-  const [group, simulationCreation] = await Promise.all([
-    // create group
-    session.group.create({
-      data: {
-        name: groupName,
-        emoji,
-        administrator: {
-          create: {
-            userId,
+  let simulationUpdated = false
+  let simulationCreated = false
+  let simulation
+
+  if (participantDto?.simulation) {
+    ;({
+      updated: simulationUpdated,
+      created: simulationCreated,
+      simulation,
+    } = await createParticipantSimulation(
+      {
+        userId,
+        simulation: participantDto.simulation,
+      },
+      { session }
+    ))
+  }
+
+  const group = await session.group.create({
+    data: {
+      name: groupName,
+      emoji,
+      administrator: {
+        create: {
+          userId,
+        },
+      },
+      ...(simulation
+        ? {
+            participants: {
+              create: {
+                userId,
+                simulationId: simulation.id,
+              },
+            },
+          }
+        : {}),
+    },
+    select: {
+      ...defaultGroupSelection,
+      participants: {
+        select: {
+          ...defaultGroupParticipantSelection,
+          simulation: {
+            select: {
+              ...defaultSimulationSelectionWithoutUser,
+            },
           },
         },
-        ...(participants?.length
-          ? {
-              participants: {
-                createMany: {
-                  data: participants.map(({ simulation: { id } }) => ({
-                    userId,
-                    simulationId: id,
-                  })),
-                },
-              },
-            }
-          : {}),
       },
-      select: defaultGroupSelection,
-    }),
-    // create simulation if any
-    ...(participantDto
-      ? [
-          createParticipantSimulation(
-            {
-              userId,
-              simulation: participantDto.simulation,
-            },
-            { session }
-          ),
-        ]
-      : []),
-  ])
-
-  const { created, simulation, updated } = simulationCreation || {}
+    },
+  })
 
   return {
-    simulationUpdated: updated,
-    simulationCreated: created,
+    simulationUpdated,
+    simulationCreated,
     administrator,
     simulation,
-    group: {
-      ...group,
-      participants: group.participants.map((p) => ({
-        ...p,
-        simulation,
-      })),
-    },
+    group,
   }
 }
 
-export const updateUserGroup = async (
+export const updateUserGroup = (
   { groupId, userId }: UserGroupParams,
   update: GroupUpdateDto,
   { session }: { session: Session }
 ) => {
-  const group = await session.group.update({
+  return session.group.update({
     where: {
       id: groupId,
       administrator: {
@@ -139,15 +120,20 @@ export const updateUserGroup = async (
       },
     },
     data: update,
-    select: defaultGroupSelection,
+    select: {
+      ...defaultGroupSelection,
+      participants: {
+        select: {
+          ...defaultGroupParticipantSelection,
+          simulation: {
+            select: {
+              ...defaultSimulationSelectionWithoutUser,
+            },
+          },
+        },
+      },
+    },
   })
-
-  return {
-    ...group,
-    participants: await getParticipantsWithSimulations(group, {
-      session,
-    }),
-  }
 }
 
 export const createParticipantAndUser = async (
@@ -185,45 +171,41 @@ export const createParticipantAndUser = async (
     },
   })
 
-  // For now no relation
-  const { id: simulationId } = simulationDto
-  const [simulationCreation, participant] = await Promise.all([
-    createParticipantSimulation(
-      {
-        userId,
-        simulation: simulationDto,
-      },
-      { session }
-    ),
-    session.groupParticipant.upsert({
-      where: {
-        groupId_userId: {
-          groupId,
-          userId,
-        },
-      },
-      create: {
+  const {
+    simulation,
+    simulation: { id: simulationId },
+    created: simulationCreated,
+    updated: simulationUpdated,
+  } = await createParticipantSimulation(
+    {
+      userId,
+      simulation: simulationDto,
+    },
+    { session }
+  )
+
+  const participant = await session.groupParticipant.upsert({
+    where: {
+      groupId_userId: {
         groupId,
         userId,
-        simulationId,
       },
-      update: {
-        simulationId,
+    },
+    create: {
+      groupId,
+      userId,
+      simulationId,
+    },
+    update: {
+      simulationId,
+    },
+    select: {
+      ...defaultGroupParticipantSelection,
+      group: {
+        select: defaultGroupSelection,
       },
-      select: {
-        ...defaultGroupParticipantSelection,
-        group: {
-          select: defaultGroupSelection,
-        },
-      },
-    }),
-  ])
-
-  const {
-    created: simulationCreated,
-    simulation,
-    updated: simulationUpdated,
-  } = simulationCreation
+    },
+  })
 
   return {
     participant: {
@@ -288,7 +270,7 @@ export const fetchUserGroups = async (
   { groupIds }: GroupsFetchQuery,
   { session }: { session: Session }
 ) => {
-  const groups = await session.group.findMany({
+  return session.group.findMany({
     where: {
       OR: [
         {
@@ -314,36 +296,44 @@ export const fetchUserGroups = async (
           }
         : {}),
     },
-    select: defaultGroupSelection,
+    select: {
+      ...defaultGroupSelection,
+      participants: {
+        select: {
+          ...defaultGroupParticipantSelection,
+          simulation: {
+            select: {
+              ...defaultSimulationSelectionWithoutUser,
+            },
+          },
+        },
+      },
+    },
   })
-
-  return Promise.all(
-    groups.map(async (group) => ({
-      ...group,
-      participants: await getParticipantsWithSimulations(group, {
-        session,
-      }),
-    }))
-  )
 }
 
 export const fetchUserGroup = async (
   { groupId }: GroupParams,
   { session }: { session: Session }
 ) => {
-  const group = await session.group.findUniqueOrThrow({
+  return await session.group.findUniqueOrThrow({
     where: {
       id: groupId,
     },
-    select: defaultGroupSelection,
+    select: {
+      ...defaultGroupSelection,
+      participants: {
+        select: {
+          ...defaultGroupParticipantSelection,
+          simulation: {
+            select: {
+              ...defaultSimulationSelectionWithoutUser,
+            },
+          },
+        },
+      },
+    },
   })
-
-  return {
-    ...group,
-    participants: await getParticipantsWithSimulations(group, {
-      session,
-    }),
-  }
 }
 
 export const deleteUserGroup = async (
