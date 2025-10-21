@@ -121,6 +121,7 @@ describe('Given a NGC user', () => {
       expect(createdVerificationCode).toEqual({
         id: expect.any(String),
         code,
+        mode: null,
         expirationDate: expect.any(Date),
         createdAt: expect.any(Date),
         updatedAt: expect.any(Date),
