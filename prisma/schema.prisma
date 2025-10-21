@@ -409,10 +409,18 @@ model User {
   @@schema("ngc")
 }
 
+enum VerificationCodeMode {
+  signIn
+  signUp
+
+  @@schema("ngc")
+}
+
 model VerificationCode {
   id             String   @id @default(uuid()) @db.Uuid
   userId         String?  @db.Uuid
   email          String
+  mode           VerificationCodeMode?
   code           String   @db.VarChar(6)
   expirationDate DateTime
   createdAt      DateTime @default(now())

@@ -1,3 +1,4 @@
+import { VerificationCodeMode } from '@prisma/client'
 import dayjs from 'dayjs'
 import type { Session } from '../../adapters/prisma/transaction.js'
 import { transaction } from '../../adapters/prisma/transaction.js'
@@ -5,34 +6,27 @@ import { ConflictException } from '../../core/errors/ConflictException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
 import type { Locales } from '../../core/i18n/constant.js'
 import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError.js'
-import type { ValueOf, WithOptionalProperty } from '../../types/types.js'
+import type { WithOptionalProperty } from '../../types/types.js'
 import { fetchVerifiedUser } from '../users/users.repository.js'
 import { generateRandomVerificationCode } from './authentication.service.js'
 import { VerificationCodeCreatedEvent } from './events/VerificationCodeCreated.event.js'
 import { createUserVerificationCode } from './verification-codes.repository.js'
 import type { VerificationCodeCreateDto } from './verification-codes.validator.js'
 
-export const AUTHENTICATION_MODE = {
-  signIn: 'signIn',
-  signUp: 'signUp',
-} as const
-
-export type AUTHENTICATION_MODE = ValueOf<typeof AUTHENTICATION_MODE>
-
 const checkSignMode = async (
-  { email, mode }: { email: string; mode: AUTHENTICATION_MODE },
+  { email, mode }: { email: string; mode: VerificationCodeMode },
   { session }: { session: Session }
 ) => {
   try {
     await fetchVerifiedUser({ user: { email } }, { session })
-    if (mode === AUTHENTICATION_MODE.signUp) {
+    if (mode === VerificationCodeMode.signUp) {
       throw new ConflictException('User already exists')
     }
   } catch (e) {
     if (!isPrismaErrorNotFound(e)) {
       throw e
     }
-    if (mode === AUTHENTICATION_MODE.signIn) {
+    if (mode === VerificationCodeMode.signIn) {
       throw new ConflictException('User does not exist')
     }
   }
@@ -42,11 +36,13 @@ export const generateVerificationCode = async (
   {
     verificationCodeDto,
     expirationDate = dayjs().add(1, 'hour').toDate(),
+    mode,
   }: {
     verificationCodeDto: WithOptionalProperty<
       VerificationCodeCreateDto,
       'userId'
     >
+    mode?: VerificationCodeMode
     expirationDate?: Date
   },
   { session }: { session?: Session } = {}
@@ -58,6 +54,7 @@ export const generateVerificationCode = async (
       createUserVerificationCode(
         {
           ...verificationCodeDto,
+          mode,
           code,
           expirationDate,
         },
@@ -79,7 +76,7 @@ export const createVerificationCode = (
     verificationCodeDto: Pick<VerificationCodeCreateDto, 'email'>
     origin: string
     locale: Locales
-    mode?: AUTHENTICATION_MODE
+    mode?: VerificationCodeMode
   },
   { session: parentSession }: { session?: Session } = {}
 ) => {
@@ -92,7 +89,7 @@ export const createVerificationCode = (
     }
 
     const { verificationCode, code } = await generateVerificationCode(
-      { verificationCodeDto },
+      { verificationCodeDto, mode },
       { session }
     )
 

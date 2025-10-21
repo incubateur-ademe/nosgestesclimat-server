@@ -240,6 +240,21 @@ export const fetchUsersForEmail = (
   })
 }
 
+export const createVerifiedUser = async (
+  { userId, email }: NonNullable<Request['user']>,
+  { session }: { session: Session }
+) => {
+  const user = await session.verifiedUser.create({
+    data: {
+      id: userId,
+      email,
+    },
+    select: defaultVerifiedUserSelection,
+  })
+
+  return user
+}
+
 export const updateVerifiedUser = async (
   { userId, email }: NonNullable<Request['user']>,
   { name, email: newEmail }: UserUpdateDto,

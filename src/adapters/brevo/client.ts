@@ -195,6 +195,26 @@ export const sendVerificationCodeEmail = ({
   })
 }
 
+export const sendWelcomeEmail = ({
+  email,
+  locale,
+  origin,
+}: Readonly<{
+  origin: string
+  email: string
+  locale: Locales
+}>) => {
+  const dashBoardUrl = new URL(origin) // TODO modifiy when URL is known
+
+  return sendEmail({
+    email,
+    templateId: TemplateIds[locale].SIGN_UP,
+    params: {
+      DASHBOARD_URL: dashBoardUrl.toString(),
+    },
+  })
+}
+
 const sendGroupEmail = ({
   origin,
   templateId,

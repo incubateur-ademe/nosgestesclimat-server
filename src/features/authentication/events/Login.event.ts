@@ -1,8 +1,10 @@
-import type { VerificationCode } from '@prisma/client'
 import { EventBusEvent } from '../../../core/event-bus/event.js'
-
+import type { Locales } from '../../../core/i18n/constant.js'
+import type { UserVerificationCode } from '../verification-codes.repository.js'
 export class LoginEvent extends EventBusEvent<{
-  verificationCode: Pick<VerificationCode, 'email' | 'userId'>
+  verificationCode: UserVerificationCode
+  locale: Locales
+  origin: string
 }> {
   name = 'LoginEvent'
 }
