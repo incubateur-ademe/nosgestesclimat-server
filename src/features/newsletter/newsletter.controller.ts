@@ -1,9 +1,9 @@
 import express from 'express'
 import { StatusCodes } from 'http-status-codes'
-import { validateRequest } from 'zod-express-middleware'
 import { KEYS } from '../../adapters/redis/constant.js'
 import logger from '../../logger.js'
 import { redisCacheMiddleware } from '../../middlewares/redisCacheMiddleware.js'
+import { validateRequest } from '../../middlewares/validateRequest.js'
 import { fetchBrevoNewsletter } from './newsletter.service.js'
 import { NewsletterFetchValidator } from './newsletter.validator.js'
 

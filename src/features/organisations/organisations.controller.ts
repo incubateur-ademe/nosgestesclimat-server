@@ -1,14 +1,13 @@
 import express from 'express'
 import { StatusCodes } from 'http-status-codes'
-import { validateRequest } from 'zod-express-middleware'
 import { config } from '../../config.js'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
 import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
-import { LocaleQuery } from '../../core/i18n/lang.validator.js'
 import logger from '../../logger.js'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware.js'
 import { rateLimitSameRequestMiddleware } from '../../middlewares/rateLimitSameRequestMiddleware.js'
+import { validateRequest } from '../../middlewares/validateRequest.js'
 import {
   COOKIE_NAME,
   COOKIES_OPTIONS,
@@ -17,10 +16,7 @@ import {
   createPollSimulation,
   fetchPublicPollSimulations,
 } from '../simulations/simulations.service.js'
-import {
-  OrganisationPollSimulationCreateValidator,
-  SimulationCreateDto,
-} from '../simulations/simulations.validator.js'
+import { OrganisationPollSimulationCreateValidator } from '../simulations/simulations.validator.js'
 import { OrganisationCreatedEvent } from './events/OrganisationCreated.event.js'
 import { OrganisationUpdatedEvent } from './events/OrganisationUpdated.event.js'
 import { PollCreatedEvent } from './events/PollCreated.event.js'
@@ -51,14 +47,11 @@ import {
   OrganisationPollDeleteValidator,
   OrganisationPollFetchValidator,
   OrganisationPollsFetchValidator,
-  OrganisationPollSimulationsDownloadQuery,
   OrganisationPollSimulationsDownloadValidator,
   OrganisationPollUpdateValidator,
   OrganisationPublicPollFetchValidator,
   OrganisationPublicPollSimulationsFetchValidator,
   OrganisationsFetchValidator,
-  OrganisationUpdateDto,
-  OrganisationUpdateQuery,
   OrganisationUpdateValidator,
 } from './organisations.validator.js'
 
@@ -81,7 +74,7 @@ router
         const organisation = await createOrganisation({
           organisationDto: req.body,
           origin: req.get('origin') || config.app.origin,
-          locale: LocaleQuery.parse(req.query).locale,
+          locale: req.query.locale,
           user: req.user!,
         })
 
@@ -113,8 +106,8 @@ router
       try {
         const { organisation, token } = await updateOrganisation({
           params,
-          organisationDto: OrganisationUpdateDto.parse(body),
-          code: OrganisationUpdateQuery.parse(query).code,
+          organisationDto: body,
+          code: query.code,
           user: user!,
         })
 
@@ -200,7 +193,7 @@ router
       try {
         const poll = await createPoll({
           origin: req.get('origin') || config.app.origin,
-          locale: LocaleQuery.parse(req.query).locale,
+          locale: req.query.locale,
           pollDto: req.body,
           user: req.user!,
           params: req.params,
@@ -346,7 +339,7 @@ router
     validateRequest(OrganisationPollSimulationsDownloadValidator),
     async ({ params, user, query }, res) => {
       try {
-        const { jobId } = OrganisationPollSimulationsDownloadQuery.parse(query)
+        const { jobId } = query
         if (jobId) {
           const { status, job } = await getDownloadPollSimulationResultJob({
             user: user!,
@@ -386,9 +379,9 @@ router
     async (req, res) => {
       try {
         const simulation = await createPollSimulation({
-          simulationDto: SimulationCreateDto.parse(req.body),
+          simulationDto: req.body,
           origin: req.get('origin') || config.app.origin,
-          locale: LocaleQuery.parse(req.query).locale,
+          locale: req.query.locale,
           params: req.params,
         })
 

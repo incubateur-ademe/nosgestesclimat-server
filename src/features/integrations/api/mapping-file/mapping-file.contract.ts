@@ -16,8 +16,8 @@ export type MappingFileKind = ValueOf<typeof MappingFileKind>
 
 const MappingFileParams = z
   .object({
-    kind: z.nativeEnum(MappingFileKind),
-    partner: z.nativeEnum(ExternalServiceTypeEnum),
+    kind: z.enum(MappingFileKind),
+    partner: z.enum(ExternalServiceTypeEnum),
   })
   .strict()
 

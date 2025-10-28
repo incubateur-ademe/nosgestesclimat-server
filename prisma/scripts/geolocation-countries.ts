@@ -21,7 +21,7 @@ const RestCountriesValidator = z.array(
       common: z.string(),
     }),
     cca2: z.string().regex(/^[A-Z]{2}$/),
-    region: z.nativeEnum(REGIONS),
+    region: z.enum(REGIONS),
   })
 )
 
