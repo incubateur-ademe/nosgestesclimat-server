@@ -7,7 +7,7 @@ import { MAPPING_CASES } from './mapping-situation.constant.js'
 
 const MappingSituationParams = z
   .object({
-    partner: z.nativeEnum(ExternalServiceTypeEnum),
+    partner: z.enum(ExternalServiceTypeEnum),
   })
   .strict()
 
@@ -16,7 +16,7 @@ export type MappingSituationParams = z.infer<typeof MappingSituationParams>
 const MappingSituationQuery = z
   .object({
     mappingCase: z
-      .nativeEnum(MAPPING_CASES)
+      .enum(MAPPING_CASES)
       .optional()
       .default(MAPPING_CASES.camelCase),
   })

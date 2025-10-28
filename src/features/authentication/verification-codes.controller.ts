@@ -1,20 +1,16 @@
 import express from 'express'
 import { StatusCodes } from 'http-status-codes'
-import { validateRequest } from 'zod-express-middleware'
 import { config } from '../../config.js'
 import { ConflictException } from '../../core/errors/ConflictException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
 import logger from '../../logger.js'
 import { rateLimitSameRequestMiddleware } from '../../middlewares/rateLimitSameRequestMiddleware.js'
+import { validateRequest } from '../../middlewares/validateRequest.js'
 import { VerificationCodeCreatedEvent } from './events/VerificationCodeCreated.event.js'
 import { sendVerificationCode } from './handlers/send-verification-code.js'
 import { updateBrevoContact } from './handlers/update-brevo-contact.js'
 import { createVerificationCode } from './verification-codes.service.js'
-import {
-  VerificationCodeCreateDto,
-  VerificationCodeCreateQuery,
-  VerificationCodeCreateValidator,
-} from './verification-codes.validator.js'
+import { VerificationCodeCreateValidator } from './verification-codes.validator.js'
 
 const router = express.Router()
 
@@ -39,9 +35,9 @@ router.route('/v1/').post(
   async (req, res) => {
     try {
       const verificationCode = await createVerificationCode({
-        verificationCodeDto: VerificationCodeCreateDto.parse(req.body),
+        verificationCodeDto: req.body,
         origin: req.get('origin') || config.app.origin,
-        ...VerificationCodeCreateQuery.parse(req.query),
+        ...req.query,
       })
 
       return res.status(StatusCodes.CREATED).json(verificationCode)

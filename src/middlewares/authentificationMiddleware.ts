@@ -1,4 +1,5 @@
-import type { NextFunction, Request, RequestHandler, Response } from 'express'
+import type { RequestHandler } from 'express'
+import type { ParamsDictionary, Query } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import type { JwtPayload } from 'jsonwebtoken'
 import jwt from 'jsonwebtoken'
@@ -17,10 +18,18 @@ const isValidResult = (
   typeof result === 'object' && 'email' in result && 'userId' in result
 
 export const authentificationMiddleware =
-  ({
-    passIfUnauthorized,
-  }: { passIfUnauthorized?: true } = {}): RequestHandler =>
-  (req: Request, res: Response, next: NextFunction) => {
+  <
+    ReqParams = ParamsDictionary,
+    ResBody = unknown,
+    ReqBody = unknown,
+    ReqQuery = Query,
+  >({ passIfUnauthorized }: { passIfUnauthorized?: true } = {}): RequestHandler<
+    ReqParams,
+    ResBody,
+    ReqBody,
+    ReqQuery
+  > =>
+  (req, res, next) => {
     const cookiesHeader = req.headers.cookie
 
     const token =
@@ -46,7 +55,10 @@ export const authentificationMiddleware =
 
       const { email, userId } = result
 
-      if (passIfUnauthorized && userId === req.params.userId) {
+      if (
+        passIfUnauthorized &&
+        userId === (req.params as { userId?: string }).userId
+      ) {
         try {
           await syncUserData({ userId, email })
         } catch (err) {

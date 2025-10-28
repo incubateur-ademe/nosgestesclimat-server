@@ -41,9 +41,9 @@
     "@prisma/driver-adapter-utils": "^6.16.2",
     "@publicodes/tools": "^1.8.0",
     "@sentry/node": "^10.22.0",
-    "@ts-rest/core": "^3.52.1",
-    "@ts-rest/express": "^3.52.1",
-    "@ts-rest/open-api": "^3.52.1",
+    "@ts-rest/core": "^3.53.0-rc.1",
+    "@ts-rest/express": "^3.53.0-rc.1",
+    "@ts-rest/open-api": "^3.53.0-rc.1",
     "axios": "^1.13.0",
     "axios-retry": "^4.5.0",
     "change-case": "^5.4.4",
@@ -67,8 +67,7 @@
     "xlsx": "^0.18.5",
     "yaml": "^2.8.1",
     "yargs": "^18.0.0",
-    "zod": "^3.23.8",
-    "zod-express-middleware": "^1.4.0"
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.3.11",

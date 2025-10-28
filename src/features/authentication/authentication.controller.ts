@@ -1,17 +1,16 @@
 import express from 'express'
 import { StatusCodes } from 'http-status-codes'
-import { validateRequest } from 'zod-express-middleware'
 import { config } from '../../config.js'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
-import { LocaleQuery } from '../../core/i18n/lang.validator.js'
 import logger from '../../logger.js'
+import { validateRequest } from '../../middlewares/validateRequest.js'
 import {
   COOKIE_NAME,
   COOKIES_OPTIONS,
   login,
 } from './authentication.service.js'
-import { LoginDto, LoginValidator } from './authentication.validator.js'
+import { LoginValidator } from './authentication.validator.js'
 import { LoginEvent } from './events/Login.event.js'
 import { sendBrevoWelcomeEmail } from './handlers/send-welcome-email.js'
 import { storeVerifiedUser } from './handlers/store-verified-user.js'
@@ -33,9 +32,9 @@ router
   .post(validateRequest(LoginValidator), async (req, res) => {
     try {
       const token = await login({
-        loginDto: LoginDto.parse(req.body),
+        loginDto: req.body,
         origin: req.get('origin') || config.app.origin,
-        locale: LocaleQuery.parse(req.query).locale,
+        locale: req.query.locale,
       })
 
       res.cookie(COOKIE_NAME, token, COOKIES_OPTIONS)

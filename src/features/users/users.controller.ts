@@ -1,12 +1,12 @@
 import express from 'express'
 import { StatusCodes } from 'http-status-codes'
-import { validateRequest } from 'zod-express-middleware'
 import { config } from '../../config.js'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
 import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
 import logger from '../../logger.js'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware.js'
+import { validateRequest } from '../../middlewares/validateRequest.js'
 import {
   COOKIE_NAME,
   COOKIES_OPTIONS,
@@ -23,11 +23,8 @@ import {
 import {
   FetchMeValidator,
   FetchUserContactValidator,
-  NewsletterConfirmationQuery,
   NewsletterConfirmationValidator,
   UpdateUserValidator,
-  UserUpdateDto,
-  UserUpdateQuery,
 } from './users.validator.js'
 
 const router = express.Router()
@@ -91,8 +88,8 @@ router
 
         const { user, verified, token } = await updateUserAndContact({
           params: req.user || req.params,
-          code: UserUpdateQuery.parse(req.query).code,
-          userDto: UserUpdateDto.parse(req.body),
+          code: req.query.code,
+          userDto: req.body,
           origin: req.get('origin') || config.app.origin,
         })
 
@@ -122,15 +119,13 @@ router
 router
   .route('/v1/:userId/newsletter-confirmation')
   .get(validateRequest(NewsletterConfirmationValidator), async (req, res) => {
-    const redirectUrl = new URL(
-      NewsletterConfirmationQuery.parse(req.query).origin
-    )
+    const redirectUrl = new URL(req.query.origin)
     redirectUrl.pathname = '/newsletter-confirmation'
     const { searchParams: redirectSearchParams } = redirectUrl
 
     try {
       await confirmNewsletterSubscriptions({
-        query: NewsletterConfirmationQuery.parse(req.query),
+        query: req.query,
         origin: redirectUrl.origin,
         params: req.params,
       })

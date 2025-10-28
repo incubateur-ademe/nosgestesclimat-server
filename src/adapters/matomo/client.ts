@@ -63,7 +63,7 @@ const ReferrerBaseSchema = z
   .strict()
 
 const ReferrerTypeSchema = ReferrerBaseSchema.extend({
-  referrer_type: z.nativeEnum(ReferrerType),
+  referrer_type: z.enum(ReferrerType),
 }).strict()
 
 export type ReferrerTypeSchema = z.infer<typeof ReferrerTypeSchema>

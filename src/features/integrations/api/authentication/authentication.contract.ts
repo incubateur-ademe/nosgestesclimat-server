@@ -1,7 +1,6 @@
 import { initContract, ZodErrorSchema } from '@ts-rest/core'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
-import { EMAIL_REGEX } from '../../../../core/typeguards/isValidEmail.js'
 import {
   isValidRefreshToken,
   REFRESH_TOKEN_SCOPE,
@@ -9,10 +8,7 @@ import {
 
 const GenerateAPITokenRequestDto = z
   .object({
-    email: z
-      .string()
-      .regex(EMAIL_REGEX)
-      .transform((email) => email.toLocaleLowerCase()),
+    email: z.email().transform((email) => email.toLocaleLowerCase()),
   })
   .strict()
 
@@ -27,10 +23,7 @@ const GenerateAPITokenResponseDto = z.object({
 const RecoverApiTokenQuery = z
   .object({
     code: z.string().regex(/^\d{6}$/),
-    email: z
-      .string()
-      .regex(EMAIL_REGEX)
-      .transform((email) => email.toLocaleLowerCase()),
+    email: z.email().transform((email) => email.toLocaleLowerCase()),
   })
   .strict()
 

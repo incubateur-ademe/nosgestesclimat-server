@@ -2636,20 +2636,20 @@
     "@tailwindcss/oxide" "4.1.11"
     tailwindcss "4.1.11"
 
-"@ts-rest/core@^3.52.1":
-  version "3.52.1"
-  resolved "https://registry.yarnpkg.com/@ts-rest/core/-/core-3.52.1.tgz#ef2df9c5619afe52e050825c689f6ab56820677d"
-  integrity sha512-tAjz7Kxq/grJodcTA1Anop4AVRDlD40fkksEV5Mmal88VoZeRKAG8oMHsDwdwPZz+B/zgnz0q2sF+cm5M7Bc7g==
+"@ts-rest/core@^3.53.0-rc.1":
+  version "3.53.0-rc.1"
+  resolved "https://registry.yarnpkg.com/@ts-rest/core/-/core-3.53.0-rc.1.tgz#b5819e1352c17d7c1dfb37a723360af58e2efda0"
+  integrity sha512-hDMXqKHSys6w+kXFW1Q6EvN8QgRvtXKXJ2TpYByKI4TquaPjiTOv99aLD26X4LNRzdna8Ci1PVyzr0jYZv0oNQ==
 
-"@ts-rest/express@^3.52.1":
-  version "3.52.1"
-  resolved "https://registry.yarnpkg.com/@ts-rest/express/-/express-3.52.1.tgz#7474c1a3d2ee98906df69a2417a43d6f41205054"
-  integrity sha512-ttVynyJSWYnVzn7FazSFvShD5j3Lq1JsIhSKereV2Z51zxWEQwo35CpCO3Q8rELzkfD9CYoT6eNSBJRlJLogIw==
+"@ts-rest/express@^3.53.0-rc.1":
+  version "3.53.0-rc.1"
+  resolved "https://registry.yarnpkg.com/@ts-rest/express/-/express-3.53.0-rc.1.tgz#c8790f8dbf83952c6ef6cd13a5e5c9df302adc8c"
+  integrity sha512-TPF2kFdxCF6fI41z2yXexPjSdjN5e65sanmCiUx/4HNp5/ObcGLkHbdHSnvDhNkmkPn3jcd6g2EOvQgsQ8mkfg==
 
-"@ts-rest/open-api@^3.52.1":
-  version "3.52.1"
-  resolved "https://registry.yarnpkg.com/@ts-rest/open-api/-/open-api-3.52.1.tgz#1e2bbc50c3b8635f2246ca85ee5568da4480dec0"
-  integrity sha512-VY91g6HFzCe1/fNgX4Y3HzaJbIdztCGHTg34drkh7bKgtNOizLJLXV0wwIkMwLGvjhRHojJxnwYxHjGMIkScwg==
+"@ts-rest/open-api@^3.53.0-rc.1":
+  version "3.53.0-rc.1"
+  resolved "https://registry.yarnpkg.com/@ts-rest/open-api/-/open-api-3.53.0-rc.1.tgz#e678c66349ea223757cded91fcfbe46bf000150c"
+  integrity sha512-JqmmdwFP2AHlyK9T4dwgsFL3QGNRppV9JIBh0G9mbJE7m7Kj403VsxJZ5X128E3XqwH7JIgJ4wsyGRX4Zbtqvw==
   dependencies:
     "@anatine/zod-openapi" "^1.12.0"
     openapi3-ts "^2.0.2"
@@ -8498,12 +8498,7 @@ yoctocolors-cjs@^2.1.2:
   resolved "https://registry.yarnpkg.com/yoctocolors-cjs/-/yoctocolors-cjs-2.1.2.tgz#f4b905a840a37506813a7acaa28febe97767a242"
   integrity sha512-cYVsTjKl8b+FrnidjibDWskAv7UKOfcwaVZdp/it9n1s9fU3IkgDbhdIRKCW4JDsAlECJY0ytoVPT3sK6kideA==
 
-zod-express-middleware@^1.4.0:
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/zod-express-middleware/-/zod-express-middleware-1.4.0.tgz#6ee1e5854d6f339c3bd3d562ab523d281621bc56"
-  integrity sha512-C1pBbwbuotitG1L3I1cr9QD/nuepHAdZEUbVn7y1o2cJq0oaUuS7gTVGby1+DGHL4t2P4eEZKCX0QQDv6hEs3A==
-
-zod@^3.23.8:
-  version "3.25.76"
-  resolved "https://registry.yarnpkg.com/zod/-/zod-3.25.76.tgz#26841c3f6fd22a6a2760e7ccb719179768471e34"
-  integrity sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==
+zod@^4.1.12:
+  version "4.1.12"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-4.1.12.tgz#64f1ea53d00eab91853195653b5af9eee68970f0"
+  integrity sha512-JInaHOamG8pt5+Ey8kGmdcAcg3OL9reK8ltczgHTAwNhMys/6ThXHityHxVV2p3fkw/c+MAvBHFVYHFZDmjMCQ==
