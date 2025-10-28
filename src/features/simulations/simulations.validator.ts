@@ -220,7 +220,10 @@ export type SimulationCreateNewsletterList = z.infer<
 const SimulationCreateQuery = z
   .object({
     newsletters: SimulationCreateNewsletterList,
-    sendEmail: z.coerce.boolean().optional(),
+    sendEmail: z
+      .string()
+      .optional()
+      .transform((val) => val === 'true'),
   })
   .extend(LocaleQuery.shape)
   .strict()
