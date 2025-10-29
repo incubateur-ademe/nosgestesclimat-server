@@ -10,6 +10,7 @@ import {
 import type { Session } from '../../adapters/prisma/transaction.js'
 import { batchFindMany } from '../../core/batch-find-many.js'
 import type { PublicPollParams } from '../organisations/organisations.validator.js'
+import { createOrUpdateUser } from '../users/users.repository.js'
 import type { UserParams } from '../users/users.validator.js'
 import type {
   SimulationCreateDto,
@@ -22,25 +23,16 @@ export const createUserSimulation = async (
   { session }: { session: Session }
 ) => {
   const { user: { name, email } = {} } = simulation
-  await session.user.upsert({
-    where: {
+  await createOrUpdateUser(
+    {
       id: userId,
+      user: {
+        name,
+        email,
+      },
     },
-    create: {
-      id: userId,
-      name,
-      email,
-    },
-    update: {
-      name,
-      email,
-    },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-    },
-  })
+    { session }
+  )
 
   return createParticipantSimulation(
     {

@@ -18,7 +18,7 @@ const checkSignMode = async (
   { session }: { session: Session }
 ) => {
   try {
-    await fetchVerifiedUser({ user: { email } }, { session })
+    await fetchVerifiedUser({ email }, { session, orThrow: true })
     if (mode === VerificationCodeMode.signUp) {
       throw new ConflictException('User already exists')
     }

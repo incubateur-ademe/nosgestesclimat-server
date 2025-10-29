@@ -5,11 +5,13 @@ import type {
 } from '@incubateur-ademe/nosgestesclimat'
 import modelRules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json' with { type: 'json' }
 import modelFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRules.json' with { type: 'json' }
+import type { Prisma } from '@prisma/client'
 import type { JsonValue } from '@prisma/client/runtime/library'
 import dayjs from 'dayjs'
 import type { Request } from 'express'
 import type Engine from 'publicodes'
 import { prisma } from '../../adapters/prisma/client.js'
+import type { defaultSimulationSelection } from '../../adapters/prisma/selection.js'
 import type { Session } from '../../adapters/prisma/transaction.js'
 import { transaction } from '../../adapters/prisma/transaction.js'
 import { redis } from '../../adapters/redis/client.js'
@@ -58,16 +60,27 @@ const funFactsRules = modelFunFacts as { [k in keyof FunFacts]: DottedName }
 
 const simulationToDto = (
   {
+    verifiedUser,
     polls,
     user,
     ...rest
-  }: Partial<Awaited<ReturnType<typeof fetchSimulationById>>>,
+  }: Partial<
+    Prisma.SimulationGetPayload<{ select: typeof defaultSimulationSelection }>
+  >,
   connectedUser: string
 ) => ({
   ...rest,
   polls: polls?.map(({ pollId, poll: { slug } }) => ({ id: pollId, slug })),
   ...(user
     ? { user: user.id === connectedUser ? user : { name: user.name } }
+    : {}),
+  ...(verifiedUser
+    ? {
+        user:
+          verifiedUser.email === connectedUser
+            ? verifiedUser
+            : { name: verifiedUser.name },
+      }
     : {}),
 })
 
