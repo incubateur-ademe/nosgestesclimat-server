@@ -10,7 +10,10 @@ import {
 import type { Session } from '../../adapters/prisma/transaction.js'
 import { batchFindMany } from '../../core/batch-find-many.js'
 import type { PublicPollParams } from '../organisations/organisations.validator.js'
-import { createOrUpdateUser } from '../users/users.repository.js'
+import {
+  createOrUpdateUser,
+  createOrUpdateVerifiedUser,
+} from '../users/users.repository.js'
 import type { UserParams } from '../users/users.validator.js'
 import type {
   SimulationCreateDto,
@@ -18,30 +21,52 @@ import type {
 } from './simulations.validator.js'
 
 export const createUserSimulation = async (
-  { userId }: UserParams,
-  simulation: SimulationCreateDto,
+  { userId, email }: UserParams & Partial<NonNullable<Request['user']>>,
+  simulationDto: SimulationCreateDto,
   { session }: { session: Session }
 ) => {
-  const { user: { name, email } = {} } = simulation
-  await createOrUpdateUser(
-    {
-      id: userId,
-      user: {
-        name,
-        email,
-      },
-    },
-    { session }
-  )
+  const { user = {} } = simulationDto
 
-  return createParticipantSimulation(
+  const { created: userCreated, updated: userUpdated } = await (email
+    ? createOrUpdateVerifiedUser(
+        {
+          id: { userId, email },
+          user: {
+            ...user,
+            email,
+          },
+        },
+        { session }
+      )
+    : createOrUpdateUser(
+        {
+          id: userId,
+          user,
+        },
+        { session }
+      ))
+
+  const {
+    simulation,
+    created: simulationCreated,
+    updated: simulationUpdated,
+  } = await createParticipantSimulation(
     {
       userId,
-      simulation,
+      email,
+      simulation: simulationDto,
       select: defaultSimulationSelection,
     },
     { session }
   )
+
+  return {
+    simulation,
+    simulationCreated,
+    simulationUpdated,
+    userCreated,
+    userUpdated,
+  }
 }
 
 export const createParticipantSimulation = async <
@@ -49,6 +74,7 @@ export const createParticipantSimulation = async <
     Prisma.SimulationSelect = typeof defaultSimulationSelectionWithoutUser,
 >(
   {
+    email,
     userId,
     simulation: {
       id,
@@ -65,6 +91,7 @@ export const createParticipantSimulation = async <
     },
     select = defaultSimulationSelectionWithoutUser as T,
   }: {
+    email?: string
     userId: string
     simulation: SimulationParticipantCreateDto
     select?: T
@@ -88,6 +115,15 @@ export const createParticipantSimulation = async <
         id: userId,
       },
     },
+    ...(email
+      ? {
+          verifiedUser: {
+            connect: {
+              email,
+            },
+          },
+        }
+      : {}),
     situation,
     foldedSteps,
     progression,
@@ -200,8 +236,8 @@ export const createPollUserSimulation = async (
 
   const {
     simulation: { id: simulationId },
-    created: simulationCreated,
-    updated: simulationUpdated,
+    simulationCreated,
+    simulationUpdated,
   } = await createUserSimulation(params, simulationDto, { session })
 
   const relation = {

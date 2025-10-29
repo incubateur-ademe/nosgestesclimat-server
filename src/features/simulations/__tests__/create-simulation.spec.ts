@@ -5,6 +5,7 @@ import {
   SimulationAdditionalQuestionAnswerType,
 } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
+import jwt from 'jsonwebtoken'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import {
@@ -18,6 +19,7 @@ import app from '../../../app.js'
 import { mswServer } from '../../../core/__tests__/fixtures/server.fixture.js'
 import { EventBus } from '../../../core/event-bus/event-bus.js'
 import logger from '../../../logger.js'
+import { createVerificationCode } from '../../authentication/__tests__/fixtures/verification-codes.fixture.js'
 import type { SimulationCreateInputDto } from '../simulations.validator.js'
 import {
   CREATE_SIMULATION_ROUTE,
@@ -34,7 +36,13 @@ describe('Given a NGC user', () => {
   const { computedResults, nom, situation, extendedSituation } =
     getRandomTestCase()
 
-  afterEach(() => prisma.user.deleteMany())
+  afterEach(() =>
+    Promise.all([
+      prisma.user.deleteMany(),
+      prisma.verificationCode.deleteMany(),
+      prisma.verifiedUser.deleteMany(),
+    ])
+  )
 
   describe(`And ${nom} persona situation`, () => {
     describe('When creating his simulation', () => {
@@ -316,7 +324,7 @@ describe('Given a NGC user', () => {
             .expect(StatusCodes.CREATED)
         })
 
-        test(`Then it returns ${StatusCodes.OK} response with updated simulation`, async () => {
+        test(`Then it returns ${StatusCodes.CREATED} response with updated simulation`, async () => {
           const response = await agent
             .post(url.replace(':userId', userId))
             .send(payload)
@@ -837,6 +845,138 @@ describe('Given a NGC user', () => {
             'Simulation creation failed',
             databaseError
           )
+        })
+      })
+    })
+
+    describe('When signing up creating his simulation', () => {
+      let userId: string
+      let code: string
+      let email: string
+
+      beforeEach(async () => {
+        ;({ userId, code, email } = await createVerificationCode({ agent }))
+      })
+
+      describe('And invalid verification code', () => {
+        test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
+          await agent
+            .post(url.replace(':userId', userId))
+            .send({
+              id: faker.string.uuid(),
+              progression: 1,
+              computedResults,
+              situation,
+              extendedSituation,
+            })
+            .query({
+              code: '42',
+              email,
+            })
+            .expect(StatusCodes.BAD_REQUEST)
+        })
+      })
+
+      describe('And invalid email', () => {
+        test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
+          await agent
+            .post(url.replace(':userId', userId))
+            .send({
+              id: faker.string.uuid(),
+              progression: 1,
+              computedResults,
+              situation,
+              extendedSituation,
+            })
+            .query({
+              code,
+              email: 'Je ne donne jamais mon email',
+            })
+            .expect(StatusCodes.BAD_REQUEST)
+        })
+      })
+
+      describe('And verification code does not exist', () => {
+        test(`Then it returns a ${StatusCodes.UNAUTHORIZED} error`, async () => {
+          await agent
+            .post(url.replace(':userId', userId))
+            .send({
+              id: faker.string.uuid(),
+              progression: 1,
+              computedResults,
+              situation,
+              extendedSituation,
+            })
+            .query({
+              code: faker.number.int({ min: 100000, max: 999999 }).toString(),
+              email,
+            })
+            .expect(StatusCodes.UNAUTHORIZED)
+        })
+      })
+
+      test(`Then it returns a ${StatusCodes.CREATED} response with the created simulation and a cookie`, async () => {
+        const expected = {
+          id: faker.string.uuid(),
+          model: `FR-fr-${defaultModelVersion}`,
+          situation,
+          progression: 1,
+          computedResults,
+        }
+        const payload: SimulationCreateInputDto = {
+          ...expected,
+          extendedSituation,
+        }
+
+        mswServer.use(
+          brevoUpdateContact(),
+          brevoRemoveFromList(22),
+          brevoRemoveFromList(32),
+          brevoRemoveFromList(36),
+          brevoRemoveFromList(40),
+          brevoRemoveFromList(41),
+          brevoRemoveFromList(42)
+        )
+
+        const response = await agent
+          .post(url.replace(':userId', userId))
+          .query({
+            code,
+            email,
+          })
+          .send(payload)
+          .expect(StatusCodes.CREATED)
+
+        expect(response.body).toEqual({
+          ...expected,
+          date: expect.any(String),
+          savedViaEmail: false,
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+          actionChoices: {},
+          additionalQuestionsAnswers: [],
+          foldedSteps: [],
+          polls: [],
+          user: {
+            id: userId,
+            email,
+            name: null,
+            position: null,
+            telephone: null,
+            optedInForCommunications: false,
+            createdAt: expect.any(String),
+            updatedAt: expect.any(String),
+          },
+        })
+
+        const [cookie] = response.headers['set-cookie']
+        const userToken = cookie.split(';').shift()?.replace('ngcjwt=', '')
+
+        expect(jwt.decode(userToken!)).toEqual({
+          userId,
+          email,
+          exp: expect.any(Number),
+          iat: expect.any(Number),
         })
       })
     })

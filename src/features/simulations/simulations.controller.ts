@@ -6,6 +6,10 @@ import { EventBus } from '../../core/event-bus/event-bus.js'
 import logger from '../../logger.js'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware.js'
 import { validateRequest } from '../../middlewares/validateRequest.js'
+import {
+  COOKIE_NAME,
+  COOKIES_OPTIONS,
+} from '../authentication/authentication.service.js'
 import { SimulationUpsertedEvent } from './events/SimulationUpserted.event.js'
 import { publishRedisEvent } from './handlers/publish-redis-event.js'
 import { sendSimulationUpserted } from './handlers/send-simulation-upserted.js'
@@ -36,16 +40,23 @@ router
   .route('/v1/:userId')
   .post(validateRequest(SimulationCreateValidator), async (req, res) => {
     try {
-      const simulation = await createSimulation({
+      const { simulation, token } = await createSimulation({
         simulationDto: req.body,
-        newsletters: req.query.newsletters || [],
-        sendEmail: !!req.query.sendEmail,
+        query: req.query,
         params: req.params,
         origin: req.get('origin') || config.app.origin,
       })
 
+      if (token) {
+        res.cookie(COOKIE_NAME, token, COOKIES_OPTIONS)
+      }
+
       return res.status(StatusCodes.CREATED).json(simulation)
     } catch (err) {
+      if (err instanceof EntityNotFoundException) {
+        return res.status(StatusCodes.UNAUTHORIZED).end()
+      }
+
       logger.error('Simulation creation failed', err)
 
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()

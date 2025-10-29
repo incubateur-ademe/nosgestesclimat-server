@@ -22,6 +22,7 @@ import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
 import { Locales } from '../../core/i18n/constant.js'
 import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError.js'
+import { exchangeCredentialsForToken } from '../authentication/authentication.service.js'
 import { PollUpdatedEvent } from '../organisations/events/PollUpdated.event.js'
 import { findOrganisationPublicPollBySlugOrId } from '../organisations/organisations.repository.js'
 import type {
@@ -43,7 +44,7 @@ import {
 } from './simulations.repository.js'
 import type {
   SimulationCreateDto,
-  SimulationCreateNewsletterList,
+  SimulationCreateQuery,
   UserSimulationParams,
 } from './simulations.validator.js'
 import {
@@ -86,38 +87,50 @@ const simulationToDto = (
 
 export const createSimulation = async ({
   simulationDto,
-  newsletters,
-  sendEmail,
+  query: { newsletters, sendEmail, code, email },
   params,
   origin,
 }: {
   simulationDto: SimulationCreateDto
-  newsletters: SimulationCreateNewsletterList
-  sendEmail: boolean
+  query: SimulationCreateQuery
   params: UserParams
   origin: string
 }) => {
-  const { simulation, created, updated } = await transaction((session) =>
-    createUserSimulation(params, simulationDto, { session })
-  )
-  const { user } = simulation
+  let token: string | undefined
+
+  if (code) {
+    ;({ token } = await exchangeCredentialsForToken({
+      userId: params.userId,
+      email,
+      code,
+    }))
+  }
+
+  const { simulation, simulationCreated, simulationUpdated } =
+    await transaction((session) =>
+      createUserSimulation({ ...params, email }, simulationDto, { session })
+    )
+  const { user, verifiedUser } = simulation
 
   const simulationUpsertedEvent = new SimulationUpsertedEvent({
+    created: simulationCreated,
+    updated: simulationUpdated,
     locale: Locales.fr,
     newsletters,
     simulation,
     sendEmail,
-    created,
-    updated,
     origin,
-    user,
+    user: verifiedUser || user,
   })
 
   EventBus.emit(simulationUpsertedEvent)
 
   await EventBus.once(simulationUpsertedEvent)
 
-  return simulationToDto(simulation, params.userId)
+  return {
+    simulation: simulationToDto(simulation, email || params.userId),
+    token,
+  }
 }
 
 export const fetchSimulations = async (params: UserParams) => {
