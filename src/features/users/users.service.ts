@@ -1,3 +1,4 @@
+import type { User } from '@prisma/client'
 import type { Request } from 'express'
 import type { BrevoContact } from '../../adapters/brevo/client.js'
 import {
@@ -6,6 +7,10 @@ import {
 } from '../../adapters/brevo/client.js'
 import { ListIds } from '../../adapters/brevo/constant.js'
 import { prisma } from '../../adapters/prisma/client.js'
+import {
+  defaultUserSelection,
+  defaultVerifiedUserSelection,
+} from '../../adapters/prisma/selection.js'
 import { transaction } from '../../adapters/prisma/transaction.js'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
 import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
@@ -16,11 +21,10 @@ import { exchangeCredentialsForToken } from '../authentication/authentication.se
 import { findUserVerificationCode } from '../authentication/verification-codes.repository.js'
 import { UserUpdatedEvent } from './events/UserUpdated.event.js'
 import {
+  createOrUpdateUser,
+  createOrUpdateVerifiedUser,
   fetchUser,
-  fetchUserOrThrow,
   transferOwnershipToUser,
-  updateUser,
-  updateVerifiedUser,
 } from './users.repository.js'
 import type {
   NewsletterConfirmationQuery,
@@ -35,8 +39,8 @@ const REACHABLE_NEWSLETTER_LIST_IDS: ListIds[] = [
 ]
 
 const userToDto = (
-  user: Awaited<ReturnType<typeof updateUser>> & {
-    contact?: Awaited<ReturnType<typeof fetchContactOrThrow>>
+  user: User & {
+    contact?: BrevoContact
   }
 ) => user
 
@@ -120,7 +124,11 @@ export const syncUserData = (user: NonNullable<Request['user']>) => {
 export const fetchUserContact = async (params: UserParams) => {
   try {
     const user = await transaction(
-      (session) => fetchUserOrThrow(params, { session }),
+      (session) =>
+        fetchUser(
+          { id: params.userId, select: defaultUserSelection },
+          { session, orThrow: true }
+        ),
       prisma
     )
 
@@ -197,7 +205,10 @@ export const updateUserAndContact = async ({
 
     const previousUser = await (isVerifiedUser
       ? params
-      : fetchUser(params, { session }))
+      : fetchUser(
+          { id: params.userId, select: defaultUserSelection },
+          { session }
+        ))
 
     const { emailChanged, nextEmail, previousEmail } = getEmailMutation(
       userDto,
@@ -256,9 +267,19 @@ export const updateUserAndContact = async ({
     const update =
       verified || !emailChanged ? userDto : { ...userDto, email: previousEmail }
 
-    const user = await (isVerifiedUser
-      ? updateVerifiedUser(params, update, { session })
-      : updateUser(params, update, { session }))
+    const { user } = await (isVerifiedUser
+      ? createOrUpdateVerifiedUser(
+          { id: params, user: update, select: defaultVerifiedUserSelection },
+          { session }
+        )
+      : createOrUpdateUser(
+          {
+            id: params.userId,
+            user: update,
+            select: defaultUserSelection,
+          },
+          { session }
+        ))
 
     return {
       user,
@@ -313,7 +334,10 @@ export const confirmNewsletterSubscriptions = async ({
     const [user, contact] = await transaction(
       (session) =>
         Promise.all([
-          fetchUserOrThrow(params, { session }),
+          fetchUser(
+            { id: params.userId, select: defaultUserSelection },
+            { session, orThrow: true }
+          ),
           fetchContact(query.email),
           findUserVerificationCode(
             {
