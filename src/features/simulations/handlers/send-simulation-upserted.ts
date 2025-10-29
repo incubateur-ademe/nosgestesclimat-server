@@ -15,6 +15,7 @@ export const sendSimulationUpserted: Handler<SimulationUpsertedEvent> = ({
     organisation,
     simulation,
     sendEmail,
+    verified,
     locale,
     poll,
   },
@@ -57,6 +58,8 @@ export const sendSimulationUpserted: Handler<SimulationUpsertedEvent> = ({
   return sendSimulationUpsertedEmail({
     email,
     origin,
+    locale,
     simulation,
+    verified: !!verified,
   })
 }

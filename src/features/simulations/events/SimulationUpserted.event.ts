@@ -8,7 +8,7 @@ import type {
 import { EventBusEvent } from '../../../core/event-bus/event.js'
 import type { Locales } from '../../../core/i18n/constant.js'
 import type { ModelToDto } from '../../../types/types.js'
-import type { SimulationCreateNewsletterList } from '../simulations.validator.js'
+import type { SimulationCreateQuery } from '../simulations.validator.js'
 
 export type SimulationEvent = Pick<
   Simulation,
@@ -30,6 +30,7 @@ type BaseSimulationUpsertedEventAttributes = {
   sendEmail: boolean
   created: boolean
   updated: boolean
+  verified?: boolean
 }
 
 type SimulationAttributes = BaseSimulationUpsertedEventAttributes &
@@ -39,7 +40,7 @@ type SimulationAttributes = BaseSimulationUpsertedEventAttributes &
         administrator?: undefined
         organisation?: undefined
         poll?: undefined
-        newsletters: SimulationCreateNewsletterList
+        newsletters: SimulationCreateQuery['newsletters']
       }
     | {
         group: Pick<Group, 'id' | 'name'>

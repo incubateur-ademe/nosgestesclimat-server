@@ -5,6 +5,7 @@ import {
 import { z } from 'zod'
 import { ListIds } from '../../adapters/brevo/constant.js'
 import { LocaleQuery } from '../../core/i18n/lang.validator.js'
+import { LoginDto } from '../authentication/authentication.validator.js'
 import { PublicPollParams } from '../organisations/organisations.validator.js'
 import { UserParams } from '../users/users.validator.js'
 
@@ -207,17 +208,14 @@ export type SimulationCreateInputDto = z.input<typeof SimulationCreateDto>
 
 const SimulationCreateNewsletterList = z
   .union([
-    z.coerce.number().pipe(z.enum(ListIds)),
-    z.array(z.coerce.number().pipe(z.enum(ListIds))),
+    z.coerce.number().pipe(z.enum(ListIds)).optional(),
+    z.array(z.coerce.number().pipe(z.enum(ListIds))).optional(),
   ])
-  .transform((listIds) => (typeof listIds === 'number' ? [listIds] : listIds))
-  .optional()
+  .transform((listIds) =>
+    typeof listIds === 'number' ? [listIds] : listIds || []
+  )
 
-export type SimulationCreateNewsletterList = z.infer<
-  typeof SimulationCreateNewsletterList
->
-
-const SimulationCreateQuery = z
+const SimulationCreateBaseQuery = z
   .object({
     newsletters: SimulationCreateNewsletterList,
     sendEmail: z
@@ -227,6 +225,24 @@ const SimulationCreateQuery = z
   })
   .extend(LocaleQuery.shape)
   .strict()
+
+const SimulationCreateLoginQuery = LoginDto.omit({
+  userId: true,
+}).extend(SimulationCreateBaseQuery.shape)
+
+const SimulationCreateAnonymousQuery = z
+  .object({
+    email: z.undefined().optional(),
+    code: z.undefined().optional(),
+  })
+  .extend(SimulationCreateBaseQuery.shape)
+
+const SimulationCreateQuery = z.union([
+  SimulationCreateLoginQuery,
+  SimulationCreateAnonymousQuery,
+])
+
+export type SimulationCreateQuery = z.infer<typeof SimulationCreateQuery>
 
 export const SimulationCreateValidator = {
   body: SimulationCreateDto,
