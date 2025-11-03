@@ -1,11 +1,13 @@
-import type { Prisma } from '@prisma/client'
+import type { Prisma, User } from '@prisma/client'
 import type { Request } from 'express'
-import {
-  defaultUserSelection,
-  defaultVerifiedUserSelection,
-} from '../../adapters/prisma/selection.js'
-import type { Session } from '../../adapters/prisma/transaction.js'
-import type { UserParams, UserUpdateDto } from './users.validator.js'
+import { defaultUserSelection } from '../../adapters/prisma/selection.js'
+import type {
+  FetchEntityResponse,
+  RequestOptions,
+  RequestOptionsOrNull,
+  Session,
+} from '../../adapters/prisma/transaction.js'
+import type { UserUpdateDto } from './users.validator.js'
 
 export const transferOwnershipToUser = async (
   { userId, email }: NonNullable<Request['user']>,
@@ -36,19 +38,13 @@ export const transferOwnershipToUser = async (
     return
   }
 
-  await session.user.upsert({
-    where: {
+  await createOrUpdateUser(
+    {
       id: userId,
+      user: existingUser,
     },
-    create: {
-      ...existingUser,
-      id: userId,
-    },
-    update: {
-      ...existingUser,
-      id: userId,
-    },
-  })
+    { session }
+  )
 
   const userIds = usersToMigrate.map(({ id }) => id)
   const [newUserGroupIds, oldUsersGroups] = await Promise.all([
@@ -165,67 +161,51 @@ export const transferOwnershipToUser = async (
   ])
 }
 
-export const fetchUserOrThrow = (
-  { userId }: UserParams,
-  { session }: { session: Session }
-) => {
-  return session.user.findUniqueOrThrow({
-    where: {
-      id: userId,
-    },
-    select: defaultUserSelection,
-  })
-}
+export const fetchUser = <
+  Select extends Prisma.UserSelect = { id: true },
+  Options extends RequestOptions = RequestOptionsOrNull,
+>(
+  { id, select = { id: true } as Select }: { id: string; select?: Select },
+  { session, orThrow }: Options
+): FetchEntityResponse<Prisma.UserGetPayload<{ select: Select }>, Options> => {
+  const method = orThrow
+    ? session.user.findUniqueOrThrow
+    : session.user.findUnique
 
-export const fetchUser = (
-  { userId }: UserParams,
-  { session }: { session: Session }
-) => {
-  return session.user.findUnique({
+  return method({
     where: {
-      id: userId,
+      id,
     },
-    select: defaultUserSelection,
-  })
-}
-
-export const updateUser = (
-  { userId }: UserParams,
-  { email, name }: UserUpdateDto,
-  { session }: { session: Session }
-) => {
-  return session.user.upsert({
-    where: {
-      id: userId,
-    },
-    create: {
-      id: userId,
-      email,
-      name,
-    },
-    update: {
-      email,
-      name,
-    },
-    select: defaultUserSelection,
-  })
+    select,
+  }) as FetchEntityResponse<Prisma.UserGetPayload<{ select: Select }>, Options>
 }
 
 export const fetchVerifiedUser = <
-  T extends Prisma.VerifiedUserSelect = { id: true },
+  Select extends Prisma.VerifiedUserSelect = { id: true },
+  Options extends RequestOptions = RequestOptionsOrNull,
 >(
   {
-    user: { email },
-    select = { id: true } as T,
-  }: { user: Pick<NonNullable<Request['user']>, 'email'>; select?: T },
-  { session }: { session: Session }
-) => {
-  return session.verifiedUser.findUniqueOrThrow({
+    email,
+    select = { id: true } as Select,
+  }: { email: string; select?: Select },
+  { session, orThrow }: Options
+): FetchEntityResponse<
+  Prisma.VerifiedUserGetPayload<{ select: Select }>,
+  Options
+> => {
+  const method = orThrow
+    ? session.verifiedUser.findUniqueOrThrow
+    : session.verifiedUser.findUnique
+
+  return method({
     where: {
       email,
     },
     select,
-  })
+  }) as FetchEntityResponse<
+    Prisma.VerifiedUserGetPayload<{ select: Select }>,
+    Options
+  >
 }
 
 export const fetchUsersForEmail = (
@@ -240,59 +220,102 @@ export const fetchUsersForEmail = (
   })
 }
 
-export const createVerifiedUser = async (
-  { userId, email }: NonNullable<Request['user']>,
+export const createOrUpdateUser = async <
+  Select extends Prisma.UserSelect = { id: true },
+>(
+  {
+    id,
+    user: { email, name, createdAt, updatedAt },
+    select = { id: true } as Select,
+  }: {
+    id: string
+    user: Partial<User>
+    select?: Select
+  },
   { session }: { session: Session }
 ) => {
-  const user = await session.verifiedUser.create({
-    data: {
-      id: userId,
-      email,
-    },
-    select: defaultVerifiedUserSelection,
-  })
+  const existingUser = await fetchUser({ id }, { session })
 
-  return user
+  const user = existingUser
+    ? await session.user.update({
+        where: {
+          id,
+        },
+        data: {
+          name,
+          email,
+          updatedAt,
+          createdAt,
+        },
+        select,
+      })
+    : await session.user.create({
+        data: {
+          id,
+          name,
+          email,
+          updatedAt,
+          createdAt,
+        },
+        select,
+      })
+
+  return {
+    user,
+    created: !existingUser,
+    updated: !!existingUser,
+  }
 }
 
-export const updateVerifiedUser = async (
-  { userId, email }: NonNullable<Request['user']>,
-  { name, email: newEmail }: UserUpdateDto,
+export const createOrUpdateVerifiedUser = async <
+  Select extends Prisma.VerifiedUserSelect = { id: true },
+>(
+  {
+    id: { userId, email },
+    user: { name, email: newEmail },
+    select = { email: true } as Select,
+  }: { id: NonNullable<Request['user']>; user: UserUpdateDto; select?: Select },
   { session }: { session: Session }
 ) => {
+  const existingUser = await fetchVerifiedUser({ email }, { session })
+
   const [user] = await Promise.all([
-    session.verifiedUser.upsert({
-      where: {
-        email,
-      },
-      create: {
+    existingUser
+      ? session.verifiedUser.update({
+          where: {
+            email,
+          },
+          data: {
+            id: userId,
+            name,
+            ...(newEmail ? { email: newEmail } : {}),
+          },
+          select,
+        })
+      : session.verifiedUser.create({
+          data: {
+            id: userId,
+            email: newEmail || email,
+            name,
+          },
+          select,
+        }),
+
+    createOrUpdateUser(
+      {
         id: userId,
-        email: newEmail || email,
-        name,
+        user: {
+          email: newEmail || email,
+          name,
+        },
       },
-      update: {
-        id: userId,
-        name,
-        ...(newEmail ? { email: newEmail } : {}),
-      },
-      select: defaultVerifiedUserSelection,
-    }),
-    session.user.upsert({
-      where: {
-        id: userId,
-      },
-      create: {
-        id: userId,
-        email: newEmail || email,
-        name,
-      },
-      update: {
-        email: newEmail || email,
-        name,
-      },
-      select: { id: true },
-    }),
+      { session }
+    ),
   ])
 
-  return user
+  return {
+    user,
+    created: !existingUser,
+    updated: !!existingUser,
+  }
 }

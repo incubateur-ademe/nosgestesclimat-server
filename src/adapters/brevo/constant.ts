@@ -14,6 +14,7 @@ const FrTemplateIds = {
   API_VERIFICATION_CODE: 116,
   NEWSLETTER_CONFIRMATION: 118,
   SIGN_UP: 137,
+  SIGN_UP_SIMULATION_COMPLETED: 138,
 } as const
 
 type FrTemplateIds = ValueOf<typeof FrTemplateIds>
@@ -24,6 +25,7 @@ const EnTemplateIds = {
   ORGANISATION_JOINED: 123,
   POLL_CREATED: 127,
   SIGN_UP: 139,
+  SIGN_UP_SIMULATION_COMPLETED: 140,
 } as const
 
 type EnTemplateIds = ValueOf<typeof EnTemplateIds>
@@ -93,6 +95,10 @@ export const MATOMO_CAMPAIGN_EMAIL_AUTOMATISE = 'email-automatise'
 export const MATOMO_KEYWORD_KEY = 'mtm_kwd'
 export const MATOMO_KEYWORDS = {
   [TemplateIds[Locales.fr].SIMULATION_COMPLETED]: 'fin-retrouver-simulation',
+  [TemplateIds[Locales.en].SIGN_UP_SIMULATION_COMPLETED]:
+    'fin-retrouver-simulation',
+  [TemplateIds[Locales.fr].SIGN_UP_SIMULATION_COMPLETED]:
+    'fin-retrouver-simulation',
   [TemplateIds[Locales.fr].SIMULATION_IN_PROGRESS]: 'pause-test-en-cours',
   [TemplateIds[Locales.fr].GROUP_CREATED]: {
     GROUP_URL: 'groupe-admin-voir-classement',

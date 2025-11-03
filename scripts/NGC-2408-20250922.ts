@@ -57,8 +57,8 @@ const DeletionMessage = dry ? 'Skipping deletion as in dry mode' : 'Deleting...'
 if (deleteOrganisations) {
   try {
     const verifiedUser = await fetchVerifiedUser(
-      { user: { email }, select: defaultVerifiedUserSelection },
-      { session: prisma }
+      { email, select: defaultVerifiedUserSelection },
+      { session: prisma, orThrow: true }
     )
 
     logger.info('Found verified user. Looking for organisations', {
