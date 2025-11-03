@@ -90,11 +90,13 @@ export const createSimulation = async ({
   query: { newsletters, sendEmail, code, email, locale },
   params,
   origin,
+  user: requestUser,
 }: {
   simulationDto: SimulationCreateDto
   query: SimulationCreateQuery
   params: UserParams
   origin: string
+  user: Request['user']
 }) => {
   let token: string | undefined
 
@@ -108,7 +110,11 @@ export const createSimulation = async ({
 
   const { simulation, simulationCreated, simulationUpdated } =
     await transaction((session) =>
-      createUserSimulation({ ...params, email }, simulationDto, { session })
+      createUserSimulation(
+        { ...params, ...(code ? { email } : { email: requestUser?.email }) },
+        simulationDto,
+        { session }
+      )
     )
   const { user, verifiedUser } = simulation
 
@@ -129,7 +135,10 @@ export const createSimulation = async ({
   await EventBus.once(simulationUpsertedEvent)
 
   return {
-    simulation: simulationToDto(simulation, email || params.userId),
+    simulation: simulationToDto(
+      simulation,
+      email || requestUser?.email || params.userId
+    ),
     token,
   }
 }

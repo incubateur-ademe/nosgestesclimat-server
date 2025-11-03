@@ -20,6 +20,7 @@ import {
   fetchSimulation,
   fetchSimulations,
 } from './simulations.service.js'
+import type { SimulationCreateQuery } from './simulations.validator.js'
 import {
   SimulationCreateValidator,
   SimulationFetchValidator,
@@ -38,30 +39,40 @@ EventBus.on(SimulationUpsertedEvent, publishRedisEvent)
  */
 router
   .route('/v1/:userId')
-  .post(validateRequest(SimulationCreateValidator), async (req, res) => {
-    try {
-      const { simulation, token } = await createSimulation({
-        simulationDto: req.body,
-        query: req.query,
-        params: req.params,
-        origin: req.get('origin') || config.app.origin,
-      })
+  .post(
+    authentificationMiddleware<
+      unknown,
+      unknown,
+      unknown,
+      SimulationCreateQuery
+    >({ passIfUnauthorized: true }),
+    validateRequest(SimulationCreateValidator),
+    async (req, res) => {
+      try {
+        const { simulation, token } = await createSimulation({
+          simulationDto: req.body,
+          query: req.query,
+          params: req.params,
+          origin: req.get('origin') || config.app.origin,
+          user: req.user,
+        })
 
-      if (token) {
-        res.cookie(COOKIE_NAME, token, COOKIES_OPTIONS)
+        if (token) {
+          res.cookie(COOKIE_NAME, token, COOKIES_OPTIONS)
+        }
+
+        return res.status(StatusCodes.CREATED).json(simulation)
+      } catch (err) {
+        if (err instanceof EntityNotFoundException) {
+          return res.status(StatusCodes.UNAUTHORIZED).end()
+        }
+
+        logger.error('Simulation creation failed', err)
+
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
       }
-
-      return res.status(StatusCodes.CREATED).json(simulation)
-    } catch (err) {
-      if (err instanceof EntityNotFoundException) {
-        return res.status(StatusCodes.UNAUTHORIZED).end()
-      }
-
-      logger.error('Simulation creation failed', err)
-
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
     }
-  })
+  )
 
 /**
  * Returns simulations for a user
