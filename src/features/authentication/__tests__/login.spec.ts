@@ -257,7 +257,7 @@ describe('Given a NGC user', () => {
                 ],
                 templateId: 137,
                 params: {
-                  DASHBOARD_URL: 'https://nosgestesclimat.fr/',
+                  DASHBOARD_URL: 'https://nosgestesclimat.fr/mon-espace',
                 },
               },
             })
@@ -299,7 +299,8 @@ describe('Given a NGC user', () => {
                   ],
                   templateId: 137,
                   params: {
-                    DASHBOARD_URL: 'https://preprod.nosgestesclimat.fr/',
+                    DASHBOARD_URL:
+                      'https://preprod.nosgestesclimat.fr/mon-espace',
                   },
                 },
               })
@@ -346,7 +347,7 @@ describe('Given a NGC user', () => {
                   ],
                   templateId: 139,
                   params: {
-                    DASHBOARD_URL: 'https://nosgestesclimat.fr/',
+                    DASHBOARD_URL: 'https://nosgestesclimat.fr/mon-espace',
                   },
                 },
               })

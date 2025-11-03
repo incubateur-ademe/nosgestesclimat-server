@@ -204,7 +204,7 @@ export const sendWelcomeEmail = ({
   email: string
   locale: Locales
 }>) => {
-  const dashBoardUrl = new URL(origin) // TODO modifiy when URL is known
+  const dashBoardUrl = new URL(`${origin}/mon-espace`)
 
   return sendEmail({
     email,
