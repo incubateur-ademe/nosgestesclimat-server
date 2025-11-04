@@ -91,11 +91,12 @@ router
       SimulationsFetchQuery
     >({ passIfUnauthorized: true }),
     validateRequest(SimulationsFetchValidator),
-    async ({ params, query }, res) => {
+    async ({ params, query, user }, res) => {
       try {
         const { simulations, count } = await fetchSimulations({
           params,
           query,
+          user,
         })
 
         return withPaginationHeaders({

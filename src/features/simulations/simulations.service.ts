@@ -147,17 +147,25 @@ export const createSimulation = async ({
 export const fetchSimulations = async ({
   params,
   query,
+  user,
 }: {
   params: UserParams
   query: PaginationQuery
+  user?: Request['user']
 }) => {
   const { simulations, count } = await transaction(
-    (session) => fetchUserSimulations(params, { session, query }),
+    (session) =>
+      fetchUserSimulations(
+        { ...params, email: user?.email },
+        { session, query }
+      ),
     prisma
   )
 
   return {
-    simulations: simulations.map((s) => simulationToDto(s, params.userId)),
+    simulations: simulations.map((s) =>
+      simulationToDto(s, user?.email || params.userId)
+    ),
     count,
   }
 }

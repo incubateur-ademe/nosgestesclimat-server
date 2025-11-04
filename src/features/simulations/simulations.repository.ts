@@ -186,13 +186,13 @@ export const createParticipantSimulation = async <
 }
 
 export const fetchUserSimulations = async (
-  { userId }: UserParams,
+  { userId, email }: UserParams & Partial<NonNullable<Request['user']>>,
   {
     session,
     query: { pageSize, page },
   }: { session: Session; query: PaginationQuery }
 ) => {
-  const where = { userId }
+  const where = email ? { userEmail: email } : { userId }
 
   const [simulations, count] = await Promise.all([
     session.simulation.findMany({
