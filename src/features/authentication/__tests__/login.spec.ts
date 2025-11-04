@@ -31,6 +31,7 @@ describe('Given a NGC user', () => {
     Promise.all([
       prisma.verificationCode.deleteMany(),
       prisma.verifiedUser.deleteMany(),
+      prisma.user.deleteMany(),
     ])
   )
 
