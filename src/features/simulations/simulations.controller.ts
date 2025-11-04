@@ -1,11 +1,16 @@
 import express from 'express'
 import { StatusCodes } from 'http-status-codes'
-import { validateRequest } from 'zod-express-middleware'
 import { config } from '../../config.js'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
+import { withPaginationHeaders } from '../../core/pagination.js'
 import logger from '../../logger.js'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware.js'
+import { validateRequest } from '../../middlewares/validateRequest.js'
+import {
+  COOKIE_NAME,
+  COOKIES_OPTIONS,
+} from '../authentication/authentication.service.js'
 import { SimulationUpsertedEvent } from './events/SimulationUpserted.event.js'
 import { publishRedisEvent } from './handlers/publish-redis-event.js'
 import { sendSimulationUpserted } from './handlers/send-simulation-upserted.js'
@@ -16,9 +21,11 @@ import {
   fetchSimulation,
   fetchSimulations,
 } from './simulations.service.js'
+import type {
+  SimulationCreateQuery,
+  SimulationsFetchQuery,
+} from './simulations.validator.js'
 import {
-  SimulationCreateDto,
-  SimulationCreateNewsletterList,
   SimulationCreateValidator,
   SimulationFetchValidator,
   SimulationsFetchValidator,
@@ -36,25 +43,40 @@ EventBus.on(SimulationUpsertedEvent, publishRedisEvent)
  */
 router
   .route('/v1/:userId')
-  .post(validateRequest(SimulationCreateValidator), async (req, res) => {
-    try {
-      const simulation = await createSimulation({
-        simulationDto: SimulationCreateDto.parse(req.body), // default values are not set in middleware
-        newsletters: SimulationCreateNewsletterList.parse(
-          req.query?.newsletters || []
-        ),
-        sendEmail: !!req.query?.sendEmail,
-        params: req.params,
-        origin: req.get('origin') || config.app.origin,
-      })
+  .post(
+    authentificationMiddleware<
+      unknown,
+      unknown,
+      unknown,
+      SimulationCreateQuery
+    >({ passIfUnauthorized: true }),
+    validateRequest(SimulationCreateValidator),
+    async (req, res) => {
+      try {
+        const { simulation, token } = await createSimulation({
+          simulationDto: req.body,
+          query: req.query,
+          params: req.params,
+          origin: req.get('origin') || config.app.origin,
+          user: req.user,
+        })
 
-      return res.status(StatusCodes.CREATED).json(simulation)
-    } catch (err) {
-      logger.error('Simulation creation failed', err)
+        if (token) {
+          res.cookie(COOKIE_NAME, token, COOKIES_OPTIONS)
+        }
 
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
+        return res.status(StatusCodes.CREATED).json(simulation)
+      } catch (err) {
+        if (err instanceof EntityNotFoundException) {
+          return res.status(StatusCodes.UNAUTHORIZED).end()
+        }
+
+        logger.error('Simulation creation failed', err)
+
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
+      }
     }
-  })
+  )
 
 /**
  * Returns simulations for a user
@@ -62,13 +84,26 @@ router
 router
   .route('/v1/:userId')
   .get(
-    authentificationMiddleware({ passIfUnauthorized: true }),
+    authentificationMiddleware<
+      unknown,
+      unknown,
+      unknown,
+      SimulationsFetchQuery
+    >({ passIfUnauthorized: true }),
     validateRequest(SimulationsFetchValidator),
-    async ({ params }, res) => {
+    async ({ params, query }, res) => {
       try {
-        const simulations = await fetchSimulations(params)
+        const { simulations, count } = await fetchSimulations({
+          params,
+          query,
+        })
 
-        return res.status(StatusCodes.OK).json(simulations)
+        return withPaginationHeaders({
+          ...query,
+          count,
+        })(res)
+          .status(StatusCodes.OK)
+          .json(simulations)
       } catch (err) {
         logger.error('Simulations fetch failed', err)
 

@@ -1,12 +1,12 @@
 import express from 'express'
 import { StatusCodes } from 'http-status-codes'
-import { validateRequest } from 'zod-express-middleware'
 import { config } from '../../config.js'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
 import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
 import logger from '../../logger.js'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware.js'
+import { validateRequest } from '../../middlewares/validateRequest.js'
 import { GroupCreatedEvent } from './events/GroupCreated.event.js'
 import { GroupDeletedEvent } from './events/GroupDeleted.event.js'
 import { GroupUpdatedEvent } from './events/GroupUpdated.event.js'
@@ -20,14 +20,11 @@ import {
   updateGroup,
 } from './groups.service.js'
 import {
-  GroupCreateDto,
   GroupCreateValidator,
   GroupDeleteValidator,
   GroupFetchValidator,
-  GroupsFetchQuery,
   GroupsFetchValidator,
   GroupUpdateValidator,
-  ParticipantCreateDto,
   ParticipantCreateValidator,
   ParticipantDeleteValidator,
 } from './groups.validator.js'
@@ -50,7 +47,7 @@ router
   .post(validateRequest(GroupCreateValidator), async (req, res) => {
     try {
       const group = await createGroup({
-        groupDto: GroupCreateDto.parse(req.body), // default values are not set in middleware
+        groupDto: req.body,
         origin: req.get('origin') || config.app.origin,
       })
 
@@ -96,7 +93,7 @@ router
       const participant = await createParticipant({
         params: req.params,
         origin: req.get('origin') || config.app.origin,
-        participantDto: ParticipantCreateDto.parse(req.body), // default values are not set in middleware
+        participantDto: req.body,
       })
 
       return res.status(StatusCodes.CREATED).json(participant)
@@ -146,7 +143,7 @@ router
     validateRequest(GroupsFetchValidator),
     async ({ params, query }, res) => {
       try {
-        const groups = await fetchGroups(params, GroupsFetchQuery.parse(query))
+        const groups = await fetchGroups(params, query)
 
         return res.status(StatusCodes.OK).json(groups)
       } catch (err) {

@@ -6,7 +6,10 @@ import {
 } from '../../adapters/prisma/selection.js'
 import type { Session } from '../../adapters/prisma/transaction.js'
 import { createParticipantSimulation } from '../simulations/simulations.repository.js'
-import { transferOwnershipToUser } from '../users/users.repository.js'
+import {
+  createOrUpdateUser,
+  transferOwnershipToUser,
+} from '../users/users.repository.js'
 import type { UserParams } from '../users/users.validator.js'
 import type {
   GroupCreateDto,
@@ -28,20 +31,17 @@ export const createGroupAndUser = async (
   { session }: { session: Session }
 ) => {
   // upsert administrator
-  const administrator = await session.user.upsert({
-    where: {
+  const { user: administrator } = await createOrUpdateUser(
+    {
       id: userId,
+      user: {
+        name,
+        email,
+      },
+      select: defaultUserSelection,
     },
-    create: {
-      id: userId,
-      name,
-      email,
-    },
-    update: {
-      name,
-      email,
-    },
-  })
+    { session }
+  )
 
   const [participantDto] = participants || []
 
@@ -156,20 +156,16 @@ export const createParticipantAndUser = async (
   })
 
   // upsert user
-  await session.user.upsert({
-    where: {
+  await createOrUpdateUser(
+    {
       id: userId,
+      user: {
+        name,
+        email,
+      },
     },
-    create: {
-      id: userId,
-      name,
-      email,
-    },
-    update: {
-      name,
-      email,
-    },
-  })
+    { session }
+  )
 
   const {
     simulation,

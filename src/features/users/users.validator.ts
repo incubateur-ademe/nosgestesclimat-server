@@ -1,11 +1,10 @@
 import { z } from 'zod'
 import { ListIds } from '../../adapters/brevo/constant.js'
 import { LocaleQuery } from '../../core/i18n/lang.validator.js'
-import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail.js'
 
 export const UserParams = z
   .object({
-    userId: z.string().uuid(),
+    userId: z.uuid(),
   })
   .strict()
 
@@ -14,25 +13,22 @@ export type UserParams = z.infer<typeof UserParams>
 export const FetchUserContactValidator = {
   body: z.object({}).strict().optional(),
   params: UserParams,
-  query: LocaleQuery.optional(),
+  query: LocaleQuery,
 }
 
 export const FetchMeValidator = {
   body: z.object({}).strict().optional(),
-  params: z.object({}).strict().optional(),
-  query: z.object({}).strict().optional(),
+  params: z.object({}).strict(),
+  query: z.object({}).strict(),
 }
 
-export const UserUpdateDto = z
+const UserUpdateDto = z
   .object({
-    email: z
-      .string()
-      .regex(EMAIL_REGEX)
-      .transform((email) => email.toLocaleLowerCase()),
+    email: z.email().transform((email) => email.toLocaleLowerCase()),
     name: z.string(),
     contact: z
       .object({
-        listIds: z.array(z.nativeEnum(ListIds)),
+        listIds: z.array(z.enum(ListIds)),
       })
       .strict(),
   })
@@ -41,23 +37,23 @@ export const UserUpdateDto = z
 
 export type UserUpdateDto = z.infer<typeof UserUpdateDto>
 
-export const UserUpdateQuery = z
+const UserUpdateQuery = z
   .object({
     code: z
       .string()
       .regex(/^\d{6}$/)
       .optional(),
   })
-  .merge(LocaleQuery)
+  .extend(LocaleQuery.shape)
   .strict()
 
 export const UpdateUserValidator = {
   body: UserUpdateDto,
   params: UserParams,
-  query: UserUpdateQuery.optional(),
+  query: UserUpdateQuery,
 }
 
-export const NewsletterConfirmationQuery = z
+const NewsletterConfirmationQuery = z
   .object({
     code: z.string().regex(/^\d{6}$/),
     origin: z.string().refine((url) => {
@@ -67,10 +63,7 @@ export const NewsletterConfirmationQuery = z
         return false
       }
     }),
-    email: z
-      .string()
-      .regex(EMAIL_REGEX)
-      .transform((email) => email.toLocaleLowerCase()),
+    email: z.email().transform((email) => email.toLocaleLowerCase()),
     listIds: z
       .union([
         z.coerce.number().positive(),
@@ -81,7 +74,7 @@ export const NewsletterConfirmationQuery = z
         typeof listIds === 'number' ? [listIds] : listIds || []
       ),
   })
-  .merge(LocaleQuery)
+  .extend(LocaleQuery.shape)
   .strict()
 
 export type NewsletterConfirmationQuery = z.infer<
@@ -91,5 +84,5 @@ export type NewsletterConfirmationQuery = z.infer<
 export const NewsletterConfirmationValidator = {
   body: z.object({}).optional(),
   params: UserParams,
-  query: NewsletterConfirmationQuery.optional(),
+  query: NewsletterConfirmationQuery,
 }

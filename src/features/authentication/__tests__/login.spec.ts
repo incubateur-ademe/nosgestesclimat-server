@@ -31,6 +31,7 @@ describe('Given a NGC user', () => {
     Promise.all([
       prisma.verificationCode.deleteMany(),
       prisma.verifiedUser.deleteMany(),
+      prisma.user.deleteMany(),
     ])
   )
 
@@ -257,7 +258,7 @@ describe('Given a NGC user', () => {
                 ],
                 templateId: 137,
                 params: {
-                  DASHBOARD_URL: 'https://nosgestesclimat.fr/',
+                  DASHBOARD_URL: 'https://nosgestesclimat.fr/mon-espace',
                 },
               },
             })
@@ -299,7 +300,8 @@ describe('Given a NGC user', () => {
                   ],
                   templateId: 137,
                   params: {
-                    DASHBOARD_URL: 'https://preprod.nosgestesclimat.fr/',
+                    DASHBOARD_URL:
+                      'https://preprod.nosgestesclimat.fr/mon-espace',
                   },
                 },
               })
@@ -346,7 +348,7 @@ describe('Given a NGC user', () => {
                   ],
                   templateId: 139,
                   params: {
-                    DASHBOARD_URL: 'https://nosgestesclimat.fr/',
+                    DASHBOARD_URL: 'https://nosgestesclimat.fr/mon-espace',
                   },
                 },
               })

@@ -1,8 +1,7 @@
 import express from 'express'
 import { StatusCodes } from 'http-status-codes'
-import { validateRequest } from 'zod-express-middleware'
 import logger from '../../logger.js'
-import { SituationSchema } from '../simulations/simulations.validator.js'
+import { validateRequest } from '../../middlewares/validateRequest.js'
 import { exportSituation, getPartnerFeatures } from './integrations.service.js'
 import {
   FetchExternalServiceValidator,
@@ -31,7 +30,7 @@ router
     try {
       const externalServiceRedirection = await exportSituation({
         externalService: req.params.externalService,
-        situation: SituationSchema.parse(req.body),
+        situation: req.body,
         params: req.query,
       })
 

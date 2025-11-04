@@ -5,11 +5,13 @@ import type {
 } from '@incubateur-ademe/nosgestesclimat'
 import modelRules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json' with { type: 'json' }
 import modelFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRules.json' with { type: 'json' }
+import type { Prisma } from '@prisma/client'
 import type { JsonValue } from '@prisma/client/runtime/library'
 import dayjs from 'dayjs'
 import type { Request } from 'express'
 import type Engine from 'publicodes'
 import { prisma } from '../../adapters/prisma/client.js'
+import type { defaultSimulationSelection } from '../../adapters/prisma/selection.js'
 import type { Session } from '../../adapters/prisma/transaction.js'
 import { transaction } from '../../adapters/prisma/transaction.js'
 import { redis } from '../../adapters/redis/client.js'
@@ -18,8 +20,10 @@ import { deepMergeSum } from '../../core/deep-merge.js'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
 import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
-import { Locales } from '../../core/i18n/constant.js'
+import type { Locales } from '../../core/i18n/constant.js'
+import type { PaginationQuery } from '../../core/pagination.js'
 import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError.js'
+import { exchangeCredentialsForToken } from '../authentication/authentication.service.js'
 import { PollUpdatedEvent } from '../organisations/events/PollUpdated.event.js'
 import { findOrganisationPublicPollBySlugOrId } from '../organisations/organisations.repository.js'
 import type {
@@ -41,7 +45,7 @@ import {
 } from './simulations.repository.js'
 import type {
   SimulationCreateDto,
-  SimulationCreateNewsletterList,
+  SimulationCreateQuery,
   UserSimulationParams,
 } from './simulations.validator.js'
 import {
@@ -58,10 +62,13 @@ const funFactsRules = modelFunFacts as { [k in keyof FunFacts]: DottedName }
 
 const simulationToDto = (
   {
+    verifiedUser,
     polls,
     user,
     ...rest
-  }: Partial<Awaited<ReturnType<typeof fetchSimulationById>>>,
+  }: Partial<
+    Prisma.SimulationGetPayload<{ select: typeof defaultSimulationSelection }>
+  >,
   connectedUser: string
 ) => ({
   ...rest,
@@ -69,51 +76,90 @@ const simulationToDto = (
   ...(user
     ? { user: user.id === connectedUser ? user : { name: user.name } }
     : {}),
+  ...(verifiedUser
+    ? {
+        user:
+          verifiedUser.email === connectedUser
+            ? verifiedUser
+            : { name: verifiedUser.name },
+      }
+    : {}),
 })
 
 export const createSimulation = async ({
   simulationDto,
-  newsletters,
-  sendEmail,
+  query: { newsletters, sendEmail, code, email, locale },
   params,
   origin,
+  user: requestUser,
 }: {
   simulationDto: SimulationCreateDto
-  newsletters: SimulationCreateNewsletterList
-  sendEmail: boolean
+  query: SimulationCreateQuery
   params: UserParams
   origin: string
+  user: Request['user']
 }) => {
-  const { simulation, created, updated } = await transaction((session) =>
-    createUserSimulation(params, simulationDto, { session })
-  )
-  const { user } = simulation
+  let token: string | undefined
+
+  if (code) {
+    ;({ token } = await exchangeCredentialsForToken({
+      userId: params.userId,
+      email,
+      code,
+    }))
+  }
+
+  const { simulation, simulationCreated, simulationUpdated } =
+    await transaction((session) =>
+      createUserSimulation(
+        { ...params, ...(code ? { email } : { email: requestUser?.email }) },
+        simulationDto,
+        { session }
+      )
+    )
+  const { user, verifiedUser } = simulation
 
   const simulationUpsertedEvent = new SimulationUpsertedEvent({
-    locale: Locales.fr,
+    created: simulationCreated,
+    updated: simulationUpdated,
+    user: verifiedUser || user,
+    verified: !!verifiedUser,
     newsletters,
     simulation,
     sendEmail,
-    created,
-    updated,
+    locale,
     origin,
-    user,
   })
 
   EventBus.emit(simulationUpsertedEvent)
 
   await EventBus.once(simulationUpsertedEvent)
 
-  return simulationToDto(simulation, params.userId)
+  return {
+    simulation: simulationToDto(
+      simulation,
+      email || requestUser?.email || params.userId
+    ),
+    token,
+  }
 }
 
-export const fetchSimulations = async (params: UserParams) => {
-  const simulations = await transaction(
-    (session) => fetchUserSimulations(params, { session }),
+export const fetchSimulations = async ({
+  params,
+  query,
+}: {
+  params: UserParams
+  query: PaginationQuery
+}) => {
+  const { simulations, count } = await transaction(
+    (session) => fetchUserSimulations(params, { session, query }),
     prisma
   )
 
-  return simulations.map((s) => simulationToDto(s, params.userId))
+  return {
+    simulations: simulations.map((s) => simulationToDto(s, params.userId)),
+    count,
+  }
 }
 
 export const fetchSimulation = async (params: UserSimulationParams) => {

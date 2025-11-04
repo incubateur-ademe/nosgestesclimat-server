@@ -204,7 +204,7 @@ export const sendWelcomeEmail = ({
   email: string
   locale: Locales
 }>) => {
-  const dashBoardUrl = new URL(origin) // TODO modifiy when URL is known
+  const dashBoardUrl = new URL(`${origin}/mon-espace`)
 
   return sendEmail({
     email,
@@ -350,13 +350,45 @@ export const sendPollCreatedEmail = ({
 export const sendSimulationUpsertedEmail = ({
   email,
   origin,
+  locale,
+  verified,
   simulation,
 }: Readonly<{
   email: string
   origin: string
+  locale: Locales
+  verified: boolean
   simulation: Pick<Simulation, 'id' | 'progression'>
 }>) => {
   const isSimulationCompleted = simulation.progression === 1
+
+  if (verified) {
+    // TODO send in progress email when autheticated
+    if (!isSimulationCompleted) {
+      return
+    }
+
+    const templateId = TemplateIds[locale].SIGN_UP_SIMULATION_COMPLETED
+
+    const simulationUrl = new URL(origin)
+    simulationUrl.pathname = isSimulationCompleted ? 'fin' : 'simulateur/bilan'
+    const { searchParams } = simulationUrl
+    searchParams.append('sid', simulation.id)
+    searchParams.append(MATOMO_CAMPAIGN_KEY, MATOMO_CAMPAIGN_EMAIL_AUTOMATISE)
+    searchParams.append(MATOMO_KEYWORD_KEY, MATOMO_KEYWORDS[templateId])
+
+    const dashBoardUrl = new URL(`${origin}/mon-espace`)
+
+    return sendEmail({
+      email,
+      templateId,
+      params: {
+        SIMULATION_URL: simulationUrl.toString(),
+        DASHBOARD_URL: dashBoardUrl.toString(),
+      },
+    })
+  }
+
   const templateId = isSimulationCompleted
     ? TemplateIds[Locales.fr].SIMULATION_COMPLETED
     : TemplateIds[Locales.fr].SIMULATION_IN_PROGRESS

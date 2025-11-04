@@ -4,7 +4,7 @@ import {
 } from '@prisma/client'
 import { z } from 'zod'
 import { LocaleQuery } from '../../core/i18n/lang.validator.js'
-import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail.js'
+import { PaginationQuery } from '../../core/pagination.js'
 import { UserParams } from '../users/users.validator.js'
 
 const OrganisationParams = z
@@ -23,11 +23,11 @@ const PollParams = z
 
 export type PollParams = z.infer<typeof PollParams>
 
-export const OrganisationPollParams = OrganisationParams.merge(PollParams)
+const OrganisationPollParams = OrganisationParams.extend(PollParams.shape)
 
 export type OrganisationPollParams = z.infer<typeof OrganisationPollParams>
 
-export const PublicPollParams = UserParams.merge(PollParams)
+export const PublicPollParams = UserParams.extend(PollParams.shape)
 
 export type PublicPollParams = z.infer<typeof PublicPollParams>
 
@@ -47,7 +47,7 @@ export type OrganisationCreateAdministrator = z.infer<
 const OrganisationCreateDto = z
   .object({
     name: z.string().min(1).max(100),
-    type: z.nativeEnum(OrganisationType).optional(),
+    type: z.enum(OrganisationType).optional(),
     administrators: z.tuple([OrganisationCreateAdministrator]).optional(),
     numberOfCollaborators: z.number().optional().nullable(),
   })
@@ -58,45 +58,44 @@ export type OrganisationCreateDto = z.infer<typeof OrganisationCreateDto>
 export const OrganisationCreateValidator = {
   body: OrganisationCreateDto,
   params: z.object({}).strict().optional(),
-  query: LocaleQuery.optional(),
+  query: LocaleQuery,
 }
 
-const OrganisationUpdateAdministrator = OrganisationCreateAdministrator.merge(
+const OrganisationUpdateAdministrator = OrganisationCreateAdministrator.extend(
   z
     .object({
       email: z
-        .string()
-        .regex(EMAIL_REGEX)
+        .email()
         .transform((email) => email.toLocaleLowerCase())
         .optional(),
     })
-    .strict()
+    .strict().shape
 )
 
 export type OrganisationUpdateAdministrator = z.infer<
   typeof OrganisationUpdateAdministrator
 >
 
-export const OrganisationUpdateDto = OrganisationCreateDto.merge(
+const OrganisationUpdateDto = OrganisationCreateDto.extend(
   z
     .object({
       administrators: z.tuple([OrganisationUpdateAdministrator]).optional(),
     })
-    .strict()
+    .strict().shape
 )
   .partial()
   .strict()
 
 export type OrganisationUpdateDto = z.infer<typeof OrganisationUpdateDto>
 
-export const OrganisationUpdateQuery = z
+const OrganisationUpdateQuery = z
   .object({
     code: z
       .string()
       .regex(/^\d{6}$/)
       .optional(),
   })
-  .merge(LocaleQuery)
+  .extend(LocaleQuery.shape)
   .strict()
 
 export type OrganisationUpdateQuery = z.infer<typeof OrganisationUpdateQuery>
@@ -104,19 +103,23 @@ export type OrganisationUpdateQuery = z.infer<typeof OrganisationUpdateQuery>
 export const OrganisationUpdateValidator = {
   body: OrganisationUpdateDto,
   params: OrganisationParams,
-  query: OrganisationUpdateQuery.optional(),
+  query: OrganisationUpdateQuery,
 }
+
+const OrganisationsFetchQuery = PaginationQuery.extend(LocaleQuery.shape)
+
+export type OrganisationsFetchQuery = z.infer<typeof OrganisationsFetchQuery>
 
 export const OrganisationsFetchValidator = {
   body: z.object({}).strict().optional(),
   params: z.object({}).strict().optional(),
-  query: LocaleQuery.optional(),
+  query: OrganisationsFetchQuery,
 }
 
 export const OrganisationFetchValidator = {
   body: z.object({}).strict().optional(),
   params: OrganisationParams,
-  query: LocaleQuery.optional(),
+  query: LocaleQuery,
 }
 
 const OrganisationPollCustomAdditionalQuestion = z
@@ -141,7 +144,7 @@ const OrganisationPollCreateDto = z
     name: z.string().min(1).max(150),
     expectedNumberOfParticipants: z.number().optional().nullable(),
     defaultAdditionalQuestions: z
-      .array(z.nativeEnum(PollDefaultAdditionalQuestionType))
+      .array(z.enum(PollDefaultAdditionalQuestionType))
       .optional()
       .nullable(),
     customAdditionalQuestions: z
@@ -159,7 +162,7 @@ export type OrganisationPollCreateDto = z.infer<
 export const OrganisationPollCreateValidator = {
   body: OrganisationPollCreateDto,
   params: OrganisationParams,
-  query: LocaleQuery.optional(),
+  query: LocaleQuery,
 }
 
 const OrganisationPollUpdateDto = OrganisationPollCreateDto.partial()
@@ -168,57 +171,57 @@ export type OrganisationPollUpdateDto = z.infer<
   typeof OrganisationPollUpdateDto
 >
 
-export const OrganisationPollSimulationsDownloadQuery = z
+const OrganisationPollSimulationsDownloadQuery = z
   .object({
     jobId: z.string().optional(),
   })
-  .merge(LocaleQuery)
+  .extend(LocaleQuery.shape)
   .strict()
 
 export const OrganisationPollUpdateValidator = {
   body: OrganisationPollUpdateDto,
   params: OrganisationPollParams,
-  query: LocaleQuery.optional(),
+  query: LocaleQuery,
 }
 
 export const OrganisationPollDeleteValidator = {
   body: z.object({}).strict().optional(),
   params: OrganisationPollParams,
-  query: LocaleQuery.optional(),
+  query: LocaleQuery,
 }
 
 export const OrganisationPollsFetchValidator = {
   body: z.object({}).strict().optional(),
   params: OrganisationParams,
-  query: LocaleQuery.optional(),
+  query: LocaleQuery,
 }
 
 export const OrganisationPollFetchValidator = {
   body: z.object({}).strict().optional(),
   params: OrganisationPollParams,
-  query: LocaleQuery.optional(),
+  query: LocaleQuery,
 }
 
 export const OrganisationPollSimulationsDownloadValidator = {
   body: z.object({}).strict().optional(),
   params: OrganisationPollParams,
-  query: OrganisationPollSimulationsDownloadQuery.optional(),
+  query: OrganisationPollSimulationsDownloadQuery,
 }
 
 export const OrganisationPublicPollFetchValidator = {
   body: z.object({}).strict().optional(),
   params: PublicPollParams,
-  query: LocaleQuery.optional(),
+  query: LocaleQuery,
 }
 
 export const OrganisationPublicPollSimulationsFetchValidator = {
   body: z.object({}).strict().optional(),
   params: PublicPollParams,
-  query: LocaleQuery.optional(),
+  query: LocaleQuery,
 }
 
 export const OrganisationPublicPollDashboardValidator = {
   body: z.object({}).strict().optional(),
   params: PublicPollParams,
-  query: LocaleQuery.optional(),
+  query: LocaleQuery,
 }

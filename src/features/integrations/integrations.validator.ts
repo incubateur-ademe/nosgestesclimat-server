@@ -6,7 +6,7 @@ export enum ExternalServiceTypeEnum {
   '2-tonnes' = '2-tonnes',
 }
 
-const ExternalServiceType = z.nativeEnum(ExternalServiceTypeEnum)
+const ExternalServiceType = z.enum(ExternalServiceTypeEnum)
 
 const ExternalServiceParams = z
   .object({

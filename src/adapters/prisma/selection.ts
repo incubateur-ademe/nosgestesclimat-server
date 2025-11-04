@@ -169,6 +169,9 @@ export const defaultSimulationSelectionWithoutPoll = {
       email: true,
     },
   },
+  verifiedUser: {
+    select: defaultVerifiedUserSelection,
+  },
 }
 
 export const defaultSimulationSelectionWithoutPollAndSituation = {

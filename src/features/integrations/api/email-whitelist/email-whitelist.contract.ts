@@ -2,15 +2,15 @@ import { ApiScopeName } from '@prisma/client'
 import { initContract, ZodErrorSchema } from '@ts-rest/core'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
-import { EMAIL_REGEX } from '../../../../core/typeguards/isValidEmail.js'
+
+const EmailPatternSchema = z
+  .union([z.email(), z.string().regex(/^\*@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)])
+  .transform((emailPattern) => emailPattern.toLocaleLowerCase())
 
 const EmailWhitelistCreateDto = z
   .object({
-    scope: z.nativeEnum(ApiScopeName),
-    emailPattern: z
-      .string()
-      .regex(EMAIL_REGEX)
-      .transform((emailPattern) => emailPattern.toLocaleLowerCase()),
+    scope: z.enum(ApiScopeName),
+    emailPattern: EmailPatternSchema,
     description: z.string().min(10),
   })
   .strict()
@@ -19,7 +19,7 @@ export type EmailWhitelistCreateDto = z.infer<typeof EmailWhitelistCreateDto>
 
 const EmailWhitelistDto = z
   .object({
-    scope: z.nativeEnum(ApiScopeName),
+    scope: z.enum(ApiScopeName),
     emailPattern: z.string(),
     description: z.string(),
   })
@@ -27,7 +27,7 @@ const EmailWhitelistDto = z
 
 const EmailWhitelistParams = z
   .object({
-    whitelistId: z.string().uuid(),
+    whitelistId: z.uuid(),
   })
   .strict()
 
@@ -35,11 +35,7 @@ export type EmailWhitelistParams = z.infer<typeof EmailWhitelistParams>
 
 const EmailWhitelistsFetchQuery = z
   .object({
-    emailPattern: z
-      .string()
-      .regex(EMAIL_REGEX)
-      .transform((emailPattern) => emailPattern.toLocaleLowerCase())
-      .optional(),
+    emailPattern: EmailPatternSchema.optional(),
   })
   .strict()
 
@@ -49,11 +45,8 @@ export type EmailWhitelistsFetchQuery = z.infer<
 
 const EmailWhitelistUpdateDto = z
   .object({
-    scope: z.nativeEnum(ApiScopeName),
-    emailPattern: z
-      .string()
-      .regex(EMAIL_REGEX)
-      .transform((emailPattern) => emailPattern.toLocaleLowerCase()),
+    scope: z.enum(ApiScopeName),
+    emailPattern: EmailPatternSchema,
     description: z.string().min(10),
   })
   .strict()

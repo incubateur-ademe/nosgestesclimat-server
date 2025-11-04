@@ -1,12 +1,9 @@
 import express from 'express'
 import { StatusCodes } from 'http-status-codes'
-import { validateRequest } from 'zod-express-middleware'
 import logger from '../../logger.js'
+import { validateRequest } from '../../middlewares/validateRequest.js'
 import { fetchNorthstarStats } from './stats.service.js'
-import {
-  NorthstarStatsFetchQuery,
-  NorthstarStatsFetchValidator,
-} from './stats.validator.js'
+import { NorthstarStatsFetchValidator } from './stats.validator.js'
 
 const router = express.Router()
 
@@ -17,9 +14,7 @@ router
   .route('/v1/northstar')
   .get(validateRequest(NorthstarStatsFetchValidator), async (req, res) => {
     try {
-      const stats = await fetchNorthstarStats(
-        NorthstarStatsFetchQuery.parse(req.query)
-      )
+      const stats = await fetchNorthstarStats(req.query)
 
       return res.status(StatusCodes.OK).json(stats)
     } catch (err) {

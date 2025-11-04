@@ -5,7 +5,8 @@ import {
 import { z } from 'zod'
 import { ListIds } from '../../adapters/brevo/constant.js'
 import { LocaleQuery } from '../../core/i18n/lang.validator.js'
-import { EMAIL_REGEX } from '../../core/typeguards/isValidEmail.js'
+import { PaginationQuery } from '../../core/pagination.js'
+import { LoginDto } from '../authentication/authentication.validator.js'
 import { PublicPollParams } from '../organisations/organisations.validator.js'
 import { UserParams } from '../users/users.validator.js'
 
@@ -13,13 +14,13 @@ const MODEL_REGEX = /^[A-Z]+-[a-z]+-\d+\.\d+\.\d+$/
 
 const SimulationParams = z
   .object({
-    simulationId: z.string().uuid(),
+    simulationId: z.uuid(),
   })
   .strict()
 
 export type SimulationParams = z.infer<typeof SimulationParams>
 
-export const UserSimulationParams = SimulationParams.merge(UserParams)
+const UserSimulationParams = SimulationParams.extend(UserParams.shape)
 
 export type UserSimulationParams = z.infer<typeof UserSimulationParams>
 
@@ -63,7 +64,7 @@ const AdditionalQuestionsAnswersSchema = z.array(
     }),
     z.object({
       type: z.literal(SimulationAdditionalQuestionAnswerType.default),
-      key: z.nativeEnum(PollDefaultAdditionalQuestionType),
+      key: z.enum(PollDefaultAdditionalQuestionType),
       answer: z.string(),
     }),
   ])
@@ -141,8 +142,6 @@ const ExtendedSituationNodeValue = z
 
 export const SituationSchema = z.record(z.string(), SituationNodeValue)
 
-export type SituationSchemaInput = z.input<typeof SituationSchema>
-
 export type SituationSchema = z.infer<typeof SituationSchema>
 
 const ExtendedSituationSchema = z.record(
@@ -165,8 +164,7 @@ export type ExtendedSituationSchema = z.infer<typeof ExtendedSituationSchema>
 const SimulationCreateUser = z
   .object({
     email: z
-      .string()
-      .regex(EMAIL_REGEX)
+      .email()
       .transform((email) => email.toLocaleLowerCase())
       .optional(),
     name: z.string().optional(),
@@ -176,7 +174,7 @@ const SimulationCreateUser = z
 export type SimulationCreateUser = z.infer<typeof SimulationCreateUser>
 
 export const SimulationParticipantCreateDto = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
   date: z.coerce.date().default(() => new Date()),
   model: z.string().regex(MODEL_REGEX).optional(),
   progression: z.number(),
@@ -197,58 +195,80 @@ export type SimulationParticipantCreateInputDto = z.input<
   typeof SimulationParticipantCreateDto
 >
 
-export const SimulationCreateDto = SimulationParticipantCreateDto.merge(
+const SimulationCreateDto = SimulationParticipantCreateDto.extend(
   z
     .object({
       user: SimulationCreateUser.optional(),
     })
-    .strict()
+    .strict().shape
 )
 
 export type SimulationCreateDto = z.infer<typeof SimulationCreateDto>
 
 export type SimulationCreateInputDto = z.input<typeof SimulationCreateDto>
 
-export const SimulationCreateNewsletterList = z
+const SimulationCreateNewsletterList = z
   .union([
-    z.coerce.number().pipe(z.nativeEnum(ListIds)),
-    z.array(z.coerce.number().pipe(z.nativeEnum(ListIds))),
+    z.coerce.number().pipe(z.enum(ListIds)).optional(),
+    z.array(z.coerce.number().pipe(z.enum(ListIds))).optional(),
   ])
-  .transform((listIds) => (typeof listIds === 'number' ? [listIds] : listIds))
-  .optional()
+  .transform((listIds) =>
+    typeof listIds === 'number' ? [listIds] : listIds || []
+  )
 
-export type SimulationCreateNewsletterList = z.infer<
-  typeof SimulationCreateNewsletterList
->
-
-const SimulationCreateQuery = z
+const SimulationCreateBaseQuery = z
   .object({
     newsletters: SimulationCreateNewsletterList,
-    sendEmail: z.coerce.boolean().optional(),
+    sendEmail: z
+      .string()
+      .optional()
+      .transform((val) => val === 'true'),
   })
-  .merge(LocaleQuery)
+  .extend(LocaleQuery.shape)
   .strict()
+
+const SimulationCreateLoginQuery = LoginDto.omit({
+  userId: true,
+}).extend(SimulationCreateBaseQuery.shape)
+
+const SimulationCreateAnonymousQuery = z
+  .object({
+    email: z.undefined().optional(),
+    code: z.undefined().optional(),
+  })
+  .extend(SimulationCreateBaseQuery.shape)
+
+const SimulationCreateQuery = z.union([
+  SimulationCreateLoginQuery,
+  SimulationCreateAnonymousQuery,
+])
+
+export type SimulationCreateQuery = z.infer<typeof SimulationCreateQuery>
 
 export const SimulationCreateValidator = {
   body: SimulationCreateDto,
   params: UserParams,
-  query: SimulationCreateQuery.optional(),
+  query: SimulationCreateQuery,
 }
+
+const SimulationsFetchQuery = PaginationQuery.extend(LocaleQuery.shape)
+
+export type SimulationsFetchQuery = z.infer<typeof SimulationsFetchQuery>
 
 export const SimulationsFetchValidator = {
   body: z.object({}).strict().optional(),
   params: UserParams,
-  query: LocaleQuery.optional(),
+  query: SimulationsFetchQuery,
 }
 
 export const SimulationFetchValidator = {
   body: z.object({}).strict().optional(),
   params: UserSimulationParams,
-  query: LocaleQuery.optional(),
+  query: LocaleQuery,
 }
 
 export const OrganisationPollSimulationCreateValidator = {
   body: SimulationCreateDto,
   params: PublicPollParams,
-  query: LocaleQuery.optional(),
+  query: LocaleQuery,
 }
