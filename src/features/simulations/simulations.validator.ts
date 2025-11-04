@@ -5,6 +5,7 @@ import {
 import { z } from 'zod'
 import { ListIds } from '../../adapters/brevo/constant.js'
 import { LocaleQuery } from '../../core/i18n/lang.validator.js'
+import { PaginationQuery } from '../../core/pagination.js'
 import { LoginDto } from '../authentication/authentication.validator.js'
 import { PublicPollParams } from '../organisations/organisations.validator.js'
 import { UserParams } from '../users/users.validator.js'
@@ -250,10 +251,14 @@ export const SimulationCreateValidator = {
   query: SimulationCreateQuery,
 }
 
+const SimulationsFetchQuery = PaginationQuery.extend(LocaleQuery.shape)
+
+export type SimulationsFetchQuery = z.infer<typeof SimulationsFetchQuery>
+
 export const SimulationsFetchValidator = {
   body: z.object({}).strict().optional(),
   params: UserParams,
-  query: LocaleQuery,
+  query: SimulationsFetchQuery,
 }
 
 export const SimulationFetchValidator = {

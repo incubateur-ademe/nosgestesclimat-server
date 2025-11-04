@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes'
 import { config } from '../../config.js'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
+import { withPaginationHeaders } from '../../core/pagination.js'
 import logger from '../../logger.js'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware.js'
 import { validateRequest } from '../../middlewares/validateRequest.js'
@@ -20,7 +21,10 @@ import {
   fetchSimulation,
   fetchSimulations,
 } from './simulations.service.js'
-import type { SimulationCreateQuery } from './simulations.validator.js'
+import type {
+  SimulationCreateQuery,
+  SimulationsFetchQuery,
+} from './simulations.validator.js'
 import {
   SimulationCreateValidator,
   SimulationFetchValidator,
@@ -80,13 +84,26 @@ router
 router
   .route('/v1/:userId')
   .get(
-    authentificationMiddleware({ passIfUnauthorized: true }),
+    authentificationMiddleware<
+      unknown,
+      unknown,
+      unknown,
+      SimulationsFetchQuery
+    >({ passIfUnauthorized: true }),
     validateRequest(SimulationsFetchValidator),
-    async ({ params }, res) => {
+    async ({ params, query }, res) => {
       try {
-        const simulations = await fetchSimulations(params)
+        const { simulations, count } = await fetchSimulations({
+          params,
+          query,
+        })
 
-        return res.status(StatusCodes.OK).json(simulations)
+        return withPaginationHeaders({
+          ...query,
+          count,
+        })(res)
+          .status(StatusCodes.OK)
+          .json(simulations)
       } catch (err) {
         logger.error('Simulations fetch failed', err)
 

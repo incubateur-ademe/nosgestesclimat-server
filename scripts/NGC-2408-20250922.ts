@@ -5,6 +5,7 @@ import { deleteContact, fetchContact } from '../src/adapters/brevo/client.js'
 import { prisma } from '../src/adapters/prisma/client.js'
 import { defaultVerifiedUserSelection } from '../src/adapters/prisma/selection.js'
 import { Locales } from '../src/core/i18n/constant.js'
+import { PaginationQuery } from '../src/core/pagination.js'
 import { isPrismaErrorNotFound } from '../src/core/typeguards/isPrismaError.js'
 import {
   deleteGroup,
@@ -167,18 +168,31 @@ if (deleteUser) {
         }
       }
 
-      const simulations = await fetchSimulations({ userId })
+      const query = PaginationQuery.parse({})
 
-      for (const simulation of simulations) {
-        logger.info(`Found simulation. ${DeletionMessage}`, { simulation })
-      }
-
-      if (!dry) {
-        await prisma.simulation.deleteMany({
-          where: {
-            userId,
-          },
+      while (true) {
+        const { simulations } = await fetchSimulations({
+          params: { userId },
+          query,
         })
+
+        for (const simulation of simulations) {
+          logger.info(`Found simulation. ${DeletionMessage}`, { simulation })
+        }
+
+        if (!dry) {
+          await prisma.simulation.deleteMany({
+            where: {
+              userId,
+            },
+          })
+        }
+
+        if (simulations.length < query.pageSize) {
+          break
+        }
+
+        query.page++
       }
     }
 

@@ -30,6 +30,28 @@ describe('Given a NGC user', () => {
       })
     })
 
+    describe('And invalid page queryParam', () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
+        await agent
+          .get(url.replace(':userId', faker.string.uuid()))
+          .query({
+            page: 0,
+          })
+          .expect(StatusCodes.BAD_REQUEST)
+      })
+    })
+
+    describe('And invalid pageSize queryParam', () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
+        await agent
+          .get(url.replace(':userId', faker.string.uuid()))
+          .query({
+            pageSize: 500,
+          })
+          .expect(StatusCodes.BAD_REQUEST)
+      })
+    })
+
     describe('And no simulation exist', () => {
       test(`Then it returns a ${StatusCodes.OK} response with an empty list`, async () => {
         const response = await agent
@@ -57,6 +79,93 @@ describe('Given a NGC user', () => {
           .expect(StatusCodes.OK)
 
         expect(response.body).toEqual([simulation])
+      })
+    })
+
+    describe('And several simulations exist', () => {
+      let simulations: Awaited<ReturnType<typeof createSimulation>>[]
+      let userId: string
+
+      beforeEach(async () => {
+        userId = faker.string.uuid()
+        simulations = []
+        while (simulations.length < 3) {
+          const simulation = await createSimulation({
+            agent,
+            userId,
+          })
+
+          simulations.unshift(simulation)
+        }
+      })
+
+      describe('And page 1', () => {
+        test(`Then it returns a ${StatusCodes.OK} response with a list containing the simulations and paginated headers`, async () => {
+          const response = await agent
+            .get(url.replace(':userId', userId))
+            .query({
+              page: 1,
+              pageSize: 2,
+            })
+            .expect(StatusCodes.OK)
+
+          expect(response.body).toEqual(simulations.slice(0, 2))
+
+          expect(response.headers).toEqual(
+            expect.objectContaining({
+              'x-page': '1',
+              'x-page-size': '2',
+              'x-total-pages': '2',
+              'x-total-items': '3',
+            })
+          )
+        })
+      })
+
+      describe('And page 2', () => {
+        test(`Then it returns a ${StatusCodes.OK} response with a list containing the simulations and paginated headers`, async () => {
+          const response = await agent
+            .get(url.replace(':userId', userId))
+            .query({
+              page: 2,
+              pageSize: 2,
+            })
+            .expect(StatusCodes.OK)
+
+          expect(response.body).toEqual(simulations.slice(2))
+
+          expect(response.headers).toEqual(
+            expect.objectContaining({
+              'x-page': '2',
+              'x-page-size': '1',
+              'x-total-pages': '2',
+              'x-total-items': '3',
+            })
+          )
+        })
+      })
+
+      describe('And page 3', () => {
+        test(`Then it returns a ${StatusCodes.OK} response with an empty list and paginated headers`, async () => {
+          const response = await agent
+            .get(url.replace(':userId', userId))
+            .query({
+              page: 3,
+              pageSize: 2,
+            })
+            .expect(StatusCodes.OK)
+
+          expect(response.body).toEqual([])
+
+          expect(response.headers).toEqual(
+            expect.objectContaining({
+              'x-page': '3',
+              'x-page-size': '0',
+              'x-total-pages': '2',
+              'x-total-items': '3',
+            })
+          )
+        })
       })
     })
 
