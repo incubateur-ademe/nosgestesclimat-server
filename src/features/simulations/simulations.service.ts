@@ -21,6 +21,7 @@ import { EntityNotFoundException } from '../../core/errors/EntityNotFoundExcepti
 import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
 import type { Locales } from '../../core/i18n/constant.js'
+import type { PaginationQuery } from '../../core/pagination.js'
 import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError.js'
 import { exchangeCredentialsForToken } from '../authentication/authentication.service.js'
 import { PollUpdatedEvent } from '../organisations/events/PollUpdated.event.js'
@@ -143,13 +144,22 @@ export const createSimulation = async ({
   }
 }
 
-export const fetchSimulations = async (params: UserParams) => {
-  const simulations = await transaction(
-    (session) => fetchUserSimulations(params, { session }),
+export const fetchSimulations = async ({
+  params,
+  query,
+}: {
+  params: UserParams
+  query: PaginationQuery
+}) => {
+  const { simulations, count } = await transaction(
+    (session) => fetchUserSimulations(params, { session, query }),
     prisma
   )
 
-  return simulations.map((s) => simulationToDto(s, params.userId))
+  return {
+    simulations: simulations.map((s) => simulationToDto(s, params.userId)),
+    count,
+  }
 }
 
 export const fetchSimulation = async (params: UserSimulationParams) => {

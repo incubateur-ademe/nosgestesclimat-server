@@ -4,6 +4,7 @@ import {
 } from '@prisma/client'
 import { z } from 'zod'
 import { LocaleQuery } from '../../core/i18n/lang.validator.js'
+import { PaginationQuery } from '../../core/pagination.js'
 import { UserParams } from '../users/users.validator.js'
 
 const OrganisationParams = z
@@ -105,10 +106,14 @@ export const OrganisationUpdateValidator = {
   query: OrganisationUpdateQuery,
 }
 
+const OrganisationsFetchQuery = PaginationQuery.extend(LocaleQuery.shape)
+
+export type OrganisationsFetchQuery = z.infer<typeof OrganisationsFetchQuery>
+
 export const OrganisationsFetchValidator = {
   body: z.object({}).strict().optional(),
   params: z.object({}).strict().optional(),
-  query: LocaleQuery,
+  query: OrganisationsFetchQuery,
 }
 
 export const OrganisationFetchValidator = {

@@ -4,6 +4,7 @@ import { config } from '../../config.js'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
 import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
+import { withPaginationHeaders } from '../../core/pagination.js'
 import logger from '../../logger.js'
 import { authentificationMiddleware } from '../../middlewares/authentificationMiddleware.js'
 import { rateLimitSameRequestMiddleware } from '../../middlewares/rateLimitSameRequestMiddleware.js'
@@ -40,6 +41,7 @@ import {
   updateOrganisation,
   updatePoll,
 } from './organisations.service.js'
+import type { OrganisationsFetchQuery } from './organisations.validator.js'
 import {
   OrganisationCreateValidator,
   OrganisationFetchValidator,
@@ -138,13 +140,23 @@ router
 router
   .route('/v1/')
   .get(
-    authentificationMiddleware(),
+    authentificationMiddleware<
+      unknown,
+      unknown,
+      unknown,
+      OrganisationsFetchQuery
+    >(),
     validateRequest(OrganisationsFetchValidator),
-    async ({ user }, res) => {
+    async ({ user, query }, res) => {
       try {
-        const organisations = await fetchOrganisations(user!)
+        const { organisations, count } = await fetchOrganisations({
+          user: user!,
+          query,
+        })
 
-        return res.status(StatusCodes.OK).json(organisations)
+        return withPaginationHeaders({ ...query, count })(res)
+          .status(StatusCodes.OK)
+          .json(organisations)
       } catch (err) {
         logger.error('Organisations fetch failed', err)
 

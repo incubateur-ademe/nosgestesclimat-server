@@ -9,6 +9,7 @@ import {
 } from '../../adapters/prisma/selection.js'
 import type { Session } from '../../adapters/prisma/transaction.js'
 import { batchFindMany } from '../../core/batch-find-many.js'
+import type { PaginationQuery } from '../../core/pagination.js'
 import type { PublicPollParams } from '../organisations/organisations.validator.js'
 import {
   createOrUpdateUser,
@@ -184,16 +185,32 @@ export const createParticipantSimulation = async <
   }
 }
 
-export const fetchUserSimulations = (
+export const fetchUserSimulations = async (
   { userId }: UserParams,
-  { session }: { session: Session }
+  {
+    session,
+    query: { pageSize, page },
+  }: { session: Session; query: PaginationQuery }
 ) => {
-  return session.simulation.findMany({
-    where: {
-      userId,
-    },
-    select: defaultSimulationSelection,
-  })
+  const where = { userId }
+
+  const [simulations, count] = await Promise.all([
+    session.simulation.findMany({
+      where,
+      skip: page * pageSize,
+      take: pageSize,
+      select: defaultSimulationSelection,
+      orderBy: {
+        date: 'desc',
+      },
+    }),
+    session.simulation.count({ where }),
+  ])
+
+  return {
+    simulations,
+    count,
+  }
 }
 
 export const fetchSimulationById = (

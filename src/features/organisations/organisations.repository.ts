@@ -10,6 +10,7 @@ import {
   defaultVerifiedUserSelection,
 } from '../../adapters/prisma/selection.js'
 import type { Session } from '../../adapters/prisma/transaction.js'
+import type { PaginationQuery } from '../../core/pagination.js'
 import type { SimulationParams } from '../simulations/simulations.validator.js'
 import { ComputedResultSchema } from '../simulations/simulations.validator.js'
 import type {
@@ -295,20 +296,35 @@ export const updateAdministratorOrganisation = async (
   }
 }
 
-export const fetchUserOrganisations = (
+export const fetchUserOrganisations = async (
   { email: userEmail }: NonNullable<Request['user']>,
-  { session }: { session: Session }
+  {
+    session,
+    query: { pageSize, page },
+  }: { session: Session; query: PaginationQuery }
 ) => {
-  return session.organisation.findMany({
-    where: {
-      administrators: {
-        some: {
-          userEmail,
-        },
+  const where = {
+    administrators: {
+      some: {
+        userEmail,
       },
     },
-    select: defaultOrganisationSelection,
-  })
+  }
+
+  const [organisations, count] = await Promise.all([
+    session.organisation.findMany({
+      where,
+      skip: page * pageSize,
+      take: pageSize,
+      select: defaultOrganisationSelection,
+    }),
+    session.organisation.count({ where }),
+  ])
+
+  return {
+    organisations,
+    count,
+  }
 }
 
 export const fetchUserOrganisation = (
