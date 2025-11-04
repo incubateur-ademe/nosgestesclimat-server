@@ -17,6 +17,7 @@ import { EntityNotFoundException } from '../../core/errors/EntityNotFoundExcepti
 import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
 import type { Locales } from '../../core/i18n/constant.js'
+import type { PaginationQuery } from '../../core/pagination.js'
 import {
   isPrismaErrorNotFound,
   isPrismaErrorUniqueConstraintFailed,
@@ -219,17 +220,24 @@ export const updateOrganisation = async ({
   }
 }
 
-export const fetchOrganisations = async (
+export const fetchOrganisations = async ({
+  user,
+  query,
+}: {
   user: NonNullable<Request['user']>
-) => {
-  const organisations = await transaction(
-    (session) => fetchUserOrganisations(user, { session }),
+  query: PaginationQuery
+}) => {
+  const { organisations, count } = await transaction(
+    (session) => fetchUserOrganisations(user, { session, query }),
     prisma
   )
 
-  return organisations.map((organisation) =>
-    organisationToDto(organisation, user.email)
-  )
+  return {
+    organisations: organisations.map((organisation) =>
+      organisationToDto(organisation, user.email)
+    ),
+    count,
+  }
 }
 
 export const fetchOrganisation = async ({

@@ -67,44 +67,56 @@ if (deleteOrganisations) {
     })
 
     const { id: userId } = verifiedUser
+    const query = PaginationQuery.parse({})
 
-    const organisations = await fetchOrganisations({ userId, email })
-
-    for (const organisation of organisations) {
-      logger.info('Found organisations. Looking for polls', {
-        organisation,
-      })
-
-      const { id: organisationIdOrSlug } = organisation
-
-      const polls = await fetchPolls({
-        params: { organisationIdOrSlug },
+    while (true) {
+      const { organisations } = await fetchOrganisations({
         user: { userId, email },
+        query,
       })
 
-      for (const poll of polls) {
-        logger.info(`Found poll. ${DeletionMessage}`, { poll })
+      for (const organisation of organisations) {
+        logger.info('Found organisations. Looking for polls', {
+          organisation,
+        })
 
-        const { id: pollIdOrSlug } = poll
+        const { id: organisationIdOrSlug } = organisation
+
+        const polls = await fetchPolls({
+          params: { organisationIdOrSlug },
+          user: { userId, email },
+        })
+
+        for (const poll of polls) {
+          logger.info(`Found poll. ${DeletionMessage}`, { poll })
+
+          const { id: pollIdOrSlug } = poll
+
+          if (!dry) {
+            await deletePoll({
+              params: { organisationIdOrSlug, pollIdOrSlug },
+              user: { userId, email },
+            })
+          }
+        }
+
+        logger.info(`Polls handled. Handling organisation. ${DeletionMessage}`)
 
         if (!dry) {
-          await deletePoll({
-            params: { organisationIdOrSlug, pollIdOrSlug },
-            user: { userId, email },
+          await prisma.organisation.delete({
+            where: {
+              id: organisationIdOrSlug,
+            },
+            select: { id: true },
           })
         }
       }
 
-      logger.info(`Polls handled. Handling organisation. ${DeletionMessage}`)
-
-      if (!dry) {
-        await prisma.organisation.delete({
-          where: {
-            id: organisationIdOrSlug,
-          },
-          select: { id: true },
-        })
+      if (organisations.length < query.pageSize) {
+        break
       }
+
+      query.page++
     }
 
     if (deleteUser) {
