@@ -23,6 +23,7 @@ export const COOKIES_OPTIONS: CookieOptions = {
   httpOnly: true,
   secure: env === 'production',
   sameSite: env === 'production' ? 'none' : 'lax',
+  partitioned: true,
 }
 
 export const COOKIE_NAME = 'ngcjwt'
