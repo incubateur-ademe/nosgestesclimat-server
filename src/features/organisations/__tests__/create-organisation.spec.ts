@@ -34,6 +34,7 @@ describe('Given a NGC user', () => {
     await prisma.organisationAdministrator.deleteMany()
     await Promise.all([
       prisma.organisation.deleteMany(),
+      prisma.user.deleteMany(),
       prisma.verifiedUser.deleteMany(),
       prisma.verificationCode.deleteMany(),
     ])
@@ -595,7 +596,9 @@ describe('Given a NGC user', () => {
       })
 
       describe('And an organisation already does exist for the user', () => {
-        beforeEach(() => createOrganisation({ agent, cookie }))
+        beforeEach(async () => {
+          await createOrganisation({ agent, cookie })
+        })
 
         test(`Then it returns a ${StatusCodes.FORBIDDEN} error`, async () => {
           const response = await agent

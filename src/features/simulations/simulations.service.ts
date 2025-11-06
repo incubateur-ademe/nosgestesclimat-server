@@ -147,17 +147,25 @@ export const createSimulation = async ({
 export const fetchSimulations = async ({
   params,
   query,
+  user,
 }: {
   params: UserParams
   query: PaginationQuery
+  user?: Request['user']
 }) => {
   const { simulations, count } = await transaction(
-    (session) => fetchUserSimulations(params, { session, query }),
+    (session) =>
+      fetchUserSimulations(
+        { ...params, email: user?.email },
+        { session, query }
+      ),
     prisma
   )
 
   return {
-    simulations: simulations.map((s) => simulationToDto(s, params.userId)),
+    simulations: simulations.map((s) =>
+      simulationToDto(s, user?.email || params.userId)
+    ),
     count,
   }
 }
@@ -183,18 +191,22 @@ export const createPollSimulation = async ({
   origin,
   params,
   simulationDto,
+  user: requestUser,
 }: {
   origin: string
   locale: Locales
   params: PublicPollParams
   simulationDto: SimulationCreateDto
+  user?: Request['user']
 }) => {
   try {
-    const { poll, simulation, simulationCreated, simulationUpdated, created } =
+    const { poll, simulation, created, updated, isNewParticipation } =
       await transaction((session) =>
-        createPollUserSimulation(params, simulationDto, { session })
+        createPollUserSimulation({ ...params, ...requestUser }, simulationDto, {
+          session,
+        })
       )
-    const { user } = simulation
+    const { user, verifiedUser } = simulation
     const { organisation } = poll
 
     const pollUpdatedEvent = new PollUpdatedEvent({
@@ -203,15 +215,15 @@ export const createPollSimulation = async ({
     })
 
     const simulationUpsertedEvent = new SimulationUpsertedEvent({
-      created: simulationCreated,
-      updated: simulationUpdated,
-      sendEmail: created,
+      user: verifiedUser || user,
+      sendEmail: isNewParticipation,
       organisation,
       simulation,
+      created,
+      updated,
       locale,
       origin,
       poll,
-      user,
     })
 
     EventBus.emit(simulationUpsertedEvent).emit(pollUpdatedEvent)
@@ -219,7 +231,7 @@ export const createPollSimulation = async ({
     // @ts-expect-error 2 events different types: TODO fix
     await EventBus.once(simulationUpsertedEvent, pollUpdatedEvent)
 
-    return simulationToDto(simulation, params.userId)
+    return simulationToDto(simulation, requestUser?.email ?? params.userId)
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('Poll not found')

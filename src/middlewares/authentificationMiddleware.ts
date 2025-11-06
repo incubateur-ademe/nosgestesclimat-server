@@ -60,7 +60,7 @@ export const authentificationMiddleware =
         userId === (req.params as { userId?: string }).userId
       ) {
         try {
-          await syncUserData({ userId, email })
+          await syncUserData({ user: { userId, email } })
         } catch (err) {
           logger.error('Sync user data failed', err)
 

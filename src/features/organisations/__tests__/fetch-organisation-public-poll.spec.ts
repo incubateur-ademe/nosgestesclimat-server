@@ -592,7 +592,25 @@ describe('Given a NGC user', () => {
             .set('cookie', cookie)
             .expect(StatusCodes.OK)
 
-          expect(response.body).toEqual(poll)
+          const {
+            organisation: {
+              administrators: [administrator],
+            },
+          } = poll
+
+          expect(response.body).toEqual({
+            ...poll,
+            organisation: {
+              ...poll.organisation,
+              administrators: [
+                {
+                  ...administrator,
+                  userId,
+                  updatedAt: expect.any(String),
+                },
+              ],
+            },
+          })
         })
       })
     })

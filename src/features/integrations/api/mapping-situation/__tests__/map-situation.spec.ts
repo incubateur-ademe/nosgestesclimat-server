@@ -76,7 +76,9 @@ describe('Given a NGC integrations API user', () => {
     })
 
     describe('And files do not exist for partner', () => {
-      beforeEach(() => mockS3Files())
+      beforeEach(() => {
+        mockS3Files()
+      })
 
       afterEach(() => {
         vi.spyOn(client, 'send').mockRestore()
@@ -96,12 +98,12 @@ describe('Given a NGC integrations API user', () => {
     })
 
     describe('And rules & default files exist for partner', () => {
-      beforeEach(() =>
+      beforeEach(() => {
         mockS3Files({
           conversion: 'myRule: "\'default\'"',
           default: 'myRule: 1',
         })
-      )
+      })
 
       afterEach(() => {
         vi.spyOn(client, 'send').mockRestore()

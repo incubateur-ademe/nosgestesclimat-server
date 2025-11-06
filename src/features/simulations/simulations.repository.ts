@@ -186,13 +186,13 @@ export const createParticipantSimulation = async <
 }
 
 export const fetchUserSimulations = async (
-  { userId }: UserParams,
+  { userId, email }: UserParams & Partial<NonNullable<Request['user']>>,
   {
     session,
     query: { pageSize, page },
   }: { session: Session; query: PaginationQuery }
 ) => {
-  const where = { userId }
+  const where = email ? { userEmail: email } : { userId }
 
   const [simulations, count] = await Promise.all([
     session.simulation.findMany({
@@ -226,12 +226,11 @@ export const fetchSimulationById = (
 }
 
 export const createPollUserSimulation = async (
-  params: PublicPollParams,
+  params: PublicPollParams & Partial<Request['user']>,
   simulationDto: SimulationCreateDto,
   { session }: { session: Session }
 ) => {
-  const { userId, pollIdOrSlug } = params
-  const { email } = simulationDto.user ?? {}
+  const { userId, pollIdOrSlug, email = simulationDto.user?.email } = params
   const { id: pollId } = await session.poll.findFirstOrThrow({
     where: {
       OR: [{ id: pollIdOrSlug }, { slug: pollIdOrSlug }],
@@ -286,10 +285,9 @@ export const createPollUserSimulation = async (
   return {
     poll,
     simulation,
-    simulationCreated,
-    simulationUpdated,
-    created: !existingParticipation,
-    updated: !!existingParticipation,
+    created: simulationCreated,
+    updated: simulationUpdated,
+    isNewParticipation: !existingParticipation,
   }
 }
 

@@ -22,12 +22,12 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = CREATE_VERIFICATION_CODE_ROUTE
 
-  afterEach(() =>
-    Promise.all([
+  afterEach(async () => {
+    await Promise.all([
       prisma.verificationCode.deleteMany(),
       prisma.verifiedUser.deleteMany(),
     ])
-  )
+  })
 
   describe('When creating a verification-code', () => {
     let code: string

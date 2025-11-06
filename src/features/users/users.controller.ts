@@ -78,8 +78,8 @@ EventBus.on(UserUpdatedEvent, removePreviousBrevoContact)
 router
   .route('/v1/:userId')
   .put(
-    validateRequest(UpdateUserValidator),
     authentificationMiddleware({ passIfUnauthorized: true }),
+    validateRequest(UpdateUserValidator),
     async (req, res) => {
       try {
         if (req.user && req.user.userId !== req.params.userId) {

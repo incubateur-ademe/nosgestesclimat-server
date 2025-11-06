@@ -27,13 +27,13 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = LOGIN_ROUTE
 
-  afterEach(() =>
-    Promise.all([
+  afterEach(async () => {
+    await Promise.all([
       prisma.verificationCode.deleteMany(),
       prisma.verifiedUser.deleteMany(),
       prisma.user.deleteMany(),
     ])
-  )
+  })
 
   describe('When logging in', () => {
     describe('And no data provided', () => {

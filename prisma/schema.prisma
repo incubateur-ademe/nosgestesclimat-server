@@ -329,6 +329,7 @@ model Simulation {
   updatedAt                  DateTime                             @updatedAt
 
   @@index([userId])
+  @@index([userEmail])
   @@schema("ngc")
 }
 

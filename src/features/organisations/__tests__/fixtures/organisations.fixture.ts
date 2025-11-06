@@ -3,6 +3,8 @@ import type supertest from 'supertest'
 import { faker } from '@faker-js/faker'
 import { OrganisationType } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
+import type { JwtPayload } from 'jsonwebtoken'
+import jwt from 'jsonwebtoken'
 import {
   brevoRemoveFromList,
   brevoSendEmail,
@@ -15,6 +17,7 @@ import {
   resetMswServer,
 } from '../../../../core/__tests__/fixtures/server.fixture.js'
 import { EventBus } from '../../../../core/event-bus/event-bus.js'
+import { COOKIE_NAME } from '../../../authentication/authentication.service.js'
 import { getSimulationPayload } from '../../../simulations/__tests__/fixtures/simulations.fixtures.js'
 import type { SimulationCreateInputDto } from '../../../simulations/simulations.validator.js'
 import type {
@@ -173,13 +176,31 @@ export const createOrganisationPollSimulation = async ({
   agent,
   userId,
   pollId,
+  cookie,
   simulation = {},
-}: {
-  agent: TestAgent
-  userId?: string
-  pollId: string
-  simulation?: Partial<SimulationCreateInputDto>
-}) => {
+}:
+  | {
+      agent: TestAgent
+      userId?: string
+      cookie?: undefined
+      pollId: string
+      simulation?: Partial<SimulationCreateInputDto>
+    }
+  | {
+      agent: TestAgent
+      userId?: undefined
+      cookie?: string
+      pollId: string
+      simulation?: Partial<SimulationCreateInputDto>
+    }) => {
+  let email: string | undefined
+
+  if (cookie) {
+    ;({ userId, email } = jwt.decode(
+      cookie.split(';').shift()!.replace(`${COOKIE_NAME}=`, '')!
+    ) as JwtPayload)
+  }
+
   userId = userId ?? faker.string.uuid()
   const { user } = simulation
   const payload: SimulationCreateInputDto = {
@@ -187,18 +208,20 @@ export const createOrganisationPollSimulation = async ({
     user,
   }
 
+  email = email ?? payload.user?.email
+
   mswServer.use(
     brevoUpdateContact(),
     brevoRemoveFromList(27, { invalid: true })
   )
 
-  if (payload.user?.email) {
+  if (email) {
     const existingParticipation = await prisma.simulationPoll.findFirst({
       where: {
         pollId,
         simulation: {
           user: {
-            email: payload.user.email,
+            email,
           },
         },
       },
@@ -210,15 +233,18 @@ export const createOrganisationPollSimulation = async ({
     }
   }
 
-  const response = await agent
-    .post(
-      CREATE_ORGANISATION_PUBLIC_POLL_SIMULATION_ROUTE.replace(
-        ':userId',
-        userId
-      ).replace(':pollIdOrSlug', pollId)
-    )
-    .send(payload)
-    .expect(StatusCodes.CREATED)
+  const request = agent.post(
+    CREATE_ORGANISATION_PUBLIC_POLL_SIMULATION_ROUTE.replace(
+      ':userId',
+      userId
+    ).replace(':pollIdOrSlug', pollId)
+  )
+
+  if (cookie) {
+    request.set('cookie', cookie)
+  }
+
+  const response = await request.send(payload).expect(StatusCodes.CREATED)
 
   await EventBus.flush()
 

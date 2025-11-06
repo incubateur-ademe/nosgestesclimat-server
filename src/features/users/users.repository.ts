@@ -10,7 +10,10 @@ import type {
 import type { UserUpdateDto } from './users.validator.js'
 
 export const transferOwnershipToUser = async (
-  { userId, email }: NonNullable<Request['user']>,
+  {
+    user: { userId, email },
+    verified,
+  }: { user: NonNullable<Request['user']>; verified?: boolean },
   { session }: { session: Session }
 ) => {
   const usersToMigrate = await session.user.findMany({
@@ -104,6 +107,11 @@ export const transferOwnershipToUser = async (
       },
       data: {
         userId,
+        ...(verified
+          ? {
+              userEmail: email,
+            }
+          : {}),
       },
     }),
     session.groupParticipant.updateMany({
@@ -123,6 +131,20 @@ export const transferOwnershipToUser = async (
         },
       },
     }),
+    ...(verified
+      ? [
+          session.verifiedUser.updateMany({
+            where: {
+              email,
+              name: null,
+            },
+            data: {
+              name: existingUser.name,
+            },
+            limit: 1,
+          }),
+        ]
+      : []),
   ])
 
   const oldPollsSimulations = await session.simulationPoll.findMany({

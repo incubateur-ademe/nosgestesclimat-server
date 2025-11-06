@@ -1004,5 +1004,424 @@ describe('Given a NGC user', () => {
         })
       })
     })
+
+    describe('And logged in', () => {
+      let cookie: string
+      let email: string
+      let userId: string
+
+      beforeEach(async () => {
+        ;({ cookie, email, userId } = await login({ agent }))
+      })
+
+      describe('And poll does not exist', () => {
+        test(`Then it returns a ${StatusCodes.NOT_FOUND} error`, async () => {
+          await agent
+            .post(
+              url
+                .replace(':userId', userId)
+                .replace(':pollIdOrSlug', faker.database.mongodbObjectId())
+            )
+            .set('cookie', cookie)
+            .send({
+              id: faker.string.uuid(),
+              situation,
+              progression: 1,
+              computedResults,
+              extendedSituation,
+            })
+            .expect(StatusCodes.NOT_FOUND)
+        })
+      })
+
+      describe('And poll does exist', () => {
+        let organisationId: string
+        let organisationName: string
+        let organisationSlug: string
+        let administratorId: string
+        let administratorEmail: string
+        let pollId: string
+        let pollSlug: string
+        let poll: Awaited<ReturnType<typeof createOrganisationPoll>>
+
+        beforeEach(async () => {
+          const { cookie } = await login({ agent })
+          ;({
+            id: organisationId,
+            name: organisationName,
+            slug: organisationSlug,
+            administrators: [
+              { userId: administratorId, email: administratorEmail },
+            ],
+          } = await createOrganisation({
+            agent,
+            cookie,
+          }))
+          poll = await createOrganisationPoll({
+            agent,
+            cookie,
+            organisationId,
+          })
+          ;({ id: pollId, slug: pollSlug } = poll)
+        })
+
+        test(`Then it returns a ${StatusCodes.CREATED} response with the created simulation`, async () => {
+          const expected = {
+            id: faker.string.uuid(),
+            situation,
+            progression: 1,
+            computedResults,
+          }
+
+          const payload: SimulationCreateInputDto = {
+            ...expected,
+            extendedSituation,
+          }
+
+          mswServer.use(
+            brevoSendEmail(),
+            brevoUpdateContact(),
+            brevoRemoveFromList(27)
+          )
+
+          const response = await agent
+            .post(
+              url.replace(':userId', userId).replace(':pollIdOrSlug', pollId)
+            )
+            .set('cookie', cookie)
+            .send(payload)
+            .expect(StatusCodes.CREATED)
+
+          expect(response.body).toEqual({
+            ...expected,
+            date: expect.any(String),
+            model: 'FR-fr-0.0.0',
+            savedViaEmail: false,
+            createdAt: expect.any(String),
+            updatedAt: expect.any(String),
+            actionChoices: {},
+            additionalQuestionsAnswers: [],
+            foldedSteps: [],
+            polls: [
+              {
+                id: pollId,
+                slug: pollSlug,
+              },
+            ],
+            user: {
+              id: userId,
+              email,
+              name: null,
+              optedInForCommunications: false,
+              position: null,
+              telephone: null,
+              createdAt: expect.any(String),
+              updatedAt: expect.any(String),
+            },
+          })
+        })
+
+        test('Then it stores a simulation in database', async () => {
+          const payload: SimulationCreateInputDto = {
+            id: faker.string.uuid(),
+            date: new Date(),
+            situation,
+            progression: 1,
+            computedResults,
+            extendedSituation,
+            actionChoices: {
+              myAction: true,
+            },
+            savedViaEmail: true,
+            // foldedSteps: ['myStep'], // Cannot do that with PG lite
+            foldedSteps: [],
+            additionalQuestionsAnswers: [
+              {
+                type: SimulationAdditionalQuestionAnswerType.custom,
+                key: 'myKey',
+                answer: 'myAnswer',
+              },
+              {
+                type: SimulationAdditionalQuestionAnswerType.default,
+                key: PollDefaultAdditionalQuestionType.postalCode,
+                answer: '00001',
+              },
+            ],
+            user: {
+              name: nom,
+            },
+          }
+
+          mswServer.use(
+            brevoSendEmail(),
+            brevoUpdateContact(),
+            brevoRemoveFromList(27)
+          )
+
+          const {
+            body: { id },
+          } = await agent
+            .post(
+              url.replace(':userId', userId).replace(':pollIdOrSlug', pollId)
+            )
+            .set('cookie', cookie)
+            .send(payload)
+            .expect(StatusCodes.CREATED)
+
+          const createdSimulation = await prisma.simulation.findUnique({
+            where: {
+              id,
+            },
+            select: {
+              id: true,
+              date: true,
+              situation: true,
+              foldedSteps: true,
+              progression: true,
+              actionChoices: true,
+              savedViaEmail: true,
+              computedResults: true,
+              extendedSituation: true,
+              additionalQuestionsAnswers: {
+                select: {
+                  key: true,
+                  answer: true,
+                  type: true,
+                },
+              },
+              polls: {
+                select: {
+                  pollId: true,
+                  poll: {
+                    select: {
+                      slug: true,
+                    },
+                  },
+                },
+              },
+              states: true,
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+              },
+              verifiedUser: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+              },
+              createdAt: true,
+              updatedAt: true,
+            },
+          })
+
+          expect(createdSimulation).toEqual({
+            ...payload,
+            createdAt: expect.any(Date),
+            date: expect.any(Date),
+            updatedAt: expect.any(Date),
+            polls: [
+              {
+                pollId,
+                poll: {
+                  slug: pollSlug,
+                },
+              },
+            ],
+            states: [
+              {
+                id: expect.any(String),
+                date: expect.any(Date),
+                simulationId: id,
+                progression: 1,
+              },
+            ],
+            user: {
+              ...payload.user,
+              id: userId,
+              email,
+            },
+            verifiedUser: {
+              ...payload.user,
+              id: userId,
+              email,
+            },
+          })
+        })
+
+        test('Then it adds or updates contacts in brevo', async () => {
+          const date = new Date()
+          const payload: SimulationCreateInputDto = {
+            id: faker.string.uuid(),
+            situation,
+            progression: 1,
+            computedResults,
+            extendedSituation,
+            date,
+          }
+
+          const contactBodies: unknown[] = []
+
+          mswServer.use(
+            brevoSendEmail(),
+            brevoUpdateContact({
+              storeBodies: contactBodies,
+            }),
+            brevoRemoveFromList(27)
+          )
+
+          await agent
+            .post(
+              url.replace(':userId', userId).replace(':pollIdOrSlug', pollId)
+            )
+            .set('cookie', cookie)
+            .send(payload)
+            .expect(StatusCodes.CREATED)
+
+          await EventBus.flush()
+
+          expect(contactBodies).toEqual(
+            expect.arrayContaining([
+              {
+                email,
+                attributes: {
+                  USER_ID: userId,
+                  LAST_SIMULATION_DATE: date.toISOString(),
+                  ACTIONS_SELECTED_NUMBER: 0,
+                  LAST_SIMULATION_BILAN_FOOTPRINT: (
+                    computedResults.carbone.bilan / 1000
+                  ).toLocaleString('fr-FR', {
+                    maximumFractionDigits: 1,
+                  }),
+                  LAST_SIMULATION_TRANSPORTS_FOOTPRINT: (
+                    computedResults.carbone.categories.transport / 1000
+                  ).toLocaleString('fr-FR', {
+                    maximumFractionDigits: 1,
+                  }),
+                  LAST_SIMULATION_ALIMENTATION_FOOTPRINT: (
+                    computedResults.carbone.categories.alimentation / 1000
+                  ).toLocaleString('fr-FR', {
+                    maximumFractionDigits: 1,
+                  }),
+                  LAST_SIMULATION_LOGEMENT_FOOTPRINT: (
+                    computedResults.carbone.categories.logement / 1000
+                  ).toLocaleString('fr-FR', {
+                    maximumFractionDigits: 1,
+                  }),
+                  LAST_SIMULATION_DIVERS_FOOTPRINT: (
+                    computedResults.carbone.categories.divers / 1000
+                  ).toLocaleString('fr-FR', {
+                    maximumFractionDigits: 1,
+                  }),
+                  LAST_SIMULATION_SERVICES_FOOTPRINT: (
+                    computedResults.carbone.categories['services sociétaux'] /
+                    1000
+                  ).toLocaleString('fr-FR', {
+                    maximumFractionDigits: 1,
+                  }),
+                  LAST_SIMULATION_BILAN_WATER: Math.round(
+                    computedResults.eau.bilan / 365
+                  ).toString(),
+                },
+                updateEnabled: true,
+              },
+              {
+                attributes: {
+                  IS_ORGANISATION_ADMIN: true,
+                  LAST_POLL_PARTICIPANTS_NUMBER: 1,
+                  OPT_IN: false,
+                  ORGANISATION_NAME: organisationName,
+                  ORGANISATION_SLUG: organisationSlug,
+                  USER_ID: administratorId,
+                },
+                email: administratorEmail,
+                updateEnabled: true,
+              },
+            ])
+          )
+        })
+
+        test('Then it sends a creation email', async () => {
+          const payload: SimulationCreateInputDto = {
+            id: faker.string.uuid(),
+            situation,
+            progression: 1,
+            computedResults,
+            extendedSituation,
+          }
+
+          mswServer.use(
+            brevoSendEmail({
+              expectBody: {
+                to: [
+                  {
+                    name: email,
+                    email,
+                  },
+                ],
+                templateId: 122,
+                params: {
+                  ORGANISATION_NAME: organisationName,
+                  DETAILED_VIEW_URL: `https://nosgestesclimat.fr/organisations/${organisationSlug}/campagnes/${pollSlug}?mtm_campaign=email-automatise&mtm_kwd=orga-invite-campagne`,
+                  SIMULATION_URL: `https://nosgestesclimat.fr/fin?sid=${payload.id}&mtm_campaign=email-automatise&mtm_kwd=fin-retrouver-simulation`,
+                },
+              },
+            }),
+            brevoUpdateContact(),
+            brevoRemoveFromList(27)
+          )
+
+          await agent
+            .post(
+              url.replace(':userId', userId).replace(':pollIdOrSlug', pollId)
+            )
+            .set('cookie', cookie)
+            .send(payload)
+            .expect(StatusCodes.CREATED)
+
+          await EventBus.flush()
+        })
+
+        describe('And joining twice', () => {
+          let simulation: Awaited<
+            ReturnType<typeof createOrganisationPollSimulation>
+          >
+
+          beforeEach(async () => {
+            simulation = await createOrganisationPollSimulation({
+              agent,
+              pollId,
+              cookie,
+            })
+          })
+
+          test('Then it does not send email twice', async () => {
+            const {
+              createdAt: _1,
+              updatedAt: _2,
+              polls: _3,
+              user: _4,
+              ...payload
+            } = simulation
+
+            mswServer.use(brevoUpdateContact(), brevoRemoveFromList(27))
+
+            await agent
+              .post(
+                url.replace(':userId', userId).replace(':pollIdOrSlug', pollId)
+              )
+              .set('cookie', cookie)
+              .send(payload)
+              .expect(StatusCodes.CREATED)
+
+            await EventBus.flush()
+          })
+        })
+      })
+    })
   })
 })

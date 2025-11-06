@@ -8,6 +8,7 @@ import { EntityNotFoundException } from '../../core/errors/EntityNotFoundExcepti
 import { EventBus } from '../../core/event-bus/event-bus.js'
 import type { Locales } from '../../core/i18n/constant.js'
 import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError.js'
+import { createOrUpdateVerifiedUser } from '../users/users.repository.js'
 import type { LoginDto } from './authentication.validator.js'
 import { LoginEvent } from './events/Login.event.js'
 import { findUserVerificationCode } from './verification-codes.repository.js'
@@ -23,6 +24,7 @@ export const COOKIES_OPTIONS: CookieOptions = {
   httpOnly: true,
   secure: env === 'production',
   sameSite: env === 'production' ? 'none' : 'lax',
+  partitioned: true,
 }
 
 export const COOKIE_NAME = 'ngcjwt'
@@ -67,8 +69,27 @@ export const login = async ({
   locale: Locales
   origin: string
 }) => {
-  const { token, verificationCode } =
-    await exchangeCredentialsForToken(loginDto)
+  const { token, verificationCode } = await transaction(async (session) => {
+    const { token, verificationCode } = await exchangeCredentialsForToken(
+      loginDto,
+      { session }
+    )
+
+    if (verificationCode.userId) {
+      await createOrUpdateVerifiedUser(
+        {
+          id: verificationCode,
+          user: verificationCode,
+        },
+        { session }
+      )
+    }
+
+    return {
+      token,
+      verificationCode,
+    }
+  })
 
   const loginEvent = new LoginEvent({
     verificationCode,
