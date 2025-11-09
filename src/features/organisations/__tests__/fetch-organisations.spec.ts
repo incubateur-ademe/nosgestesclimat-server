@@ -24,6 +24,7 @@ describe('Given a NGC user', () => {
     await prisma.organisationAdministrator.deleteMany()
     await Promise.all([
       prisma.organisation.deleteMany(),
+      prisma.user.deleteMany(),
       prisma.verifiedUser.deleteMany(),
       prisma.verificationCode.deleteMany(),
     ])

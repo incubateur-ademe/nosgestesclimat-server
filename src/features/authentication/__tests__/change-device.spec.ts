@@ -101,6 +101,7 @@ describe('Given a ngc user', () => {
               administrator: {
                 ...groupDevice1.administrator,
                 id: userId,
+                updatedAt: expect.any(String),
               },
               participants: [
                 {
@@ -181,6 +182,10 @@ describe('Given a ngc user', () => {
               expect(response.body).toEqual([
                 {
                   ...groupDevice1,
+                  administrator: {
+                    ...groupDevice1.administrator,
+                    updatedAt: expect.any(String),
+                  },
                   participants: [
                     {
                       ...participant,
@@ -244,6 +249,7 @@ describe('Given a ngc user', () => {
                   administrator: {
                     ...groupDevice1.administrator,
                     id: userId,
+                    updatedAt: expect.any(String),
                   },
                   participants: [
                     {
@@ -327,6 +333,7 @@ describe('Given a ngc user', () => {
               administrator: {
                 ...groupDevice1.administrator,
                 id: userId,
+                updatedAt: expect.any(String),
               },
               participants: [
                 {
@@ -400,6 +407,7 @@ describe('Given a ngc user', () => {
                 administrator: {
                   ...groupDevice1.administrator,
                   id: userIdDevice2,
+                  updatedAt: expect.any(String),
                 },
                 participants: [
                   {
