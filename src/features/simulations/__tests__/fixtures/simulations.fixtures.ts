@@ -4,6 +4,8 @@ import modelPackage from '@incubateur-ademe/nosgestesclimat/package.json' with {
 import rules from '@incubateur-ademe/nosgestesclimat/public/co2-model.FR-lang.fr.json' with { type: 'json' }
 import personas from '@incubateur-ademe/nosgestesclimat/public/personas-fr.json' with { type: 'json' }
 import { StatusCodes } from 'http-status-codes'
+import type { JwtPayload } from 'jsonwebtoken'
+import jwt from 'jsonwebtoken'
 import type { PublicodesExpression } from 'publicodes'
 import Engine, { utils } from 'publicodes'
 import type supertest from 'supertest'
@@ -19,6 +21,7 @@ import {
 } from '../../../../core/__tests__/fixtures/server.fixture.js'
 import { EventBus } from '../../../../core/event-bus/event-bus.js'
 import type { Metric } from '../../../../types/types.js'
+import { COOKIE_NAME } from '../../../authentication/authentication.service.js'
 import type {
   ExtendedSituationSchema,
   SimulationCreateInputDto,
@@ -214,12 +217,27 @@ export const getSimulationPayload = ({
 export const createSimulation = async ({
   agent,
   userId,
+  cookie,
   simulation = {},
-}: {
-  agent: TestAgent
-  userId?: string
-  simulation?: Partial<SimulationCreateInputDto>
-}) => {
+}:
+  | {
+      agent: TestAgent
+      userId?: string
+      simulation?: Partial<SimulationCreateInputDto>
+      cookie?: undefined
+    }
+  | {
+      agent: TestAgent
+      userId?: undefined
+      simulation?: Partial<SimulationCreateInputDto>
+      cookie?: string
+    }) => {
+  if (cookie) {
+    ;({ userId } = jwt.decode(
+      cookie.split(';').shift()!.replace(`${COOKIE_NAME}=`, '')!
+    ) as JwtPayload)
+  }
+
   userId = userId ?? faker.string.uuid()
   const { user } = simulation
   const payload: SimulationCreateInputDto = {
@@ -227,7 +245,7 @@ export const createSimulation = async ({
     user,
   }
 
-  if (payload.user?.email) {
+  if (payload.user?.email || cookie) {
     mswServer.use(
       brevoUpdateContact(),
       brevoRemoveFromList(22, { invalid: true }),
@@ -239,10 +257,13 @@ export const createSimulation = async ({
     )
   }
 
-  const response = await agent
-    .post(CREATE_SIMULATION_ROUTE.replace(':userId', userId))
-    .send(payload)
-    .expect(StatusCodes.CREATED)
+  const request = agent.post(CREATE_SIMULATION_ROUTE.replace(':userId', userId))
+
+  if (cookie) {
+    request.set('cookie', cookie)
+  }
+
+  const response = await request.send(payload).expect(StatusCodes.CREATED)
 
   await EventBus.flush()
 

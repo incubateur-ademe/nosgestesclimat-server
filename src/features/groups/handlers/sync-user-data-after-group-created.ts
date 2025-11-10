@@ -13,7 +13,9 @@ export const syncUserDataAfterGroupCreated: Handler<GroupCreatedEvent> = ({
   }
 
   return syncUserData({
-    userId,
-    email,
+    user: {
+      userId,
+      email,
+    },
   })
 }

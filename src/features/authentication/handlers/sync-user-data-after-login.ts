@@ -8,6 +8,6 @@ export const syncUserDataAfterLogin: Handler<LoginEvent> = ({
   },
 }) => {
   if (userId) {
-    return syncUserData({ email, userId })
+    return syncUserData({ user: { email, userId }, verified: true })
   }
 }

@@ -114,9 +114,15 @@ const getNewsletterMutation = ({
   }
 }
 
-export const syncUserData = (user: NonNullable<Request['user']>) => {
+export const syncUserData = ({
+  user,
+  verified,
+}: {
+  user: NonNullable<Request['user']>
+  verified?: boolean
+}) => {
   return transaction(
-    (session) => transferOwnershipToUser(user, { session }),
+    (session) => transferOwnershipToUser({ user, verified }, { session }),
     prisma
   )
 }

@@ -101,6 +101,7 @@ describe('Given a ngc user', () => {
               administrator: {
                 ...groupDevice1.administrator,
                 id: userId,
+                updatedAt: expect.any(String),
               },
               participants: [
                 {
@@ -135,6 +136,11 @@ describe('Given a ngc user', () => {
                 name,
                 email,
                 id: userId,
+                optedInForCommunications: false,
+                position: null,
+                telephone: null,
+                createdAt: expect.any(String),
+                updatedAt: expect.any(String),
               },
             },
           ])
@@ -181,6 +187,10 @@ describe('Given a ngc user', () => {
               expect(response.body).toEqual([
                 {
                   ...groupDevice1,
+                  administrator: {
+                    ...groupDevice1.administrator,
+                    updatedAt: expect.any(String),
+                  },
                   participants: [
                     {
                       ...participant,
@@ -212,7 +222,12 @@ describe('Given a ngc user', () => {
                   user: {
                     name,
                     email,
-                    id: userIdDevice1,
+                    id: userId,
+                    optedInForCommunications: false,
+                    position: null,
+                    telephone: null,
+                    createdAt: expect.any(String),
+                    updatedAt: expect.any(String),
                   },
                 },
               ])
@@ -244,6 +259,7 @@ describe('Given a ngc user', () => {
                   administrator: {
                     ...groupDevice1.administrator,
                     id: userId,
+                    updatedAt: expect.any(String),
                   },
                   participants: [
                     {
@@ -278,6 +294,11 @@ describe('Given a ngc user', () => {
                     name,
                     email,
                     id: userId,
+                    optedInForCommunications: false,
+                    position: null,
+                    telephone: null,
+                    createdAt: expect.any(String),
+                    updatedAt: expect.any(String),
                   },
                 },
               ])
@@ -327,6 +348,7 @@ describe('Given a ngc user', () => {
               administrator: {
                 ...groupDevice1.administrator,
                 id: userId,
+                updatedAt: expect.any(String),
               },
               participants: [
                 {
@@ -400,6 +422,7 @@ describe('Given a ngc user', () => {
                 administrator: {
                   ...groupDevice1.administrator,
                   id: userIdDevice2,
+                  updatedAt: expect.any(String),
                 },
                 participants: [
                   {
@@ -473,6 +496,11 @@ describe('Given a ngc user', () => {
                 email,
                 id: userId,
                 name: null,
+                optedInForCommunications: false,
+                position: null,
+                telephone: null,
+                createdAt: expect.any(String),
+                updatedAt: expect.any(String),
               },
             },
           ])
@@ -508,8 +536,13 @@ describe('Given a ngc user', () => {
                   updatedAt: expect.any(String),
                   user: {
                     email,
-                    id: userIdDevice1,
+                    id: userId,
                     name: null,
+                    optedInForCommunications: false,
+                    position: null,
+                    telephone: null,
+                    createdAt: expect.any(String),
+                    updatedAt: expect.any(String),
                   },
                 },
               ])
@@ -542,6 +575,11 @@ describe('Given a ngc user', () => {
                     email,
                     id: userId,
                     name: null,
+                    optedInForCommunications: false,
+                    position: null,
+                    telephone: null,
+                    createdAt: expect.any(String),
+                    updatedAt: expect.any(String),
                   },
                 },
               ])
