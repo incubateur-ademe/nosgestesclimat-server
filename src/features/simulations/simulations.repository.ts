@@ -226,12 +226,11 @@ export const fetchSimulationById = (
 }
 
 export const createPollUserSimulation = async (
-  params: PublicPollParams,
+  params: PublicPollParams & Partial<Request['user']>,
   simulationDto: SimulationCreateDto,
   { session }: { session: Session }
 ) => {
-  const { userId, pollIdOrSlug } = params
-  const { email } = simulationDto.user ?? {}
+  const { userId, pollIdOrSlug, email = simulationDto.user?.email } = params
   const { id: pollId } = await session.poll.findFirstOrThrow({
     where: {
       OR: [{ id: pollIdOrSlug }, { slug: pollIdOrSlug }],
@@ -286,10 +285,9 @@ export const createPollUserSimulation = async (
   return {
     poll,
     simulation,
-    simulationCreated,
-    simulationUpdated,
-    created: !existingParticipation,
-    updated: !!existingParticipation,
+    created: simulationCreated,
+    updated: simulationUpdated,
+    isNewParticipation: !existingParticipation,
   }
 }
 
