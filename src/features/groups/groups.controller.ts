@@ -98,6 +98,8 @@ router
 
       return res.status(StatusCodes.CREATED).json(participant)
     } catch (err) {
+      console.log(err)
+      console.log(JSON.stringify(err, null, 2))
       if (err instanceof EntityNotFoundException) {
         return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
       }

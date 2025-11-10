@@ -7,6 +7,7 @@ export const syncUserDataAfterSimulationUpserted: Handler<
 > = ({
   attributes: {
     user: { email, id: userId },
+    verified,
   },
 }) => {
   if (!email) {
@@ -14,7 +15,10 @@ export const syncUserDataAfterSimulationUpserted: Handler<
   }
 
   return syncUserData({
-    userId,
-    email,
+    user: {
+      userId,
+      email,
+    },
+    verified,
   })
 }
