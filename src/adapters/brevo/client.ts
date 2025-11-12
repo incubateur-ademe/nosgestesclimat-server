@@ -390,7 +390,7 @@ export const sendSimulationUpsertedEmail = ({
         DASHBOARD_URL: dashBoardUrl.toString(),
         [Attributes.LAST_SIMULATION_BILAN_FOOTPRINT]: (
           bilan / NUMBER_OF_KG_IN_A_TON
-        ).toLocaleString('fr-FR', {
+        ).toLocaleString(locale, {
           maximumFractionDigits: 1,
         }),
       },
@@ -417,7 +417,7 @@ export const sendSimulationUpsertedEmail = ({
         ? {
             [Attributes.LAST_SIMULATION_BILAN_FOOTPRINT]: (
               bilan / NUMBER_OF_KG_IN_A_TON
-            ).toLocaleString(locale, {
+            ).toLocaleString('fr-FR', {
               maximumFractionDigits: 1,
             }),
           }
