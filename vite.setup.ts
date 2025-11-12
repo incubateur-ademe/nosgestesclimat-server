@@ -18,6 +18,7 @@ redis.get = promisify(redis.get.bind(redis)) as unknown as (typeof redis)['get']
 redis.exists = promisify(
   redis.exists.bind(redis)
 ) as unknown as (typeof redis)['exists']
+// @ts-expect-error : works with older @prisma/driver-adapter-utils
 const prisma = new PrismaClient({ adapter })
 const prismaMigrationDir = path.join(
   import.meta.dirname,
