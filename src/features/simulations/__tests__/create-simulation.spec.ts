@@ -800,11 +800,6 @@ describe('Given a NGC user', () => {
                   templateId: 102,
                   params: {
                     SIMULATION_URL: `https://nosgestesclimat.fr/simulateur/bilan?sid=${id}&mtm_campaign=email-automatise&mtm_kwd=pause-test-en-cours`,
-                    LAST_SIMULATION_BILAN_FOOTPRINT: (
-                      computedResults.carbone.bilan / 1000
-                    ).toLocaleString('fr-FR', {
-                      maximumFractionDigits: 1,
-                    }),
                   },
                 },
               }),

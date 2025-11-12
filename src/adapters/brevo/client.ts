@@ -362,7 +362,8 @@ export const sendSimulationUpsertedEmail = ({
 }>) => {
   const isSimulationCompleted = simulation.progression === 1
   const bilan =
-    (simulation.computedResults as ComputedResultSchema)?.carbone?.bilan ?? 0
+    (simulation.computedResults as ComputedResultSchema | null)?.carbone
+      ?.bilan ?? 0
 
   if (verified) {
     // TODO send in progress email when autheticated
@@ -411,12 +412,16 @@ export const sendSimulationUpsertedEmail = ({
     email,
     templateId,
     params: {
-      [Attributes.LAST_SIMULATION_BILAN_FOOTPRINT]: (
-        bilan / NUMBER_OF_KG_IN_A_TON
-      ).toLocaleString(locale, {
-        maximumFractionDigits: 1,
-      }),
       SIMULATION_URL: simulationUrl.toString(),
+      ...(isSimulationCompleted
+        ? {
+            [Attributes.LAST_SIMULATION_BILAN_FOOTPRINT]: (
+              bilan / NUMBER_OF_KG_IN_A_TON
+            ).toLocaleString(locale, {
+              maximumFractionDigits: 1,
+            }),
+          }
+        : {}),
     },
   })
 }
