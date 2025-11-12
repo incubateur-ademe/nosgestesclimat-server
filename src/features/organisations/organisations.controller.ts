@@ -387,6 +387,7 @@ router
   .route('/v1/:userId/public-polls/:pollIdOrSlug/simulations')
   .post(
     rateLimitSameRequestMiddleware(),
+    authentificationMiddleware({ passIfUnauthorized: true }),
     validateRequest(OrganisationPollSimulationCreateValidator),
     async (req, res) => {
       try {
@@ -395,6 +396,7 @@ router
           origin: req.get('origin') || config.app.origin,
           locale: req.query.locale,
           params: req.params,
+          user: req.user,
         })
 
         return res.status(StatusCodes.CREATED).json(simulation)
