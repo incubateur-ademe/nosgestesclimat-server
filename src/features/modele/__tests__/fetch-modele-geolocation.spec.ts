@@ -14,7 +14,9 @@ const agent = supertest(app)
 const url = '/modele/v1/geolocation'
 
 describe('Given no redis store', () => {
-  beforeEach(() => initGeolocationStore())
+  beforeEach(async () => {
+    await initGeolocationStore()
+  })
 
   describe('When a user wants its country according to his/her ip', () => {
     test(`Then it returns a ${StatusCodes.NOT_FOUND} error`, async () => {

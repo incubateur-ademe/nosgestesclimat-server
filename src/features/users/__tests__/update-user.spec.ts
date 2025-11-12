@@ -31,13 +31,13 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = UPDATE_USER_ROUTE
 
-  afterEach(() =>
-    Promise.all([
+  afterEach(async () => {
+    await Promise.all([
       prisma.user.deleteMany(),
       prisma.verifiedUser.deleteMany(),
       prisma.verificationCode.deleteMany(),
     ])
-  )
+  })
 
   describe('When updating his/her profile', () => {
     describe('And invalid userId', () => {

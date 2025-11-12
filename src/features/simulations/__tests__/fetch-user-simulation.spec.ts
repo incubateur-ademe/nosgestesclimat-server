@@ -19,7 +19,9 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = FETCH_USER_SIMULATION_ROUTE
 
-  afterEach(() => prisma.user.deleteMany())
+  afterEach(async () => {
+    await prisma.user.deleteMany()
+  })
 
   describe('When fetching one of his simulations', () => {
     describe('And invalid userId', () => {

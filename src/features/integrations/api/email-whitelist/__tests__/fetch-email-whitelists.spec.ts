@@ -101,11 +101,11 @@ describe('Given a NGC integrations API user', () => {
       })
 
       describe('And others whitelists exist for others scopes', () => {
-        beforeEach(() =>
-          createIntegrationEmailWhitelist({
+        beforeEach(async () => {
+          await createIntegrationEmailWhitelist({
             prisma,
           })
-        )
+        })
 
         test(`Then it returns a ${StatusCodes.OK} code and a list of email whitelists for the token scope only`, async () => {
           const { body } = await agent
