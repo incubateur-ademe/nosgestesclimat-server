@@ -49,7 +49,7 @@ app.use(requestIp.mw())
 
 morgan.token('params', (req: Request) => req.requestParams)
 
-morgan.token('ip', (req: Request) => JSON.stringify(req.clientIp))
+morgan.token('ip', (req: Request) => (req.clientIp ? '[REDACTED]' : ''))
 
 app.use(
   morgan(
