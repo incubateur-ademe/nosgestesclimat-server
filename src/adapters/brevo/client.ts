@@ -358,9 +358,11 @@ export const sendSimulationUpsertedEmail = ({
   origin: string
   locale: Locales
   verified: boolean
-  simulation: Pick<Simulation, 'id' | 'progression'>
+  simulation: Pick<Simulation, 'id' | 'progression' | 'computedResults'>
 }>) => {
   const isSimulationCompleted = simulation.progression === 1
+  const bilan =
+    (simulation.computedResults as ComputedResultSchema)?.carbone?.bilan ?? 0
 
   if (verified) {
     // TODO send in progress email when autheticated
@@ -385,6 +387,11 @@ export const sendSimulationUpsertedEmail = ({
       params: {
         SIMULATION_URL: simulationUrl.toString(),
         DASHBOARD_URL: dashBoardUrl.toString(),
+        [Attributes.LAST_SIMULATION_BILAN_FOOTPRINT]: (
+          bilan / NUMBER_OF_KG_IN_A_TON
+        ).toLocaleString('fr-FR', {
+          maximumFractionDigits: 1,
+        }),
       },
     })
   }
@@ -404,6 +411,11 @@ export const sendSimulationUpsertedEmail = ({
     email,
     templateId,
     params: {
+      [Attributes.LAST_SIMULATION_BILAN_FOOTPRINT]: (
+        bilan / NUMBER_OF_KG_IN_A_TON
+      ).toLocaleString(locale, {
+        maximumFractionDigits: 1,
+      }),
       SIMULATION_URL: simulationUrl.toString(),
     },
   })
@@ -432,14 +444,14 @@ export const sendPollSimulationUpsertedEmail = async ({
   origin,
   organisation: { name, slug: organisationSlug },
   poll: { slug: pollSlug },
-  simulation: { id },
+  simulation: { id, computedResults },
 }: Readonly<{
   email: string
   origin: string
   locale: Locales
   organisation: Pick<Organisation, 'name' | 'slug'>
   poll: Pick<Poll, 'slug'>
-  simulation: Pick<Simulation, 'id'>
+  simulation: Pick<Simulation, 'id' | 'computedResults'>
 }>) => {
   const templateId = TemplateIds[locale].ORGANISATION_JOINED
 
@@ -455,7 +467,6 @@ export const sendPollSimulationUpsertedEmail = async ({
     MATOMO_KEYWORD_KEY,
     MATOMO_KEYWORDS[templateId]
   )
-
   const simulationUrl = new URL(origin)
   simulationUrl.pathname = 'fin'
   const { searchParams: simulationUrlSearchParams } = simulationUrl
@@ -469,6 +480,8 @@ export const sendPollSimulationUpsertedEmail = async ({
     MATOMO_KEYWORDS[TemplateIds[Locales.fr].SIMULATION_COMPLETED]
   )
 
+  const bilan = (computedResults as ComputedResultSchema)?.carbone?.bilan ?? 0
+
   await sendEmail({
     email,
     templateId,
@@ -476,6 +489,11 @@ export const sendPollSimulationUpsertedEmail = async ({
       ORGANISATION_NAME: name,
       DETAILED_VIEW_URL: detailedViewUrl.toString(),
       SIMULATION_URL: simulationUrl.toString(),
+      [Attributes.LAST_SIMULATION_BILAN_FOOTPRINT]: (
+        bilan / NUMBER_OF_KG_IN_A_TON
+      ).toLocaleString(locale, {
+        maximumFractionDigits: 1,
+      }),
     },
   })
 }

@@ -487,6 +487,11 @@ describe('Given a NGC user', () => {
                   templateId: 55,
                   params: {
                     SIMULATION_URL: `https://nosgestesclimat.fr/fin?sid=${id}&mtm_campaign=email-automatise&mtm_kwd=fin-retrouver-simulation`,
+                    LAST_SIMULATION_BILAN_FOOTPRINT: (
+                      computedResults.carbone.bilan / 1000
+                    ).toLocaleString('fr-FR', {
+                      maximumFractionDigits: 1,
+                    }),
                   },
                 },
               }),
@@ -535,6 +540,11 @@ describe('Given a NGC user', () => {
                     templateId: 55,
                     params: {
                       SIMULATION_URL: `https://preprod.nosgestesclimat.fr/fin?sid=${id}&mtm_campaign=email-automatise&mtm_kwd=fin-retrouver-simulation`,
+                      LAST_SIMULATION_BILAN_FOOTPRINT: (
+                        computedResults.carbone.bilan / 1000
+                      ).toLocaleString('fr-FR', {
+                        maximumFractionDigits: 1,
+                      }),
                     },
                   },
                 }),
@@ -790,6 +800,11 @@ describe('Given a NGC user', () => {
                   templateId: 102,
                   params: {
                     SIMULATION_URL: `https://nosgestesclimat.fr/simulateur/bilan?sid=${id}&mtm_campaign=email-automatise&mtm_kwd=pause-test-en-cours`,
+                    LAST_SIMULATION_BILAN_FOOTPRINT: (
+                      computedResults.carbone.bilan / 1000
+                    ).toLocaleString('fr-FR', {
+                      maximumFractionDigits: 1,
+                    }),
                   },
                 },
               }),
@@ -1297,6 +1312,11 @@ describe('Given a NGC user', () => {
                 params: {
                   SIMULATION_URL: `https://nosgestesclimat.fr/fin?sid=${id}&mtm_campaign=email-automatise&mtm_kwd=fin-retrouver-simulation`,
                   DASHBOARD_URL: 'https://nosgestesclimat.fr/mon-espace',
+                  LAST_SIMULATION_BILAN_FOOTPRINT: (
+                    computedResults.carbone.bilan / 1000
+                  ).toLocaleString('fr-FR', {
+                    maximumFractionDigits: 1,
+                  }),
                 },
               },
             }),
@@ -1347,6 +1367,11 @@ describe('Given a NGC user', () => {
                     SIMULATION_URL: `https://preprod.nosgestesclimat.fr/fin?sid=${id}&mtm_campaign=email-automatise&mtm_kwd=fin-retrouver-simulation`,
                     DASHBOARD_URL:
                       'https://preprod.nosgestesclimat.fr/mon-espace',
+                    LAST_SIMULATION_BILAN_FOOTPRINT: (
+                      computedResults.carbone.bilan / 1000
+                    ).toLocaleString('fr-FR', {
+                      maximumFractionDigits: 1,
+                    }),
                   },
                 },
               }),
@@ -1398,6 +1423,11 @@ describe('Given a NGC user', () => {
                   params: {
                     SIMULATION_URL: `https://nosgestesclimat.fr/fin?sid=${id}&mtm_campaign=email-automatise&mtm_kwd=fin-retrouver-simulation`,
                     DASHBOARD_URL: 'https://nosgestesclimat.fr/mon-espace',
+                    LAST_SIMULATION_BILAN_FOOTPRINT: (
+                      computedResults.carbone.bilan / 1000
+                    ).toLocaleString('fr-FR', {
+                      maximumFractionDigits: 1,
+                    }),
                   },
                 },
               }),
@@ -1802,6 +1832,11 @@ describe('Given a NGC user', () => {
                   params: {
                     SIMULATION_URL: `https://nosgestesclimat.fr/fin?sid=${id}&mtm_campaign=email-automatise&mtm_kwd=fin-retrouver-simulation`,
                     DASHBOARD_URL: 'https://nosgestesclimat.fr/mon-espace',
+                    LAST_SIMULATION_BILAN_FOOTPRINT: (
+                      computedResults.carbone.bilan / 1000
+                    ).toLocaleString('fr-FR', {
+                      maximumFractionDigits: 1,
+                    }),
                   },
                 },
               }),
@@ -1851,6 +1886,11 @@ describe('Given a NGC user', () => {
                       SIMULATION_URL: `https://preprod.nosgestesclimat.fr/fin?sid=${id}&mtm_campaign=email-automatise&mtm_kwd=fin-retrouver-simulation`,
                       DASHBOARD_URL:
                         'https://preprod.nosgestesclimat.fr/mon-espace',
+                      LAST_SIMULATION_BILAN_FOOTPRINT: (
+                        computedResults.carbone.bilan / 1000
+                      ).toLocaleString('fr-FR', {
+                        maximumFractionDigits: 1,
+                      }),
                     },
                   },
                 }),
@@ -1901,6 +1941,11 @@ describe('Given a NGC user', () => {
                     params: {
                       SIMULATION_URL: `https://nosgestesclimat.fr/fin?sid=${id}&mtm_campaign=email-automatise&mtm_kwd=fin-retrouver-simulation`,
                       DASHBOARD_URL: 'https://nosgestesclimat.fr/mon-espace',
+                      LAST_SIMULATION_BILAN_FOOTPRINT: (
+                        computedResults.carbone.bilan / 1000
+                      ).toLocaleString('fr-FR', {
+                        maximumFractionDigits: 1,
+                      }),
                     },
                   },
                 }),
