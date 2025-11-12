@@ -634,11 +634,6 @@ describe('Given a NGC user', () => {
                     ORGANISATION_NAME: organisationName,
                     DETAILED_VIEW_URL: `https://nosgestesclimat.fr/organisations/${organisationSlug}/campagnes/${pollSlug}?mtm_campaign=email-automatise&mtm_kwd=orga-invite-campagne`,
                     SIMULATION_URL: `https://nosgestesclimat.fr/fin?sid=${payload.id}&mtm_campaign=email-automatise&mtm_kwd=fin-retrouver-simulation`,
-                    LAST_SIMULATION_BILAN_FOOTPRINT: (
-                      computedResults.carbone.bilan / 1000
-                    ).toLocaleString('fr-FR', {
-                      maximumFractionDigits: 1,
-                    }),
                   },
                 },
               }),
@@ -682,11 +677,6 @@ describe('Given a NGC user', () => {
                     templateId: 102,
                     params: {
                       SIMULATION_URL: `https://nosgestesclimat.fr/simulateur/bilan?sid=${payload.id}&mtm_campaign=email-automatise&mtm_kwd=pause-test-en-cours`,
-                      LAST_SIMULATION_BILAN_FOOTPRINT: (
-                        computedResults.carbone.bilan / 1000
-                      ).toLocaleString('fr-FR', {
-                        maximumFractionDigits: 1,
-                      }),
                     },
                   },
                 }),
@@ -735,11 +725,6 @@ describe('Given a NGC user', () => {
                       ORGANISATION_NAME: organisationName,
                       DETAILED_VIEW_URL: `https://preprod.nosgestesclimat.fr/organisations/${organisationSlug}/campagnes/${pollSlug}?mtm_campaign=email-automatise&mtm_kwd=orga-invite-campagne`,
                       SIMULATION_URL: `https://preprod.nosgestesclimat.fr/fin?sid=${payload.id}&mtm_campaign=email-automatise&mtm_kwd=fin-retrouver-simulation`,
-                      LAST_SIMULATION_BILAN_FOOTPRINT: (
-                        computedResults.carbone.bilan / 1000
-                      ).toLocaleString('fr-FR', {
-                        maximumFractionDigits: 1,
-                      }),
                     },
                   },
                 }),
@@ -789,11 +774,6 @@ describe('Given a NGC user', () => {
                       ORGANISATION_NAME: organisationName,
                       DETAILED_VIEW_URL: `https://nosgestesclimat.fr/organisations/${organisationSlug}/campagnes/${pollSlug}?mtm_campaign=email-automatise&mtm_kwd=orga-invite-campagne`,
                       SIMULATION_URL: `https://nosgestesclimat.fr/fin?sid=${payload.id}&mtm_campaign=email-automatise&mtm_kwd=fin-retrouver-simulation`,
-                      LAST_SIMULATION_BILAN_FOOTPRINT: (
-                        computedResults.carbone.bilan / 1000
-                      ).toLocaleString('fr-FR', {
-                        maximumFractionDigits: 1,
-                      }),
                     },
                   },
                 }),
@@ -1388,11 +1368,6 @@ describe('Given a NGC user', () => {
                   ORGANISATION_NAME: organisationName,
                   DETAILED_VIEW_URL: `https://nosgestesclimat.fr/organisations/${organisationSlug}/campagnes/${pollSlug}?mtm_campaign=email-automatise&mtm_kwd=orga-invite-campagne`,
                   SIMULATION_URL: `https://nosgestesclimat.fr/fin?sid=${payload.id}&mtm_campaign=email-automatise&mtm_kwd=fin-retrouver-simulation`,
-                  LAST_SIMULATION_BILAN_FOOTPRINT: (
-                    computedResults.carbone.bilan / 1000
-                  ).toLocaleString('fr-FR', {
-                    maximumFractionDigits: 1,
-                  }),
                 },
               },
             }),
