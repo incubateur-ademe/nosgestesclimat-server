@@ -10,13 +10,13 @@ describe('Given a NGC User', () => {
   const agent = supertest(app)
   const url = ME_ROUTE
 
-  afterEach(() =>
-    Promise.all([
+  afterEach(async () => {
+    await Promise.all([
       prisma.verificationCode.deleteMany(),
       prisma.user.deleteMany(),
       prisma.verifiedUser.deleteMany(),
     ])
-  )
+  })
 
   describe('When requesting his user data', () => {
     describe('And logged out', () => {

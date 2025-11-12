@@ -27,12 +27,12 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = '/users/v1/:userId/newsletter-confirmation'
 
-  afterEach(() =>
-    Promise.all([
+  afterEach(async () => {
+    await Promise.all([
       prisma.user.deleteMany(),
       prisma.verificationCode.deleteMany(),
     ])
-  )
+  })
 
   describe('When clicking the confirmation email link', () => {
     describe('And invalid userId', () => {

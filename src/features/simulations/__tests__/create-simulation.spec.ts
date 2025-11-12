@@ -38,13 +38,13 @@ describe('Given a NGC user', () => {
   const { computedResults, nom, situation, extendedSituation } =
     getRandomTestCase()
 
-  afterEach(() =>
-    Promise.all([
+  afterEach(async () => {
+    await Promise.all([
       prisma.user.deleteMany(),
       prisma.verificationCode.deleteMany(),
       prisma.verifiedUser.deleteMany(),
     ])
-  )
+  })
 
   describe(`And ${nom} persona situation`, () => {
     describe('When creating his simulation', () => {

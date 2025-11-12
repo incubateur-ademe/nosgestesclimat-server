@@ -20,13 +20,13 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = FETCH_USER_SIMULATIONS_ROUTE
 
-  afterEach(() =>
-    Promise.all([
+  afterEach(async () => {
+    await Promise.all([
       prisma.user.deleteMany(),
       prisma.verificationCode.deleteMany(),
       prisma.verifiedUser.deleteMany(),
     ])
-  )
+  })
 
   describe('When fetching his simulations', () => {
     describe('And invalid userId', () => {

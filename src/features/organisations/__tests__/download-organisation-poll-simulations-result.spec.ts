@@ -253,7 +253,9 @@ describe('Given a NGC user', () => {
                   }))
               })
 
-              afterEach(() => vi.spyOn(EventBus, 'emit').mockRestore())
+              afterEach(() => {
+                vi.spyOn(EventBus, 'emit').mockRestore()
+              })
 
               test(`Then it returns a ${StatusCodes.ACCEPTED} response with the job status`, async () => {
                 const response = await agent
@@ -411,7 +413,9 @@ describe('Given a NGC user', () => {
                   }))
               })
 
-              afterEach(() => vi.spyOn(EventBus, 'emit').mockRestore())
+              afterEach(() => {
+                vi.spyOn(EventBus, 'emit').mockRestore()
+              })
 
               test(`Then it returns a ${StatusCodes.NOT_FOUND} error`, async () => {
                 await agent

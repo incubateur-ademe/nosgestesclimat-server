@@ -1,11 +1,11 @@
 import { faker } from '@faker-js/faker'
 import { MatomoStatsDevice, MatomoStatsSource, StatsKind } from '@prisma/client'
 import dayjs from 'dayjs'
+import isoWeek from 'dayjs/plugin/isoWeek.js'
+import utc from 'dayjs/plugin/utc.js'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import isoWeek from 'dayjs/plugin/isoWeek.js'
-import utc from 'dayjs/plugin/utc.js'
 import { prisma } from '../../../adapters/prisma/client.js'
 import app from '../../../app.js'
 import logger from '../../../logger.js'
@@ -103,7 +103,9 @@ describe('Given a redirected NGC user', () => {
   const agent = supertest(app)
   const url = '/stats/v1/northstar'
 
-  afterEach(() => prisma.matomoStats.deleteMany())
+  afterEach(async () => {
+    await prisma.matomoStats.deleteMany()
+  })
 
   describe('When fetching northstar stats', () => {
     describe('And invalid period', () => {
@@ -252,11 +254,13 @@ describe('Given a redirected NGC user', () => {
       const databaseError = new Error('Something went wrong')
 
       beforeEach(() => {
+        vi.spyOn(Object, 'getOwnPropertyDescriptor').mockReturnValue(undefined)
         vi.spyOn(prisma, '$queryRaw').mockRejectedValueOnce(databaseError)
       })
 
       afterEach(() => {
         vi.spyOn(prisma, '$queryRaw').mockRestore()
+        vi.spyOn(Object, 'getOwnPropertyDescriptor').mockRestore()
       })
 
       test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {

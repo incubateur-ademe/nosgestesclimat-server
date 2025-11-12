@@ -17,7 +17,9 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = '/users/v1/:userId/contact'
 
-  afterEach(() => prisma.user.deleteMany())
+  afterEach(async () => {
+    await prisma.user.deleteMany()
+  })
 
   describe('When fetching the newsletter stats', () => {
     describe('And invalid userId', () => {
