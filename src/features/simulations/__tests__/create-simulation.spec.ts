@@ -492,6 +492,35 @@ describe('Given a NGC user', () => {
                     ).toLocaleString(Locales.fr, {
                       maximumFractionDigits: 1,
                     }),
+                    LAST_SIMULATION_TRANSPORTS_FOOTPRINT: (
+                      computedResults.carbone.categories.transport / 1000
+                    ).toLocaleString(Locales.fr, {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_ALIMENTATION_FOOTPRINT: (
+                      computedResults.carbone.categories.alimentation / 1000
+                    ).toLocaleString(Locales.fr, {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_LOGEMENT_FOOTPRINT: (
+                      computedResults.carbone.categories.logement / 1000
+                    ).toLocaleString(Locales.fr, {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_DIVERS_FOOTPRINT: (
+                      computedResults.carbone.categories.divers / 1000
+                    ).toLocaleString(Locales.fr, {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_SERVICES_FOOTPRINT: (
+                      computedResults.carbone.categories['services sociétaux'] /
+                      1000
+                    ).toLocaleString(Locales.fr, {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_BILAN_WATER: Math.round(
+                      computedResults.eau.bilan / 365
+                    ).toString(),
                   },
                 },
               }),
@@ -545,6 +574,36 @@ describe('Given a NGC user', () => {
                       ).toLocaleString(Locales.fr, {
                         maximumFractionDigits: 1,
                       }),
+                      LAST_SIMULATION_TRANSPORTS_FOOTPRINT: (
+                        computedResults.carbone.categories.transport / 1000
+                      ).toLocaleString(Locales.fr, {
+                        maximumFractionDigits: 1,
+                      }),
+                      LAST_SIMULATION_ALIMENTATION_FOOTPRINT: (
+                        computedResults.carbone.categories.alimentation / 1000
+                      ).toLocaleString(Locales.fr, {
+                        maximumFractionDigits: 1,
+                      }),
+                      LAST_SIMULATION_LOGEMENT_FOOTPRINT: (
+                        computedResults.carbone.categories.logement / 1000
+                      ).toLocaleString(Locales.fr, {
+                        maximumFractionDigits: 1,
+                      }),
+                      LAST_SIMULATION_DIVERS_FOOTPRINT: (
+                        computedResults.carbone.categories.divers / 1000
+                      ).toLocaleString(Locales.fr, {
+                        maximumFractionDigits: 1,
+                      }),
+                      LAST_SIMULATION_SERVICES_FOOTPRINT: (
+                        computedResults.carbone.categories[
+                          'services sociétaux'
+                        ] / 1000
+                      ).toLocaleString(Locales.fr, {
+                        maximumFractionDigits: 1,
+                      }),
+                      LAST_SIMULATION_BILAN_WATER: Math.round(
+                        computedResults.eau.bilan / 365
+                      ).toString(),
                     },
                   },
                 }),
@@ -1312,6 +1371,35 @@ describe('Given a NGC user', () => {
                   ).toLocaleString(Locales.fr, {
                     maximumFractionDigits: 1,
                   }),
+                  LAST_SIMULATION_TRANSPORTS_FOOTPRINT: (
+                    computedResults.carbone.categories.transport / 1000
+                  ).toLocaleString(Locales.fr, {
+                    maximumFractionDigits: 1,
+                  }),
+                  LAST_SIMULATION_ALIMENTATION_FOOTPRINT: (
+                    computedResults.carbone.categories.alimentation / 1000
+                  ).toLocaleString(Locales.fr, {
+                    maximumFractionDigits: 1,
+                  }),
+                  LAST_SIMULATION_LOGEMENT_FOOTPRINT: (
+                    computedResults.carbone.categories.logement / 1000
+                  ).toLocaleString(Locales.fr, {
+                    maximumFractionDigits: 1,
+                  }),
+                  LAST_SIMULATION_DIVERS_FOOTPRINT: (
+                    computedResults.carbone.categories.divers / 1000
+                  ).toLocaleString(Locales.fr, {
+                    maximumFractionDigits: 1,
+                  }),
+                  LAST_SIMULATION_SERVICES_FOOTPRINT: (
+                    computedResults.carbone.categories['services sociétaux'] /
+                    1000
+                  ).toLocaleString(Locales.fr, {
+                    maximumFractionDigits: 1,
+                  }),
+                  LAST_SIMULATION_BILAN_WATER: Math.round(
+                    computedResults.eau.bilan / 365
+                  ).toString(),
                 },
               },
             }),
@@ -1367,6 +1455,35 @@ describe('Given a NGC user', () => {
                     ).toLocaleString(Locales.fr, {
                       maximumFractionDigits: 1,
                     }),
+                    LAST_SIMULATION_TRANSPORTS_FOOTPRINT: (
+                      computedResults.carbone.categories.transport / 1000
+                    ).toLocaleString(Locales.fr, {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_ALIMENTATION_FOOTPRINT: (
+                      computedResults.carbone.categories.alimentation / 1000
+                    ).toLocaleString(Locales.fr, {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_LOGEMENT_FOOTPRINT: (
+                      computedResults.carbone.categories.logement / 1000
+                    ).toLocaleString(Locales.fr, {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_DIVERS_FOOTPRINT: (
+                      computedResults.carbone.categories.divers / 1000
+                    ).toLocaleString(Locales.fr, {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_SERVICES_FOOTPRINT: (
+                      computedResults.carbone.categories['services sociétaux'] /
+                      1000
+                    ).toLocaleString(Locales.fr, {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_BILAN_WATER: Math.round(
+                      computedResults.eau.bilan / 365
+                    ).toString(),
                   },
                 },
               }),
@@ -1423,6 +1540,35 @@ describe('Given a NGC user', () => {
                     ).toLocaleString(Locales.en, {
                       maximumFractionDigits: 1,
                     }),
+                    LAST_SIMULATION_TRANSPORTS_FOOTPRINT: (
+                      computedResults.carbone.categories.transport / 1000
+                    ).toLocaleString(Locales.en, {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_ALIMENTATION_FOOTPRINT: (
+                      computedResults.carbone.categories.alimentation / 1000
+                    ).toLocaleString(Locales.en, {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_LOGEMENT_FOOTPRINT: (
+                      computedResults.carbone.categories.logement / 1000
+                    ).toLocaleString(Locales.en, {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_DIVERS_FOOTPRINT: (
+                      computedResults.carbone.categories.divers / 1000
+                    ).toLocaleString(Locales.en, {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_SERVICES_FOOTPRINT: (
+                      computedResults.carbone.categories['services sociétaux'] /
+                      1000
+                    ).toLocaleString(Locales.en, {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_BILAN_WATER: Math.round(
+                      computedResults.eau.bilan / 365
+                    ).toString(),
                   },
                 },
               }),
@@ -1832,6 +1978,35 @@ describe('Given a NGC user', () => {
                     ).toLocaleString(Locales.fr, {
                       maximumFractionDigits: 1,
                     }),
+                    LAST_SIMULATION_TRANSPORTS_FOOTPRINT: (
+                      computedResults.carbone.categories.transport / 1000
+                    ).toLocaleString(Locales.fr, {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_ALIMENTATION_FOOTPRINT: (
+                      computedResults.carbone.categories.alimentation / 1000
+                    ).toLocaleString(Locales.fr, {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_LOGEMENT_FOOTPRINT: (
+                      computedResults.carbone.categories.logement / 1000
+                    ).toLocaleString(Locales.fr, {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_DIVERS_FOOTPRINT: (
+                      computedResults.carbone.categories.divers / 1000
+                    ).toLocaleString(Locales.fr, {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_SERVICES_FOOTPRINT: (
+                      computedResults.carbone.categories['services sociétaux'] /
+                      1000
+                    ).toLocaleString(Locales.fr, {
+                      maximumFractionDigits: 1,
+                    }),
+                    LAST_SIMULATION_BILAN_WATER: Math.round(
+                      computedResults.eau.bilan / 365
+                    ).toString(),
                   },
                 },
               }),
@@ -1886,6 +2061,36 @@ describe('Given a NGC user', () => {
                       ).toLocaleString(Locales.fr, {
                         maximumFractionDigits: 1,
                       }),
+                      LAST_SIMULATION_TRANSPORTS_FOOTPRINT: (
+                        computedResults.carbone.categories.transport / 1000
+                      ).toLocaleString(Locales.fr, {
+                        maximumFractionDigits: 1,
+                      }),
+                      LAST_SIMULATION_ALIMENTATION_FOOTPRINT: (
+                        computedResults.carbone.categories.alimentation / 1000
+                      ).toLocaleString(Locales.fr, {
+                        maximumFractionDigits: 1,
+                      }),
+                      LAST_SIMULATION_LOGEMENT_FOOTPRINT: (
+                        computedResults.carbone.categories.logement / 1000
+                      ).toLocaleString(Locales.fr, {
+                        maximumFractionDigits: 1,
+                      }),
+                      LAST_SIMULATION_DIVERS_FOOTPRINT: (
+                        computedResults.carbone.categories.divers / 1000
+                      ).toLocaleString(Locales.fr, {
+                        maximumFractionDigits: 1,
+                      }),
+                      LAST_SIMULATION_SERVICES_FOOTPRINT: (
+                        computedResults.carbone.categories[
+                          'services sociétaux'
+                        ] / 1000
+                      ).toLocaleString(Locales.fr, {
+                        maximumFractionDigits: 1,
+                      }),
+                      LAST_SIMULATION_BILAN_WATER: Math.round(
+                        computedResults.eau.bilan / 365
+                      ).toString(),
                     },
                   },
                 }),
@@ -1941,6 +2146,36 @@ describe('Given a NGC user', () => {
                       ).toLocaleString(Locales.en, {
                         maximumFractionDigits: 1,
                       }),
+                      LAST_SIMULATION_TRANSPORTS_FOOTPRINT: (
+                        computedResults.carbone.categories.transport / 1000
+                      ).toLocaleString(Locales.en, {
+                        maximumFractionDigits: 1,
+                      }),
+                      LAST_SIMULATION_ALIMENTATION_FOOTPRINT: (
+                        computedResults.carbone.categories.alimentation / 1000
+                      ).toLocaleString(Locales.en, {
+                        maximumFractionDigits: 1,
+                      }),
+                      LAST_SIMULATION_LOGEMENT_FOOTPRINT: (
+                        computedResults.carbone.categories.logement / 1000
+                      ).toLocaleString(Locales.en, {
+                        maximumFractionDigits: 1,
+                      }),
+                      LAST_SIMULATION_DIVERS_FOOTPRINT: (
+                        computedResults.carbone.categories.divers / 1000
+                      ).toLocaleString(Locales.en, {
+                        maximumFractionDigits: 1,
+                      }),
+                      LAST_SIMULATION_SERVICES_FOOTPRINT: (
+                        computedResults.carbone.categories[
+                          'services sociétaux'
+                        ] / 1000
+                      ).toLocaleString(Locales.en, {
+                        maximumFractionDigits: 1,
+                      }),
+                      LAST_SIMULATION_BILAN_WATER: Math.round(
+                        computedResults.eau.bilan / 365
+                      ).toString(),
                     },
                   },
                 }),
