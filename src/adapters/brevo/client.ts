@@ -158,6 +158,59 @@ const sendEmail = ({
   })
 }
 
+const lastSimulationResult = ({
+  computedResults,
+  locale,
+}: {
+  computedResults?: ComputedResultSchema | null
+  locale: Locales
+}) => {
+  const bilan = computedResults?.carbone?.bilan ?? 0
+  const transport = computedResults?.carbone?.categories?.transport ?? 0
+  const alimentation = computedResults?.carbone?.categories?.alimentation ?? 0
+  const logement = computedResults?.carbone?.categories?.logement ?? 0
+  const divers = computedResults?.carbone?.categories?.divers ?? 0
+  const services =
+    computedResults?.carbone?.categories?.['services sociétaux'] ?? 0
+  const eau = computedResults?.eau?.bilan ?? 0
+
+  return {
+    [Attributes.LAST_SIMULATION_BILAN_FOOTPRINT]: (
+      bilan / NUMBER_OF_KG_IN_A_TON
+    ).toLocaleString(locale, {
+      maximumFractionDigits: 1,
+    }),
+    [Attributes.LAST_SIMULATION_TRANSPORTS_FOOTPRINT]: (
+      transport / NUMBER_OF_KG_IN_A_TON
+    ).toLocaleString(locale, {
+      maximumFractionDigits: 1,
+    }),
+    [Attributes.LAST_SIMULATION_ALIMENTATION_FOOTPRINT]: (
+      alimentation / NUMBER_OF_KG_IN_A_TON
+    ).toLocaleString(locale, {
+      maximumFractionDigits: 1,
+    }),
+    [Attributes.LAST_SIMULATION_LOGEMENT_FOOTPRINT]: (
+      logement / NUMBER_OF_KG_IN_A_TON
+    ).toLocaleString(locale, {
+      maximumFractionDigits: 1,
+    }),
+    [Attributes.LAST_SIMULATION_DIVERS_FOOTPRINT]: (
+      divers / NUMBER_OF_KG_IN_A_TON
+    ).toLocaleString(locale, {
+      maximumFractionDigits: 1,
+    }),
+    [Attributes.LAST_SIMULATION_SERVICES_FOOTPRINT]: (
+      services / NUMBER_OF_KG_IN_A_TON
+    ).toLocaleString(locale, {
+      maximumFractionDigits: 1,
+    }),
+    [Attributes.LAST_SIMULATION_BILAN_WATER]: Math.round(
+      eau / NUMBER_OF_DAYS_IN_A_YEAR
+    ).toString(),
+  }
+}
+
 export const sendVerificationCodeEmail = ({
   locale,
   origin,
@@ -361,9 +414,6 @@ export const sendSimulationUpsertedEmail = ({
   simulation: Pick<Simulation, 'id' | 'progression' | 'computedResults'>
 }>) => {
   const isSimulationCompleted = simulation.progression === 1
-  const bilan =
-    (simulation.computedResults as ComputedResultSchema | null)?.carbone
-      ?.bilan ?? 0
 
   if (verified) {
     // TODO send in progress email when autheticated
@@ -388,10 +438,10 @@ export const sendSimulationUpsertedEmail = ({
       params: {
         SIMULATION_URL: simulationUrl.toString(),
         DASHBOARD_URL: dashBoardUrl.toString(),
-        [Attributes.LAST_SIMULATION_BILAN_FOOTPRINT]: (
-          bilan / NUMBER_OF_KG_IN_A_TON
-        ).toLocaleString(locale, {
-          maximumFractionDigits: 1,
+        ...lastSimulationResult({
+          locale,
+          computedResults:
+            simulation.computedResults as ComputedResultSchema | null,
         }),
       },
     })
@@ -415,10 +465,10 @@ export const sendSimulationUpsertedEmail = ({
       SIMULATION_URL: simulationUrl.toString(),
       ...(isSimulationCompleted
         ? {
-            [Attributes.LAST_SIMULATION_BILAN_FOOTPRINT]: (
-              bilan / NUMBER_OF_KG_IN_A_TON
-            ).toLocaleString('fr-FR', {
-              maximumFractionDigits: 1,
+            ...lastSimulationResult({
+              locale: Locales.fr,
+              computedResults:
+                simulation.computedResults as ComputedResultSchema | null,
             }),
           }
         : {}),
@@ -755,55 +805,16 @@ export const addOrUpdateContactAfterSimulationCreated = async ({
   lastSimulationDate: Date
   subscribeToGroupNewsletter: boolean
 }) => {
-  const locale = 'fr-FR' // for now
-  const bilan = computedResults?.carbone?.bilan ?? 0
-  const transport = computedResults?.carbone?.categories?.transport ?? 0
-  const alimentation = computedResults?.carbone?.categories?.alimentation ?? 0
-  const logement = computedResults?.carbone?.categories?.logement ?? 0
-  const divers = computedResults?.carbone?.categories?.divers ?? 0
-  const services =
-    computedResults?.carbone?.categories?.['services sociétaux'] ?? 0
-  const eau = computedResults?.eau?.bilan ?? 0
-
   const attributes = {
     [Attributes.USER_ID]: userId,
     [Attributes.LAST_SIMULATION_DATE]: lastSimulationDate.toISOString(),
     [Attributes.ACTIONS_SELECTED_NUMBER]: Object.values(
       actionChoices || {}
     ).filter((v) => !!v).length,
-    [Attributes.LAST_SIMULATION_BILAN_FOOTPRINT]: (
-      bilan / NUMBER_OF_KG_IN_A_TON
-    ).toLocaleString(locale, {
-      maximumFractionDigits: 1,
+    ...lastSimulationResult({
+      locale: Locales.fr,
+      computedResults,
     }),
-    [Attributes.LAST_SIMULATION_TRANSPORTS_FOOTPRINT]: (
-      transport / NUMBER_OF_KG_IN_A_TON
-    ).toLocaleString(locale, {
-      maximumFractionDigits: 1,
-    }),
-    [Attributes.LAST_SIMULATION_ALIMENTATION_FOOTPRINT]: (
-      alimentation / NUMBER_OF_KG_IN_A_TON
-    ).toLocaleString(locale, {
-      maximumFractionDigits: 1,
-    }),
-    [Attributes.LAST_SIMULATION_LOGEMENT_FOOTPRINT]: (
-      logement / NUMBER_OF_KG_IN_A_TON
-    ).toLocaleString(locale, {
-      maximumFractionDigits: 1,
-    }),
-    [Attributes.LAST_SIMULATION_DIVERS_FOOTPRINT]: (
-      divers / NUMBER_OF_KG_IN_A_TON
-    ).toLocaleString(locale, {
-      maximumFractionDigits: 1,
-    }),
-    [Attributes.LAST_SIMULATION_SERVICES_FOOTPRINT]: (
-      services / NUMBER_OF_KG_IN_A_TON
-    ).toLocaleString(locale, {
-      maximumFractionDigits: 1,
-    }),
-    [Attributes.LAST_SIMULATION_BILAN_WATER]: Math.round(
-      eau / NUMBER_OF_DAYS_IN_A_YEAR
-    ).toString(),
     ...(name
       ? {
           [Attributes.PRENOM]: name,
