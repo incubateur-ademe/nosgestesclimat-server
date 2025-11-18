@@ -122,6 +122,7 @@ describe('Given a NGC user', () => {
             expect.objectContaining({
               'x-page': '1',
               'x-page-size': '2',
+              'x-page-items': '2',
               'x-total-pages': '2',
               'x-total-items': '3',
             })
@@ -144,7 +145,8 @@ describe('Given a NGC user', () => {
           expect(response.headers).toEqual(
             expect.objectContaining({
               'x-page': '2',
-              'x-page-size': '1',
+              'x-page-size': '2',
+              'x-page-items': '1',
               'x-total-pages': '2',
               'x-total-items': '3',
             })
@@ -167,7 +169,8 @@ describe('Given a NGC user', () => {
           expect(response.headers).toEqual(
             expect.objectContaining({
               'x-page': '3',
-              'x-page-size': '0',
+              'x-page-size': '2',
+              'x-page-items': '0',
               'x-total-pages': '2',
               'x-total-items': '3',
             })
@@ -287,6 +290,7 @@ describe('Given a NGC user', () => {
             expect.objectContaining({
               'x-page': '1',
               'x-page-size': '2',
+              'x-page-items': '2',
               'x-total-pages': '2',
               'x-total-items': '3',
             })
@@ -318,7 +322,8 @@ describe('Given a NGC user', () => {
           expect(response.headers).toEqual(
             expect.objectContaining({
               'x-page': '2',
-              'x-page-size': '1',
+              'x-page-size': '2',
+              'x-page-items': '1',
               'x-total-pages': '2',
               'x-total-items': '3',
             })
@@ -342,7 +347,8 @@ describe('Given a NGC user', () => {
           expect(response.headers).toEqual(
             expect.objectContaining({
               'x-page': '3',
-              'x-page-size': '0',
+              'x-page-size': '2',
+              'x-page-items': '0',
               'x-total-pages': '2',
               'x-total-items': '3',
             })

@@ -27,8 +27,9 @@ export const withPaginationHeaders = ({
     res.setHeaders(
       new Map([
         ['x-page', currentPage],
+        ['x-page-size', pageSize],
         [
-          'x-page-size',
+          'x-page-items',
           currentPage < totalPages
             ? pageSize
             : currentPage > totalPages
