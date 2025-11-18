@@ -242,7 +242,7 @@ export const findGroupAndParticipantById = (
   })
 }
 
-export const deleteParticipantById = async (
+export const deleteParticipantById = (
   id: string,
   { session }: { session: Session }
 ) => {
@@ -261,7 +261,7 @@ export const deleteParticipantById = async (
   })
 }
 
-export const fetchUserGroups = async (
+export const fetchUserGroups = (
   { userId }: UserParams,
   { groupIds }: GroupsFetchQuery,
   { session }: { session: Session }
@@ -332,7 +332,7 @@ export const fetchUserGroup = async (
   })
 }
 
-export const deleteUserGroup = async (
+export const deleteUserGroup = (
   {
     userId,
     groupId,
