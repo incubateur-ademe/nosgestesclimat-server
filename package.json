@@ -31,8 +31,8 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.929.0",
-    "@aws-sdk/s3-request-presigner": "^3.929.0",
+    "@aws-sdk/client-s3": "^3.933.0",
+    "@aws-sdk/s3-request-presigner": "^3.933.0",
     "@incubateur-ademe/nosgestesclimat": "^4.4.0",
     "@prisma/client": "^6.19.0",
     "@prisma/driver-adapter-utils": "^6.19.0",
@@ -69,7 +69,7 @@
   "devDependencies": {
     "@electric-sql/pglite": "^0.3.14",
     "@faker-js/faker": "^10.1.0",
-    "@tsconfig/node22": "^22.0.2",
+    "@tsconfig/node22": "^22.0.5",
     "@types/cors": "^2.8.19",
     "@types/express": "^4.17.25",
     "@types/jsonwebtoken": "^9.0.10",
@@ -81,8 +81,8 @@
     "@types/request-ip": "^0.0.41",
     "@types/supertest": "^6.0.3",
     "@types/swagger-ui-express": "^4.1.8",
-    "@types/yargs": "^17.0.34",
-    "@vitest/coverage-v8": "^4.0.8",
+    "@types/yargs": "^17.0.35",
+    "@vitest/coverage-v8": "^4.0.10",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^4.4.4",
@@ -90,7 +90,7 @@
     "eslint-plugin-prettier": "^5.5.4",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.6",
-    "msw": "^2.12.1",
+    "msw": "^2.12.2",
     "pglite-prisma-adapter": "^0.6.1",
     "prettier": "^3.6.2",
     "redis-mock": "^0.56.3",
@@ -98,8 +98,8 @@
     "supertest": "^7.1.4",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.46.4",
-    "vitest": "^4.0.8"
+    "typescript-eslint": "^8.47.0",
+    "vitest": "^4.0.10"
   },
   "lint-staged": {
     "*.{js,ts,md,json}": [
