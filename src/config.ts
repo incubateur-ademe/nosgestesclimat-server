@@ -246,9 +246,10 @@ export const config = ConfigSchema.parse({
 
 export const origin =
   config.app.env === 'development'
-    ? ['http://localhost:3000']
+    ? ['http://localhost:3000', 'https://localhost:3000']
     : [
         'http://localhost:3000',
+        'https://localhost:3000',
         'https://nosgestesclimat.fr',
         'https://preprod.nosgestesclimat.fr',
         /\.osc-fr1\.scalingo\.io$/,
