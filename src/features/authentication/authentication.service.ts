@@ -22,7 +22,7 @@ export const COOKIE_MAX_AGE = 1000 * 60 * 60 * 24 * 61 // 2 months
 export const COOKIES_OPTIONS: CookieOptions = {
   maxAge: COOKIE_MAX_AGE,
   httpOnly: true,
-  secure: env === 'production',
+  secure: true,
   sameSite: env === 'production' ? 'none' : 'lax',
   partitioned: true,
 }
