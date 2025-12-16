@@ -8,7 +8,8 @@
     "node": "^22"
   },
   "scripts": {
-    "prebuild": "yarn clean",
+    "preinstall": "npx only-allow pnpm",
+    "prebuild": "pnpm clean",
     "build": "tsc -p tsconfig.build.json",
     "clean": "rimraf dist/*",
     "db:doc": "./prisma/docs/generate-doc.sh",
@@ -21,7 +22,7 @@
     "jobs:recoverMatomoStats": "node dist/src/jobs/recover-matomo-stats.js",
     "jobs:recoverNewsletterStats": "node dist/src/jobs/recover-newsletter-stats.js",
     "lint": "prettier --check \"**/*.{js,ts,md,json}\" && eslint . --ext .js,.ts && tsc -p .",
-    "prestart": "yarn db:doc",
+    "prestart": "pnpm db:doc",
     "start": "NODE_OPTIONS=--max-old-space-size=8192 node ./dist/src/index.js",
     "start:worker": "NODE_OPTIONS=--max-old-space-size=8192 node ./dist/src/worker.js",
     "test": "vitest run",
@@ -108,6 +109,5 @@
     "*.{js,ts}": [
       "eslint --fix"
     ]
-  },
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+  }
 }

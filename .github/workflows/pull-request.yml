@@ -13,13 +13,13 @@ jobs:
         with:
           node-version: 22
       - name: 'Install packages'
-        run: yarn --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: 'Lint'
-        run: yarn lint
+        run: pnpm lint
 
       - name: 'Test'
-        run: yarn test:coverage
+        run: pnpm test:coverage
 
       - name: 'Build'
-        run: yarn build
+        run: pnpm build
