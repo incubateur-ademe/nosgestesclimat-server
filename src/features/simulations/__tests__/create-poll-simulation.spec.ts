@@ -461,6 +461,38 @@ describe('Given a NGC user', () => {
           )
         })
 
+        test('Then it does not update poll fun facts if simulation is incomplete', async () => {
+          const payload: SimulationCreateInputDto = {
+            id: faker.string.uuid(),
+            situation,
+            progression: 0.5,
+            computedResults,
+            extendedSituation,
+          }
+
+          mswServer.use(brevoUpdateContact(), brevoRemoveFromList(27))
+
+          await agent
+            .post(
+              url.replace(':userId', userId).replace(':pollIdOrSlug', pollId)
+            )
+            .send(payload)
+            .expect(StatusCodes.CREATED)
+
+          await EventBus.flush()
+
+          const { funFacts } = await prisma.poll.findUniqueOrThrow({
+            where: {
+              id: pollId,
+            },
+            select: {
+              funFacts: true,
+            },
+          })
+
+          expect(funFacts).toBeNull()
+        })
+
         describe('And using organisation and poll slugs', () => {
           test(`Then it returns a ${StatusCodes.CREATED} response with the created simulation`, async () => {
             const expected = {

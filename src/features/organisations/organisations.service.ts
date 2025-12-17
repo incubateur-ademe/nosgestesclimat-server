@@ -513,6 +513,9 @@ export const updatePollStatsAfterSimulationChange = async ({
   simulation: SimulationAsyncEvent
   created: boolean
 }) => {
+  if (simulation.progression !== 1) {
+    return
+  }
   try {
     return await transaction(async (session) => {
       const simulationPoll = await findSimulationPoll(
