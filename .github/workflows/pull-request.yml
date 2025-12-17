@@ -13,13 +13,13 @@ jobs:
         with:
           node-version: 22
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061
         with:
           version: 10
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version-file: './package.json'
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install
