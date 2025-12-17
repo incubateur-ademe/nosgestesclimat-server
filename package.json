@@ -111,5 +111,6 @@
     "*.{js,ts}": [
       "eslint --fix"
     ]
-  }
+  },
+  "packageManager": "pnpm@10.11.0"
 }
