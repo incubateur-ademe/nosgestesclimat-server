@@ -1,15 +1,15 @@
 {
   "jobs": [
     {
-      "command": "0 0 * * * yarn jobs:computePollStats",
+      "command": "0 0 * * * pnpm jobs:computePollStats",
       "size": "M"
     },
     {
-      "command": "0 7 * * * yarn jobs:recoverMatomoStats",
+      "command": "0 7 * * * pnpm jobs:recoverMatomoStats",
       "size": "M"
     },
     {
-      "command": "0 1 * * * yarn jobs:recoverNewsletterStats",
+      "command": "0 1 * * * pnpm jobs:recoverNewsletterStats",
       "size": "M"
     }
   ]

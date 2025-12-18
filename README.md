@@ -4,7 +4,7 @@ Une application express qui gère l'API de [nosgestesclimat-site-nextjs](https:/
 
 ## Pré-requis
 
-Ce projet utilise [node](https://nodejs.org), [yarn](https://yarnpkg.com/), [docker](https://www.docker.com/) et [docker compose](https://docs.docker.com/compose/).
+Ce projet utilise [node](https://nodejs.org), [pnpm](https://pnpm.io/), [docker](https://www.docker.com/) et [docker compose](https://docs.docker.com/compose/).
 
 Pour l'utiliser en local, cloner ce repo et créer un fichier .env contenant les variables contenues dans le fichier [`.env.development`](./.env.development).
 
@@ -13,7 +13,7 @@ Pour l'utiliser en local, cloner ce repo et créer un fichier .env contenant les
 Installe les dépendances
 
 ```bash
-yarn install
+pnpm install
 ```
 
 Lance les services bases de données
@@ -25,31 +25,31 @@ docker compose up
 Lance les tests (requiert les dépendances)
 
 ```bash
-yarn test
+pnpm test
 ```
 
 Builde le projet (requiert les dépendances)
 
 ```bash
-yarn build
+pnpm build
 ```
 
 Migre la base de donnée (requiert les dépendances, l'env et les services)
 
 ```bash
-yarn db:migrate
+pnpm db:migrate
 ```
 
 Lance le service en mode développement (requiert les services, l'env et la migration)
 
 ```bash
-yarn dev
+pnpm dev
 ```
 
 Lance le service en mode production (requiert le build, les services, l'env et la migration)
 
 ```bash
-yarn start
+pnpm start
 ```
 
 ## Scalingo
