@@ -497,13 +497,11 @@ export const fetchPublicPoll = async ({
 
 export const updatePollStats = async (
   { pollId, simulation }: { pollId: string; simulation?: SimulationAsyncEvent },
-  { session }: { session?: Session } = {}
+  { session }: { session: Session }
 ) => {
-  return transaction(async (session) => {
-    const stats = await getPollStats({ id: pollId, simulation }, { session })
+  const stats = await getPollStats({ id: pollId, simulation }, { session })
 
-    await setPollStats(pollId, stats, { session })
-  }, session)
+  await setPollStats(pollId, stats, { session })
 }
 
 export const updatePollStatsAfterSimulationChange = async ({
