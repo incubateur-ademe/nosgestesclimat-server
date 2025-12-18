@@ -1,8 +1,5 @@
 import { Prisma } from '@prisma/client'
 import Engine, { utils } from 'publicodes'
-import zlib from 'zlib'
-import { Readable } from 'stream'
-import tar from 'tar-stream'
 import { disabledLogger } from '@publicodes/tools'
 import type { NGCRule } from '@incubateur-ademe/nosgestesclimat'
 import logger from '../src/logger.js'
@@ -136,53 +133,28 @@ export async function getFileFromPreviousRelease(
   version: string,
   fileName: string
 ): Promise<Record<string, NGCRule> | ExtendedSituationSchema | null> {
-  const url = `https://registry.npmjs.org/@incubateur-ademe/nosgestesclimat/-/nosgestesclimat-${version}.tgz`
+  const pkg = '@incubateur-ademe/nosgestesclimat'
 
-  const res = await fetch(url)
-  if (!res.ok) {
+  const url = `https://unpkg.com/${pkg}@${version}/public/${fileName}`
+
+  const response = await fetch(url)
+  if (!response.ok) {
+    if (response.status === 404) {
+      return null
+    }
     throw new Error(
-      `Impossible de télécharger le tarball npm depuis ${url}: ${res.status}`
+      `Failed to fetch ${fileName} from ${pkg} version ${version}: ${response.status} ${response.statusText}`
     )
   }
 
-  const extract = tar.extract()
-  const gunzip = zlib.createGunzip()
+  if (fileName.endsWith('.json')) {
+    const data = (await response.json()) as
+      | Record<string, NGCRule>
+      | ExtendedSituationSchema
+    return data
+  }
 
-  return new Promise((resolve, reject) => {
-    let found = false
-
-    extract.on('entry', (header, stream, next) => {
-      if (header.name === `package/${fileName}`) {
-        let data = ''
-        stream.on('data', (chunk) => (data += chunk))
-        stream.on('end', () => {
-          found = true
-          try {
-            resolve(JSON.parse(data))
-          } catch (e) {
-            const errorMessage = e instanceof Error ? e.message : String(e)
-            reject(new Error(`Erreur de parsing JSON: ${errorMessage}`))
-          }
-        })
-      }
-      stream.on('end', next)
-      stream.resume()
-    })
-
-    extract.on('finish', () => {
-      if (!found) {
-        console.warn(`Fichier ${fileName} introuvable dans le package`)
-        resolve(null) // retourne null au lieu de rejeter
-      }
-    })
-
-    if (!res.body) {
-      reject(new Error('Response body is null'))
-      return
-    }
-
-    Readable.fromWeb(res.body).pipe(gunzip).pipe(extract)
-  })
+  throw new Error(`Unsupported file type for ${fileName}`)
 }
 
 export function generateInitialExtendedSituation(
@@ -233,7 +205,7 @@ const main = async () => {
       if (version === '4.5.2') {
         const rules = await getFileFromPreviousRelease(
           version,
-          `public/co2-model.${region}-lang.${lang}.json`
+          `co2-model.${region}-lang.${lang}.json`
         )
         if (!rulesMap.has(version)) {
           rulesMap.set(version, new Map())
@@ -245,7 +217,7 @@ const main = async () => {
         // Generate initialExtendedSituation.json if not present in the package
         const initialExtendedSituation = await getFileFromPreviousRelease(
           version,
-          'public/initialExtendedSituation.json'
+          'initialExtendedSituation.json'
         )
 
         if (!initialExtendedSituation) {
@@ -287,7 +259,6 @@ const main = async () => {
 
       if (!simulation.extendedSituation) {
         console.log('Updating simulation', simulation.id)
-        console.log(data.extendedSituation)
         // await prisma.simulation.update({
         //   where: { id: simulation.id },
         //   data,
