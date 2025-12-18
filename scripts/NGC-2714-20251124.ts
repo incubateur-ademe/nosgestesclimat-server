@@ -202,7 +202,7 @@ const main = async () => {
     // Download all npm packages for each model and populate rulesMap and initialExtendedSituationMap
     for (const { lang, region, version } of parsedModels) {
       logger.info(`Downloading package for model ${lang}-${region}-${version}`)
-      if (version === '4.5.2') {
+      if (version === '4.0.0') {
         const rules = await getFileFromPreviousRelease(
           version,
           `co2-model.${region}-lang.${lang}.json`
@@ -238,7 +238,7 @@ const main = async () => {
 
     const batchSimulations = await prisma.simulation.findMany({
       where: {
-        model: { in: ['FR-fr-4.5.2'] },
+        model: { in: ['FR-fr-4.0.0'] },
       },
       select: {
         ...defaultSimulationSelection,
@@ -268,8 +268,27 @@ const main = async () => {
           'Extended situation already exists for simulation',
           simulation.id
         )
+        // For model versions >= 4.0.0, we want to delete Ameublement and Electromenager mosaic children from extendedSituation
+
+        const { version } = parseModel({ model: simulation.model })
+
+        const filteredExtendedSituation = JSON.parse(
+          JSON.stringify(simulation.extendedSituation)
+        ) as ExtendedSituationSchema
+
+        if (version.startsWith('4.')) {
+          Object.keys(filteredExtendedSituation).forEach((key) => {
+            if (
+              key.startsWith('divers . ameublement . meubles . ') ||
+              key.startsWith('divers . électroménager . appareils .')
+            ) {
+              filteredExtendedSituation[key] = { source: 'omitted' }
+            }
+          })
+        }
+
         // Compare deeply simulation.extendedSituation and data.extendedSituation
-        const existing = JSON.stringify(simulation.extendedSituation)
+        const existing = JSON.stringify(filteredExtendedSituation)
         const migrated = JSON.stringify(data.extendedSituation)
         if (existing !== migrated) {
           console.log(
@@ -279,7 +298,11 @@ const main = async () => {
           // Get diff between existing and migrated
           const existingObj = JSON.parse(existing)
           const migratedObj = JSON.parse(migrated)
-          for (const key of Object.keys(existingObj)) {
+          const allKeys = new Set([
+            ...Object.keys(existingObj),
+            ...Object.keys(migratedObj),
+          ])
+          for (const key of allKeys) {
             if (
               JSON.stringify(existingObj[key]) !==
               JSON.stringify(migratedObj[key])
