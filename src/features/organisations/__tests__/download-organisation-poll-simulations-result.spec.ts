@@ -4,6 +4,7 @@ import crypto from 'crypto'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import xlsx from 'xlsx'
 import { prisma } from '../../../adapters/prisma/client.js'
 import * as prismaTransactionAdapter from '../../../adapters/prisma/transaction.js'
 import { client } from '../../../adapters/scaleway/client.js'
@@ -16,6 +17,7 @@ import { COOKIE_NAME } from '../../authentication/authentication.service.js'
 import {
   createOrganisation,
   createOrganisationPoll,
+  createOrganisationPollSimulation,
   DOWNLOAD_ORGANISATION_POLL_SIMULATIONS_RESULT_ROUTE,
   downloadOrganisationPollSimulationsResult,
 } from './fixtures/organisations.fixture.js'
@@ -351,6 +353,54 @@ describe('Given a NGC user', () => {
                   'x-amz-checksum-mode': 'ENABLED',
                   'x-id': 'GetObject',
                 })
+              })
+            })
+
+            describe('And simulations with different progressions exist', () => {
+              let excelBuffer: Buffer
+
+              beforeEach(async () => {
+                // Create a complete simulation (progression: 1)
+                await createOrganisationPollSimulation({
+                  agent,
+                  pollId,
+                  simulation: { progression: 1 },
+                })
+
+                // Create an incomplete simulation (progression: 0.5)
+                await createOrganisationPollSimulation({
+                  agent,
+                  pollId,
+                  simulation: { progression: 0.5 },
+                })
+
+                // Capture the Excel buffer when uploaded
+                vi.spyOn(client, 'send')
+                  .mockReset()
+                  .mockImplementationOnce((command) => {
+                    if (!(command instanceof PutObjectCommand)) {
+                      throw command
+                    }
+                    excelBuffer = command.input.Body as Buffer
+                    return Promise.resolve({ $metadata: {} })
+                  })
+
+                await downloadOrganisationPollSimulationsResult({
+                  agent,
+                  cookie,
+                  pollId,
+                  organisationId,
+                })
+              })
+
+              test('Then it only includes complete simulations in the export', () => {
+                const workbook = xlsx.read(excelBuffer, { type: 'buffer' })
+                const sheetName = workbook.SheetNames[0]
+                const sheet = workbook.Sheets[sheetName]
+                const data = xlsx.utils.sheet_to_json(sheet)
+                console.log(data)
+                // Only the complete simulation should be in the export
+                expect(data).toHaveLength(1)
               })
             })
 

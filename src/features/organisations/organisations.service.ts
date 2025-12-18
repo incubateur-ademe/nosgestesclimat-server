@@ -497,13 +497,11 @@ export const fetchPublicPoll = async ({
 
 export const updatePollStats = async (
   { pollId, simulation }: { pollId: string; simulation?: SimulationAsyncEvent },
-  { session }: { session?: Session } = {}
+  { session }: { session: Session }
 ) => {
-  return transaction(async (session) => {
-    const stats = await getPollStats({ id: pollId, simulation }, { session })
+  const stats = await getPollStats({ id: pollId, simulation }, { session })
 
-    await setPollStats(pollId, stats, { session })
-  }, session)
+  await setPollStats(pollId, stats, { session })
 }
 
 export const updatePollStatsAfterSimulationChange = async ({
@@ -513,6 +511,9 @@ export const updatePollStatsAfterSimulationChange = async ({
   simulation: SimulationAsyncEvent
   created: boolean
 }) => {
+  if (simulation.progression !== 1) {
+    return
+  }
   try {
     return await transaction(async (session) => {
       const simulationPoll = await findSimulationPoll(
@@ -521,6 +522,17 @@ export const updatePollStatsAfterSimulationChange = async ({
       )
 
       if (!simulationPoll || !simulationPoll.poll.computeRealTimeStats) {
+        return
+      }
+
+      const poll = await findOrganisationPollById(
+        { id: simulationPoll.pollId },
+        { session }
+      )
+
+      // Prevent updating stats if the poll was updated after the simulation that triggered the update
+      // Can happen if there is a lot of event in the queue (lot of simultaneous participants in a campaign)
+      if (poll.updatedAt > simulationPoll.updatedAt) {
         return
       }
 
@@ -590,35 +602,32 @@ export const getDownloadPollSimulationResultJob = async ({
   jobId: string
 }) => {
   try {
-    return await transaction(async (session) => {
-      const { id: pollId, organisationId } =
-        await findOrganisationPollBySlugOrId(
-          {
-            params,
-            user,
-            select: {
-              id: true,
-              organisationId: true,
-            },
-          },
-          { session }
-        )
-
-      return getPendingJobStatus(
-        {
-          user,
-          id: jobId,
-          params: {
-            kind: JobKind.DOWNLOAD_ORGANISATION_POLL_SIMULATIONS_RESULT,
-            organisationId,
-            pollId,
-          },
+    const { id: pollId, organisationId } = await findOrganisationPollBySlugOrId(
+      {
+        params,
+        user,
+        select: {
+          id: true,
+          organisationId: true,
         },
-        {
-          session,
-        }
-      )
-    }, prisma)
+      },
+      { session: prisma }
+    )
+
+    return getPendingJobStatus(
+      {
+        user,
+        id: jobId,
+        params: {
+          kind: JobKind.DOWNLOAD_ORGANISATION_POLL_SIMULATIONS_RESULT,
+          organisationId,
+          pollId,
+        },
+      },
+      {
+        session: prisma,
+      }
+    )
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('Poll not found')
