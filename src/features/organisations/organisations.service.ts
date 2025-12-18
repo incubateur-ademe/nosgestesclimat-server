@@ -602,35 +602,32 @@ export const getDownloadPollSimulationResultJob = async ({
   jobId: string
 }) => {
   try {
-    return await transaction(async (session) => {
-      const { id: pollId, organisationId } =
-        await findOrganisationPollBySlugOrId(
-          {
-            params,
-            user,
-            select: {
-              id: true,
-              organisationId: true,
-            },
-          },
-          { session }
-        )
-
-      return getPendingJobStatus(
-        {
-          user,
-          id: jobId,
-          params: {
-            kind: JobKind.DOWNLOAD_ORGANISATION_POLL_SIMULATIONS_RESULT,
-            organisationId,
-            pollId,
-          },
+    const { id: pollId, organisationId } = await findOrganisationPollBySlugOrId(
+      {
+        params,
+        user,
+        select: {
+          id: true,
+          organisationId: true,
         },
-        {
-          session,
-        }
-      )
-    }, prisma)
+      },
+      { session: prisma }
+    )
+
+    return getPendingJobStatus(
+      {
+        user,
+        id: jobId,
+        params: {
+          kind: JobKind.DOWNLOAD_ORGANISATION_POLL_SIMULATIONS_RESULT,
+          organisationId,
+          pollId,
+        },
+      },
+      {
+        session: prisma,
+      }
+    )
   } catch (e) {
     if (isPrismaErrorNotFound(e)) {
       throw new EntityNotFoundException('Poll not found')
