@@ -509,6 +509,7 @@ export const getPollSimulationsExcelData = async (
       select: {
         date: true,
         computedResults: true,
+        progression: true,
         additionalQuestionsAnswers: {
           select: {
             key: true,
@@ -519,6 +520,9 @@ export const getPollSimulationsExcelData = async (
     },
     session
   )) {
+    if (simulation.progression !== 1) {
+      continue
+    }
     const computedResults = ComputedResultSchema.safeParse(
       simulation.computedResults
     )
