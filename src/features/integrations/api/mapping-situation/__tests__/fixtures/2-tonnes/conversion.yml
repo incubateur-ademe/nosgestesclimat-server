@@ -79,8 +79,10 @@ plane:
   formule:
     variations:
       - si:
-          est défini: transport . avion . usager
-        alors: transport . avion . usager
+          toutes ces conditions:
+            - est défini: transport . avion . usager
+            - transport . avion . usager = "jamais"
+        alors: "'NO'"
       - sinon: "'YES'"
 boattravel:
   formule:
@@ -125,17 +127,25 @@ planetravel-km:
   formule:
     variations:
       - si:
-          est défini: transport . avion . usager
+          toutes ces conditions:
+            - est défini: transport . avion . usager
+            - transport . avion . usager = "occasionnellement"
         alors:
           somme:
-            - transport . avion . court courrier . heures de vol * transport . avion . court courrier . vitesse moyenne
-            - transport . avion . moyen courrier . heures de vol * transport . avion . moyen courrier . vitesse moyenne
-            - transport . avion . long courrier . heures de vol * transport . avion . long courrier . vitesse moyenne
+            - transport . avion . vols amortis . heures court courrier * transport . avion . court courrier . vitesse moyenne
+            - transport . avion . vols amortis . heures moyen et long courrier * transport . avion . moyen et long courrier . vitesse moyenne
+      - si:
+          toutes ces conditions:
+            - est défini: transport . avion . usager
+            - transport . avion . usager = "fréquemment"
+        alors:
+          somme:
+            - transport . avion . vols annuels . heures court courrier * transport . avion . court courrier . vitesse moyenne
+            - transport . avion . vols annuels . heures moyen et long courrier * transport . avion . moyen et long courrier . vitesse moyenne
       - sinon:
           somme:
             - transport . avion . court courrier . durée moyenne * transport . avion . court courrier . vitesse moyenne
-            - transport . avion . moyen courrier . durée moyenne * transport . avion . moyen courrier . vitesse moyenne
-            - transport . avion . long courrier . durée moyenne * transport . avion . long courrier . vitesse moyenne
+            - transport . avion . moyen et long courrier . durée moyenne * transport . avion . moyen et long courrier . vitesse moyenne
 planeprofessional-km: 0
 carcommute-category:
   formule:

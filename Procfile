@@ -1,3 +1,3 @@
-postdeploy: yarn db:migrate && yarn db:post-migrate
-web: yarn start
-worker: yarn start:worker
+postdeploy: pnpm db:migrate && pnpm db:post-migrate
+web: pnpm start
+worker: pnpm start:worker

@@ -771,6 +771,7 @@ export const findSimulationPoll = (
     select: {
       pollId: true,
       simulationId: true,
+      updatedAt: true,
       poll: {
         select: {
           computeRealTimeStats: true,
