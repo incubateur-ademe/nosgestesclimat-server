@@ -135,7 +135,7 @@ export const joinGroup = async ({
   ])
 
   if (email || existingUser?.email) {
-    if (!existingParticipant) {
+    if (!existingParticipant && payload.simulation?.progression === 1) {
       mswServer.use(brevoSendEmail())
     }
   }

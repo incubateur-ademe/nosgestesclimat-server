@@ -395,7 +395,7 @@ describe('Given a NGC user', () => {
         })
 
         describe('And incomplete simulation', () => {
-          test('Then it sends a continuation email', async () => {
+          test('Then it does not send a continuation email', async () => {
             const email = faker.internet.email().toLocaleLowerCase()
             const userId = faker.string.uuid()
             const payload: ParticipantInputCreateDto = {
@@ -406,23 +406,6 @@ describe('Given a NGC user', () => {
                 progression: 0.5,
               }),
             }
-
-            mswServer.use(
-              brevoSendEmail({
-                expectBody: {
-                  to: [
-                    {
-                      name: email,
-                      email,
-                    },
-                  ],
-                  templateId: 102,
-                  params: {
-                    SIMULATION_URL: `https://nosgestesclimat.fr/simulateur/bilan?sid=${payload.simulation.id}&mtm_campaign=email-automatise&mtm_kwd=pause-test-en-cours`,
-                  },
-                },
-              })
-            )
 
             await agent
               .post(url.replace(':groupId', groupId))
