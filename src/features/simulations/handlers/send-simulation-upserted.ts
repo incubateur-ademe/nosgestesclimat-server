@@ -26,21 +26,11 @@ export const sendSimulationUpserted: Handler<SimulationUpsertedEvent> = ({
 
   const { email } = user
 
-  if (simulation?.progression === 1) {
-    if (organisation) {
-      return sendPollSimulationUpsertedEmail({
-        organisation,
-        simulation,
-        locale,
-        origin,
-        email,
-        poll,
-      })
-    }
+  if (attributes.group) {
+    const { user, administrator, group } = attributes
+    const isAdministrator = user.id === administrator.id
 
-    if (attributes.group) {
-      const { user, administrator, group } = attributes
-      const isAdministrator = user.id === administrator.id
+    if (simulation?.progression === 1) {
       const params = {
         group,
         origin,
@@ -53,6 +43,20 @@ export const sendSimulationUpserted: Handler<SimulationUpsertedEvent> = ({
         : // @ts-expect-error sometimes control-flow is broken
           sendGroupParticipantSimulationUpsertedEmail(params)
     }
+
+    // If the simulation is not completed, do not send anything
+    return
+  }
+
+  if (simulation?.progression === 1 && organisation) {
+    return sendPollSimulationUpsertedEmail({
+      organisation,
+      simulation,
+      locale,
+      origin,
+      email,
+      poll,
+    })
   }
 
   return sendSimulationUpsertedEmail({
