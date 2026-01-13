@@ -82,6 +82,7 @@ export const createVerificationCode = async ({
 
   return {
     ...response.body,
+    userId: payload.userId,
     code,
   }
 }

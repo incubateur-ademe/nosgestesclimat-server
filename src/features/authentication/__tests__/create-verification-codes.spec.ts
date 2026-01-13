@@ -93,7 +93,7 @@ describe('Given a NGC user', () => {
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
         expirationDate: expect.any(String),
-        ...payload,
+        email: payload.email,
       })
     })
 
@@ -249,7 +249,7 @@ describe('Given a NGC user', () => {
             createdAt: expect.any(String),
             updatedAt: expect.any(String),
             expirationDate: expect.any(String),
-            ...payload,
+            email: payload.email,
           })
         })
 
@@ -377,7 +377,7 @@ describe('Given a NGC user', () => {
             createdAt: expect.any(String),
             updatedAt: expect.any(String),
             expirationDate: expect.any(String),
-            ...payload,
+            email: payload.email,
           })
         })
 
@@ -403,7 +403,8 @@ describe('Given a NGC user', () => {
           const [verificationCode] = await prisma.verificationCode.findMany()
 
           expect(verificationCode).toEqual({
-            ...payload,
+            userId: user.id,
+            email: payload.email,
             id: expect.any(String),
             code,
             mode: VerificationCodeMode.signIn,

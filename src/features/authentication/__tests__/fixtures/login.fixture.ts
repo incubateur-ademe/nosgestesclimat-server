@@ -45,6 +45,6 @@ export const login = async ({
   return {
     cookie,
     email,
-    userId,
+    userId: response.body.userId ?? userId,
   }
 }

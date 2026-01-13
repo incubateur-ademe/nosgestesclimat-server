@@ -14,13 +14,11 @@ import { LoginValidator } from './authentication.validator.js'
 import { LoginEvent } from './events/Login.event.js'
 import { sendBrevoWelcomeEmail } from './handlers/send-welcome-email.js'
 import { storeVerifiedUser } from './handlers/store-verified-user.js'
-import { syncUserDataAfterLogin } from './handlers/sync-user-data-after-login.js'
 import { updateBrevoContact } from './handlers/update-brevo-contact.js'
 
 const router = express.Router()
 
 EventBus.on(LoginEvent, updateBrevoContact)
-EventBus.on(LoginEvent, syncUserDataAfterLogin)
 EventBus.on(LoginEvent, sendBrevoWelcomeEmail)
 EventBus.on(LoginEvent, storeVerifiedUser)
 

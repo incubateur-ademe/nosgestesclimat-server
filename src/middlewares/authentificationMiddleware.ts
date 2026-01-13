@@ -9,8 +9,6 @@ import {
   COOKIE_NAME,
   COOKIES_OPTIONS,
 } from '../features/authentication/authentication.service.js'
-import { syncUserData } from '../features/users/users.service.js'
-import logger from '../logger.js'
 
 const isValidResult = (
   result?: string | JwtPayload | undefined
@@ -46,7 +44,7 @@ export const authentificationMiddleware =
         : res.status(StatusCodes.UNAUTHORIZED).end()
     }
 
-    jwt.verify(token, config.security.jwt.secret, async (err, result) => {
+    jwt.verify(token, config.security.jwt.secret, (err, result) => {
       if (err || !isValidResult(result)) {
         return passIfUnauthorized
           ? next()
@@ -54,19 +52,6 @@ export const authentificationMiddleware =
       }
 
       const { email, userId } = result
-
-      if (
-        passIfUnauthorized &&
-        userId === (req.params as { userId?: string }).userId
-      ) {
-        try {
-          await syncUserData({ user: { userId, email } })
-        } catch (err) {
-          logger.error('Sync user data failed', err)
-
-          return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
-        }
-      }
 
       req.user = {
         email,
