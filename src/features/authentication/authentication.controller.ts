@@ -31,7 +31,7 @@ router
   .route('/v1/login')
   .post(validateRequest(LoginValidator), async (req, res) => {
     try {
-      const token = await login({
+      const { token, userId } = await login({
         loginDto: req.body,
         origin: req.get('origin') || config.app.origin,
         locale: req.query.locale,
@@ -39,7 +39,7 @@ router
 
       res.cookie(COOKIE_NAME, token, COOKIES_OPTIONS)
 
-      return res.status(StatusCodes.OK).end()
+      return res.status(StatusCodes.OK).json({ userId })
     } catch (err) {
       if (err instanceof EntityNotFoundException) {
         return res.status(StatusCodes.UNAUTHORIZED).end()

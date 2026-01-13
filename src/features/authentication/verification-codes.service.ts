@@ -73,7 +73,7 @@ export const createVerificationCode = (
     locale,
     mode,
   }: {
-    verificationCodeDto: Pick<VerificationCodeCreateDto, 'email'>
+    verificationCodeDto: VerificationCodeCreateDto
     origin: string
     locale: Locales
     mode?: VerificationCodeMode
@@ -88,8 +88,22 @@ export const createVerificationCode = (
       )
     }
 
+    // Check if a VerifiedUser exists for this email and use its userId
+    const existingVerifiedUser = await fetchVerifiedUser(
+      { email: verificationCodeDto.email, select: { id: true } },
+      { session }
+    )
+
+    const userId = existingVerifiedUser?.id ?? verificationCodeDto.userId
+
     const { verificationCode, code } = await generateVerificationCode(
-      { verificationCodeDto, mode },
+      {
+        verificationCodeDto: {
+          ...verificationCodeDto,
+          userId,
+        },
+        mode,
+      },
       { session }
     )
 
@@ -97,6 +111,7 @@ export const createVerificationCode = (
       verificationCode: {
         ...verificationCode,
         code,
+        userId,
       },
       locale,
       origin,

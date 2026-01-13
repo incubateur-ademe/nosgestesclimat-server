@@ -40,7 +40,6 @@ export const createUserVerificationCode = (
     select: {
       id: true,
       email: true,
-      userId: true,
       createdAt: true,
       updatedAt: true,
       expirationDate: true,
@@ -49,14 +48,13 @@ export const createUserVerificationCode = (
 }
 
 export const findUserVerificationCode = (
-  { userId, email, code }: Pick<VerificationCode, 'email' | 'code' | 'userId'>,
+  { email, code }: Pick<VerificationCode, 'email' | 'code'>,
   { session }: { session: Session }
 ): Promise<UserVerificationCode> => {
   return session.verificationCode.findFirstOrThrow({
     where: {
       code,
       email,
-      userId,
       expirationDate: {
         gte: new Date(),
       },

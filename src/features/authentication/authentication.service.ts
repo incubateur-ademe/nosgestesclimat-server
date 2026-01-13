@@ -101,5 +101,8 @@ export const login = async ({
 
   await EventBus.once(loginEvent)
 
-  return token
+  return {
+    token,
+    userId: verificationCode.userId,
+  }
 }
