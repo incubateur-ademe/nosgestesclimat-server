@@ -9,7 +9,7 @@
   },
   "scripts": {
     "preinstall": "npx only-allow pnpm",
-    "prebuild": "pnpm clean",
+    "prebuild": "pnpm clean && prisma generate",
     "build": "tsc -p tsconfig.build.json",
     "clean": "rimraf dist/*",
     "db:doc": "./prisma/docs/generate-doc.sh",
