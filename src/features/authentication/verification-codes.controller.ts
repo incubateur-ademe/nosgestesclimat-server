@@ -23,12 +23,17 @@ EventBus.on(VerificationCodeCreatedEvent, updateBrevoContact)
 router.route('/v1/').post(
   rateLimitSameRequestMiddleware({
     ttlInSeconds: 30,
-    hashRequest: ({ method, url, clientIp }) => {
+    hashRequest: ({ method, url, clientIp, body }) => {
       if (!clientIp) {
         return
       }
 
-      return `${method}_${url}_${clientIp}`
+      const email =
+        typeof body?.email === 'string'
+          ? body.email.trim().toLowerCase()
+          : 'no-email'
+
+      return `${method}_${url}_${clientIp}_${email}`
     },
   }),
   validateRequest(VerificationCodeCreateValidator),
