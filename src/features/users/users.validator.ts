@@ -73,7 +73,6 @@ const NewsletterConfirmationQuery = z
       .transform((listIds) =>
         typeof listIds === 'number' ? [listIds] : listIds || []
       ),
-    _se: z.string().optional(),
   })
   .extend(LocaleQuery.shape)
   .strict()
