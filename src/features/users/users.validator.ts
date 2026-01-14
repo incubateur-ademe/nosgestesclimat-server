@@ -73,7 +73,9 @@ const NewsletterConfirmationQuery = z
       .transform((listIds) =>
         typeof listIds === 'number' ? [listIds] : listIds || []
       ),
+    // Params added by Brevo when first party cookies are enabled
     _se: z.string().optional(),
+    _sc: z.string().optional(),
   })
   .extend(LocaleQuery.shape)
   .strict()
