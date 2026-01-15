@@ -308,7 +308,6 @@ export const createOrUpdateVerifiedUser = async <
             email,
           },
           data: {
-            id: userId,
             name,
             ...(newEmail ? { email: newEmail } : {}),
           },

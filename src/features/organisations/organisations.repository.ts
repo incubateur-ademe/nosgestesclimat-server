@@ -185,7 +185,6 @@ export const createOrganisationAndAdministrator = async (
       optedInForCommunications,
     },
     update: {
-      id: userId,
       name: administratorName,
       position,
       telephone,
@@ -266,7 +265,6 @@ export const updateAdministratorOrganisation = async (
         email: userEmail,
       },
       data: {
-        id: user.userId,
         name: administratorName,
         email,
         position,
