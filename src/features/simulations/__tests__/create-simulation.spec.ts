@@ -921,12 +921,12 @@ describe('Given a NGC user', () => {
     })
 
     describe('When signing up creating his simulation', () => {
-      let userId: string
       let code: string
       let email: string
-
+      let userId: string
       beforeEach(async () => {
-        ;({ userId, code, email } = await createVerificationCode({ agent }))
+        ;({ code, email } = await createVerificationCode({ agent }))
+        userId = faker.string.uuid()
       })
 
       describe('And no data provided', () => {

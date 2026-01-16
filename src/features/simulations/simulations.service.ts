@@ -11,7 +11,7 @@ import dayjs from 'dayjs'
 import type { Request } from 'express'
 import type Engine from 'publicodes'
 import { prisma } from '../../adapters/prisma/client.js'
-import type { defaultSimulationSelection } from '../../adapters/prisma/selection.js'
+import { createAccountOrSignin } from '../authentication/authentication.service.js'
 import type { Session } from '../../adapters/prisma/transaction.js'
 import { transaction } from '../../adapters/prisma/transaction.js'
 import { redis } from '../../adapters/redis/client.js'
@@ -23,13 +23,21 @@ import { EventBus } from '../../core/event-bus/event-bus.js'
 import type { Locales } from '../../core/i18n/constant.js'
 import type { PaginationQuery } from '../../core/pagination.js'
 import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError.js'
-import { exchangeCredentialsForToken } from '../authentication/authentication.service.js'
 import { PollUpdatedEvent } from '../organisations/events/PollUpdated.event.js'
 import { findOrganisationPublicPollBySlugOrId } from '../organisations/organisations.repository.js'
 import type {
   OrganisationPollCustomAdditionalQuestion,
   PublicPollParams,
 } from '../organisations/organisations.validator.js'
+import {
+  defaultSimulationSelection,
+  defaultUserSelection,
+  defaultVerifiedUserSelection,
+} from '../../adapters/prisma/selection.js'
+import {
+  createOrUpdateUser,
+  fetchVerifiedUser,
+} from '../users/users.repository.js'
 import type { UserParams } from '../users/users.validator.js'
 import type { SimulationAsyncEvent } from './events/SimulationUpserted.event.js'
 import { SimulationUpsertedEvent } from './events/SimulationUpserted.event.js'
@@ -37,8 +45,8 @@ import { carbonMetric, waterMetric } from './simulation.constant.js'
 import {
   batchPollSimulations,
   countOrganisationPublicPollSimulations,
+  createParticipantSimulation,
   createPollUserSimulation,
-  createUserSimulation,
   fetchPollSimulations,
   fetchSimulationById,
   fetchUserSimulations,
@@ -88,7 +96,7 @@ const simulationToDto = (
 
 export const createSimulation = async ({
   simulationDto,
-  query: { newsletters, sendEmail, code, email, locale },
+  query,
   params,
   origin,
   user: requestUser,
@@ -99,47 +107,83 @@ export const createSimulation = async ({
   origin: string
   user: Request['user']
 }) => {
-  let token: string | undefined
+  let user
+  let token
+  let verifiedUser = requestUser
 
-  if (code) {
-    ;({ token } = await exchangeCredentialsForToken({
-      userId: params.userId,
-      email,
-      code,
-    }))
-  }
-
-  const { simulation, simulationCreated, simulationUpdated } =
-    await transaction((session) =>
-      createUserSimulation(
-        { ...params, ...(code ? { email } : { email: requestUser?.email }) },
-        simulationDto,
+  // Case 1. The user is authentified
+  if (verifiedUser) {
+    const email = verifiedUser.email
+    user = await transaction((session) =>
+      fetchVerifiedUser(
+        {
+          email,
+          select: defaultVerifiedUserSelection,
+        },
         { session }
       )
     )
-  const { user, verifiedUser } = simulation
+  }
+
+  // Case 2. The user is not authentified and a code is provided for signin
+  if (query.code) {
+    const account = await createAccountOrSignin({
+      ...query,
+      userId: params.userId,
+    })
+    user = account.user
+    verifiedUser = { userId: user.id, email: user.email }
+    token = account.token
+  }
+  // Case 3. Not authentified
+  if (!user) {
+    ;({ user } = await transaction((session) =>
+      createOrUpdateUser(
+        {
+          id: params.userId,
+          user: {
+            email: query.email,
+            ...simulationDto.user,
+          },
+          select: defaultUserSelection,
+        },
+        { session }
+      )
+    ))
+  }
+
+  const {
+    simulation,
+    created: simulationCreated,
+    updated: simulationUpdated,
+  } = await transaction((session) =>
+    createParticipantSimulation(
+      {
+        userId: user.id,
+        email: verifiedUser?.email,
+        simulation: simulationDto,
+        select: defaultSimulationSelection,
+      },
+      { session }
+    )
+  )
 
   const simulationUpsertedEvent = new SimulationUpsertedEvent({
     created: simulationCreated,
     updated: simulationUpdated,
-    user: verifiedUser || user,
+    user: user,
     verified: !!verifiedUser,
-    newsletters,
+    newsletters: query.newsletters,
     simulation,
-    sendEmail,
-    locale,
+    sendEmail: query.sendEmail,
+    locale: query.locale,
     origin,
   })
 
   EventBus.emit(simulationUpsertedEvent)
-
   await EventBus.once(simulationUpsertedEvent)
-
   return {
-    simulation: simulationToDto(
-      simulation,
-      email || requestUser?.email || params.userId
-    ),
+    simulation: simulationToDto(simulation, verifiedUser?.email ?? user.id),
     token,
   }
 }
@@ -200,13 +244,50 @@ export const createPollSimulation = async ({
   user?: Request['user']
 }) => {
   try {
+    let user
+    const verifiedUser = requestUser
+    // Case 1. The user is authentified
+    if (verifiedUser) {
+      const email = verifiedUser.email
+      user = await transaction((session) =>
+        fetchVerifiedUser(
+          {
+            email,
+            select: defaultVerifiedUserSelection,
+          },
+          { session }
+        )
+      )
+    }
+
+    // Case 2. Not authentified
+    if (!user) {
+      const unverifiedUser = await transaction((session) =>
+        createOrUpdateUser(
+          {
+            id: params.userId,
+            user: simulationDto.user ?? {},
+            select: defaultUserSelection,
+          },
+          { session }
+        )
+      )
+      user = {
+        ...unverifiedUser.user,
+        ...unverifiedUser,
+      }
+    }
+
     const { poll, simulation, created, updated, isNewParticipation } =
       await transaction((session) =>
-        createPollUserSimulation({ ...params, ...requestUser }, simulationDto, {
-          session,
-        })
+        createPollUserSimulation(
+          { ...params, ...verifiedUser },
+          simulationDto,
+          {
+            session,
+          }
+        )
       )
-    const { user, verifiedUser } = simulation
     const { organisation } = poll
 
     const pollUpdatedEvent = new PollUpdatedEvent({
@@ -215,7 +296,7 @@ export const createPollSimulation = async ({
     })
 
     const simulationUpsertedEvent = new SimulationUpsertedEvent({
-      user: verifiedUser || user,
+      user,
       sendEmail: isNewParticipation,
       organisation,
       simulation,

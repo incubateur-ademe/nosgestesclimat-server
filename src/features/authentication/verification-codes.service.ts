@@ -6,7 +6,6 @@ import { ConflictException } from '../../core/errors/ConflictException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
 import type { Locales } from '../../core/i18n/constant.js'
 import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError.js'
-import type { WithOptionalProperty } from '../../types/types.js'
 import { fetchVerifiedUser } from '../users/users.repository.js'
 import { generateRandomVerificationCode } from './authentication.service.js'
 import { VerificationCodeCreatedEvent } from './events/VerificationCodeCreated.event.js'
@@ -38,10 +37,7 @@ export const generateVerificationCode = async (
     expirationDate = dayjs().add(1, 'hour').toDate(),
     mode,
   }: {
-    verificationCodeDto: WithOptionalProperty<
-      VerificationCodeCreateDto,
-      'userId'
-    >
+    verificationCodeDto: VerificationCodeCreateDto
     mode?: VerificationCodeMode
     expirationDate?: Date
   },

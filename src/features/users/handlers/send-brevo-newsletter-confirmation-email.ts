@@ -21,7 +21,7 @@ export const sendBrevoNewsLetterConfirmationEmail: Handler<
   }
 
   const { code } = await generateVerificationCode({
-    verificationCodeDto: { email, userId },
+    verificationCodeDto: { email },
     expirationDate: dayjs().add(1, 'day').toDate(),
   })
 

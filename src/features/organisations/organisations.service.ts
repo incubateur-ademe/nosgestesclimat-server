@@ -23,7 +23,10 @@ import {
   isPrismaErrorUniqueConstraintFailed,
 } from '../../core/typeguards/isPrismaError.js'
 import logger from '../../logger.js'
-import { exchangeCredentialsForToken } from '../authentication/authentication.service.js'
+import {
+  createToken,
+  verifyCode,
+} from '../authentication/authentication.service.js'
 import type { JobParams } from '../jobs/jobs.repository.js'
 import { JobKind } from '../jobs/jobs.repository.js'
 import {
@@ -174,11 +177,11 @@ export const updateOrganisation = async ({
     }
 
     try {
-      ;({ token } = await exchangeCredentialsForToken({
+      await verifyCode({
         ...user,
         code,
         email,
-      }))
+      })
     } catch (e) {
       if (e instanceof EntityNotFoundException) {
         throw new ForbiddenException('Forbidden ! Invalid verification code.')
@@ -193,7 +196,9 @@ export const updateOrganisation = async ({
         session,
       })
     )
-
+    if (administrator) {
+      token = createToken(administrator)
+    }
     const organisationUpdatedEvent = new OrganisationUpdatedEvent({
       administrator,
       organisation,

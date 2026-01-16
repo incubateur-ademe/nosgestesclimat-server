@@ -14,7 +14,6 @@ import {
 import { SimulationUpsertedEvent } from './events/SimulationUpserted.event.js'
 import { publishRedisEvent } from './handlers/publish-redis-event.js'
 import { sendSimulationUpserted } from './handlers/send-simulation-upserted.js'
-import { syncUserDataAfterSimulationUpserted } from './handlers/sync-user-data-after-simulation-upserted.js'
 import { updateBrevoContact } from './handlers/update-brevo-contact.js'
 import {
   createSimulation,
@@ -35,7 +34,6 @@ const router = express.Router()
 
 EventBus.on(SimulationUpsertedEvent, updateBrevoContact)
 EventBus.on(SimulationUpsertedEvent, sendSimulationUpserted)
-EventBus.on(SimulationUpsertedEvent, syncUserDataAfterSimulationUpserted)
 EventBus.on(SimulationUpsertedEvent, publishRedisEvent)
 
 /**

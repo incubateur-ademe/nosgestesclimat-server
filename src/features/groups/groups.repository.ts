@@ -143,7 +143,7 @@ export const createParticipantAndUser = async (
 ) => {
   // Dedupe user
   if (email) {
-    await transferOwnershipToUser({ user: { email, userId } }, { session })
+    await transferOwnershipToUser({ user: { email, id: userId } }, { session })
   }
 
   const existingParticipant = await session.groupParticipant.findUnique({

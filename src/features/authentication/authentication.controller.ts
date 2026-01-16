@@ -13,16 +13,15 @@ import {
 import { LoginValidator } from './authentication.validator.js'
 import { LoginEvent } from './events/Login.event.js'
 import { sendBrevoWelcomeEmail } from './handlers/send-welcome-email.js'
-import { storeVerifiedUser } from './handlers/store-verified-user.js'
-import { syncUserDataAfterLogin } from './handlers/sync-user-data-after-login.js'
 import { updateBrevoContact } from './handlers/update-brevo-contact.js'
+import { AccountCreatedEvent } from './events/AccountCreated.event.js'
+import { syncUserDataAfterAccountCreated } from './handlers/sync-user-data-after-account-created.js'
 
 const router = express.Router()
 
 EventBus.on(LoginEvent, updateBrevoContact)
-EventBus.on(LoginEvent, syncUserDataAfterLogin)
 EventBus.on(LoginEvent, sendBrevoWelcomeEmail)
-EventBus.on(LoginEvent, storeVerifiedUser)
+EventBus.on(AccountCreatedEvent, syncUserDataAfterAccountCreated)
 
 /**
  * Logs a user in
@@ -31,7 +30,7 @@ router
   .route('/v1/login')
   .post(validateRequest(LoginValidator), async (req, res) => {
     try {
-      const token = await login({
+      const { token, user } = await login({
         loginDto: req.body,
         origin: req.get('origin') || config.app.origin,
         locale: req.query.locale,
@@ -39,7 +38,7 @@ router
 
       res.cookie(COOKIE_NAME, token, COOKIES_OPTIONS)
 
-      return res.status(StatusCodes.OK).end()
+      return res.status(StatusCodes.OK).json(user)
     } catch (err) {
       if (err instanceof EntityNotFoundException) {
         return res.status(StatusCodes.UNAUTHORIZED).end()

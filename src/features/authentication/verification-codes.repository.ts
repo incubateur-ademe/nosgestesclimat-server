@@ -8,21 +8,18 @@ import type { Session } from '../../adapters/prisma/transaction.js'
 type SignVerificationCode = {
   id: string
   email: string
-  userId: string
   mode: VerificationCodeMode
 }
 
 type RegisterOrganisationVerificationCode = {
   id: string
   email: string
-  userId: string
   mode?: undefined
 }
 
 type RegisterApiVerificationCode = {
   id: string
   email: string
-  userId: null
   mode?: undefined
 }
 
@@ -40,7 +37,6 @@ export const createUserVerificationCode = (
     select: {
       id: true,
       email: true,
-      userId: true,
       createdAt: true,
       updatedAt: true,
       expirationDate: true,
@@ -48,15 +44,14 @@ export const createUserVerificationCode = (
   })
 }
 
-export const findUserVerificationCode = (
-  { userId, email, code }: Pick<VerificationCode, 'email' | 'code' | 'userId'>,
+export const findVerificationCode = (
+  { email, code }: Pick<VerificationCode, 'email' | 'code'>,
   { session }: { session: Session }
 ): Promise<UserVerificationCode> => {
   return session.verificationCode.findFirstOrThrow({
     where: {
       code,
       email,
-      userId,
       expirationDate: {
         gte: new Date(),
       },
@@ -64,7 +59,6 @@ export const findUserVerificationCode = (
     select: {
       id: true,
       email: true,
-      userId: true,
       mode: true,
     },
   }) as Promise<UserVerificationCode>

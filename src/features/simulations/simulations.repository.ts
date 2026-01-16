@@ -11,64 +11,11 @@ import type { Session } from '../../adapters/prisma/transaction.js'
 import { batchFindMany } from '../../core/batch-find-many.js'
 import type { PaginationQuery } from '../../core/pagination.js'
 import type { PublicPollParams } from '../organisations/organisations.validator.js'
-import {
-  createOrUpdateUser,
-  createOrUpdateVerifiedUser,
-} from '../users/users.repository.js'
 import type { UserParams } from '../users/users.validator.js'
 import type {
   SimulationCreateDto,
   SimulationParticipantCreateDto,
 } from './simulations.validator.js'
-
-export const createUserSimulation = async (
-  { userId, email }: UserParams & Partial<NonNullable<Request['user']>>,
-  simulationDto: SimulationCreateDto,
-  { session }: { session: Session }
-) => {
-  const { user = {} } = simulationDto
-
-  const { created: userCreated, updated: userUpdated } = await (email
-    ? createOrUpdateVerifiedUser(
-        {
-          id: { userId, email },
-          user: {
-            ...user,
-            email,
-          },
-        },
-        { session }
-      )
-    : createOrUpdateUser(
-        {
-          id: userId,
-          user,
-        },
-        { session }
-      ))
-
-  const {
-    simulation,
-    created: simulationCreated,
-    updated: simulationUpdated,
-  } = await createParticipantSimulation(
-    {
-      userId,
-      email,
-      simulation: simulationDto,
-      select: defaultSimulationSelection,
-    },
-    { session }
-  )
-
-  return {
-    simulation,
-    simulationCreated,
-    simulationUpdated,
-    userCreated,
-    userUpdated,
-  }
-}
 
 export const createParticipantSimulation = async <
   T extends
@@ -252,9 +199,16 @@ export const createPollUserSimulation = async (
 
   const {
     simulation: { id: simulationId },
-    simulationCreated,
-    simulationUpdated,
-  } = await createUserSimulation(params, simulationDto, { session })
+    created: simulationCreated,
+    updated: simulationUpdated,
+  } = await createParticipantSimulation(
+    {
+      ...params,
+      simulation: simulationDto,
+      select: defaultSimulationSelection,
+    },
+    { session }
+  )
 
   const relation = {
     pollId,

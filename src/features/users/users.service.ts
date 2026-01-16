@@ -17,8 +17,10 @@ import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
 import { isAuthenticated } from '../../core/typeguards/isAuthenticated.js'
 import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError.js'
-import { exchangeCredentialsForToken } from '../authentication/authentication.service.js'
-import { findUserVerificationCode } from '../authentication/verification-codes.repository.js'
+import {
+  createToken,
+  verifyCode,
+} from '../authentication/authentication.service.js'
 import { UserUpdatedEvent } from './events/UserUpdated.event.js'
 import {
   createOrUpdateUser,
@@ -118,7 +120,7 @@ export const syncUserData = ({
   user,
   verified,
 }: {
-  user: NonNullable<Request['user']>
+  user: { id: string; email: string }
   verified?: boolean
 }) => {
   return transaction(
@@ -230,14 +232,14 @@ export const updateUserAndContact = async ({
       }
 
       try {
-        ;({ token } = await exchangeCredentialsForToken(
+        await verifyCode(
           {
             ...params,
             code,
             email: nextEmail,
           },
           { session }
-        ))
+        )
       } catch (e) {
         if (e instanceof EntityNotFoundException) {
           throw new ForbiddenException('Forbidden ! Invalid verification code.')
@@ -273,19 +275,27 @@ export const updateUserAndContact = async ({
     const update =
       verified || !emailChanged ? userDto : { ...userDto, email: previousEmail }
 
-    const { user } = await (isVerifiedUser
-      ? createOrUpdateVerifiedUser(
+    let user
+    if (isVerifiedUser) {
+      user = (
+        await createOrUpdateVerifiedUser(
           { id: params, user: update, select: defaultVerifiedUserSelection },
           { session }
         )
-      : createOrUpdateUser(
+      ).user
+      token = createToken(user)
+    } else {
+      user = (
+        await createOrUpdateUser(
           {
             id: params.userId,
             user: update,
             select: defaultUserSelection,
           },
           { session }
-        ))
+        )
+      ).user
+    }
 
     return {
       user,
@@ -345,13 +355,7 @@ export const confirmNewsletterSubscriptions = async ({
             { session, orThrow: true }
           ),
           fetchContact(query.email),
-          findUserVerificationCode(
-            {
-              ...params,
-              ...query,
-            },
-            { session }
-          ),
+          verifyCode(query, { session }),
         ]),
       prisma
     )

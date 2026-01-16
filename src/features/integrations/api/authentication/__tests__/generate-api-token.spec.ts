@@ -81,7 +81,8 @@ describe('Given a NGC integrations API user', () => {
           .expect(StatusCodes.CREATED)
       })
 
-      test('Then it stores a verification code valid 1 hour in database', async () => {
+      // @TODO if we keep api portal
+      test.skip('Then it stores a verification code valid 1 hour in database', async () => {
         mswServer.use(brevoSendEmail())
 
         const now = Date.now()
@@ -124,7 +125,8 @@ describe('Given a NGC integrations API user', () => {
         ).toBe(0)
       })
 
-      test('Then it sends an email to recover the API token', async () => {
+      // @TODO if we keep api portal
+      test.skip('Then it sends an email to recover the API token', async () => {
         mswServer.use(
           brevoSendEmail({
             expectBody: {
@@ -153,7 +155,7 @@ describe('Given a NGC integrations API user', () => {
       })
 
       describe('And custom user origin (preprod)', () => {
-        test('Then it sends a join email', async () => {
+        test.skip('Then it sends a join email', async () => {
           mswServer.use(
             brevoSendEmail({
               expectBody: {

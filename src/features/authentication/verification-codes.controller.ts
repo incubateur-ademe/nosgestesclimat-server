@@ -7,14 +7,12 @@ import logger from '../../logger.js'
 import { validateRequest } from '../../middlewares/validateRequest.js'
 import { VerificationCodeCreatedEvent } from './events/VerificationCodeCreated.event.js'
 import { sendVerificationCode } from './handlers/send-verification-code.js'
-import { updateBrevoContact } from './handlers/update-brevo-contact.js'
 import { createVerificationCode } from './verification-codes.service.js'
 import { VerificationCodeCreateValidator } from './verification-codes.validator.js'
 
 const router = express.Router()
 
 EventBus.on(VerificationCodeCreatedEvent, sendVerificationCode)
-EventBus.on(VerificationCodeCreatedEvent, updateBrevoContact)
 
 /**
  * Creates a verification code
