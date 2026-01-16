@@ -3,6 +3,7 @@ import modelPackage from '@incubateur-ademe/nosgestesclimat/package.json' with {
 import {
   PollDefaultAdditionalQuestionType,
   SimulationAdditionalQuestionAnswerType,
+  VerificationCodeMode,
 } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
@@ -25,6 +26,8 @@ import { createVerificationCode } from '../../authentication/__tests__/fixtures/
 import type { SimulationCreateInputDto } from '../simulations.validator.js'
 import {
   CREATE_SIMULATION_ROUTE,
+  createSimulation,
+  FETCH_USER_SIMULATIONS_ROUTE,
   getRandomTestCase,
 } from './fixtures/simulations.fixtures.js'
 
@@ -1593,6 +1596,148 @@ describe('Given a NGC user', () => {
               .expect(StatusCodes.CREATED)
 
             await EventBus.flush()
+          })
+        })
+      })
+    })
+
+    describe('Given an already verified user', () => {
+      let email: string
+      let existingUserId: string
+
+      beforeEach(async () => {
+        const loginResult = await login({ agent })
+        email = loginResult.email
+        existingUserId = loginResult.userId
+      })
+
+      describe('When signing in creating his simulation from a new device', () => {
+        let code: string
+        let newDeviceUserId: string
+
+        beforeEach(async () => {
+          ;({ code } = await createVerificationCode({
+            agent,
+            verificationCode: { email },
+            mode: VerificationCodeMode.signIn,
+          }))
+
+          newDeviceUserId = faker.string.uuid()
+        })
+
+        test('Then it returns the simulation linked to existing user', async () => {
+          const expected = {
+            id: faker.string.uuid(),
+            model: `FR-fr-${defaultModelVersion}`,
+            situation,
+            progression: 1,
+            computedResults,
+          }
+          const payload: SimulationCreateInputDto = {
+            ...expected,
+            extendedSituation,
+          }
+
+          // signIn mode: only brevoUpdateContact, no brevoSendEmail (no welcome email)
+          mswServer.use(
+            brevoUpdateContact(),
+            brevoRemoveFromList(22),
+            brevoRemoveFromList(32),
+            brevoRemoveFromList(36),
+            brevoRemoveFromList(40),
+            brevoRemoveFromList(41),
+            brevoRemoveFromList(42)
+          )
+
+          const response = await agent
+            .post(url.replace(':userId', newDeviceUserId))
+            .query({
+              code,
+              email,
+            })
+            .send(payload)
+            .expect(StatusCodes.CREATED)
+
+          await EventBus.flush()
+
+          expect(response.body.user).toEqual({
+            id: existingUserId,
+            email,
+            name: null,
+            position: null,
+            telephone: null,
+            optedInForCommunications: false,
+            createdAt: expect.any(String),
+            updatedAt: expect.any(String),
+          })
+
+          const [cookie] = response.headers['set-cookie']
+          const userToken = cookie.split(';').shift()?.replace('ngcjwt=', '')
+
+          expect(jwt.decode(userToken!)).toEqual({
+            userId: existingUserId,
+            email,
+            exp: expect.any(Number),
+            iat: expect.any(Number),
+          })
+        })
+
+        describe('And another device has an unverified simulation with same email', () => {
+          let otherDeviceUserId: string
+          let otherSimulation: Awaited<ReturnType<typeof createSimulation>>
+
+          beforeEach(async () => {
+            otherDeviceUserId = faker.string.uuid()
+            otherSimulation = await createSimulation({
+              agent,
+              userId: otherDeviceUserId,
+              simulation: { user: { email } },
+            })
+          })
+
+          test('Then it does not trigger user data sync', async () => {
+            const payload: SimulationCreateInputDto = {
+              id: faker.string.uuid(),
+              situation,
+              progression: 1,
+              computedResults,
+              extendedSituation,
+            }
+
+            mswServer.use(
+              brevoUpdateContact(),
+              brevoRemoveFromList(22),
+              brevoRemoveFromList(32),
+              brevoRemoveFromList(36),
+              brevoRemoveFromList(40),
+              brevoRemoveFromList(41),
+              brevoRemoveFromList(42)
+            )
+
+            await agent
+              .post(url.replace(':userId', newDeviceUserId))
+              .query({
+                code,
+                email,
+              })
+              .send(payload)
+              .expect(StatusCodes.CREATED)
+
+            await EventBus.flush()
+
+            // The other device's simulation should NOT have been synced
+            // (sync only happens on account creation, not on sign in)
+            const otherDeviceResponse = await agent
+              .get(
+                FETCH_USER_SIMULATIONS_ROUTE.replace(
+                  ':userId',
+                  otherDeviceUserId
+                )
+              )
+              .expect(StatusCodes.OK)
+
+            expect(otherDeviceResponse.body).toHaveLength(1)
+            expect(otherDeviceResponse.body[0].id).toBe(otherSimulation.id)
           })
         })
       })

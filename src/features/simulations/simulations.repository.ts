@@ -139,7 +139,12 @@ export const fetchUserSimulations = async (
     query: { pageSize, page },
   }: { session: Session; query: PaginationQuery }
 ) => {
-  const where = email ? { userEmail: email } : { userId }
+  const where = {
+    ...(!email ? { userId } : { userEmail: email }),
+    progression: {
+      gt: 0,
+    },
+  }
 
   const [simulations, count] = await Promise.all([
     session.simulation.findMany({
