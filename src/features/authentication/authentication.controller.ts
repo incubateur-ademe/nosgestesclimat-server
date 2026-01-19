@@ -5,6 +5,7 @@ import { EntityNotFoundException } from '../../core/errors/EntityNotFoundExcepti
 import { EventBus } from '../../core/event-bus/event-bus.js'
 import logger from '../../logger.js'
 import { validateRequest } from '../../middlewares/validateRequest.js'
+import { rateLimitSameRequestMiddleware } from '../../middlewares/rateLimitSameRequestMiddleware.js'
 import {
   COOKIE_NAME,
   COOKIES_OPTIONS,
@@ -28,27 +29,37 @@ EventBus.on(AccountCreatedEvent, syncUserDataAfterAccountCreated)
  */
 router
   .route('/v1/login')
-  .post(validateRequest(LoginValidator), async (req, res) => {
-    try {
-      const { token, user } = await login({
-        loginDto: req.body,
-        origin: req.get('origin') || config.app.origin,
-        locale: req.query.locale,
-      })
 
-      res.cookie(COOKIE_NAME, token, COOKIES_OPTIONS)
+  .post(
+    rateLimitSameRequestMiddleware({
+      ttlInSeconds: 30,
+      hashRequest: ({ method, url, body }) => {
+        return `${method}_${url}_${body.code}`
+      },
+    }),
+    validateRequest(LoginValidator),
+    async (req, res) => {
+      try {
+        const { token, user } = await login({
+          loginDto: req.body,
+          origin: req.get('origin') || config.app.origin,
+          locale: req.query.locale,
+        })
 
-      return res.status(StatusCodes.OK).json(user)
-    } catch (err) {
-      if (err instanceof EntityNotFoundException) {
-        return res.status(StatusCodes.UNAUTHORIZED).end()
+        res.cookie(COOKIE_NAME, token, COOKIES_OPTIONS)
+
+        return res.status(StatusCodes.OK).json(user)
+      } catch (err) {
+        if (err instanceof EntityNotFoundException) {
+          return res.status(StatusCodes.UNAUTHORIZED).end()
+        }
+
+        logger.error('Login failed', err)
+
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
       }
-
-      logger.error('Login failed', err)
-
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
     }
-  })
+  )
 
 /**
  * Logs a user out

@@ -2,7 +2,15 @@ import { faker } from '@faker-js/faker'
 import { VerificationCodeMode, type VerifiedUser } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  test,
+  vi,
+} from 'vitest'
 import { brevoSendEmail } from '../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
 import { prisma } from '../../../adapters/prisma/client.js'
 import * as prismaTransactionAdapter from '../../../adapters/prisma/transaction.js'
@@ -367,7 +375,29 @@ describe('Given a NGC user', () => {
         })
       })
     })
+    describe('And several times', () => {
+      let payload: VerificationCodeCreateDto
+      let email: string
+      beforeAll(() => {
+        email = faker.internet.email()
+      })
+      beforeEach(async () => {
+        payload = {
+          email,
+        }
 
+        mswServer.use(brevoSendEmail())
+
+        await agent.post(url).send(payload).expect(StatusCodes.CREATED)
+      })
+
+      test(`Then it returns a ${StatusCodes.TOO_MANY_REQUESTS} error`, async () => {
+        await agent
+          .post(url)
+          .send(payload)
+          .expect(StatusCodes.TOO_MANY_REQUESTS)
+      })
+    })
     describe('And database failure', () => {
       const databaseError = new Error('Something went wrong')
 

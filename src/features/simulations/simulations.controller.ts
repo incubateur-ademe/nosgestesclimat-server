@@ -11,6 +11,7 @@ import {
   COOKIE_NAME,
   COOKIES_OPTIONS,
 } from '../authentication/authentication.service.js'
+import { rateLimitSameRequestMiddleware } from '../../middlewares/rateLimitSameRequestMiddleware.js'
 import { SimulationUpsertedEvent } from './events/SimulationUpserted.event.js'
 import { publishRedisEvent } from './handlers/publish-redis-event.js'
 import { sendSimulationUpserted } from './handlers/send-simulation-upserted.js'
@@ -39,42 +40,46 @@ EventBus.on(SimulationUpsertedEvent, publishRedisEvent)
 /**
  * Upserts a simulation
  */
-router
-  .route('/v1/:userId')
-  .post(
-    authentificationMiddleware<
-      unknown,
-      unknown,
-      unknown,
-      SimulationCreateQuery
-    >({ passIfUnauthorized: true }),
-    validateRequest(SimulationCreateValidator),
-    async (req, res) => {
-      try {
-        const { simulation, token } = await createSimulation({
-          simulationDto: req.body,
-          query: req.query,
-          params: req.params,
-          origin: req.get('origin') || config.app.origin,
-          user: req.user,
-        })
-
-        if (token) {
-          res.cookie(COOKIE_NAME, token, COOKIES_OPTIONS)
-        }
-
-        return res.status(StatusCodes.CREATED).json(simulation)
-      } catch (err) {
-        if (err instanceof EntityNotFoundException) {
-          return res.status(StatusCodes.UNAUTHORIZED).end()
-        }
-
-        logger.error('Simulation creation failed', err)
-
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
+router.route('/v1/:userId').post(
+  authentificationMiddleware<unknown, unknown, unknown, SimulationCreateQuery>({
+    passIfUnauthorized: true,
+  }),
+  rateLimitSameRequestMiddleware({
+    ttlInSeconds: 30,
+    hashRequest: ({ method, url, body }) => {
+      if (!body.code) {
+        return
       }
+      return `${method}_${url}_${body.code}`
+    },
+  }),
+  validateRequest(SimulationCreateValidator),
+  async (req, res) => {
+    try {
+      const { simulation, token } = await createSimulation({
+        simulationDto: req.body,
+        query: req.query,
+        params: req.params,
+        origin: req.get('origin') || config.app.origin,
+        user: req.user,
+      })
+
+      if (token) {
+        res.cookie(COOKIE_NAME, token, COOKIES_OPTIONS)
+      }
+
+      return res.status(StatusCodes.CREATED).json(simulation)
+    } catch (err) {
+      if (err instanceof EntityNotFoundException) {
+        return res.status(StatusCodes.UNAUTHORIZED).end()
+      }
+
+      logger.error('Simulation creation failed', err)
+
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
     }
-  )
+  }
+)
 
 /**
  * Returns simulations for a user

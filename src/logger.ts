@@ -4,12 +4,7 @@ import { config } from './config.js'
 
 const { combine, timestamp, json, errors } = winston.format
 
-const transports: winston.transport[] = [
-  new winston.transports.Console(),
-  // new winston.transports.File({
-  //   filename: 'test.log',
-  // }),
-]
+const transports: winston.transport[] = [new winston.transports.Console()]
 
 if (config.thirdParty.sentry.dsn) {
   transports.push(
