@@ -11,8 +11,6 @@ import logger from '../../../logger.js'
 import { login } from '../../authentication/__tests__/fixtures/login.fixture.js'
 import { COOKIE_NAME } from '../../authentication/authentication.service.js'
 import type { ComputedResultSchema } from '../../simulations/simulations.validator.js'
-import { mswServer } from '../../../core/__tests__/fixtures/server.fixture.js'
-import { brevoUpdateContact } from '../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
 import {
   createOrganisation,
   createOrganisationPoll,
@@ -554,7 +552,6 @@ describe('Given a NGC user', () => {
 
   describe('And logged in on his organisation space with a different userId', () => {
     let cookie: string
-    let email: string
     let userId: string
 
     describe('And poll does exist', () => {
@@ -563,7 +560,7 @@ describe('Given a NGC user', () => {
       let pollId: string
 
       beforeEach(async () => {
-        ;({ cookie, email } = await login({ agent }))
+        ;({ cookie, userId } = await login({ agent }))
 
         organisation = await createOrganisation({
           agent,
@@ -576,19 +573,10 @@ describe('Given a NGC user', () => {
           organisationId,
         })
         ;({ id: pollId } = poll)
-        mswServer.use(brevoUpdateContact())
       })
 
       describe('When fetching his organisation public poll', () => {
-        beforeEach(async () => {
-          ;({ cookie, userId } = await login({
-            agent,
-            verificationCode: { email },
-          }))
-        })
-
-        // @TOFIX
-        test.skip(`Then it returns a ${StatusCodes.OK} response with the public poll data`, async () => {
+        test(`Then it returns a ${StatusCodes.OK} response with the public poll data`, async () => {
           const response = await agent
             .get(
               url.replace(':pollIdOrSlug', pollId).replace(':userId', userId)

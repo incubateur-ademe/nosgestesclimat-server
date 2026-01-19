@@ -103,7 +103,7 @@ describe('Given a NGC integrations API user', () => {
           }
         )
 
-        expect(createdVerificationCode).toEqual({
+        expect(createdVerificationCode).toMatchObject({
           id: expect.any(String),
           code,
           email,

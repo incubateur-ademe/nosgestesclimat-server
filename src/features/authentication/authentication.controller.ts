@@ -34,7 +34,7 @@ router
     rateLimitSameRequestMiddleware({
       ttlInSeconds: 30,
       hashRequest: ({ method, url, body }) => {
-        return `${method}_${url}_${body.code}`
+        return `${method}_${url}_${body.email}`
       },
     }),
     validateRequest(LoginValidator),

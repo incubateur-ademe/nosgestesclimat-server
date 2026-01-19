@@ -106,7 +106,7 @@ describe('Given a NGC user', () => {
         },
       })
 
-      expect(createdVerificationCode).toEqual({
+      expect(createdVerificationCode).toMatchObject({
         id: expect.any(String),
         code,
         mode: null,
@@ -232,7 +232,7 @@ describe('Given a NGC user', () => {
 
           const [verificationCode] = await prisma.verificationCode.findMany()
 
-          expect(verificationCode).toEqual({
+          expect(verificationCode).toMatchObject({
             ...payload,
             id: expect.any(String),
             code,
@@ -356,7 +356,7 @@ describe('Given a NGC user', () => {
 
           const [verificationCode] = await prisma.verificationCode.findMany()
 
-          expect(verificationCode).toEqual({
+          expect(verificationCode).toMatchObject({
             ...payload,
             id: expect.any(String),
             code,

@@ -46,11 +46,11 @@ router.route('/v1/:userId').post(
   }),
   rateLimitSameRequestMiddleware({
     ttlInSeconds: 30,
-    hashRequest: ({ method, url, body }) => {
-      if (!body.code) {
+    hashRequest: ({ method, url, query }) => {
+      if (!query.code || !query.email || typeof query.email !== 'string') {
         return
       }
-      return `${method}_${url}_${body.code}`
+      return `${method}_${url}_${query.email}`
     },
   }),
   validateRequest(SimulationCreateValidator),

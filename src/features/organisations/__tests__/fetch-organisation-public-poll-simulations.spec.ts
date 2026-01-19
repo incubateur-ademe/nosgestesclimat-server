@@ -459,7 +459,6 @@ describe('Given a NGC user', () => {
 
   describe('And logged in on his organisation space with a different userId', () => {
     let cookie: string
-    let email: string
     let userId: string
 
     describe('And poll does exist', () => {
@@ -468,7 +467,7 @@ describe('Given a NGC user', () => {
       let pollId: string
 
       beforeEach(async () => {
-        ;({ cookie, userId, email } = await login({ agent }))
+        ;({ cookie, userId } = await login({ agent }))
 
         organisation = await createOrganisation({
           agent,
@@ -491,7 +490,6 @@ describe('Given a NGC user', () => {
         beforeEach(async () => {
           ;({ cookie, userId } = await login({
             agent,
-            verificationCode: { email },
           }))
 
           simulations = []
@@ -510,8 +508,7 @@ describe('Given a NGC user', () => {
           }
         })
 
-        // @TOFIX
-        test.skip(`Then it returns a ${StatusCodes.OK} response with the simulations list`, async () => {
+        test(`Then it returns a ${StatusCodes.OK} response with the simulations list`, async () => {
           const response = await agent
             .get(
               url.replace(':pollIdOrSlug', pollId).replace(':userId', userId)

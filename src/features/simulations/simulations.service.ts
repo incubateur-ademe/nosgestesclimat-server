@@ -290,11 +290,6 @@ export const createPollSimulation = async ({
       )
     const { organisation } = poll
 
-    const pollUpdatedEvent = new PollUpdatedEvent({
-      poll,
-      organisation,
-    })
-
     const simulationUpsertedEvent = new SimulationUpsertedEvent({
       user,
       sendEmail: isNewParticipation,
@@ -305,6 +300,11 @@ export const createPollSimulation = async ({
       locale,
       origin,
       poll,
+    })
+
+    const pollUpdatedEvent = new PollUpdatedEvent({
+      poll,
+      organisation,
     })
 
     EventBus.emit(simulationUpsertedEvent).emit(pollUpdatedEvent)

@@ -421,6 +421,7 @@ enum VerificationCodeMode {
 
 model VerificationCode {
   id             String                @id @default(uuid()) @db.Uuid
+  userId         String?               @db.Uuid
   email          String
   mode           VerificationCodeMode?
   code           String                @db.VarChar(6)

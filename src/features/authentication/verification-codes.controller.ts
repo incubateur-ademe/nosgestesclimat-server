@@ -22,6 +22,9 @@ router.route('/v1/').post(
   rateLimitSameRequestMiddleware({
     ttlInSeconds: 30,
     hashRequest: ({ method, url, body }) => {
+      if (!body.email) {
+        return
+      }
       return `${method}_${url}_${body.email}`
     },
   }),
