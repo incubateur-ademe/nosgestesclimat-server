@@ -3,10 +3,7 @@ import type { VerificationCodeMode } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import type supertest from 'supertest'
 import { vi } from 'vitest'
-import {
-  brevoSendEmail,
-  brevoUpdateContact,
-} from '../../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
+import { brevoSendEmail } from '../../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
 import { prisma } from '../../../../adapters/prisma/client.js'
 import { redis } from '../../../../adapters/redis/client.js'
 import { KEYS } from '../../../../adapters/redis/constant.js'
@@ -27,7 +24,7 @@ export const createVerificationCode = async ({
   mode,
   agent,
   expirationDate,
-  verificationCode: { email, userId } = {},
+  verificationCode: { email } = {},
 }: {
   code?: string
   agent: TestAgent
@@ -42,11 +39,10 @@ export const createVerificationCode = async ({
   ).generateRandomVerificationCode.mockReturnValueOnce(code)
 
   const payload = {
-    userId: userId || faker.string.uuid(),
     email: email || faker.internet.email(),
   }
 
-  mswServer.use(brevoSendEmail(), brevoUpdateContact())
+  mswServer.use(brevoSendEmail())
 
   const response = await agent
     .post(CREATE_VERIFICATION_CODE_ROUTE)

@@ -4,8 +4,8 @@ import { LocaleQuery } from '../../core/i18n/lang.validator.js'
 
 export const VerificationCodeCreateDto = z
   .object({
-    userId: z.uuid(),
     email: z.email().transform((email) => email.toLocaleLowerCase()),
+    userId: z.uuid().optional(),
   })
   .strict()
 

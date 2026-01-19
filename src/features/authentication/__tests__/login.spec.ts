@@ -99,12 +99,12 @@ describe('Given a NGC user', () => {
         const verificationCode = await createVerificationCode({ agent })
 
         const payload = {
-          userId: verificationCode.userId,
+          userId: faker.string.uuid(),
           email: verificationCode.email,
           code: verificationCode.code,
         }
 
-        mswServer.use(brevoUpdateContact())
+        mswServer.use(brevoUpdateContact(), brevoSendEmail())
 
         const response = await agent
           .post(url)
@@ -113,9 +113,10 @@ describe('Given a NGC user', () => {
 
         const [cookie] = response.headers['set-cookie']
         const token = cookie.split(';').shift()?.replace('ngcjwt=', '')
+        await EventBus.flush()
 
         expect(jwt.decode(token!)).toEqual({
-          userId: verificationCode.userId,
+          userId: payload.userId,
           email: verificationCode.email,
           exp: expect.any(Number),
           iat: expect.any(Number),
@@ -126,21 +127,21 @@ describe('Given a NGC user', () => {
         const verificationCode = await createVerificationCode({ agent })
 
         const payload = {
-          userId: verificationCode.userId,
+          userId: faker.string.uuid(),
           email: verificationCode.email,
           code: verificationCode.code,
         }
-
         mswServer.use(
           brevoUpdateContact({
             expectBody: {
               email: verificationCode.email,
               attributes: {
-                USER_ID: verificationCode.userId,
+                USER_ID: payload.userId,
               },
               updateEnabled: true,
             },
-          })
+          }),
+          brevoSendEmail()
         )
 
         await agent.post(url).send(payload).expect(StatusCodes.OK)
@@ -158,9 +159,9 @@ describe('Given a NGC user', () => {
           await agent
             .post(url)
             .send({
-              userId: verificationCode.userId,
               email: verificationCode.email,
               code: verificationCode.code,
+              userId: faker.string.uuid(),
             })
             .expect(StatusCodes.UNAUTHORIZED)
         })
@@ -168,13 +169,13 @@ describe('Given a NGC user', () => {
 
       describe(`And is ${VerificationCodeMode.signUp} mode`, () => {
         test('Then it creates the verified user', async () => {
-          const { email, userId, code } = await createVerificationCode({
+          const { email, code } = await createVerificationCode({
             agent,
             mode: VerificationCodeMode.signUp,
           })
 
           const payload = {
-            userId,
+            userId: faker.string.uuid(),
             email,
             code,
           }
@@ -189,7 +190,7 @@ describe('Given a NGC user', () => {
 
           expect(createdUser).toEqual({
             email,
-            id: userId,
+            id: payload.userId,
             name: null,
             optedInForCommunications: false,
             position: null,
@@ -197,16 +198,17 @@ describe('Given a NGC user', () => {
             createdAt: expect.any(Date),
             updatedAt: expect.any(Date),
           })
+          await EventBus.flush()
         })
 
         test('Then it invalidates the verification code', async () => {
-          const { email, userId, code } = await createVerificationCode({
+          const { email, code } = await createVerificationCode({
             agent,
             mode: VerificationCodeMode.signUp,
           })
 
           const payload = {
-            userId,
+            userId: faker.string.uuid(),
             email,
             code,
           }
@@ -224,18 +226,19 @@ describe('Given a NGC user', () => {
               (Date.now() - verificationCode.expirationDate.getTime()) / 1000
             )
           ).toBe(0)
+          await EventBus.flush()
         })
 
         test('Then it sends a welcome email', async () => {
-          const { email, userId, code } = await createVerificationCode({
+          const { email, code } = await createVerificationCode({
             agent,
             mode: VerificationCodeMode.signUp,
           })
 
           const payload = {
-            userId,
             email,
             code,
+            userId: faker.string.uuid(),
           }
 
           mswServer.use(
@@ -243,7 +246,7 @@ describe('Given a NGC user', () => {
               expectBody: {
                 email,
                 attributes: {
-                  USER_ID: userId,
+                  USER_ID: payload.userId,
                 },
                 updateEnabled: true,
               },
@@ -265,17 +268,18 @@ describe('Given a NGC user', () => {
           )
 
           await agent.post(url).send(payload).expect(StatusCodes.OK)
+          await EventBus.flush()
         })
 
         describe('And custom user origin (preprod)', () => {
           test('Then it sends a welcome email', async () => {
-            const { email, userId, code } = await createVerificationCode({
+            const { email, code } = await createVerificationCode({
               agent,
               mode: VerificationCodeMode.signUp,
             })
 
             const payload = {
-              userId,
+              userId: faker.string.uuid(),
               email,
               code,
             }
@@ -285,7 +289,7 @@ describe('Given a NGC user', () => {
                 expectBody: {
                   email,
                   attributes: {
-                    USER_ID: userId,
+                    USER_ID: payload.userId,
                   },
                   updateEnabled: true,
                 },
@@ -317,13 +321,13 @@ describe('Given a NGC user', () => {
 
         describe(`And ${Locales.en} locale`, () => {
           test('Then it sends a welcome email', async () => {
-            const { email, userId, code } = await createVerificationCode({
+            const { email, code } = await createVerificationCode({
               agent,
               mode: VerificationCodeMode.signUp,
             })
 
             const payload = {
-              userId,
+              userId: faker.string.uuid(),
               email,
               code,
             }
@@ -333,7 +337,7 @@ describe('Given a NGC user', () => {
                 expectBody: {
                   email,
                   attributes: {
-                    USER_ID: userId,
+                    USER_ID: payload.userId,
                   },
                   updateEnabled: true,
                 },

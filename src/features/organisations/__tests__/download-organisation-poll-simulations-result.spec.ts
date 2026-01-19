@@ -398,7 +398,6 @@ describe('Given a NGC user', () => {
                 const sheetName = workbook.SheetNames[0]
                 const sheet = workbook.Sheets[sheetName]
                 const data = xlsx.utils.sheet_to_json(sheet)
-                console.log(data)
                 // Only the complete simulation should be in the export
                 expect(data).toHaveLength(1)
               })

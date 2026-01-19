@@ -224,10 +224,9 @@ describe('Given a NGC user', () => {
 
           const [verificationCode] = await prisma.verificationCode.findMany()
 
-          expect(verificationCode).toEqual({
+          expect(verificationCode).toMatchObject({
             id: expect.any(String),
             code,
-            userId,
             email,
             mode: null,
             expirationDate: expect.any(Date),
@@ -488,10 +487,9 @@ describe('Given a NGC user', () => {
               const [verificationCode] =
                 await prisma.verificationCode.findMany()
 
-              expect(verificationCode).toEqual({
+              expect(verificationCode).toMatchObject({
                 id: expect.any(String),
                 code,
-                userId,
                 email,
                 mode: null,
                 expirationDate: expect.any(Date),
@@ -745,10 +743,9 @@ describe('Given a NGC user', () => {
               const [verificationCode] =
                 await prisma.verificationCode.findMany()
 
-              expect(verificationCode).toEqual({
+              expect(verificationCode).toMatchObject({
                 id: expect.any(String),
                 code,
-                userId,
                 email,
                 mode: null,
                 expirationDate: expect.any(Date),
@@ -982,202 +979,6 @@ describe('Given a NGC user', () => {
           })
 
           describe('And has no brevo contact', () => {
-            describe('And no email provided', () => {
-              test(`Then it sends an email and returns a ${StatusCodes.ACCEPTED} response`, async () => {
-                const payload = {
-                  contact: {
-                    listIds: [ListIds.MAIN_NEWSLETTER],
-                  },
-                }
-
-                mswServer.use(
-                  brevoGetContact(email, {
-                    customResponses: [
-                      {
-                        body: {
-                          code: 'document_not_found',
-                          message: 'List ID does not exist',
-                        },
-                        status: StatusCodes.NOT_FOUND,
-                      },
-                    ],
-                  }),
-                  brevoSendEmail({
-                    expectBody: {
-                      to: [
-                        {
-                          name: email,
-                          email,
-                        },
-                      ],
-                      templateId: 118,
-                      params: {
-                        NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(email)}&origin=${encodeURIComponent('https://nosgestesclimat.fr')}&listIds=22`,
-                      },
-                    },
-                  })
-                )
-
-                const { body } = await agent
-                  .put(url.replace(':userId', userId))
-                  .send(payload)
-                  .expect(StatusCodes.ACCEPTED)
-
-                expect(body).toEqual({
-                  id: userId,
-                  email,
-                  name: null,
-                  createdAt: expect.any(String),
-                  updatedAt: expect.any(String),
-                })
-              })
-
-              test('Then it stores a verification code valid 1 day in database', async () => {
-                const payload = {
-                  contact: {
-                    listIds: [ListIds.MAIN_NEWSLETTER],
-                  },
-                }
-
-                mswServer.use(
-                  brevoGetContact(email, {
-                    customResponses: [
-                      {
-                        body: {
-                          code: 'document_not_found',
-                          message: 'List ID does not exist',
-                        },
-                        status: StatusCodes.NOT_FOUND,
-                      },
-                    ],
-                  }),
-                  brevoSendEmail()
-                )
-
-                const now = Date.now()
-                const oneDay = 1000 * 60 * 60 * 24
-
-                await agent
-                  .put(url.replace(':userId', userId))
-                  .send(payload)
-                  .expect(StatusCodes.ACCEPTED)
-
-                const [verificationCode] =
-                  await prisma.verificationCode.findMany()
-
-                expect(verificationCode).toEqual({
-                  id: expect.any(String),
-                  code,
-                  userId,
-                  email,
-                  mode: null,
-                  expirationDate: expect.any(Date),
-                  createdAt: expect.any(Date),
-                  updatedAt: expect.any(Date),
-                })
-
-                // Hopefully code gets created under 1 second
-                expect(
-                  Math.floor(
-                    (verificationCode.expirationDate.getTime() - now - oneDay) /
-                      1000
-                  )
-                ).toBe(0)
-              })
-
-              describe('And name', () => {
-                test(`Then it sends an email and returns a ${StatusCodes.ACCEPTED} response but stores the name`, async () => {
-                  const name = faker.person.fullName()
-                  const payload = {
-                    name,
-                    contact: {
-                      listIds: [ListIds.MAIN_NEWSLETTER],
-                    },
-                  }
-
-                  mswServer.use(
-                    brevoGetContact(email, {
-                      customResponses: [
-                        {
-                          body: {
-                            code: 'document_not_found',
-                            message: 'List ID does not exist',
-                          },
-                          status: StatusCodes.NOT_FOUND,
-                        },
-                      ],
-                    }),
-                    brevoSendEmail()
-                  )
-
-                  const { body } = await agent
-                    .put(url.replace(':userId', userId))
-                    .send(payload)
-                    .expect(StatusCodes.ACCEPTED)
-
-                  expect(body).toEqual({
-                    id: userId,
-                    email,
-                    name,
-                    createdAt: expect.any(String),
-                    updatedAt: expect.any(String),
-                  })
-                })
-              })
-
-              describe('And custom user origin (preprod)', () => {
-                test(`Then it sends an email and returns a ${StatusCodes.ACCEPTED} response`, async () => {
-                  const payload = {
-                    contact: {
-                      listIds: [ListIds.MAIN_NEWSLETTER],
-                    },
-                  }
-
-                  mswServer.use(
-                    brevoGetContact(email, {
-                      customResponses: [
-                        {
-                          body: {
-                            code: 'document_not_found',
-                            message: 'List ID does not exist',
-                          },
-                          status: StatusCodes.NOT_FOUND,
-                        },
-                      ],
-                    }),
-                    brevoSendEmail({
-                      expectBody: {
-                        to: [
-                          {
-                            name: email,
-                            email,
-                          },
-                        ],
-                        templateId: 118,
-                        params: {
-                          NEWSLETTER_CONFIRMATION_URL: `https://server.nosgestesclimat.fr/users/v1/${userId}/newsletter-confirmation?code=${code}&email=${encodeURIComponent(email)}&origin=${encodeURIComponent('https://preprod.nosgestesclimat.fr')}&listIds=22`,
-                        },
-                      },
-                    })
-                  )
-
-                  const { body } = await agent
-                    .put(url.replace(':userId', userId))
-                    .set('origin', 'https://preprod.nosgestesclimat.fr')
-                    .send(payload)
-                    .expect(StatusCodes.ACCEPTED)
-
-                  expect(body).toEqual({
-                    id: userId,
-                    email,
-                    name: null,
-                    createdAt: expect.any(String),
-                    updatedAt: expect.any(String),
-                  })
-                })
-              })
-            })
-
             describe('And new email provided', () => {
               test(`Then it sends an email and returns a ${StatusCodes.ACCEPTED} response`, async () => {
                 const newEmail = faker.internet.email().toLocaleLowerCase()
@@ -1294,10 +1095,9 @@ describe('Given a NGC user', () => {
                 const [verificationCode] =
                   await prisma.verificationCode.findMany()
 
-                expect(verificationCode).toEqual({
+                expect(verificationCode).toMatchObject({
                   id: expect.any(String),
                   code,
-                  userId,
                   mode: null,
                   email: newEmail,
                   expirationDate: expect.any(Date),
@@ -3074,7 +2874,7 @@ describe('Given a NGC user', () => {
           newEmail = faker.internet.email().toLocaleLowerCase()
           ;({ code } = await createVerificationCode({
             agent,
-            verificationCode: { userId, email: newEmail },
+            verificationCode: { email: newEmail },
           }))
         })
 

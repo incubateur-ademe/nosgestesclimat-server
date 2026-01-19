@@ -1,6 +1,11 @@
 import { StatusCodes } from 'http-status-codes'
+import { faker } from '@faker-js/faker'
+
 import type supertest from 'supertest'
-import { brevoUpdateContact } from '../../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
+import {
+  brevoSendEmail,
+  brevoUpdateContact,
+} from '../../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
 import {
   mswServer,
   resetMswServer,
@@ -20,12 +25,13 @@ export const login = async ({
   agent: TestAgent
   verificationCode?: Partial<VerificationCodeCreateDto>
 }) => {
-  const { userId, email, code } = await createVerificationCode({
+  const userId = faker.string.uuid()
+  const { email, code } = await createVerificationCode({
     agent,
     verificationCode,
   })
 
-  mswServer.use(brevoUpdateContact())
+  mswServer.use(brevoUpdateContact(), brevoSendEmail())
 
   const response = await agent
     .post(LOGIN_ROUTE)
