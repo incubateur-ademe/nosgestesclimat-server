@@ -32,11 +32,9 @@ import {
   addOrUpdateBrevoAdministratorContact,
   addOrUpdateBrevoParticipantContact,
 } from './handlers/add-or-update-brevo-contact.js'
-import { syncUserDataAfterGroupCreated } from './handlers/sync-user-data-after-group-created.js'
 
 const router = express.Router()
 
-EventBus.on(GroupCreatedEvent, syncUserDataAfterGroupCreated)
 EventBus.on(GroupCreatedEvent, addOrUpdateBrevoAdministratorContact)
 
 /**

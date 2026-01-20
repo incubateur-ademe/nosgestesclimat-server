@@ -228,7 +228,6 @@ describe('Given a NGC user', () => {
             ...expected,
             extendedSituation,
           }
-
           mswServer.use(brevoUpdateContact(), brevoRemoveFromList(27))
 
           const response = await agent
@@ -293,13 +292,11 @@ describe('Given a NGC user', () => {
               email: faker.internet.email().toLocaleLowerCase(),
             },
           }
-
           mswServer.use(
-            brevoSendEmail(),
             brevoUpdateContact(),
-            brevoRemoveFromList(27)
+            brevoRemoveFromList(27),
+            brevoSendEmail()
           )
-
           const {
             body: { id },
           } = await agent
@@ -309,6 +306,7 @@ describe('Given a NGC user', () => {
             .send(payload)
             .expect(StatusCodes.CREATED)
 
+          await EventBus.flush()
           const createdSimulation = await prisma.simulation.findUnique({
             where: {
               id,
@@ -389,7 +387,6 @@ describe('Given a NGC user', () => {
             computedResults,
             extendedSituation,
           }
-
           mswServer.use(
             brevoUpdateContact({
               expectBody: {
@@ -606,10 +603,10 @@ describe('Given a NGC user', () => {
 
             mswServer.use(
               brevoSendEmail(),
+              brevoRemoveFromList(27),
               brevoUpdateContact({
                 storeBodies: contactBodies,
-              }),
-              brevoRemoveFromList(27)
+              })
             )
 
             await agent
@@ -1156,6 +1153,7 @@ describe('Given a NGC user', () => {
           mswServer.use(
             brevoSendEmail(),
             brevoUpdateContact(),
+
             brevoRemoveFromList(27)
           )
 
@@ -1222,9 +1220,6 @@ describe('Given a NGC user', () => {
                 answer: '00001',
               },
             ],
-            user: {
-              name: nom,
-            },
           }
 
           mswServer.use(
@@ -1278,14 +1273,12 @@ describe('Given a NGC user', () => {
               user: {
                 select: {
                   id: true,
-                  name: true,
                   email: true,
                 },
               },
               verifiedUser: {
                 select: {
                   id: true,
-                  name: true,
                   email: true,
                 },
               },

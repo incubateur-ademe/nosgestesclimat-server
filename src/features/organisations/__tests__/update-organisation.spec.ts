@@ -463,7 +463,7 @@ describe('Given a NGC user', () => {
           email = faker.internet.email().toLocaleLowerCase()
           ;({ code } = await createVerificationCode({
             agent,
-            verificationCode: { userId, email },
+            verificationCode: { email },
           }))
         })
 
