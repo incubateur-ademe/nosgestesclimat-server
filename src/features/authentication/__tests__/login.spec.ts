@@ -112,7 +112,7 @@ describe('Given a NGC user', () => {
           .expect(StatusCodes.OK)
 
         const [cookie] = response.headers['set-cookie']
-        const token = cookie.split(';').shift()?.replace('ngcjwt:v2=', '')
+        const token = cookie.split(';').shift()?.replace('ngcjwt=', '')
         await EventBus.flush()
 
         expect(jwt.decode(token!)).toEqual({

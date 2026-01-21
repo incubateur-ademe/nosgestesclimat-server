@@ -2949,7 +2949,7 @@ describe('Given a NGC user', () => {
 
           // Cookies are kept in supertest
           const [, newCookie] = response.headers['set-cookie']
-          const token = newCookie.split(';').shift()?.replace('ngcjwt:v2=', '')
+          const token = newCookie.split(';').shift()?.replace('ngcjwt=', '')
 
           expect(jwt.decode(token!)).toEqual({
             userId,
