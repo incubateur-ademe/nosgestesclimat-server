@@ -43,7 +43,7 @@ export function getCookieOptions(origin: string): CookieOptions {
   }
 }
 
-export const COOKIE_NAME = 'ngcjwt'
+export const COOKIE_NAME = 'ngcjwt:v2'
 
 export const generateRandomVerificationCode = () =>
   Math.floor(
