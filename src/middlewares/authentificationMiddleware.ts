@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken'
 import { config } from '../config.js'
 import {
   COOKIE_NAME,
-  COOKIES_OPTIONS,
+  getCookieOptions,
   createToken,
 } from '../features/authentication/authentication.service.js'
 const isValidResult = (
@@ -58,8 +58,8 @@ export const authentificationMiddleware =
       }
 
       const newToken = createToken({ email, id: userId })
-
-      res.cookie(COOKIE_NAME, newToken, COOKIES_OPTIONS)
+      const origin = req.get('origin') || config.app.origin
+      res.cookie(COOKIE_NAME, newToken, getCookieOptions(origin))
 
       next()
     })

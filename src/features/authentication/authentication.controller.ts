@@ -8,7 +8,7 @@ import { validateRequest } from '../../middlewares/validateRequest.js'
 import { rateLimitSameRequestMiddleware } from '../../middlewares/rateLimitSameRequestMiddleware.js'
 import {
   COOKIE_NAME,
-  COOKIES_OPTIONS,
+  getCookieOptions,
   login,
 } from './authentication.service.js'
 import { LoginValidator } from './authentication.validator.js'
@@ -40,13 +40,14 @@ router
     validateRequest(LoginValidator),
     async (req, res) => {
       try {
+        const origin = req.get('origin') || config.app.origin
         const { token, user } = await login({
           loginDto: req.body,
-          origin: req.get('origin') || config.app.origin,
+          origin,
           locale: req.query.locale,
         })
 
-        res.cookie(COOKIE_NAME, token, COOKIES_OPTIONS)
+        res.cookie(COOKIE_NAME, token, getCookieOptions(origin))
 
         return res.status(StatusCodes.OK).json(user)
       } catch (err) {
