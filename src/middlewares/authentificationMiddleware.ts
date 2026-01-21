@@ -5,13 +5,10 @@ import type { JwtPayload } from 'jsonwebtoken'
 import jwt from 'jsonwebtoken'
 import { config } from '../config.js'
 import {
-  COOKIE_MAX_AGE,
   COOKIE_NAME,
-  COOKIES_OPTIONS,
+  getCookieOptions,
+  createToken,
 } from '../features/authentication/authentication.service.js'
-import { syncUserData } from '../features/users/users.service.js'
-import logger from '../logger.js'
-
 const isValidResult = (
   result?: string | JwtPayload | undefined
 ): result is JwtPayload & { email: string; userId: string } =>
@@ -46,7 +43,7 @@ export const authentificationMiddleware =
         : res.status(StatusCodes.UNAUTHORIZED).end()
     }
 
-    jwt.verify(token, config.security.jwt.secret, async (err, result) => {
+    jwt.verify(token, config.security.jwt.secret, (err, result) => {
       if (err || !isValidResult(result)) {
         return passIfUnauthorized
           ? next()
@@ -55,29 +52,14 @@ export const authentificationMiddleware =
 
       const { email, userId } = result
 
-      if (
-        passIfUnauthorized &&
-        userId === (req.params as { userId?: string }).userId
-      ) {
-        try {
-          await syncUserData({ user: { userId, email } })
-        } catch (err) {
-          logger.error('Sync user data failed', err)
-
-          return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
-        }
-      }
-
       req.user = {
         email,
         userId,
       }
 
-      const newToken = jwt.sign({ email, userId }, config.security.jwt.secret, {
-        expiresIn: COOKIE_MAX_AGE,
-      })
-
-      res.cookie(COOKIE_NAME, newToken, COOKIES_OPTIONS)
+      const newToken = createToken({ email, id: userId })
+      const origin = req.get('origin') || config.app.origin
+      res.cookie(COOKIE_NAME, newToken, getCookieOptions(origin))
 
       next()
     })

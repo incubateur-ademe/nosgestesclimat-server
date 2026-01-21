@@ -542,7 +542,7 @@ describe('Given a NGC user', () => {
             .expect(StatusCodes.INTERNAL_SERVER_ERROR)
 
           expect(logger.error).toHaveBeenCalledWith(
-            'Sync user data failed',
+            'Public poll fetch failed',
             databaseError
           )
         })
@@ -552,7 +552,6 @@ describe('Given a NGC user', () => {
 
   describe('And logged in on his organisation space with a different userId', () => {
     let cookie: string
-    let email: string
     let userId: string
 
     describe('And poll does exist', () => {
@@ -561,7 +560,7 @@ describe('Given a NGC user', () => {
       let pollId: string
 
       beforeEach(async () => {
-        ;({ cookie, email } = await login({ agent }))
+        ;({ cookie, userId } = await login({ agent }))
 
         organisation = await createOrganisation({
           agent,
@@ -577,13 +576,6 @@ describe('Given a NGC user', () => {
       })
 
       describe('When fetching his organisation public poll', () => {
-        beforeEach(async () => {
-          ;({ cookie, userId } = await login({
-            agent,
-            verificationCode: { email },
-          }))
-        })
-
         test(`Then it returns a ${StatusCodes.OK} response with the public poll data`, async () => {
           const response = await agent
             .get(

@@ -9,7 +9,7 @@ import { authentificationMiddleware } from '../../middlewares/authentificationMi
 import { validateRequest } from '../../middlewares/validateRequest.js'
 import {
   COOKIE_NAME,
-  COOKIES_OPTIONS,
+  getCookieOptions,
 } from '../authentication/authentication.service.js'
 import { UserUpdatedEvent } from './events/UserUpdated.event.js'
 import { addOrUpdateBrevoContact } from './handlers/add-or-update-brevo-contact.js'
@@ -86,15 +86,17 @@ router
           throw new ForbiddenException('Different user ids found')
         }
 
+        const origin = req.get('origin') || config.app.origin
+
         const { user, verified, token } = await updateUserAndContact({
           params: req.user || req.params,
           code: req.query.code,
           userDto: req.body,
-          origin: req.get('origin') || config.app.origin,
+          origin,
         })
 
         if (token) {
-          res.cookie(COOKIE_NAME, token, COOKIES_OPTIONS)
+          res.cookie(COOKIE_NAME, token, getCookieOptions(origin))
         }
 
         return verified

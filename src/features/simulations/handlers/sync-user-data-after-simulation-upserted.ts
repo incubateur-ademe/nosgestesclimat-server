@@ -6,7 +6,7 @@ export const syncUserDataAfterSimulationUpserted: Handler<
   SimulationUpsertedEvent
 > = ({
   attributes: {
-    user: { email, id: userId },
+    user: { email, id },
     verified,
   },
 }) => {
@@ -15,10 +15,7 @@ export const syncUserDataAfterSimulationUpserted: Handler<
   }
 
   return syncUserData({
-    user: {
-      userId,
-      email,
-    },
+    user: { id, email },
     verified,
   })
 }

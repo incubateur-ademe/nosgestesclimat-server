@@ -10,7 +10,7 @@ import { EntityNotFoundException } from '../../../../core/errors/EntityNotFoundE
 import { UnauthorizedException } from '../../../../core/errors/UnauthorizedException.js'
 import { Locales } from '../../../../core/i18n/constant.js'
 import { isPrismaErrorNotFound } from '../../../../core/typeguards/isPrismaError.js'
-import { findUserVerificationCode } from '../../../authentication/verification-codes.repository.js'
+import { findVerificationCode } from '../../../authentication/verification-codes.repository.js'
 import { createVerificationCode } from '../../../authentication/verification-codes.service.js'
 import { fetchWhitelists } from '../email-whitelist/email-whitelist.repository.js'
 import type {
@@ -145,14 +145,7 @@ export const exchangeCredentialsForToken = async (
 ) => {
   try {
     const { email } = await transaction(
-      (session) =>
-        findUserVerificationCode(
-          {
-            ...query,
-            userId: null,
-          },
-          { session }
-        ),
+      (session) => findVerificationCode(query, { session }),
       prisma
     )
 

@@ -11,9 +11,9 @@ import type { UserUpdateDto } from './users.validator.js'
 
 export const transferOwnershipToUser = async (
   {
-    user: { userId, email },
+    user: { id: userId, email },
     verified,
-  }: { user: NonNullable<Request['user']>; verified?: boolean },
+  }: { user: { id: string; email: string }; verified?: boolean },
   { session }: { session: Session }
 ) => {
   const usersToMigrate = await session.user.findMany({

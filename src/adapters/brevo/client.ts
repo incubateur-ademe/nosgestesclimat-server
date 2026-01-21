@@ -213,27 +213,32 @@ const lastSimulationResult = ({
 
 export const sendVerificationCodeEmail = ({
   locale,
+  email,
+  code,
+}: Readonly<{
+  email: string
+  code: string
+  locale: Locales
+}>) => {
+  return sendEmail({
+    email,
+    templateId: TemplateIds[locale].VERIFICATION_CODE,
+    params: {
+      VERIFICATION_CODE: code,
+    },
+  })
+}
+
+export const sendAPITokenLinkEmail = ({
   origin,
-  userId,
   email,
   code,
 }: Readonly<{
   origin: string
   email: string
   code: string
-  userId?: string | null
   locale: Locales
 }>) => {
-  if (userId) {
-    return sendEmail({
-      email,
-      templateId: TemplateIds[locale].VERIFICATION_CODE,
-      params: {
-        VERIFICATION_CODE: code,
-      },
-    })
-  }
-
   const apiTokenUrl = new URL(`${origin}/integrations-api/v1/tokens`)
   const { searchParams } = apiTokenUrl
   searchParams.append('code', code)

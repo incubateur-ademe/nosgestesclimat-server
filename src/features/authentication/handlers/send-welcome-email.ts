@@ -5,7 +5,8 @@ import type { LoginEvent } from '../events/Login.event.js'
 
 export const sendBrevoWelcomeEmail: Handler<LoginEvent> = ({
   attributes: {
-    verificationCode: { email, mode },
+    user: { email },
+    mode,
     locale,
     origin,
   },

@@ -5,51 +5,62 @@ import { EntityNotFoundException } from '../../core/errors/EntityNotFoundExcepti
 import { EventBus } from '../../core/event-bus/event-bus.js'
 import logger from '../../logger.js'
 import { validateRequest } from '../../middlewares/validateRequest.js'
+import { rateLimitSameRequestMiddleware } from '../../middlewares/rateLimitSameRequestMiddleware.js'
 import {
   COOKIE_NAME,
-  COOKIES_OPTIONS,
+  getCookieOptions,
   login,
 } from './authentication.service.js'
 import { LoginValidator } from './authentication.validator.js'
 import { LoginEvent } from './events/Login.event.js'
 import { sendBrevoWelcomeEmail } from './handlers/send-welcome-email.js'
-import { storeVerifiedUser } from './handlers/store-verified-user.js'
-import { syncUserDataAfterLogin } from './handlers/sync-user-data-after-login.js'
 import { updateBrevoContact } from './handlers/update-brevo-contact.js'
+import { AccountCreatedEvent } from './events/AccountCreated.event.js'
+import { syncUserDataAfterAccountCreated } from './handlers/sync-user-data-after-account-created.js'
 
 const router = express.Router()
 
 EventBus.on(LoginEvent, updateBrevoContact)
-EventBus.on(LoginEvent, syncUserDataAfterLogin)
 EventBus.on(LoginEvent, sendBrevoWelcomeEmail)
-EventBus.on(LoginEvent, storeVerifiedUser)
+EventBus.on(AccountCreatedEvent, syncUserDataAfterAccountCreated)
 
 /**
  * Logs a user in
  */
 router
   .route('/v1/login')
-  .post(validateRequest(LoginValidator), async (req, res) => {
-    try {
-      const token = await login({
-        loginDto: req.body,
-        origin: req.get('origin') || config.app.origin,
-        locale: req.query.locale,
-      })
 
-      res.cookie(COOKIE_NAME, token, COOKIES_OPTIONS)
+  .post(
+    rateLimitSameRequestMiddleware({
+      ttlInSeconds: 30,
+      hashRequest: ({ method, url, body }) => {
+        return `${method}_${url}_${body.email}`
+      },
+    }),
+    validateRequest(LoginValidator),
+    async (req, res) => {
+      try {
+        const origin = req.get('origin') || config.app.origin
+        const { token, user } = await login({
+          loginDto: req.body,
+          origin,
+          locale: req.query.locale,
+        })
 
-      return res.status(StatusCodes.OK).end()
-    } catch (err) {
-      if (err instanceof EntityNotFoundException) {
-        return res.status(StatusCodes.UNAUTHORIZED).end()
+        res.cookie(COOKIE_NAME, token, getCookieOptions(origin))
+
+        return res.status(StatusCodes.OK).json(user)
+      } catch (err) {
+        if (err instanceof EntityNotFoundException) {
+          return res.status(StatusCodes.UNAUTHORIZED).end()
+        }
+
+        logger.error('Login failed', err)
+
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
       }
-
-      logger.error('Login failed', err)
-
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
     }
-  })
+  )
 
 /**
  * Logs a user out

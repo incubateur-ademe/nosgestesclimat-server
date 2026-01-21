@@ -2,11 +2,16 @@ import { faker } from '@faker-js/faker'
 import { VerificationCodeMode, type VerifiedUser } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import {
-  brevoSendEmail,
-  brevoUpdateContact,
-} from '../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  test,
+  vi,
+} from 'vitest'
+import { brevoSendEmail } from '../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
 import { prisma } from '../../../adapters/prisma/client.js'
 import * as prismaTransactionAdapter from '../../../adapters/prisma/transaction.js'
 import app from '../../../app.js'
@@ -51,24 +56,11 @@ describe('Given a NGC user', () => {
       })
     })
 
-    describe('And invalid userId', () => {
-      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
-        await agent
-          .post(url)
-          .send({
-            userId: faker.string.alpha(34),
-            email: faker.internet.email(),
-          })
-          .expect(StatusCodes.BAD_REQUEST)
-      })
-    })
-
     describe('And invalid email', () => {
       test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent
           .post(url)
           .send({
-            userId: faker.string.uuid(),
             email: 'Je ne donne jamais mon email',
           })
           .expect(StatusCodes.BAD_REQUEST)
@@ -77,11 +69,10 @@ describe('Given a NGC user', () => {
 
     test(`Then it returns a ${StatusCodes.CREATED} response with the created verification code`, async () => {
       const payload = {
-        userId: faker.string.uuid(),
         email: faker.internet.email().toLocaleLowerCase(),
       }
 
-      mswServer.use(brevoSendEmail(), brevoUpdateContact())
+      mswServer.use(brevoSendEmail())
 
       const response = await agent
         .post(url)
@@ -99,11 +90,10 @@ describe('Given a NGC user', () => {
 
     test('Then it stores a verification code valid 1 hour in database', async () => {
       const payload: VerificationCodeCreateDto = {
-        userId: faker.string.uuid(),
         email: faker.internet.email().toLocaleLowerCase(),
       }
 
-      mswServer.use(brevoSendEmail(), brevoUpdateContact())
+      mswServer.use(brevoSendEmail())
 
       const now = Date.now()
       const oneHour = 1000 * 60 * 60
@@ -113,11 +103,10 @@ describe('Given a NGC user', () => {
       const createdVerificationCode = await prisma.verificationCode.findFirst({
         where: {
           email: payload.email,
-          userId: payload.userId,
         },
       })
 
-      expect(createdVerificationCode).toEqual({
+      expect(createdVerificationCode).toMatchObject({
         id: expect.any(String),
         code,
         mode: null,
@@ -153,37 +142,10 @@ describe('Given a NGC user', () => {
               VERIFICATION_CODE: code,
             },
           },
-        }),
-        brevoUpdateContact()
-      )
-
-      await agent.post(url).send({
-        userId: faker.string.uuid(),
-        email,
-      })
-
-      await EventBus.flush()
-    })
-
-    test('Then it updates brevo contact', async () => {
-      const email = faker.internet.email().toLocaleLowerCase()
-      const userId = faker.string.uuid()
-
-      mswServer.use(
-        brevoSendEmail(),
-        brevoUpdateContact({
-          expectBody: {
-            email,
-            attributes: {
-              USER_ID: userId,
-            },
-            updateEnabled: true,
-          },
         })
       )
 
       await agent.post(url).send({
-        userId,
         email,
       })
 
@@ -208,14 +170,12 @@ describe('Given a NGC user', () => {
                 VERIFICATION_CODE: code,
               },
             },
-          }),
-          brevoUpdateContact()
+          })
         )
 
         await agent
           .post(url)
           .send({
-            userId: faker.string.uuid(),
             email,
           })
           .query({
@@ -230,11 +190,10 @@ describe('Given a NGC user', () => {
       describe('And new user', () => {
         test(`Then it returns a ${StatusCodes.CREATED} response with the created verification code`, async () => {
           const payload = {
-            userId: faker.string.uuid(),
             email: faker.internet.email().toLocaleLowerCase(),
           }
 
-          mswServer.use(brevoSendEmail(), brevoUpdateContact())
+          mswServer.use(brevoSendEmail())
 
           const response = await agent
             .post(url)
@@ -255,11 +214,10 @@ describe('Given a NGC user', () => {
 
         test('Then it stores a verification code valid 1 hour in database', async () => {
           const payload = {
-            userId: faker.string.uuid(),
             email: faker.internet.email().toLocaleLowerCase(),
           }
 
-          mswServer.use(brevoSendEmail(), brevoUpdateContact())
+          mswServer.use(brevoSendEmail())
 
           const now = Date.now()
           const oneHour = 1000 * 60 * 60
@@ -274,7 +232,7 @@ describe('Given a NGC user', () => {
 
           const [verificationCode] = await prisma.verificationCode.findMany()
 
-          expect(verificationCode).toEqual({
+          expect(verificationCode).toMatchObject({
             ...payload,
             id: expect.any(String),
             code,
@@ -298,8 +256,8 @@ describe('Given a NGC user', () => {
 
         beforeEach(async () => {
           user = {
-            id: faker.string.uuid(),
             email: faker.internet.email().toLocaleLowerCase(),
+            id: faker.string.uuid(),
           }
 
           await prisma.verifiedUser.create({
@@ -309,7 +267,6 @@ describe('Given a NGC user', () => {
 
         test(`Then it returns a ${StatusCodes.CONFLICT} error`, async () => {
           const payload = {
-            userId: faker.string.uuid(),
             email: user.email,
           }
 
@@ -328,7 +285,6 @@ describe('Given a NGC user', () => {
       describe('And new user', () => {
         test(`Then it returns a ${StatusCodes.CONFLICT} error`, async () => {
           const payload = {
-            userId: faker.string.uuid(),
             email: faker.internet.email().toLocaleLowerCase(),
           }
 
@@ -358,11 +314,10 @@ describe('Given a NGC user', () => {
 
         test(`Then it returns a ${StatusCodes.CREATED} response with the created verification code`, async () => {
           const payload = {
-            userId: faker.string.uuid(),
             email: user.email,
           }
 
-          mswServer.use(brevoSendEmail(), brevoUpdateContact())
+          mswServer.use(brevoSendEmail())
 
           const response = await agent
             .post(url)
@@ -383,11 +338,10 @@ describe('Given a NGC user', () => {
 
         test('Then it stores a verification code valid 1 hour in database', async () => {
           const payload = {
-            userId: faker.string.uuid(),
             email: user.email,
           }
 
-          mswServer.use(brevoSendEmail(), brevoUpdateContact())
+          mswServer.use(brevoSendEmail())
 
           const now = Date.now()
           const oneHour = 1000 * 60 * 60
@@ -402,7 +356,7 @@ describe('Given a NGC user', () => {
 
           const [verificationCode] = await prisma.verificationCode.findMany()
 
-          expect(verificationCode).toEqual({
+          expect(verificationCode).toMatchObject({
             ...payload,
             id: expect.any(String),
             code,
@@ -421,17 +375,18 @@ describe('Given a NGC user', () => {
         })
       })
     })
-
     describe('And several times', () => {
       let payload: VerificationCodeCreateDto
-
+      let email: string
+      beforeAll(() => {
+        email = faker.internet.email()
+      })
       beforeEach(async () => {
         payload = {
-          userId: faker.string.uuid(),
-          email: faker.internet.email().toLocaleLowerCase(),
+          email,
         }
 
-        mswServer.use(brevoSendEmail(), brevoUpdateContact())
+        mswServer.use(brevoSendEmail())
 
         await agent.post(url).send(payload).expect(StatusCodes.CREATED)
       })
@@ -443,7 +398,6 @@ describe('Given a NGC user', () => {
           .expect(StatusCodes.TOO_MANY_REQUESTS)
       })
     })
-
     describe('And database failure', () => {
       const databaseError = new Error('Something went wrong')
 
@@ -461,7 +415,6 @@ describe('Given a NGC user', () => {
         await agent
           .post(url)
           .send({
-            userId: faker.string.uuid(),
             email: faker.internet.email(),
           })
           .expect(StatusCodes.INTERNAL_SERVER_ERROR)
@@ -469,7 +422,6 @@ describe('Given a NGC user', () => {
 
       test('Then it logs the exception', async () => {
         await agent.post(url).send({
-          userId: faker.string.uuid(),
           email: faker.internet.email(),
         })
 
