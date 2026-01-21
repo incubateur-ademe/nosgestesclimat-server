@@ -33,7 +33,6 @@ export const createParticipantSimulation = async <
       foldedSteps,
       progression,
       situation,
-      savedViaEmail,
       extendedSituation,
       additionalQuestionsAnswers,
     },
@@ -76,7 +75,6 @@ export const createParticipantSimulation = async <
     foldedSteps,
     progression,
     actionChoices,
-    savedViaEmail,
     computedResults,
     extendedSituation,
     states: {
