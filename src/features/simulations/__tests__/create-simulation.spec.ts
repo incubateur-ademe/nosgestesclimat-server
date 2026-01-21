@@ -1128,7 +1128,7 @@ describe('Given a NGC user', () => {
         })
 
         const [cookie] = response.headers['set-cookie']
-        const userToken = cookie.split(';').shift()?.replace('ngcjwt:v2=', '')
+        const userToken = cookie.split(';').shift()?.replace('ngcjwt2=', '')
 
         expect(jwt.decode(userToken!)).toEqual({
           userId,
@@ -1672,7 +1672,7 @@ describe('Given a NGC user', () => {
           })
 
           const [cookie] = response.headers['set-cookie']
-          const userToken = cookie.split(';').shift()?.replace('ngcjwt:v2=', '')
+          const userToken = cookie.split(';').shift()?.replace('ngcjwt2=', '')
 
           expect(jwt.decode(userToken!)).toEqual({
             userId: existingUserId,
@@ -1881,7 +1881,7 @@ describe('Given a NGC user', () => {
           const userToken = responseCookie
             .split(';')
             .shift()
-            ?.replace('ngcjwt:v2=', '')
+            ?.replace('ngcjwt2=', '')
 
           expect(jwt.decode(userToken!)).toEqual({
             userId,
