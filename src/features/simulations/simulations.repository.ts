@@ -133,14 +133,14 @@ export const createParticipantSimulation = async <
 }
 
 export const fetchUserSimulations = async (
-  { userId, email }: UserParams & Partial<NonNullable<Request['user']>>,
+  { userId }: UserParams & Partial<NonNullable<Request['user']>>,
   {
     session,
     query: { pageSize, page },
   }: { session: Session; query: PaginationQuery }
 ) => {
   const where = {
-    ...(!email ? { userId } : { userEmail: email }),
+    ...{ userId },
     progression: {
       gt: 0,
     },
