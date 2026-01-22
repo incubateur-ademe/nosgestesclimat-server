@@ -14,7 +14,7 @@ describe('Given a NGC user', () => {
       const [cookie] = response.headers['set-cookie']
 
       expect(cookie).toEqual(
-        'ngcjwt=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly'
+        'ngcjwt2=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly'
       )
     })
   })

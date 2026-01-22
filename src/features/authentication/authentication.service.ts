@@ -29,18 +29,21 @@ import { AccountCreatedEvent } from './events/AccountCreated.event.js'
 const {
   app: { env },
 } = config
-
 export const COOKIE_MAX_AGE = 1000 * 60 * 60 * 24 * 61 // 2 months
 
-export const COOKIES_OPTIONS: CookieOptions = {
-  maxAge: COOKIE_MAX_AGE,
-  httpOnly: true,
-  secure: true,
-  sameSite: env === 'production' ? 'none' : 'lax',
-  partitioned: true,
+export function getCookieOptions(origin: string): CookieOptions {
+  const domain = new URL(origin).hostname
+  return {
+    maxAge: COOKIE_MAX_AGE,
+    httpOnly: true,
+    secure: true,
+    sameSite: env === 'production' ? 'none' : 'lax',
+    partitioned: true,
+    domain,
+  }
 }
 
-export const COOKIE_NAME = 'ngcjwt'
+export const COOKIE_NAME = 'ngcjwt2'
 
 export const generateRandomVerificationCode = () =>
   Math.floor(
