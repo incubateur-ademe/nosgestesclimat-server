@@ -9,7 +9,7 @@ import { authentificationMiddleware } from '../../middlewares/authentificationMi
 import { validateRequest } from '../../middlewares/validateRequest.js'
 import {
   COOKIE_NAME,
-  COOKIES_OPTIONS,
+  getCookieOptions,
 } from '../authentication/authentication.service.js'
 import { rateLimitSameRequestMiddleware } from '../../middlewares/rateLimitSameRequestMiddleware.js'
 import { SimulationUpsertedEvent } from './events/SimulationUpserted.event.js'
@@ -56,16 +56,17 @@ router.route('/v1/:userId').post(
   validateRequest(SimulationCreateValidator),
   async (req, res) => {
     try {
+      const origin = req.get('origin') || config.app.origin
       const { simulation, token } = await createSimulation({
         simulationDto: req.body,
         query: req.query,
         params: req.params,
-        origin: req.get('origin') || config.app.origin,
+        origin,
         user: req.user,
       })
 
       if (token) {
-        res.cookie(COOKIE_NAME, token, COOKIES_OPTIONS)
+        res.cookie(COOKIE_NAME, token, getCookieOptions(origin))
       }
 
       return res.status(StatusCodes.CREATED).json(simulation)

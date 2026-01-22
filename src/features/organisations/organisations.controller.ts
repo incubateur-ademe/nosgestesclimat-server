@@ -11,7 +11,7 @@ import { rateLimitSameRequestMiddleware } from '../../middlewares/rateLimitSameR
 import { validateRequest } from '../../middlewares/validateRequest.js'
 import {
   COOKIE_NAME,
-  COOKIES_OPTIONS,
+  getCookieOptions,
 } from '../authentication/authentication.service.js'
 import {
   createPollSimulation,
@@ -104,7 +104,8 @@ router
   .put(
     authentificationMiddleware(),
     validateRequest(OrganisationUpdateValidator),
-    async ({ body, params, query, user }, res) => {
+    async (req, res) => {
+      const { body, params, query, user } = req
       try {
         const { organisation, token } = await updateOrganisation({
           params,
@@ -114,7 +115,8 @@ router
         })
 
         if (token) {
-          res.cookie(COOKIE_NAME, token, COOKIES_OPTIONS)
+          const origin = req.get('origin') || config.app.origin
+          res.cookie(COOKIE_NAME, token, getCookieOptions(origin))
         }
 
         return res.status(StatusCodes.OK).json(organisation)
