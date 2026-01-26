@@ -68,6 +68,15 @@ import {
 const frRules = modelRules as Partial<NGCRules>
 const funFactsRules = modelFunFacts as { [k in keyof FunFacts]: DottedName }
 
+/**
+ * Transforms a simulation entity to a DTO format.
+ * If the simulation user is not the connected user, sensitive fields are hidden
+ * and only the name is returned for privacy purposes.
+ *
+ * @param simulation - The simulation entity with user, verifiedUser, and polls data
+ * @param connectedUser - The identifier of the connected user (email for verified users, id for unverified users)
+ * @returns The simulation DTO with user data filtered based on ownership
+ */
 const simulationToDto = (
   {
     verifiedUser,
@@ -198,11 +207,7 @@ export const fetchSimulations = async ({
   user?: Request['user']
 }) => {
   const { simulations, count } = await transaction(
-    (session) =>
-      fetchUserSimulations(
-        { ...params, email: user?.email },
-        { session, query }
-      ),
+    (session) => fetchUserSimulations(params, { session, query }),
     prisma
   )
 

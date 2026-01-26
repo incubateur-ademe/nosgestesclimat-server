@@ -102,7 +102,6 @@ router
           query,
           user,
         })
-
         return withPaginationHeaders({
           ...query,
           count,
