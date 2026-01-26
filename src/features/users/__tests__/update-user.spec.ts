@@ -1456,38 +1456,6 @@ describe('Given a NGC user', () => {
               })
             })
 
-            describe('And contact has already subscribed to more newsletters', () => {
-              beforeEach(() => {
-                contact.listIds = [
-                  ListIds.MAIN_NEWSLETTER,
-                  ListIds.TRANSPORT_NEWSLETTER,
-                ]
-              })
-
-              test(`Then it returns a ${StatusCodes.FORBIDDEN} error`, async () => {
-                const payload = {
-                  contact: {
-                    listIds: [ListIds.MAIN_NEWSLETTER],
-                  },
-                }
-
-                mswServer.use(
-                  brevoGetContact(email, {
-                    customResponses: [
-                      {
-                        body: contact,
-                      },
-                    ],
-                  })
-                )
-
-                await agent
-                  .put(url.replace(':userId', userId))
-                  .send(payload)
-                  .expect(StatusCodes.FORBIDDEN)
-              })
-            })
-
             describe('And contact has already subscribed to technical newsletters', () => {
               beforeEach(() => {
                 contact.listIds = [
@@ -2047,68 +2015,6 @@ describe('Given a NGC user', () => {
                 },
                 createdAt: expect.any(String),
                 updatedAt: expect.any(String),
-              })
-            })
-
-            describe('And contact has already subscribed to the newsletter', () => {
-              beforeEach(() => {
-                contact.listIds = [ListIds.MAIN_NEWSLETTER]
-              })
-
-              test(`Then it returns a ${StatusCodes.FORBIDDEN} error`, async () => {
-                const payload = {
-                  contact: {
-                    listIds: [],
-                  },
-                }
-
-                mswServer.use(
-                  brevoGetContact(email, {
-                    customResponses: [
-                      {
-                        body: contact,
-                      },
-                    ],
-                  })
-                )
-
-                await agent
-                  .put(url.replace(':userId', userId))
-                  .send(payload)
-                  .expect(StatusCodes.FORBIDDEN)
-              })
-            })
-
-            describe('And contact has already subscribed to technical newsletters', () => {
-              beforeEach(() => {
-                contact.listIds = [
-                  ListIds.MAIN_NEWSLETTER,
-                  ListIds.GROUP_CREATED,
-                  ListIds.GROUP_JOINED,
-                ]
-              })
-
-              test(`Then it returns a ${StatusCodes.FORBIDDEN} error`, async () => {
-                const payload = {
-                  contact: {
-                    listIds: [],
-                  },
-                }
-
-                mswServer.use(
-                  brevoGetContact(email, {
-                    customResponses: [
-                      {
-                        body: contact,
-                      },
-                    ],
-                  })
-                )
-
-                await agent
-                  .put(url.replace(':userId', userId))
-                  .send(payload)
-                  .expect(StatusCodes.FORBIDDEN)
               })
             })
           })

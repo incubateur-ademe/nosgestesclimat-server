@@ -266,12 +266,6 @@ export const updateUserAndContact = async ({
     const verified =
       isVerifiedUser || !newsletters.shouldVerifyEmail || !nextEmail
 
-    if (!verified && !!newsletters.newslettersToUnsubscribe.size) {
-      throw new ForbiddenException(
-        'Could not unsubscribe without verified email'
-      )
-    }
-
     const update =
       verified || !emailChanged ? userDto : { ...userDto, email: previousEmail }
 
