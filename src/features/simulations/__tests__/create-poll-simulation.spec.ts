@@ -241,7 +241,6 @@ describe('Given a NGC user', () => {
             ...expected,
             date: expect.any(String),
             model: 'FR-fr-0.0.0',
-            savedViaEmail: false,
             createdAt: expect.any(String),
             updatedAt: expect.any(String),
             actionChoices: {},
@@ -272,7 +271,6 @@ describe('Given a NGC user', () => {
             actionChoices: {
               myAction: true,
             },
-            savedViaEmail: true,
             // foldedSteps: ['myStep'], // Cannot do that with PG lite
             foldedSteps: [],
             additionalQuestionsAnswers: [
@@ -318,7 +316,6 @@ describe('Given a NGC user', () => {
               foldedSteps: true,
               progression: true,
               actionChoices: true,
-              savedViaEmail: true,
               computedResults: true,
               extendedSituation: true,
               additionalQuestionsAnswers: {
@@ -562,7 +559,6 @@ describe('Given a NGC user', () => {
               ...expected,
               date: expect.any(String),
               model: 'FR-fr-0.0.0',
-              savedViaEmail: false,
               createdAt: expect.any(String),
               updatedAt: expect.any(String),
               actionChoices: {},
@@ -1169,7 +1165,6 @@ describe('Given a NGC user', () => {
             ...expected,
             date: expect.any(String),
             model: 'FR-fr-0.0.0',
-            savedViaEmail: false,
             createdAt: expect.any(String),
             updatedAt: expect.any(String),
             actionChoices: {},
@@ -1205,7 +1200,6 @@ describe('Given a NGC user', () => {
             actionChoices: {
               myAction: true,
             },
-            savedViaEmail: true,
             // foldedSteps: ['myStep'], // Cannot do that with PG lite
             foldedSteps: [],
             additionalQuestionsAnswers: [
@@ -1249,7 +1243,6 @@ describe('Given a NGC user', () => {
               foldedSteps: true,
               progression: true,
               actionChoices: true,
-              savedViaEmail: true,
               computedResults: true,
               extendedSituation: true,
               additionalQuestionsAnswers: {

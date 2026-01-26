@@ -75,7 +75,6 @@ describe('Given a poll participation', () => {
           progression: 1,
           situation,
           extendedSituation,
-          savedViaEmail: false,
           polls: {
             create: {
               pollId: poll.id,
