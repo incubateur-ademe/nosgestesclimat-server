@@ -52,37 +52,3 @@ export const UpdateUserValidator = {
   params: UserParams,
   query: UserUpdateQuery,
 }
-
-const NewsletterConfirmationQuery = z
-  .object({
-    code: z.string().regex(/^\d{6}$/),
-    origin: z.string().refine((url) => {
-      try {
-        return new URL(url).origin === url
-      } catch {
-        return false
-      }
-    }),
-    email: z.email().transform((email) => email.toLocaleLowerCase()),
-    listIds: z
-      .union([
-        z.coerce.number().positive(),
-        z.array(z.coerce.number().positive()),
-      ])
-      .optional()
-      .transform((listIds) =>
-        typeof listIds === 'number' ? [listIds] : listIds || []
-      ),
-  })
-  .extend(LocaleQuery.shape)
-  .strict()
-
-export type NewsletterConfirmationQuery = z.infer<
-  typeof NewsletterConfirmationQuery
->
-
-export const NewsletterConfirmationValidator = {
-  body: z.object({}).optional(),
-  params: UserParams,
-  query: NewsletterConfirmationQuery,
-}

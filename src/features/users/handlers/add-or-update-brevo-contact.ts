@@ -1,14 +1,11 @@
-import {
-  addOrUpdateContactAndAddToNewsletters,
-  removeFromNewsletters,
-} from '../../../adapters/brevo/client.js'
+import { addOrUpdateContact } from '../../../adapters/brevo/client.js'
+import { Attributes } from '../../../adapters/brevo/constant.js'
 import type { Handler } from '../../../core/event-bus/handler.js'
 import type { UserUpdatedEvent } from '../events/UserUpdated.event.js'
 
 export const addOrUpdateBrevoContact: Handler<UserUpdatedEvent> = async ({
   attributes: {
     user: { email, ...user },
-    newsletters: { newslettersToUnsubscribe, finalNewsletters },
     verified,
   },
 }) => {
@@ -16,18 +13,11 @@ export const addOrUpdateBrevoContact: Handler<UserUpdatedEvent> = async ({
     return
   }
 
-  if (newslettersToUnsubscribe.size) {
-    await removeFromNewsletters({
-      listIds: Array.from(newslettersToUnsubscribe),
-      email,
-    })
-  }
-
-  const listIds = Array.from(finalNewsletters)
-
-  await addOrUpdateContactAndAddToNewsletters({
-    listIds,
+  await addOrUpdateContact({
     email,
-    user,
+    attributes: {
+      [Attributes.USER_ID]: user.id,
+      [Attributes.PRENOM]: user.name,
+    },
   })
 }
