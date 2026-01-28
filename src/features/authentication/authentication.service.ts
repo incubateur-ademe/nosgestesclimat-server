@@ -29,15 +29,15 @@ import { AccountCreatedEvent } from './events/AccountCreated.event.js'
 export const COOKIE_MAX_AGE = 1000 * 60 * 60 * 24 * 61 // 2 months
 
 export function getCookieOptions(origin: string): CookieOptions {
-  const domain = new URL(origin).hostname
   const secure = !origin.startsWith('http://localhost')
+  const domain = new URL(origin).hostname
   return {
     maxAge: COOKIE_MAX_AGE,
     httpOnly: true,
     secure,
     sameSite: 'strict',
     partitioned: secure,
-    domain,
+    ...(secure ? { domain } : {}),
   }
 }
 
