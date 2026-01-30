@@ -1,22 +1,14 @@
 import { faker } from '@faker-js/faker'
 import { StatusCodes } from 'http-status-codes'
 import type supertest from 'supertest'
-import { vi } from 'vitest'
 import { formatBrevoDate } from '../../../../adapters/brevo/__tests__/fixtures/formatBrevoDate.js'
-import {
-  brevoGetContact,
-  brevoSendEmail,
-  brevoUpdateContact,
-} from '../../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
+import { brevoGetContact } from '../../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
 import type { BrevoContactDto } from '../../../../adapters/brevo/client.js'
-import { ListIds } from '../../../../adapters/brevo/constant.js'
-import { prisma } from '../../../../adapters/prisma/client.js'
 import {
   mswServer,
   resetMswServer,
 } from '../../../../core/__tests__/fixtures/server.fixture.js'
 import { EventBus } from '../../../../core/event-bus/event-bus.js'
-import * as authenticationService from '../../../authentication/authentication.service.js'
 import type { UserUpdateDto } from '../../users.validator.js'
 
 type TestAgent = ReturnType<typeof supertest>
@@ -67,23 +59,19 @@ export const createUser = async ({
           {
             body: {
               code: 'document_not_found',
-              message: 'List ID does not exist',
+              message: 'Contact does not exist',
             },
             status: StatusCodes.NOT_FOUND,
           },
-          {
-            body: contact,
-          },
         ],
-      }),
-      brevoUpdateContact()
+      })
     )
   }
 
   const response = await agent
     .put(UPDATE_USER_ROUTE.replace(':userId', userId))
     .send({ name, email })
-    .expect(StatusCodes.OK)
+    .expect(email ? StatusCodes.ACCEPTED : StatusCodes.OK)
 
   await EventBus.flush()
 
@@ -92,75 +80,5 @@ export const createUser = async ({
   return {
     user: response.body,
     contact,
-  }
-}
-
-export const subscribeToNewsLetter = async ({
-  code,
-  agent,
-  expirationDate,
-  user: { id, name, email, contact } = {},
-}: {
-  agent: TestAgent
-  user?: Partial<UserUpdateDto> & { id?: string }
-  code?: string
-  expirationDate?: Date
-}) => {
-  code = code || faker.number.int({ min: 100000, max: 999999 }).toString()
-
-  vi.mocked(
-    authenticationService
-  ).generateRandomVerificationCode.mockReturnValueOnce(code)
-
-  email = email || faker.internet.email().toLocaleLowerCase()
-
-  const listIds = contact?.listIds.length
-    ? contact?.listIds
-    : [ListIds.MAIN_NEWSLETTER]
-
-  const payload: UserUpdateDto = {
-    contact: contact || { listIds },
-    email,
-    name,
-  }
-
-  mswServer.use(
-    brevoGetContact(email, {
-      customResponses: [
-        {
-          body: {
-            code: 'document_not_found',
-            message: 'List ID does not exist',
-          },
-          status: StatusCodes.NOT_FOUND,
-        },
-      ],
-    }),
-    brevoSendEmail()
-  )
-
-  const response = await agent
-    .put(UPDATE_USER_ROUTE.replace(':userId', id || faker.string.uuid()))
-    .send(payload)
-    .expect(StatusCodes.ACCEPTED)
-
-  if (expirationDate) {
-    await prisma.verificationCode.updateMany({
-      data: {
-        expirationDate,
-      },
-    })
-  }
-
-  await EventBus.flush()
-
-  resetMswServer()
-
-  vi.mocked(authenticationService).generateRandomVerificationCode.mockRestore()
-
-  return {
-    ...response.body,
-    listIds,
-    code,
   }
 }

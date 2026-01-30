@@ -554,20 +554,18 @@ export const sendPollSimulationUpsertedEmail = async ({
 export const sendNewsLetterConfirmationEmail = ({
   code,
   email,
-  userId,
   origin,
   listIds,
   newsLetterConfirmationBaseUrl,
 }: {
   code: string
   email: string
-  userId: string
   origin: string
   listIds?: number[]
   newsLetterConfirmationBaseUrl: string
 }) => {
   const newsletterConfirmationUrl = new URL(
-    `${newsLetterConfirmationBaseUrl}/users/v1/${userId}/newsletter-confirmation`
+    `${newsLetterConfirmationBaseUrl}/newsletters/v1/confirmation`
   )
 
   const { searchParams } = newsletterConfirmationUrl
@@ -635,30 +633,6 @@ export const addOrUpdateContactAfterLogin = ({
   return addOrUpdateContact({
     email,
     attributes,
-  })
-}
-
-export const addOrUpdateContactAndAddToNewsletters = async ({
-  user,
-  email,
-  listIds,
-}: {
-  user: {
-    id: string
-    name?: string | null
-  }
-  email: string
-  listIds?: number[]
-}) => {
-  const attributes = {
-    [Attributes.USER_ID]: user.id,
-    [Attributes.PRENOM]: user.name,
-  }
-
-  await addOrUpdateContact({
-    email,
-    attributes,
-    listIds,
   })
 }
 
