@@ -14,16 +14,10 @@ import {
 import { UserUpdatedEvent } from './events/UserUpdated.event.js'
 import { addOrUpdateBrevoContact } from './handlers/add-or-update-brevo-contact.js'
 import { removePreviousBrevoContact } from './handlers/remove-previous-brevo-contact.js'
-import { sendBrevoNewsLetterConfirmationEmail } from './handlers/send-brevo-newsletter-confirmation-email.js'
-import {
-  confirmNewsletterSubscriptions,
-  fetchUserContact,
-  updateUserAndContact,
-} from './users.service.js'
+import { fetchUserContact, updateUserAndContact } from './users.service.js'
 import {
   FetchMeValidator,
   FetchUserContactValidator,
-  NewsletterConfirmationValidator,
   UpdateUserValidator,
 } from './users.validator.js'
 
@@ -33,22 +27,27 @@ const router = express.Router()
  * Returns user contact for given user id
  */
 router
-  .route('/v1/:userId/contact')
-  .get(validateRequest(FetchUserContactValidator), async (req, res) => {
-    try {
-      const contact = await fetchUserContact(req.params)
+  .route('/v1/me/contact')
 
-      return res.status(StatusCodes.OK).json(contact)
-    } catch (err) {
-      if (err instanceof EntityNotFoundException) {
-        return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
+  .get(
+    authentificationMiddleware(),
+    validateRequest(FetchUserContactValidator),
+    async (req, res) => {
+      try {
+        const contact = await fetchUserContact(req.user!)
+
+        return res.status(StatusCodes.OK).json(contact)
+      } catch (err) {
+        if (err instanceof EntityNotFoundException) {
+          return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
+        }
+
+        logger.error('User contact fetch failed', err)
+
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
       }
-
-      logger.error('User contact fetch failed', err)
-
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
     }
-  })
+  )
 
 /**
  * Returns current user data
@@ -69,7 +68,6 @@ router
   )
 
 EventBus.on(UserUpdatedEvent, addOrUpdateBrevoContact)
-EventBus.on(UserUpdatedEvent, sendBrevoNewsLetterConfirmationEmail)
 EventBus.on(UserUpdatedEvent, removePreviousBrevoContact)
 
 /**
@@ -117,40 +115,5 @@ router
       }
     }
   )
-
-router
-  .route('/v1/:userId/newsletter-confirmation')
-  .get(validateRequest(NewsletterConfirmationValidator), async (req, res) => {
-    const redirectUrl = new URL(req.query.origin)
-    redirectUrl.pathname = '/newsletter-confirmation'
-    const { searchParams: redirectSearchParams } = redirectUrl
-
-    try {
-      await confirmNewsletterSubscriptions({
-        query: req.query,
-        origin: redirectUrl.origin,
-        params: req.params,
-      })
-
-      redirectSearchParams.append('success', 'true')
-    } catch (err) {
-      const expired = err instanceof EntityNotFoundException
-
-      if (!expired) {
-        logger.error('Newsletter confirmation failed', err)
-      }
-
-      redirectSearchParams.append('success', 'false')
-      redirectSearchParams.append(
-        'status',
-        (expired
-          ? StatusCodes.NOT_FOUND
-          : StatusCodes.INTERNAL_SERVER_ERROR
-        ).toString()
-      )
-    }
-
-    return res.redirect(redirectUrl.toString())
-  })
 
 export default router
