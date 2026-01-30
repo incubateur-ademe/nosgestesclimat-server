@@ -516,9 +516,6 @@ export const updatePollStatsAfterSimulationChange = async ({
   simulation: SimulationAsyncEvent
   created: boolean
 }) => {
-  if (simulation.progression !== 1) {
-    return
-  }
   try {
     return await transaction(async (session) => {
       const simulationPoll = await findSimulationPoll(
@@ -527,17 +524,6 @@ export const updatePollStatsAfterSimulationChange = async ({
       )
 
       if (!simulationPoll || !simulationPoll.poll.computeRealTimeStats) {
-        return
-      }
-
-      const poll = await findOrganisationPollById(
-        { id: simulationPoll.pollId },
-        { session }
-      )
-
-      // Prevent updating stats if the poll was updated after the simulation that triggered the update
-      // Can happen if there is a lot of event in the queue (lot of simultaneous participants in a campaign)
-      if (poll.updatedAt > simulationPoll.updatedAt) {
         return
       }
 
