@@ -169,7 +169,6 @@ describe('Given a NGC user', () => {
         expect(response.body).toEqual({
           ...expected,
           date: expect.any(String),
-          savedViaEmail: false,
           createdAt: expect.any(String),
           updatedAt: expect.any(String),
           actionChoices: {},
@@ -196,7 +195,6 @@ describe('Given a NGC user', () => {
           actionChoices: {
             myAction: true,
           },
-          savedViaEmail: true,
           // foldedSteps: ['myStep'], // Cannot do that with PG lite
           foldedSteps: [],
           additionalQuestionsAnswers: [
@@ -247,7 +245,6 @@ describe('Given a NGC user', () => {
             foldedSteps: true,
             progression: true,
             actionChoices: true,
-            savedViaEmail: true,
             computedResults: true,
             extendedSituation: true,
             additionalQuestionsAnswers: {
@@ -340,7 +337,6 @@ describe('Given a NGC user', () => {
           expect(response.body).toEqual({
             ...expected,
             date: expect.any(String),
-            savedViaEmail: false,
             createdAt: expect.any(String),
             updatedAt: expect.any(String),
             actionChoices: {},
@@ -382,7 +378,6 @@ describe('Given a NGC user', () => {
               progression: 1,
               computedResults,
               extendedSituation,
-              savedViaEmail: true,
               user: {
                 name: nom,
                 email,
@@ -642,7 +637,6 @@ describe('Given a NGC user', () => {
                 progression: 1,
                 computedResults,
                 extendedSituation,
-                savedViaEmail: true,
                 user: {
                   name: nom,
                   email,
@@ -724,7 +718,6 @@ describe('Given a NGC user', () => {
                 progression: 1,
                 computedResults,
                 extendedSituation,
-                savedViaEmail: true,
                 user: {
                   name: nom,
                   email,
@@ -1108,7 +1101,6 @@ describe('Given a NGC user', () => {
         expect(response.body).toEqual({
           ...expected,
           date: expect.any(String),
-          savedViaEmail: false,
           createdAt: expect.any(String),
           updatedAt: expect.any(String),
           actionChoices: {},
@@ -1149,7 +1141,6 @@ describe('Given a NGC user', () => {
           actionChoices: {
             myAction: true,
           },
-          savedViaEmail: true,
           foldedSteps: [],
           additionalQuestionsAnswers: [
             {
@@ -1199,7 +1190,6 @@ describe('Given a NGC user', () => {
             foldedSteps: true,
             progression: true,
             actionChoices: true,
-            savedViaEmail: true,
             computedResults: true,
             extendedSituation: true,
             additionalQuestionsAnswers: {
@@ -1279,7 +1269,6 @@ describe('Given a NGC user', () => {
           actionChoices: {
             myAction: true,
           },
-          savedViaEmail: true,
           foldedSteps: [],
         }
 
@@ -1858,7 +1847,6 @@ describe('Given a NGC user', () => {
           expect(response.body).toEqual({
             ...expected,
             date: expect.any(String),
-            savedViaEmail: false,
             createdAt: expect.any(String),
             updatedAt: expect.any(String),
             actionChoices: {},
@@ -1902,7 +1890,6 @@ describe('Given a NGC user', () => {
             actionChoices: {
               myAction: true,
             },
-            savedViaEmail: true,
             foldedSteps: [],
             additionalQuestionsAnswers: [
               {
@@ -1949,7 +1936,6 @@ describe('Given a NGC user', () => {
               foldedSteps: true,
               progression: true,
               actionChoices: true,
-              savedViaEmail: true,
               computedResults: true,
               extendedSituation: true,
               additionalQuestionsAnswers: {
@@ -2029,7 +2015,6 @@ describe('Given a NGC user', () => {
             actionChoices: {
               myAction: true,
             },
-            savedViaEmail: true,
             foldedSteps: [],
           }
 

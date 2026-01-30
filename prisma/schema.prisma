@@ -311,7 +311,6 @@ model Simulation {
   date                       DateTime
   progression                Float                                @db.Real
   model                      String                               @default("FR-fr-0.0.0")
-  savedViaEmail              Boolean
   computedResults            Json
   actionChoices              Json
   situation                  Json
@@ -421,7 +420,6 @@ enum VerificationCodeMode {
 
 model VerificationCode {
   id             String                @id @default(uuid()) @db.Uuid
-  userId         String?               @db.Uuid
   email          String
   mode           VerificationCodeMode?
   code           String                @db.VarChar(6)

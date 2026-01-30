@@ -178,7 +178,6 @@ export const SimulationParticipantCreateDto = z.object({
   date: z.coerce.date().default(() => new Date()),
   model: z.string().regex(MODEL_REGEX).optional(),
   progression: z.number(),
-  savedViaEmail: z.boolean().default(false),
   computedResults: ComputedResultSchema,
   actionChoices: ActionChoicesSchema.default({}),
   additionalQuestionsAnswers: AdditionalQuestionsAnswersSchema.optional(),
