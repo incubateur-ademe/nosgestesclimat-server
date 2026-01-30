@@ -35,7 +35,7 @@ export function getCookieOptions(origin: string): CookieOptions {
     maxAge: COOKIE_MAX_AGE,
     httpOnly: true,
     secure,
-    sameSite: 'strict',
+    sameSite: 'lax',
     partitioned: secure,
     domain,
   }
