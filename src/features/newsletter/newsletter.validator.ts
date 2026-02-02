@@ -9,10 +9,13 @@ export const REACHABLE_NEWSLETTER_LIST_IDS = [
   ListIds.ALIMENTATION_NEWSLETTER,
 ] as const
 
-const ReachableNewsletterListId = z.array(
-  z.coerce
-    .number()
-    .pipe(z.union(REACHABLE_NEWSLETTER_LIST_IDS.map((id) => z.literal(id))))
+const ReachableNewsletterListId = z.preprocess(
+  (val) => (Array.isArray(val) ? val : [val]),
+  z.array(
+    z.coerce
+      .number()
+      .pipe(z.union(REACHABLE_NEWSLETTER_LIST_IDS.map((id) => z.literal(id))))
+  )
 )
 export type ReachableNewsletterListId = z.infer<
   typeof ReachableNewsletterListId
