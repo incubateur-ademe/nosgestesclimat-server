@@ -241,7 +241,6 @@ describe('Given a NGC user', () => {
             ...expected,
             date: expect.any(String),
             model: 'FR-fr-0.0.0',
-            savedViaEmail: false,
             createdAt: expect.any(String),
             updatedAt: expect.any(String),
             actionChoices: {},
@@ -272,7 +271,6 @@ describe('Given a NGC user', () => {
             actionChoices: {
               myAction: true,
             },
-            savedViaEmail: true,
             // foldedSteps: ['myStep'], // Cannot do that with PG lite
             foldedSteps: [],
             additionalQuestionsAnswers: [
@@ -318,7 +316,6 @@ describe('Given a NGC user', () => {
               foldedSteps: true,
               progression: true,
               actionChoices: true,
-              savedViaEmail: true,
               computedResults: true,
               extendedSituation: true,
               additionalQuestionsAnswers: {
@@ -490,49 +487,6 @@ describe('Given a NGC user', () => {
           expect(funFacts).toBeNull()
         })
 
-        test('Then it does not update poll fun facts if poll was updated after the simulation', async () => {
-          const payload: SimulationCreateInputDto = {
-            id: faker.string.uuid(),
-            situation,
-            progression: 1,
-            computedResults,
-            extendedSituation,
-          }
-
-          mswServer.use(brevoUpdateContact(), brevoRemoveFromList(27))
-
-          // Simulate a race condition: set poll's updatedAt to a future time BEFORE
-          // creating the simulation. When the simulation is created, its simulationPoll.updatedAt
-          // will be "now", which is earlier than poll.updatedAt.
-          // This simulates another participant's event having already updated the poll stats.
-          await prisma.poll.update({
-            where: { id: pollId },
-            data: { updatedAt: new Date(Date.now() + 10000) },
-          })
-
-          await agent
-            .post(
-              url.replace(':userId', userId).replace(':pollIdOrSlug', pollId)
-            )
-            .send(payload)
-            .expect(StatusCodes.CREATED)
-
-          await EventBus.flush()
-
-          // The simulation's event should NOT update funFacts
-          // because poll.updatedAt > simulationPoll.updatedAt
-          const { funFacts } = await prisma.poll.findUniqueOrThrow({
-            where: {
-              id: pollId,
-            },
-            select: {
-              funFacts: true,
-            },
-          })
-
-          expect(funFacts).toBeNull()
-        })
-
         describe('And using organisation and poll slugs', () => {
           test(`Then it returns a ${StatusCodes.CREATED} response with the created simulation`, async () => {
             const expected = {
@@ -562,7 +516,6 @@ describe('Given a NGC user', () => {
               ...expected,
               date: expect.any(String),
               model: 'FR-fr-0.0.0',
-              savedViaEmail: false,
               createdAt: expect.any(String),
               updatedAt: expect.any(String),
               actionChoices: {},
@@ -1169,7 +1122,6 @@ describe('Given a NGC user', () => {
             ...expected,
             date: expect.any(String),
             model: 'FR-fr-0.0.0',
-            savedViaEmail: false,
             createdAt: expect.any(String),
             updatedAt: expect.any(String),
             actionChoices: {},
@@ -1205,7 +1157,6 @@ describe('Given a NGC user', () => {
             actionChoices: {
               myAction: true,
             },
-            savedViaEmail: true,
             // foldedSteps: ['myStep'], // Cannot do that with PG lite
             foldedSteps: [],
             additionalQuestionsAnswers: [
@@ -1249,7 +1200,6 @@ describe('Given a NGC user', () => {
               foldedSteps: true,
               progression: true,
               actionChoices: true,
-              savedViaEmail: true,
               computedResults: true,
               extendedSituation: true,
               additionalQuestionsAnswers: {

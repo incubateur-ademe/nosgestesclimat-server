@@ -5,7 +5,6 @@ import {
   fetchContact,
   fetchContactOrThrow,
 } from '../../adapters/brevo/client.js'
-import { ListIds } from '../../adapters/brevo/constant.js'
 import { prisma } from '../../adapters/prisma/client.js'
 import {
   defaultUserSelection,
@@ -28,93 +27,13 @@ import {
   fetchUser,
   transferOwnershipToUser,
 } from './users.repository.js'
-import type {
-  NewsletterConfirmationQuery,
-  UserParams,
-  UserUpdateDto,
-} from './users.validator.js'
-
-const REACHABLE_NEWSLETTER_LIST_IDS: ListIds[] = [
-  ListIds.MAIN_NEWSLETTER,
-  ListIds.TRANSPORT_NEWSLETTER,
-  ListIds.LOGEMENT_NEWSLETTER,
-]
+import type { UserParams, UserUpdateDto } from './users.validator.js'
 
 const userToDto = (
   user: User & {
     contact?: BrevoContact
   }
 ) => user
-
-const getNewsletterMutation = ({
-  contact,
-  previousContact,
-  wantedNewsletters,
-}: {
-  contact?: BrevoContact
-  previousContact?: BrevoContact
-  wantedNewsletters?: number[]
-}) => {
-  const newslettersToSubscribe = new Set<number>()
-  const newslettersToUnsubscribe = new Set<number>()
-  const subscribedNewsletters = new Set<number>(
-    previousContact ? previousContact.listIds : contact?.listIds || []
-  )
-  let shouldVerifyEmail =
-    (!!previousContact && !!contact) ||
-    (!!previousContact && !!subscribedNewsletters.size)
-
-  if (!wantedNewsletters) {
-    return {
-      shouldVerifyEmail,
-      newslettersToUnsubscribe,
-      finalNewsletters: subscribedNewsletters,
-    }
-  }
-
-  if (!contact) {
-    for (const newsletter of wantedNewsletters) {
-      newslettersToSubscribe.add(newsletter)
-    }
-
-    shouldVerifyEmail = !!newslettersToSubscribe.size
-
-    return {
-      shouldVerifyEmail,
-      newslettersToUnsubscribe,
-      finalNewsletters: newslettersToSubscribe,
-    }
-  }
-
-  const unWantedNewsletters = REACHABLE_NEWSLETTER_LIST_IDS.filter(
-    (listId) => !wantedNewsletters.includes(listId)
-  )
-
-  for (const newsletter of wantedNewsletters) {
-    if (!subscribedNewsletters.has(newsletter)) {
-      newslettersToSubscribe.add(newsletter)
-    }
-  }
-
-  for (const newsletter of unWantedNewsletters) {
-    if (subscribedNewsletters.has(newsletter)) {
-      newslettersToUnsubscribe.add(newsletter)
-    }
-  }
-
-  shouldVerifyEmail =
-    !!newslettersToSubscribe.size || !!newslettersToUnsubscribe.size
-
-  return {
-    shouldVerifyEmail,
-    newslettersToUnsubscribe,
-    finalNewsletters: new Set(
-      [...newslettersToSubscribe, ...subscribedNewsletters].filter(
-        (listId) => !newslettersToUnsubscribe.has(listId)
-      )
-    ),
-  }
-}
 
 export const syncUserData = ({
   user,
@@ -200,117 +119,99 @@ export const updateUserAndContact = async ({
   userDto: UserUpdateDto
   origin: string
 }) => {
-  const {
-    user,
-    contact,
-    newsletters,
-    nextEmail,
-    verified,
-    previousContact,
-    token,
-  } = await transaction(async (session) => {
-    const isVerifiedUser = isAuthenticated(params)
+  const { user, contact, nextEmail, verified, previousContact, token } =
+    await transaction(async (session) => {
+      const isVerifiedUser = isAuthenticated(params)
 
-    const previousUser = await (isVerifiedUser
-      ? params
-      : fetchUser(
-          { id: params.userId, select: defaultUserSelection },
-          { session }
-        ))
+      const previousUser = await (isVerifiedUser
+        ? params
+        : fetchUser(
+            { id: params.userId, select: defaultUserSelection },
+            { session }
+          ))
 
-    const { emailChanged, nextEmail, previousEmail } = getEmailMutation(
-      userDto,
-      previousUser
-    )
-
-    let token: string | undefined
-    if (isVerifiedUser && emailChanged) {
-      if (!code) {
-        throw new ForbiddenException(
-          'Forbidden ! Cannot update email without a verification code.'
-        )
-      }
-
-      try {
-        await verifyCode(
-          {
-            ...params,
-            code,
-            email: nextEmail,
-          },
-          { session }
-        )
-      } catch (e) {
-        if (e instanceof EntityNotFoundException) {
-          throw new ForbiddenException('Forbidden ! Invalid verification code.')
-        }
-        throw e
-      }
-    }
-
-    let contact: BrevoContact | undefined
-    let previousContact: BrevoContact | undefined
-    if (nextEmail) {
-      contact = await fetchContact(nextEmail)
-      if (emailChanged) {
-        previousContact = await fetchContact(previousEmail)
-      }
-    }
-
-    const newsletters = getNewsletterMutation({
-      contact,
-      previousContact,
-      wantedNewsletters: userDto.contact?.listIds,
-    })
-
-    const verified =
-      isVerifiedUser || !newsletters.shouldVerifyEmail || !nextEmail
-
-    if (!verified && !!newsletters.newslettersToUnsubscribe.size) {
-      throw new ForbiddenException(
-        'Could not unsubscribe without verified email'
+      const { emailChanged, nextEmail, previousEmail } = getEmailMutation(
+        userDto,
+        previousUser
       )
-    }
 
-    const update =
-      verified || !emailChanged ? userDto : { ...userDto, email: previousEmail }
+      let token: string | undefined
+      if (isVerifiedUser && emailChanged) {
+        if (!code) {
+          throw new ForbiddenException(
+            'Forbidden ! Cannot update email without a verification code.'
+          )
+        }
 
-    let user
-    if (isVerifiedUser) {
-      user = (
-        await createOrUpdateVerifiedUser(
-          { id: params, user: update, select: defaultVerifiedUserSelection },
-          { session }
-        )
-      ).user
-      token = createToken(user)
-    } else {
-      user = (
-        await createOrUpdateUser(
-          {
-            id: params.userId,
-            user: update,
-            select: defaultUserSelection,
-          },
-          { session }
-        )
-      ).user
-    }
+        try {
+          await verifyCode(
+            {
+              ...params,
+              code,
+              email: nextEmail,
+            },
+            { session }
+          )
+        } catch (e) {
+          if (e instanceof EntityNotFoundException) {
+            throw new ForbiddenException(
+              'Forbidden ! Invalid verification code.'
+            )
+          }
+          throw e
+        }
+      }
 
-    return {
-      user,
-      token,
-      contact,
-      verified,
-      nextEmail,
-      newsletters,
-      previousContact,
-    }
-  })
+      let contact: BrevoContact | undefined
+      let previousContact: BrevoContact | undefined
+      if (nextEmail) {
+        contact = await fetchContact(nextEmail)
+        if (emailChanged) {
+          previousContact = await fetchContact(previousEmail)
+        }
+      }
+
+      const verified = isVerifiedUser || !nextEmail
+
+      const update =
+        verified || !emailChanged
+          ? userDto
+          : { ...userDto, email: previousEmail }
+
+      let user
+      if (isVerifiedUser) {
+        user = (
+          await createOrUpdateVerifiedUser(
+            { id: params, user: update, select: defaultVerifiedUserSelection },
+            { session }
+          )
+        ).user
+        token = createToken(user)
+      } else {
+        user = (
+          await createOrUpdateUser(
+            {
+              id: params.userId,
+              user: update,
+              select: defaultUserSelection,
+            },
+            { session }
+          )
+        ).user
+      }
+
+      return {
+        user,
+        token,
+        contact,
+        verified,
+        nextEmail,
+        previousContact,
+      }
+    })
 
   const userUpdatedEvent = new UserUpdatedEvent({
     previousContact,
-    newsletters,
     nextEmail,
     verified,
     origin,
@@ -334,51 +235,5 @@ export const updateUserAndContact = async ({
           }
         : {}),
     }),
-  }
-}
-
-export const confirmNewsletterSubscriptions = async ({
-  params,
-  origin,
-  query,
-}: {
-  params: UserParams
-  origin: string
-  query: NewsletterConfirmationQuery
-}) => {
-  try {
-    const [user, contact] = await transaction(
-      (session) =>
-        Promise.all([
-          fetchUser(
-            { id: params.userId, select: defaultUserSelection },
-            { session, orThrow: true }
-          ),
-          fetchContact(query.email),
-          verifyCode(query, { session }),
-        ]),
-      prisma
-    )
-
-    const newsletters = getNewsletterMutation({
-      contact,
-      wantedNewsletters: query.listIds,
-    })
-
-    const userUpdatedEvent = new UserUpdatedEvent({
-      verified: true,
-      newsletters,
-      origin,
-      user,
-    })
-
-    EventBus.emit(userUpdatedEvent)
-
-    await EventBus.once(userUpdatedEvent)
-  } catch (e) {
-    if (isPrismaErrorNotFound(e)) {
-      throw new EntityNotFoundException('Verification code not found')
-    }
-    throw e
   }
 }

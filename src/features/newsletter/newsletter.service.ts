@@ -1,68 +1,77 @@
-import { isAxiosError } from 'axios'
-import { z } from 'zod'
+import dayjs from 'dayjs'
 import {
-  fetchNewsletter,
-  isNotFound,
-  isTimeout,
+  addOrUpdateContact,
+  fetchContact,
+  removeFromNewsletters,
+  sendNewsLetterConfirmationEmail,
 } from '../../adapters/brevo/client.js'
-import { redis } from '../../adapters/redis/client.js'
-import { ALIVE_SUFFIX, KEYS } from '../../adapters/redis/constant.js'
-import type { NewsletterParams } from './newsletter.validator.js'
+import { config } from '../../config.js'
+import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
+import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError.js'
+import { verifyCode } from '../authentication/authentication.service.js'
+import { generateVerificationCode } from '../authentication/verification-codes.service.js'
+import {
+  REACHABLE_NEWSLETTER_LIST_IDS,
+  type NewsletterConfirmationQuery,
+  type NewsletterInscriptionDto,
+  type ReachableNewsletterListId,
+} from './newsletter.validator.js'
 
-const BREVO_NEWSLETTER_REDIS_CACHE_TTL_SECONDS = 60
+export const updateNewslettersInscription = async ({
+  email,
+  listIds,
+}: {
+  email: string
+  listIds: ReachableNewsletterListId
+}) => {
+  const contact = await fetchContact(email)
+  const listToRemove = new Set(contact?.listIds ?? [])
+    .intersection(new Set(REACHABLE_NEWSLETTER_LIST_IDS))
+    .difference(new Set(listIds))
 
-const BrevoNewsLetterDtoSchema = z
-  .object({
-    id: z.number(),
-    name: z.string(),
-    totalSubscribers: z.number(),
-  })
-  .strict()
+  await Promise.all([
+    removeFromNewsletters({ email, listIds: Array.from(listToRemove) }),
+    addOrUpdateContact({
+      email,
+      listIds,
+      attributes: {},
+    }),
+  ])
+}
 
-export const fetchBrevoNewsletter = async (params: NewsletterParams) => {
-  const redisKey = `${KEYS.brevoNewsletter}_${params.newsletterId}`
-
+export const confirmNewsletterSubscriptions = async ({
+  query,
+}: {
+  query: NewsletterConfirmationQuery
+}) => {
   try {
-    const {
-      status,
-      data: { id, name, totalSubscribers },
-    } = await fetchNewsletter(params.newsletterId)
-
-    const body = BrevoNewsLetterDtoSchema.parse({ id, name, totalSubscribers })
-
-    await redis.set(redisKey, JSON.stringify(body))
-
-    return {
-      status,
-      body,
-    }
+    await verifyCode(query)
+    await updateNewslettersInscription(query)
   } catch (e) {
-    if (isAxiosError(e)) {
-      if (isNotFound(e)) {
-        return {
-          status: e.response.status,
-          body: e.response.data,
-        }
-      }
-
-      if (isTimeout(e)) {
-        const cache = await redis.get(redisKey)
-
-        if (cache) {
-          return {
-            status: 200,
-            body: JSON.parse(cache),
-          }
-        }
-      }
+    if (isPrismaErrorNotFound(e)) {
+      throw new EntityNotFoundException('Verification code not found')
     }
-
     throw e
-  } finally {
-    await redis.set(`${redisKey}${ALIVE_SUFFIX}`, 'true')
-    await redis.expire(
-      `${redisKey}${ALIVE_SUFFIX}`,
-      BREVO_NEWSLETTER_REDIS_CACHE_TTL_SECONDS
-    )
   }
+}
+
+export const sendNewsletterConfirmationEmail = async ({
+  inscriptionDto: { email, listIds },
+  origin,
+}: {
+  inscriptionDto: NewsletterInscriptionDto
+  origin: string
+}) => {
+  const { code } = await generateVerificationCode({
+    verificationCodeDto: { email },
+    expirationDate: dayjs().add(1, 'day').toDate(),
+  })
+
+  return sendNewsLetterConfirmationEmail({
+    newsLetterConfirmationBaseUrl: config.app.serverUrl,
+    listIds,
+    origin,
+    email,
+    code,
+  })
 }
