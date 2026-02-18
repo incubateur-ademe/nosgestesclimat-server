@@ -65,7 +65,12 @@ const checkIfConditionIsTrue = ({
     .split(/(\s*[=<>]\s*)/)
     .map((s) => s.trim())
 
-  if (!dottedName) {
+  if (
+    !dottedName ||
+    // if the dottedName is not in the situation (default or no show) we consider the condition as false
+    situation[dottedName] === undefined ||
+    situation[dottedName] === null
+  ) {
     return false
   }
 
