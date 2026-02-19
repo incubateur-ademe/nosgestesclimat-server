@@ -41,7 +41,7 @@ export function getCookieOptions(origin: string): CookieOptions {
   }
 }
 
-export const COOKIE_NAME = 'ngcjwt2'
+export const COOKIE_NAME = config.security.cookie.name
 
 export const generateRandomVerificationCode = () =>
   Math.floor(
