@@ -15,8 +15,8 @@ importers:
         specifier: ^3.933.0
         version: 3.933.0
       '@incubateur-ademe/nosgestesclimat':
-        specifier: ^4.8.1
-        version: 4.8.1(publicodes@1.9.1)
+        specifier: 4.9.1
+        version: 4.9.1(publicodes@1.9.1)
       '@prisma/client':
         specifier: ^6.19.0
         version: 6.19.0(prisma@6.19.0(typescript@5.9.3))(typescript@5.9.3)
@@ -673,8 +673,8 @@ packages:
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
 
-  '@incubateur-ademe/nosgestesclimat@4.8.1':
-    resolution: {integrity: sha512-f9wuK1+L469J/YEkuKXE2s9kdyNiCBRJMhNSHf3ADPY9H4Uo8Qv8ffpbcizoBV4v5BWINpfUPQRj1+qs2LHDjA==}
+  '@incubateur-ademe/nosgestesclimat@4.9.1':
+    resolution: {integrity: sha512-628sdz9NcMQnOaML6TrBl4yKBo82yox72Tgt3ll9tgHq22/MfI6ZqvdplKZbMp4VjO2xfgQLEZxYwpFCYj/XoA==}
     engines: {node: '>=22'}
     peerDependencies:
       publicodes: ^1.8.5
@@ -5051,7 +5051,7 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
-  '@incubateur-ademe/nosgestesclimat@4.8.1(publicodes@1.9.1)':
+  '@incubateur-ademe/nosgestesclimat@4.9.1(publicodes@1.9.1)':
     dependencies:
       publicodes: 1.9.1
 
