@@ -101,6 +101,48 @@ describe('Given a NGC user', () => {
       })
     })
 
+    describe('And several simulations exist with different dates', () => {
+      let simulations: Awaited<ReturnType<typeof createSimulation>>[]
+      let userId: string
+
+      beforeEach(async () => {
+        userId = faker.string.uuid()
+
+        // Created in insertion order: older, newer, middle
+        // to prove ordering is by date, not insertion order
+        const olderSimulation = await createSimulation({
+          agent,
+          userId,
+          simulation: getSimulationPayload({ date: new Date('2024-01-01') }),
+        })
+
+        const newerSimulation = await createSimulation({
+          agent,
+          userId,
+          simulation: getSimulationPayload({ date: new Date('2024-06-01') }),
+        })
+
+        const middleSimulation = await createSimulation({
+          agent,
+          userId,
+          simulation: getSimulationPayload({ date: new Date('2024-03-01') }),
+        })
+
+        // Expected order: newest date first
+        simulations = [newerSimulation, middleSimulation, olderSimulation]
+      })
+
+      test(`Then it returns a ${StatusCodes.OK} response with simulations ordered by date descending`, async () => {
+        const response = await agent
+          .get(url.replace(':userId', userId))
+          .expect(StatusCodes.OK)
+
+        expect(response.body.map((s: { id: string }) => s.id)).toEqual(
+          simulations.map((s) => s.id)
+        )
+      })
+    })
+
     describe('And several simulations exist', () => {
       let simulations: Awaited<ReturnType<typeof createSimulation>>[]
       let userId: string
