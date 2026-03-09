@@ -9,12 +9,13 @@ import {
 } from '../../adapters/prisma/selection.js'
 import type { Session } from '../../adapters/prisma/transaction.js'
 import { batchFindMany } from '../../core/batch-find-many.js'
-import type { PaginationQuery } from '../../core/pagination.js'
+
 import type { PublicPollParams } from '../organisations/organisations.validator.js'
 import type { UserParams } from '../users/users.validator.js'
 import type {
   SimulationCreateDto,
   SimulationParticipantCreateDto,
+  SimulationsFetchQuery,
 } from './simulations.validator.js'
 
 export const createParticipantSimulation = async <
@@ -134,14 +135,12 @@ export const fetchUserSimulations = async (
   { userId }: UserParams & Partial<NonNullable<Request['user']>>,
   {
     session,
-    query: { pageSize, page },
-  }: { session: Session; query: PaginationQuery }
+    query: { pageSize, page, completedOnly },
+  }: { session: Session; query: SimulationsFetchQuery }
 ) => {
   const where = {
     ...{ userId },
-    progression: {
-      gt: 0,
-    },
+    progression: completedOnly ? 1 : { gt: 0 },
   }
 
   const [simulations, count] = await Promise.all([

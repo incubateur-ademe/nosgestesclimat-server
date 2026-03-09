@@ -10,6 +10,7 @@ import { login } from '../../authentication/__tests__/fixtures/login.fixture.js'
 import {
   createSimulation,
   FETCH_USER_SIMULATIONS_ROUTE,
+  getSimulationPayload,
 } from './fixtures/simulations.fixtures.js'
 
 vi.mock('../../../adapters/prisma/transaction', async () => ({
@@ -59,6 +60,17 @@ describe('Given a NGC user', () => {
       })
     })
 
+    describe('And invalid completedOnly queryParam', () => {
+      test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
+        await agent
+          .get(url.replace(':userId', faker.string.uuid()))
+          .query({
+            completedOnly: 'not-a-boolean',
+          })
+          .expect(StatusCodes.BAD_REQUEST)
+      })
+    })
+
     describe('And no simulation exist', () => {
       test(`Then it returns a ${StatusCodes.OK} response with an empty list`, async () => {
         const response = await agent
@@ -86,6 +98,48 @@ describe('Given a NGC user', () => {
           .expect(StatusCodes.OK)
 
         expect(response.body).toEqual([simulation])
+      })
+    })
+
+    describe('And several simulations exist with different dates', () => {
+      let simulations: Awaited<ReturnType<typeof createSimulation>>[]
+      let userId: string
+
+      beforeEach(async () => {
+        userId = faker.string.uuid()
+
+        // Created in insertion order: older, newer, middle
+        // to prove ordering is by date, not insertion order
+        const olderSimulation = await createSimulation({
+          agent,
+          userId,
+          simulation: getSimulationPayload({ date: new Date('2024-01-01') }),
+        })
+
+        const newerSimulation = await createSimulation({
+          agent,
+          userId,
+          simulation: getSimulationPayload({ date: new Date('2024-06-01') }),
+        })
+
+        const middleSimulation = await createSimulation({
+          agent,
+          userId,
+          simulation: getSimulationPayload({ date: new Date('2024-03-01') }),
+        })
+
+        // Expected order: newest date first
+        simulations = [newerSimulation, middleSimulation, olderSimulation]
+      })
+
+      test(`Then it returns a ${StatusCodes.OK} response with simulations ordered by date descending`, async () => {
+        const response = await agent
+          .get(url.replace(':userId', userId))
+          .expect(StatusCodes.OK)
+
+        expect(response.body.map((s: { id: string }) => s.id)).toEqual(
+          simulations.map((s) => s.id)
+        )
       })
     })
 
@@ -175,6 +229,61 @@ describe('Given a NGC user', () => {
               'x-total-items': '3',
             })
           )
+        })
+      })
+    })
+
+    describe('And simulations with mixed progression exist', () => {
+      let completedSimulation: Awaited<ReturnType<typeof createSimulation>>
+      let userId: string
+
+      beforeEach(async () => {
+        userId = faker.string.uuid()
+
+        await createSimulation({
+          agent,
+          userId,
+          simulation: getSimulationPayload({ progression: 0.5 }),
+        })
+
+        completedSimulation = await createSimulation({
+          agent,
+          userId,
+          simulation: getSimulationPayload({ progression: 1 }),
+        })
+      })
+
+      describe('And completedOnly is true', () => {
+        test(`Then it returns a ${StatusCodes.OK} response with only completed simulations`, async () => {
+          const response = await agent
+            .get(url.replace(':userId', userId))
+            .query({ completedOnly: true })
+            .expect(StatusCodes.OK)
+
+          expect(response.body).toHaveLength(1)
+          expect(response.body[0].id).toEqual(completedSimulation.id)
+          expect(response.body[0].progression).toEqual(1)
+        })
+      })
+
+      describe('And completedOnly is false', () => {
+        test(`Then it returns a ${StatusCodes.OK} response with all simulations`, async () => {
+          const response = await agent
+            .get(url.replace(':userId', userId))
+            .query({ completedOnly: false })
+            .expect(StatusCodes.OK)
+
+          expect(response.body).toHaveLength(2)
+        })
+      })
+
+      describe('And completedOnly is not provided', () => {
+        test(`Then it returns a ${StatusCodes.OK} response with all simulations`, async () => {
+          const response = await agent
+            .get(url.replace(':userId', userId))
+            .expect(StatusCodes.OK)
+
+          expect(response.body).toHaveLength(2)
         })
       })
     })
