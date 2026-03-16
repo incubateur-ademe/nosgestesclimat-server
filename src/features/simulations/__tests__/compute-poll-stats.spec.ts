@@ -3,7 +3,7 @@ import modelFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRule
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { prisma } from '../../../adapters/prisma/client.js'
-import { defaultSimulationSelection } from '../../../adapters/prisma/selection.js'
+import { simulationSelection } from '../../../adapters/prisma/selection.js'
 import { redis } from '../../../adapters/redis/client.js'
 import { KEYS } from '../../../adapters/redis/constant.js'
 import app from '../../../app.js'
@@ -86,7 +86,7 @@ describe('Given a poll participation', () => {
             },
           },
         },
-        select: defaultSimulationSelection,
+        select: simulationSelection,
       })
 
       event = new SimulationUpsertedAsyncEvent({

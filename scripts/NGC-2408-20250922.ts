@@ -180,7 +180,10 @@ if (deleteUser) {
         }
       }
 
-      const query = PaginationQuery.parse({})
+      const query = {
+        ...PaginationQuery.parse({}),
+        locale: 'fr' as const,
+      }
 
       while (true) {
         const { simulations } = await fetchSimulations({

@@ -252,6 +252,7 @@ describe('Given a NGC user', () => {
                 slug: pollSlug,
               },
             ],
+            groups: [],
             user: {
               id: userId,
               email: null,
@@ -527,6 +528,7 @@ describe('Given a NGC user', () => {
                   slug: pollSlug,
                 },
               ],
+              groups: [],
               user: {
                 id: userId,
                 email: null,
@@ -1133,6 +1135,7 @@ describe('Given a NGC user', () => {
                 slug: pollSlug,
               },
             ],
+            groups: [],
             user: {
               id: userId,
               email,

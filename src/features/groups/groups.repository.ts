@@ -1,7 +1,7 @@
 import {
   defaultGroupParticipantSelection,
   defaultGroupSelection,
-  defaultSimulationSelectionWithoutUser,
+  simulationSelectionWithPolls,
   defaultUserSelection,
 } from '../../adapters/prisma/selection.js'
 import type { Session } from '../../adapters/prisma/transaction.js'
@@ -90,7 +90,7 @@ export const createGroupAndUser = async (
           ...defaultGroupParticipantSelection,
           simulation: {
             select: {
-              ...defaultSimulationSelectionWithoutUser,
+              ...simulationSelectionWithPolls,
             },
           },
         },
@@ -127,7 +127,7 @@ export const updateUserGroup = (
           ...defaultGroupParticipantSelection,
           simulation: {
             select: {
-              ...defaultSimulationSelectionWithoutUser,
+              ...simulationSelectionWithPolls,
             },
           },
         },
@@ -299,7 +299,7 @@ export const fetchUserGroups = (
           ...defaultGroupParticipantSelection,
           simulation: {
             select: {
-              ...defaultSimulationSelectionWithoutUser,
+              ...simulationSelectionWithPolls,
             },
           },
         },
@@ -323,7 +323,7 @@ export const fetchUserGroup = async (
           ...defaultGroupParticipantSelection,
           simulation: {
             select: {
-              ...defaultSimulationSelectionWithoutUser,
+              ...simulationSelectionWithPolls,
             },
           },
         },

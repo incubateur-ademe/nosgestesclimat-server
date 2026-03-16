@@ -21,7 +21,7 @@ import { EntityNotFoundException } from '../../core/errors/EntityNotFoundExcepti
 import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
 import type { Locales } from '../../core/i18n/constant.js'
-import type { PaginationQuery } from '../../core/pagination.js'
+
 import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError.js'
 import { PollUpdatedEvent } from '../organisations/events/PollUpdated.event.js'
 import { findOrganisationPublicPollBySlugOrId } from '../organisations/organisations.repository.js'
@@ -30,7 +30,7 @@ import type {
   PublicPollParams,
 } from '../organisations/organisations.validator.js'
 import {
-  defaultSimulationSelection,
+  simulationSelection,
   defaultUserSelection,
   defaultVerifiedUserSelection,
 } from '../../adapters/prisma/selection.js'
@@ -54,6 +54,7 @@ import {
 import type {
   SimulationCreateDto,
   SimulationCreateQuery,
+  SimulationsFetchQuery,
   UserSimulationParams,
 } from './simulations.validator.js'
 import {
@@ -82,13 +83,15 @@ const simulationToDto = (
     verifiedUser,
     polls,
     user,
+    groups,
     ...rest
   }: Partial<
-    Prisma.SimulationGetPayload<{ select: typeof defaultSimulationSelection }>
+    Prisma.SimulationGetPayload<{ select: typeof simulationSelection }>
   >,
   connectedUser: string
 ) => ({
   ...rest,
+  groups: groups?.map(({ groupId }) => ({ id: groupId })),
   polls: polls?.map(({ pollId, poll: { slug } }) => ({ id: pollId, slug })),
   ...(user
     ? { user: user.id === connectedUser ? user : { name: user.name } }
@@ -171,7 +174,7 @@ export const createSimulation = async ({
         userId: user.id,
         email: verifiedUser?.email,
         simulation: simulationDto,
-        select: defaultSimulationSelection,
+        select: simulationSelection,
       },
       { session }
     )
@@ -203,7 +206,7 @@ export const fetchSimulations = async ({
   user,
 }: {
   params: UserParams
-  query: PaginationQuery
+  query: SimulationsFetchQuery
   user?: Request['user']
 }) => {
   const { simulations, count } = await transaction(
