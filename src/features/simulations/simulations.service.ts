@@ -30,7 +30,7 @@ import type {
   PublicPollParams,
 } from '../organisations/organisations.validator.js'
 import {
-  defaultSimulationSelection,
+  simulationSelection,
   defaultUserSelection,
   defaultVerifiedUserSelection,
 } from '../../adapters/prisma/selection.js'
@@ -83,13 +83,15 @@ const simulationToDto = (
     verifiedUser,
     polls,
     user,
+    groups,
     ...rest
   }: Partial<
-    Prisma.SimulationGetPayload<{ select: typeof defaultSimulationSelection }>
+    Prisma.SimulationGetPayload<{ select: typeof simulationSelection }>
   >,
   connectedUser: string
 ) => ({
   ...rest,
+  groups: groups?.map(({ groupId }) => ({ id: groupId })),
   polls: polls?.map(({ pollId, poll: { slug } }) => ({ id: pollId, slug })),
   ...(user
     ? { user: user.id === connectedUser ? user : { name: user.name } }
@@ -172,7 +174,7 @@ export const createSimulation = async ({
         userId: user.id,
         email: verifiedUser?.email,
         simulation: simulationDto,
-        select: defaultSimulationSelection,
+        select: simulationSelection,
       },
       { session }
     )

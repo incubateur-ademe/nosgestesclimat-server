@@ -175,6 +175,7 @@ describe('Given a NGC user', () => {
           additionalQuestionsAnswers: [],
           foldedSteps: [],
           polls: [],
+          groups: [],
           user: {
             id: userId,
             email: null,
@@ -342,6 +343,7 @@ describe('Given a NGC user', () => {
             actionChoices: {},
             foldedSteps: [],
             polls: [],
+            groups: [],
             user: {
               id: userId,
               email: null,
@@ -1107,6 +1109,7 @@ describe('Given a NGC user', () => {
           additionalQuestionsAnswers: [],
           foldedSteps: [],
           polls: [],
+          groups: [],
           user: {
             id: userId,
             email,
@@ -1853,6 +1856,7 @@ describe('Given a NGC user', () => {
             additionalQuestionsAnswers: [],
             foldedSteps: [],
             polls: [],
+            groups: [],
             user: {
               id: userId,
               email,

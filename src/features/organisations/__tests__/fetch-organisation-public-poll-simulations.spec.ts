@@ -98,6 +98,7 @@ describe('Given a NGC user', () => {
             ReturnType<typeof createOrganisationPollSimulation>
           >
           let _simulationPolls: unknown
+          let _groups: unknown
           let _situation: unknown
           let _foldedSteps: unknown
           let _actionChoices: unknown
@@ -106,6 +107,7 @@ describe('Given a NGC user', () => {
           beforeEach(async () => {
             ;({
               polls: _simulationPolls,
+              groups: _groups,
               situation: _situation,
               foldedSteps: _foldedSteps,
               actionChoices: _actionChoices,
@@ -155,6 +157,7 @@ describe('Given a NGC user', () => {
             beforeEach(async () => {
               ;({
                 polls: _simulationPolls,
+                groups: _groups,
                 user: _user2,
                 situation: _situation2,
                 foldedSteps: _foldedSteps2,
@@ -361,6 +364,7 @@ describe('Given a NGC user', () => {
             simulations = []
             while (simulations.length < 3) {
               const {
+                groups: _groups,
                 situation: _situation,
                 foldedSteps: _foldedSteps,
                 actionChoices: _actionChoices,
@@ -495,6 +499,7 @@ describe('Given a NGC user', () => {
           simulations = []
           while (simulations.length < 3) {
             const {
+              groups: _groups,
               situation: _situation,
               foldedSteps: _foldedSteps,
               actionChoices: _actionChoices,

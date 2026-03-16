@@ -319,7 +319,7 @@ model Simulation {
   states                     SimulationState[]
   additionalQuestionsAnswers SimulationAdditionalQuestionAnswer[]
   polls                      SimulationPoll[]
-  participants               GroupParticipant[]
+  groups                     GroupParticipant[]
   userId                     String                               @db.Uuid
   user                       User                                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   userEmail                  String?

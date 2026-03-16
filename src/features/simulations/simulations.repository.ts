@@ -3,9 +3,9 @@ import type { Request } from 'express'
 import {
   defaultOrganisationSelectionWithoutPolls,
   defaultPollSelection,
-  defaultSimulationSelection,
+  simulationSelection,
   defaultSimulationSelectionWithoutPollAndSituation,
-  defaultSimulationSelectionWithoutUser,
+  simulationSelectionWithPolls,
 } from '../../adapters/prisma/selection.js'
 import type { Session } from '../../adapters/prisma/transaction.js'
 import { batchFindMany } from '../../core/batch-find-many.js'
@@ -19,8 +19,7 @@ import type {
 } from './simulations.validator.js'
 
 export const createParticipantSimulation = async <
-  T extends
-    Prisma.SimulationSelect = typeof defaultSimulationSelectionWithoutUser,
+  T extends Prisma.SimulationSelect = typeof simulationSelectionWithPolls,
 >(
   {
     email,
@@ -37,7 +36,7 @@ export const createParticipantSimulation = async <
       extendedSituation,
       additionalQuestionsAnswers,
     },
-    select = defaultSimulationSelectionWithoutUser as T,
+    select = simulationSelectionWithPolls as T,
   }: {
     email?: string
     userId: string
@@ -148,7 +147,7 @@ export const fetchUserSimulations = async (
       where,
       skip: page * pageSize,
       take: pageSize,
-      select: defaultSimulationSelection,
+      select: simulationSelection,
       orderBy: {
         date: 'desc',
       },
@@ -170,7 +169,7 @@ export const fetchSimulationById = (
     where: {
       id: simulationId,
     },
-    select: defaultSimulationSelection,
+    select: simulationSelection,
   })
 }
 
@@ -207,7 +206,7 @@ export const createPollUserSimulation = async (
     {
       ...params,
       simulation: simulationDto,
-      select: defaultSimulationSelection,
+      select: simulationSelection,
     },
     { session }
   )
@@ -225,7 +224,7 @@ export const createPollUserSimulation = async (
     update: {},
     select: {
       simulation: {
-        select: defaultSimulationSelection,
+        select: simulationSelection,
       },
       poll: {
         select: {
@@ -316,13 +315,12 @@ export const fetchPollSimulations = <
 }
 
 export const batchPollSimulations = <
-  T extends
-    Prisma.SimulationSelect = typeof defaultSimulationSelectionWithoutUser,
+  T extends Prisma.SimulationSelect = typeof simulationSelectionWithPolls,
 >(
   {
     id,
     batchSize = 100,
-    select = defaultSimulationSelection as T,
+    select = simulationSelection as T,
   }: {
     id: string
     batchSize?: number
