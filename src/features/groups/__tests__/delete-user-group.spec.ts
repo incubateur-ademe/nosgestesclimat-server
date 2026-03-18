@@ -28,7 +28,12 @@ describe('Given a NGC user', () => {
       prisma.groupAdministrator.deleteMany(),
       prisma.groupParticipant.deleteMany(),
     ])
-    await Promise.all([prisma.user.deleteMany(), prisma.group.deleteMany()])
+    await Promise.all([
+      prisma.user.deleteMany(),
+      prisma.group.deleteMany(),
+      prisma.verificationCode.deleteMany(),
+      prisma.verifiedUser.deleteMany(),
+    ])
   })
 
   describe('When deleting his group', () => {
@@ -76,29 +81,15 @@ describe('Given a NGC user', () => {
           .expect(StatusCodes.NO_CONTENT)
       })
 
-      describe('And another participant joined leaving his email', () => {
-        let participantUserEmail: string
+      describe('And another participant joined', () => {
+        beforeEach(async () => {
+          await joinGroup({
+            agent,
+            groupId,
+          })
+        })
 
-        beforeEach(
-          async () =>
-            ({ email: participantUserEmail } = await joinGroup({
-              agent,
-              groupId,
-              participant: {
-                email: faker.internet.email(),
-              },
-            }))
-        )
-
-        test('Then it updates group participant in brevo', async () => {
-          mswServer.use(
-            brevoRemoveFromList(30, {
-              expectBody: {
-                emails: [participantUserEmail],
-              },
-            })
-          )
-
+        test(`Then it returns a ${StatusCodes.NO_CONTENT} response`, async () => {
           await agent
             .delete(
               url
@@ -130,11 +121,6 @@ describe('Given a NGC user', () => {
         } = await createGroup({
           agent,
           group: {
-            administrator: {
-              userId: faker.string.uuid(),
-              email: faker.internet.email(),
-              name: faker.person.fullName(),
-            },
             participants: [{ simulation }],
           },
         }))
@@ -182,13 +168,6 @@ describe('Given a NGC user', () => {
             administrator: { id: administratorId },
           } = await createGroup({
             agent,
-            group: {
-              administrator: {
-                userId: faker.string.uuid(),
-                email: faker.internet.email(),
-                name: faker.person.fullName(),
-              },
-            },
           }))
       )
 

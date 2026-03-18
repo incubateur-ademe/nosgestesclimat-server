@@ -51,6 +51,10 @@ router
 
       return res.status(StatusCodes.CREATED).json(group)
     } catch (err) {
+      if (err instanceof ForbiddenException) {
+        return res.status(StatusCodes.FORBIDDEN).send(err.message).end()
+      }
+
       logger.error('Group creation failed', err)
 
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()

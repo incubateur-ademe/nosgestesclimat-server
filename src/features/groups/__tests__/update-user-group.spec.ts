@@ -25,7 +25,12 @@ describe('Given a NGC user', () => {
       prisma.groupAdministrator.deleteMany(),
       prisma.groupParticipant.deleteMany(),
     ])
-    await Promise.all([prisma.user.deleteMany(), prisma.group.deleteMany()])
+    await Promise.all([
+      prisma.user.deleteMany(),
+      prisma.group.deleteMany(),
+      prisma.verificationCode.deleteMany(),
+      prisma.verifiedUser.deleteMany(),
+    ])
   })
 
   describe('When updating one of his groups', () => {
@@ -119,11 +124,6 @@ describe('Given a NGC user', () => {
         group = await createGroup({
           agent,
           group: {
-            administrator: {
-              userId: faker.string.uuid(),
-              email: faker.internet.email(),
-              name: faker.person.fullName(),
-            },
             participants: [{ simulation }],
           },
         })
@@ -202,13 +202,6 @@ describe('Given a NGC user', () => {
       beforeEach(async () => {
         group = await createGroup({
           agent,
-          group: {
-            administrator: {
-              userId: faker.string.uuid(),
-              email: faker.internet.email(),
-              name: faker.person.fullName(),
-            },
-          },
         })
         ;({
           id: groupId,

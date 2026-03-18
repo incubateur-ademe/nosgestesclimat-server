@@ -12,6 +12,7 @@ import app from '../../../app.js'
 import { mswServer } from '../../../core/__tests__/fixtures/server.fixture.js'
 import { EventBus } from '../../../core/event-bus/event-bus.js'
 import logger from '../../../logger.js'
+import { login } from '../../authentication/__tests__/fixtures/login.fixture.js'
 import { getSimulationPayload } from '../../simulations/__tests__/fixtures/simulations.fixtures.js'
 import type { GroupCreateInputDto } from '../groups.validator.js'
 import { CREATE_GROUP_ROUTE } from './fixtures/groups.fixture.js'
@@ -25,7 +26,12 @@ describe('Given a NGC user', () => {
       prisma.groupAdministrator.deleteMany(),
       prisma.groupParticipant.deleteMany(),
     ])
-    await Promise.all([prisma.user.deleteMany(), prisma.group.deleteMany()])
+    await Promise.all([
+      prisma.user.deleteMany(),
+      prisma.group.deleteMany(),
+      prisma.verificationCode.deleteMany(),
+      prisma.verifiedUser.deleteMany(),
+    ])
   })
 
   describe('When creating his group', () => {
@@ -35,7 +41,7 @@ describe('Given a NGC user', () => {
       })
     })
 
-    describe('And invalid email', () => {
+    describe('And unknown field in administrator', () => {
       test(`Then it returns a ${StatusCodes.BAD_REQUEST} error`, async () => {
         await agent
           .post(url)
@@ -187,110 +193,126 @@ describe('Given a NGC user', () => {
       })
     })
 
-    describe('And he does not have a simulation', () => {
-      test(`Then it returns a ${StatusCodes.CREATED} response with the created group`, async () => {
-        const userId = faker.string.uuid()
-        const name = faker.person.fullName()
-        const payload: GroupCreateInputDto = {
-          name: faker.company.name(),
-          emoji: faker.internet.emoji(),
-          administrator: {
-            userId,
-            name,
-          },
-        }
-
-        const response = await agent
+    describe('And user is not verified', () => {
+      test(`Then it returns a ${StatusCodes.FORBIDDEN} error`, async () => {
+        await agent
           .post(url)
-          .send(payload)
-          .expect(StatusCodes.CREATED)
-
-        expect(response.body).toEqual({
-          ...payload,
-          id: expect.any(String),
-          createdAt: expect.any(String),
-          updatedAt: expect.any(String),
-          participants: [],
-          administrator: {
-            id: userId,
-            name,
-            createdAt: expect.any(String),
-            updatedAt: expect.any(String),
-            email: null,
-          },
-        })
-      })
-
-      test('Then it stores a group in database', async () => {
-        const userId = faker.string.uuid()
-        const email = faker.internet.email().toLocaleLowerCase()
-        const name = faker.person.fullName()
-        const payload: GroupCreateInputDto = {
-          name: faker.company.name(),
-          emoji: faker.internet.emoji(),
-          administrator: {
-            userId,
-            email,
-            name,
-          },
-        }
-
-        const {
-          body: { id },
-        } = await agent.post(url).send(payload).expect(StatusCodes.CREATED)
-
-        const createdGroup = await prisma.group.findUnique({
-          where: {
-            id,
-          },
-          select: {
-            id: true,
-            name: true,
-            emoji: true,
+          .send({
+            name: faker.company.name(),
+            emoji: faker.internet.emoji(),
             administrator: {
-              select: {
-                user: true,
-              },
+              userId: faker.string.uuid(),
+              name: faker.person.fullName(),
             },
-            participants: {
-              select: {
-                user: true,
-              },
-            },
-            updatedAt: true,
-            createdAt: true,
-          },
-        })
+          })
+          .expect(StatusCodes.FORBIDDEN)
+      })
+    })
 
-        expect(createdGroup).toEqual({
-          ...payload,
-          id,
-          createdAt: expect.any(Date),
-          updatedAt: expect.any(Date),
-          administrator: {
-            user: {
-              id: userId,
-              name,
-              email,
-              createdAt: expect.any(Date),
-              updatedAt: expect.any(Date),
-            },
-          },
-          participants: [],
-        })
+    describe('And user is verified', () => {
+      let userId: string
+      let email: string
+
+      beforeEach(async () => {
+        ;({ userId, email } = await login({ agent }))
       })
 
-      describe('And leaving his/her email', () => {
-        test('Then it does not send a creation email', async () => {
-          const email = faker.internet.email().toLocaleLowerCase()
-          const userId = faker.string.uuid()
+      describe('And he does not have a simulation', () => {
+        test(`Then it returns a ${StatusCodes.CREATED} response with the created group`, async () => {
           const name = faker.person.fullName()
           const payload: GroupCreateInputDto = {
             name: faker.company.name(),
             emoji: faker.internet.emoji(),
             administrator: {
               userId,
-              email,
+              name,
+            },
+          }
+
+          const response = await agent
+            .post(url)
+            .send(payload)
+            .expect(StatusCodes.CREATED)
+
+          expect(response.body).toEqual({
+            ...payload,
+            id: expect.any(String),
+            createdAt: expect.any(String),
+            updatedAt: expect.any(String),
+            participants: [],
+            administrator: {
+              id: userId,
+              name,
+              createdAt: expect.any(String),
+              updatedAt: expect.any(String),
+              email: expect.any(String),
+            },
+          })
+        })
+
+        test('Then it stores a group in database', async () => {
+          const name = faker.person.fullName()
+          const payload: GroupCreateInputDto = {
+            name: faker.company.name(),
+            emoji: faker.internet.emoji(),
+            administrator: {
+              userId,
+              name,
+            },
+          }
+
+          const {
+            body: { id },
+          } = await agent.post(url).send(payload).expect(StatusCodes.CREATED)
+
+          const createdGroup = await prisma.group.findUnique({
+            where: {
+              id,
+            },
+            select: {
+              id: true,
+              name: true,
+              emoji: true,
+              administrator: {
+                select: {
+                  user: true,
+                },
+              },
+              participants: {
+                select: {
+                  user: true,
+                },
+              },
+              updatedAt: true,
+              createdAt: true,
+            },
+          })
+
+          expect(createdGroup).toEqual({
+            ...payload,
+            id,
+            createdAt: expect.any(Date),
+            updatedAt: expect.any(Date),
+            administrator: {
+              user: {
+                id: userId,
+                name,
+                email: expect.any(String),
+                createdAt: expect.any(Date),
+                updatedAt: expect.any(Date),
+              },
+            },
+            participants: [],
+          })
+        })
+
+        test('Then it does not send a creation email', async () => {
+          const name = faker.person.fullName()
+          const payload: GroupCreateInputDto = {
+            name: faker.company.name(),
+            emoji: faker.internet.emoji(),
+            administrator: {
+              userId,
               name,
             },
           }
@@ -299,15 +321,12 @@ describe('Given a NGC user', () => {
         })
 
         test('Then it does not add or update administrator contact in brevo', async () => {
-          const email = faker.internet.email().toLocaleLowerCase()
-          const userId = faker.string.uuid()
           const name = faker.person.fullName()
           const payload: GroupCreateInputDto = {
             name: faker.company.name(),
             emoji: faker.internet.emoji(),
             administrator: {
               userId,
-              email,
               name,
             },
           }
@@ -315,152 +334,150 @@ describe('Given a NGC user', () => {
           await agent.post(url).send(payload).expect(StatusCodes.CREATED)
         })
       })
-    })
 
-    describe('And he does have a simulation', () => {
-      test(`Then it returns a ${StatusCodes.CREATED} response with the created group`, async () => {
-        const userId = faker.string.uuid()
-        const name = faker.person.fullName()
-        const simulation = getSimulationPayload()
-        const payload: GroupCreateInputDto = {
-          name: faker.company.name(),
-          emoji: faker.internet.emoji(),
-          administrator: {
-            userId,
-            name,
-          },
-          participants: [
-            {
-              simulation,
-            },
-          ],
-        }
-
-        const response = await agent
-          .post(url)
-          .send(payload)
-          .expect(StatusCodes.CREATED)
-
-        expect(response.body).toEqual({
-          ...payload,
-          id: expect.any(String),
-          administrator: {
-            id: userId,
-            name,
-            createdAt: expect.any(String),
-            updatedAt: expect.any(String),
-            email: null,
-          },
-          participants: [
-            {
-              id: expect.any(String),
-              ...payload.administrator,
-              email: null,
-              simulation: {
-                ...simulation,
-                date: expect.any(String),
-                createdAt: expect.any(String),
-                updatedAt: expect.any(String),
-                polls: [],
-                foldedSteps: [],
-                actionChoices: {},
-                additionalQuestionsAnswers: [],
-              },
-              createdAt: expect.any(String),
-              updatedAt: expect.any(String),
-            },
-          ],
-          createdAt: expect.any(String),
-          updatedAt: expect.any(String),
-        })
-      })
-
-      test('Then it stores a group in database', async () => {
-        const userId = faker.string.uuid()
-        const email = faker.internet.email().toLocaleLowerCase()
-        const name = faker.person.fullName()
-        const simulation = getSimulationPayload()
-        const payload: GroupCreateInputDto = {
-          name: faker.company.name(),
-          emoji: faker.internet.emoji(),
-          administrator: {
-            userId,
-            email,
-            name,
-          },
-          participants: [
-            {
-              simulation,
-            },
-          ],
-        }
-
-        mswServer.use(brevoSendEmail(), brevoUpdateContact())
-
-        const {
-          body: { id },
-        } = await agent.post(url).send(payload).expect(StatusCodes.CREATED)
-
-        const createdGroup = await prisma.group.findUnique({
-          where: {
-            id,
-          },
-          select: {
-            id: true,
-            name: true,
-            emoji: true,
+      describe('And he does have a simulation', () => {
+        test(`Then it returns a ${StatusCodes.CREATED} response with the created group`, async () => {
+          const name = faker.person.fullName()
+          const simulation = getSimulationPayload()
+          const payload: GroupCreateInputDto = {
+            name: faker.company.name(),
+            emoji: faker.internet.emoji(),
             administrator: {
-              select: {
-                user: true,
-              },
+              userId,
+              name,
             },
-            participants: {
-              select: {
-                id: true,
-                simulationId: true,
-                user: true,
+            participants: [
+              {
+                simulation,
               },
-            },
-            updatedAt: true,
-            createdAt: true,
-          },
-        })
+            ],
+          }
 
-        expect(createdGroup).toEqual({
-          ...payload,
-          id,
-          createdAt: expect.any(Date),
-          updatedAt: expect.any(Date),
-          administrator: {
-            user: {
+          mswServer.use(brevoSendEmail(), brevoUpdateContact())
+
+          const response = await agent
+            .post(url)
+            .send(payload)
+            .expect(StatusCodes.CREATED)
+
+          await EventBus.flush()
+
+          expect(response.body).toEqual({
+            ...payload,
+            id: expect.any(String),
+            administrator: {
               id: userId,
               name,
-              email,
-              createdAt: expect.any(Date),
-              updatedAt: expect.any(Date),
+              createdAt: expect.any(String),
+              updatedAt: expect.any(String),
+              email: expect.any(String),
             },
-          },
-          participants: [
-            {
-              id: expect.any(String),
-              simulationId: simulation.id,
+            participants: [
+              {
+                id: expect.any(String),
+                ...payload.administrator,
+                email: expect.any(String),
+                simulation: {
+                  ...simulation,
+                  date: expect.any(String),
+                  createdAt: expect.any(String),
+                  updatedAt: expect.any(String),
+                  polls: [],
+                  foldedSteps: [],
+                  actionChoices: {},
+                  additionalQuestionsAnswers: [],
+                },
+                createdAt: expect.any(String),
+                updatedAt: expect.any(String),
+              },
+            ],
+            createdAt: expect.any(String),
+            updatedAt: expect.any(String),
+          })
+        })
+
+        test('Then it stores a group in database', async () => {
+          const name = faker.person.fullName()
+          const simulation = getSimulationPayload()
+          const payload: GroupCreateInputDto = {
+            name: faker.company.name(),
+            emoji: faker.internet.emoji(),
+            administrator: {
+              userId,
+              name,
+            },
+            participants: [
+              {
+                simulation,
+              },
+            ],
+          }
+
+          mswServer.use(brevoSendEmail(), brevoUpdateContact())
+
+          const {
+            body: { id },
+          } = await agent.post(url).send(payload).expect(StatusCodes.CREATED)
+
+          await EventBus.flush()
+
+          const createdGroup = await prisma.group.findUnique({
+            where: {
+              id,
+            },
+            select: {
+              id: true,
+              name: true,
+              emoji: true,
+              administrator: {
+                select: {
+                  user: true,
+                },
+              },
+              participants: {
+                select: {
+                  id: true,
+                  simulationId: true,
+                  user: true,
+                },
+              },
+              updatedAt: true,
+              createdAt: true,
+            },
+          })
+
+          expect(createdGroup).toEqual({
+            ...payload,
+            id,
+            createdAt: expect.any(Date),
+            updatedAt: expect.any(Date),
+            administrator: {
               user: {
                 id: userId,
                 name,
-                email,
+                email: expect.any(String),
                 createdAt: expect.any(Date),
                 updatedAt: expect.any(Date),
               },
             },
-          ],
+            participants: [
+              {
+                id: expect.any(String),
+                simulationId: simulation.id,
+                user: {
+                  id: userId,
+                  name,
+                  email: expect.any(String),
+                  createdAt: expect.any(Date),
+                  updatedAt: expect.any(Date),
+                },
+              },
+            ],
+          })
         })
-      })
 
-      describe('And leaving his/her email', () => {
         test('Then it adds or updates group administrator in brevo', async () => {
           const date = new Date()
-          const email = faker.internet.email().toLocaleLowerCase()
-          const userId = faker.string.uuid()
           const name = faker.person.fullName()
           const simulation = getSimulationPayload({ date })
           const { computedResults } = simulation
@@ -469,7 +486,6 @@ describe('Given a NGC user', () => {
             emoji: faker.internet.emoji(),
             administrator: {
               userId,
-              email,
               name,
             },
             participants: [
@@ -555,8 +571,6 @@ describe('Given a NGC user', () => {
         })
 
         test('Then it sends a creation email', async () => {
-          const email = faker.internet.email().toLocaleLowerCase()
-          const userId = faker.string.uuid()
           const name = faker.person.fullName()
           const simulation = getSimulationPayload()
           const payload: GroupCreateInputDto = {
@@ -564,7 +578,6 @@ describe('Given a NGC user', () => {
             emoji: faker.internet.emoji(),
             administrator: {
               userId,
-              email,
               name,
             },
             participants: [
@@ -615,8 +628,6 @@ describe('Given a NGC user', () => {
 
         describe('And custom user origin (preprod)', () => {
           test('Then it sends a creation email', async () => {
-            const email = faker.internet.email().toLocaleLowerCase()
-            const userId = faker.string.uuid()
             const name = faker.person.fullName()
             const simulation = getSimulationPayload()
             const payload: GroupCreateInputDto = {
@@ -624,7 +635,6 @@ describe('Given a NGC user', () => {
               emoji: faker.internet.emoji(),
               administrator: {
                 userId,
-                email,
                 name,
               },
               participants: [

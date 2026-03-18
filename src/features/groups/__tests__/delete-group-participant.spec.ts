@@ -2,10 +2,7 @@ import { faker } from '@faker-js/faker'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import {
-  brevoRemoveFromList,
-  brevoUpdateContact,
-} from '../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
+import { brevoUpdateContact } from '../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
 import { prisma } from '../../../adapters/prisma/client.js'
 import * as prismaTransactionAdapter from '../../../adapters/prisma/transaction.js'
 import app from '../../../app.js'
@@ -28,7 +25,12 @@ describe('Given a NGC user', () => {
       prisma.groupAdministrator.deleteMany(),
       prisma.groupParticipant.deleteMany(),
     ])
-    await Promise.all([prisma.user.deleteMany(), prisma.group.deleteMany()])
+    await Promise.all([
+      prisma.user.deleteMany(),
+      prisma.group.deleteMany(),
+      prisma.verificationCode.deleteMany(),
+      prisma.verifiedUser.deleteMany(),
+    ])
   })
 
   describe("When trying to leave another administrator's group", () => {
@@ -154,48 +156,6 @@ describe('Given a NGC user', () => {
           })
         })
       })
-
-      describe('And he did join leaving his/her email', () => {
-        let participantId: string
-        let userId: string
-        let participantUserEmail: string
-
-        beforeEach(
-          async () =>
-            ({
-              id: participantId,
-              userId,
-              email: participantUserEmail,
-            } = await joinGroup({
-              agent,
-              groupId,
-              participant: {
-                email: faker.internet.email(),
-              },
-            }))
-        )
-
-        test('Then it updates group participant in brevo', async () => {
-          mswServer.use(
-            brevoRemoveFromList(30, {
-              expectBody: {
-                emails: [participantUserEmail],
-              },
-            })
-          )
-
-          await agent
-            .delete(
-              url
-                .replace(':groupId', groupId)
-                .replace(':participantId', participantId)
-                .replace(':userId', userId)
-            )
-            .expect(StatusCodes.NO_CONTENT)
-
-          await EventBus.flush()
-        })
-      })
     })
 
     describe('And group does exist And administrator left his/her email', () => {
@@ -218,11 +178,6 @@ describe('Given a NGC user', () => {
         } = await createGroup({
           agent,
           group: {
-            administrator: {
-              userId: faker.string.uuid(),
-              email: faker.internet.email(),
-              name: faker.person.fullName(),
-            },
             participants: [{ simulation }],
           },
         }))
@@ -279,13 +234,6 @@ describe('Given a NGC user', () => {
         async () =>
           ({ id: groupId } = await createGroup({
             agent,
-            group: {
-              administrator: {
-                userId: faker.string.uuid(),
-                email: faker.internet.email(),
-                name: faker.person.fullName(),
-              },
-            },
           }))
       )
 
@@ -414,6 +362,8 @@ describe('Given a NGC user', () => {
     })
 
     test(`Then it returns a ${StatusCodes.NO_CONTENT} response`, async () => {
+      mswServer.use(brevoUpdateContact())
+
       await agent
         .delete(
           url
@@ -422,6 +372,8 @@ describe('Given a NGC user', () => {
             .replace(':userId', userId)
         )
         .expect(StatusCodes.NO_CONTENT)
+
+      await EventBus.flush()
     })
   })
 })

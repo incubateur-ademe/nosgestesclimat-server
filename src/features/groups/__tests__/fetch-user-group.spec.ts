@@ -25,7 +25,12 @@ describe('Given a NGC user', () => {
       prisma.groupAdministrator.deleteMany(),
       prisma.groupParticipant.deleteMany(),
     ])
-    await Promise.all([prisma.user.deleteMany(), prisma.group.deleteMany()])
+    await Promise.all([
+      prisma.user.deleteMany(),
+      prisma.group.deleteMany(),
+      prisma.verificationCode.deleteMany(),
+      prisma.verifiedUser.deleteMany(),
+    ])
   })
 
   describe('When fetching one of his groups', () => {

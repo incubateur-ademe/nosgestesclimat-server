@@ -2,9 +2,11 @@ import { faker } from '@faker-js/faker'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { brevoSendEmail } from '../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
 import { prisma } from '../../../adapters/prisma/client.js'
 import * as prismaTransactionAdapter from '../../../adapters/prisma/transaction.js'
 import app from '../../../app.js'
+import { mswServer } from '../../../core/__tests__/fixtures/server.fixture.js'
 import logger from '../../../logger.js'
 import { getSimulationPayload } from '../../simulations/__tests__/fixtures/simulations.fixtures.js'
 import {
@@ -26,7 +28,12 @@ describe('Given a NGC user', () => {
       prisma.groupAdministrator.deleteMany(),
       prisma.groupParticipant.deleteMany(),
     ])
-    await Promise.all([prisma.user.deleteMany(), prisma.group.deleteMany()])
+    await Promise.all([
+      prisma.user.deleteMany(),
+      prisma.group.deleteMany(),
+      prisma.verificationCode.deleteMany(),
+      prisma.verifiedUser.deleteMany(),
+    ])
   })
 
   describe('When fetching his groups', () => {
@@ -82,53 +89,50 @@ describe('Given a NGC user', () => {
 
       beforeEach(async () => {
         // User 1 group
-        user1Id = faker.string.uuid()
         simulationUser1 = getSimulationPayload()
         group1 = await createGroup({
           agent,
           group: {
-            administrator: {
-              userId: user1Id,
-              name: faker.person.fullName(),
-              email: faker.internet.email(),
-            },
             participants: [{ simulation: simulationUser1 }],
           },
         })
+        user1Id = group1.administrator.id
         ;({
           participants: [{ id: participant1Group1Id }],
         } = group1)
 
-        user2Id = faker.string.uuid()
+        // User 2 group
+        simulationUser2 = getSimulationPayload()
+        group2 = await createGroup({
+          agent,
+          group: {
+            participants: [{ simulation: simulationUser2 }],
+          },
+        })
+        user2Id = group2.administrator.id
+        ;({
+          participants: [{ id: participant2Group2Id }],
+        } = group2)
 
         // User 2 joins user 1 group
-        simulationUser2 = getSimulationPayload()
+        // The joinGroup fixture checks for any existing group participation to
+        // decide whether to register brevoSendEmail(). Since user2 already
+        // participates in group2, the fixture skips it. However, the server
+        // still sends an email for each *new* group join, so we register the
+        // missing handler here.
+        mswServer.use(brevoSendEmail())
         ;({ id: participant2Group1Id } = await joinGroup({
           agent,
           groupId: group1.id,
           participant: {
             userId: user2Id,
+            name: group2.administrator.name,
             simulation: simulationUser2,
           },
         }))
 
-        // User 2 group
-        group2 = await createGroup({
-          agent,
-          group: {
-            administrator: {
-              userId: user2Id,
-              name: faker.person.fullName(),
-              email: faker.internet.email(),
-            },
-            participants: [{ simulation: simulationUser2 }],
-          },
-        })
-        ;({
-          participants: [{ id: participant2Group2Id }],
-        } = group2)
-
         // User 1 joins user 2 group
+        mswServer.use(brevoSendEmail())
         ;({ id: participant1Group2Id } = await joinGroup({
           agent,
           groupId: group2.id,
