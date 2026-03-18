@@ -9,6 +9,15 @@ import type {
 } from '../../adapters/prisma/transaction.js'
 import type { UserUpdateDto } from './users.validator.js'
 
+/**
+ * Legacy migration function. Finds all anonymous users sharing the same
+ * email and merges their data (simulations, group participations, polls)
+ * into the target verified user.
+ *
+ * This exists to fix a previous behaviour where unverified users could
+ * have an email set. Now only verified users have emails, so this
+ * function will eventually be removed once all legacy data is migrated.
+ */
 export const transferOwnershipToUser = async (
   {
     user: { id: userId, email },
@@ -181,6 +190,72 @@ export const transferOwnershipToUser = async (
       },
     }),
   ])
+}
+
+/**
+ * Transfers simulations (and group participations) from a specific anonymous
+ * user to a verified user, identified directly by their previous userId.
+ *
+ * Unlike `transferOwnershipToUser`, this function does not rely on email
+ * matching — it uses the explicit previousUserId, which makes it safe for
+ * the signIn login path where the anonymous user may not have an email set.
+ */
+export const transferSimulationsFromUser = async (
+  {
+    user: { id: userId, email },
+    previousUserId,
+  }: {
+    user: { id: string; email: string }
+    previousUserId: string
+  },
+  { session }: { session: Session }
+) => {
+  if (previousUserId === userId) {
+    return
+  }
+
+  const previousUser = await session.user.findUnique({
+    where: { id: previousUserId },
+    select: { id: true, name: true },
+  })
+
+  if (!previousUser) {
+    return
+  }
+
+  const [targetGroupIds] = await Promise.all([
+    session.groupParticipant
+      .findMany({
+        where: { userId },
+        select: { groupId: true },
+      })
+      .then(
+        (participants) => new Set(participants.map(({ groupId }) => groupId))
+      ),
+    session.simulation.updateMany({
+      where: { userId: previousUserId },
+      data: {
+        userId,
+        userEmail: email,
+      },
+    }),
+  ])
+
+  await session.groupParticipant.deleteMany({
+    where: {
+      userId: previousUserId,
+      groupId: { in: Array.from(targetGroupIds) },
+    },
+  })
+
+  await session.groupParticipant.updateMany({
+    where: { userId: previousUserId },
+    data: { userId },
+  })
+
+  await session.user.deleteMany({
+    where: { id: previousUserId },
+  })
 }
 
 export const fetchUser = <

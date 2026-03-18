@@ -2,6 +2,7 @@ import express from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { config } from '../../config.js'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
+import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
 import logger from '../../logger.js'
 import { validateRequest } from '../../middlewares/validateRequest.js'
@@ -17,11 +18,13 @@ import { sendBrevoWelcomeEmail } from './handlers/send-welcome-email.js'
 import { updateBrevoContact } from './handlers/update-brevo-contact.js'
 import { AccountCreatedEvent } from './events/AccountCreated.event.js'
 import { syncUserDataAfterAccountCreated } from './handlers/sync-user-data-after-account-created.js'
+import { reconcileSimulationsAfterLogin } from './handlers/reconcile-simulations-after-login.js'
 
 const router = express.Router()
 
 EventBus.on(LoginEvent, updateBrevoContact)
 EventBus.on(LoginEvent, sendBrevoWelcomeEmail)
+EventBus.on(LoginEvent, reconcileSimulationsAfterLogin)
 EventBus.on(AccountCreatedEvent, syncUserDataAfterAccountCreated)
 
 /**
@@ -53,6 +56,10 @@ router
       } catch (err) {
         if (err instanceof EntityNotFoundException) {
           return res.status(StatusCodes.UNAUTHORIZED).end()
+        }
+
+        if (err instanceof ForbiddenException) {
+          return res.status(StatusCodes.FORBIDDEN).end()
         }
 
         logger.error('Login failed', err)
