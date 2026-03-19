@@ -216,7 +216,7 @@ export const transferSimulationsFromUser = async (
 
   const previousUser = await session.user.findUnique({
     where: { id: previousUserId },
-    select: { id: true, name: true },
+    select: { id: true },
   })
 
   if (!previousUser) {
