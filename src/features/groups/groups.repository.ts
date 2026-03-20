@@ -5,11 +5,9 @@ import {
   defaultUserSelection,
 } from '../../adapters/prisma/selection.js'
 import type { Session } from '../../adapters/prisma/transaction.js'
+import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
 import { createParticipantSimulation } from '../simulations/simulations.repository.js'
-import {
-  createOrUpdateUser,
-  transferOwnershipToUser,
-} from '../users/users.repository.js'
+import { createOrUpdateUser } from '../users/users.repository.js'
 import type { UserParams } from '../users/users.validator.js'
 import type {
   GroupCreateDto,
@@ -25,18 +23,28 @@ export const createGroupAndUser = async (
   {
     name: groupName,
     emoji,
-    administrator: { userId, name, email },
+    administrator: { userId, name },
     participants,
   }: GroupCreateDto,
   { session }: { session: Session }
 ) => {
-  // upsert administrator
+  // Check that the administrator is a verified user
+  const verifiedUser = await session.verifiedUser.findFirst({
+    where: { id: userId },
+  })
+
+  if (!verifiedUser) {
+    throw new ForbiddenException(
+      'Forbidden ! Only verified users can create groups.'
+    )
+  }
+
+  // Ensure the user record exists and is up to date
   const { user: administrator } = await createOrUpdateUser(
     {
       id: userId,
       user: {
         name,
-        email,
       },
       select: defaultUserSelection,
     },
@@ -138,14 +146,9 @@ export const updateUserGroup = (
 
 export const createParticipantAndUser = async (
   { groupId }: GroupParams,
-  { userId, name, email, simulation: simulationDto }: ParticipantCreateDto,
+  { userId, name, simulation: simulationDto }: ParticipantCreateDto,
   { session }: { session: Session }
 ) => {
-  // Dedupe user
-  if (email) {
-    await transferOwnershipToUser({ user: { email, id: userId } }, { session })
-  }
-
   const existingParticipant = await session.groupParticipant.findUnique({
     where: {
       groupId_userId: {
@@ -161,7 +164,6 @@ export const createParticipantAndUser = async (
       id: userId,
       user: {
         name,
-        email,
       },
     },
     { session }

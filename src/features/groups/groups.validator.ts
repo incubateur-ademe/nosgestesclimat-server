@@ -38,10 +38,6 @@ export type GroupCreateParticipant = z.infer<typeof GroupCreateParticipant>
 const GroupCreateUser = z
   .object({
     userId: z.uuid(),
-    email: z
-      .email()
-      .transform((email) => email.toLocaleLowerCase())
-      .optional(),
     name: z.string(),
   })
   .strict()

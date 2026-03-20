@@ -11,6 +11,7 @@ import {
   resetMswServer,
 } from '../../../../core/__tests__/fixtures/server.fixture.js'
 import { EventBus } from '../../../../core/event-bus/event-bus.js'
+import { login } from '../../../authentication/__tests__/fixtures/login.fixture.js'
 import { getSimulationPayload } from '../../../simulations/__tests__/fixtures/simulations.fixtures.js'
 import type {
   GroupCreateInputDto,
@@ -41,17 +42,20 @@ export const createGroup = async ({
   agent: TestAgent
   group?: Partial<GroupCreateInputDto>
 }) => {
+  // Always create a verified user via login
+  const loginResult = await login({ agent })
+
   const payload: GroupCreateInputDto = {
     emoji: emoji || faker.internet.emoji(),
     name: name || faker.company.name(),
-    administrator: administrator || {
-      userId: faker.string.uuid(),
-      name: faker.person.fullName(),
+    administrator: {
+      userId: loginResult.userId,
+      name: administrator?.name || faker.person.fullName(),
     },
     participants,
   }
 
-  if (payload.administrator.email && participants?.length) {
+  if (loginResult.email && participants?.length) {
     mswServer.use(brevoSendEmail(), brevoUpdateContact())
   }
 
@@ -69,7 +73,7 @@ export const createGroup = async ({
 
 export const joinGroup = async ({
   agent,
-  participant: { userId, email, name, simulation } = {},
+  participant: { userId, name, simulation } = {},
   groupId,
 }: {
   agent: TestAgent
@@ -80,10 +84,9 @@ export const joinGroup = async ({
     userId: userId || faker.string.uuid(),
     name: name || faker.person.fullName(),
     simulation: simulation || getSimulationPayload(),
-    email,
   }
 
-  const [existingUser, group, existingParticipant] = await Promise.all([
+  const [existingUser, group] = await Promise.all([
     prisma.user.findFirst({
       where: {
         id: payload.userId,
@@ -118,23 +121,20 @@ export const joinGroup = async ({
         },
       },
     }),
-    ...(email
-      ? [
-          prisma.groupParticipant.findFirst({
-            where: {
-              user: {
-                email,
-              },
-            },
-            select: {
-              id: true,
-            },
-          }),
-        ]
-      : []),
   ])
 
-  if (email || existingUser?.email) {
+  if (existingUser?.email) {
+    const existingParticipant = await prisma.groupParticipant.findFirst({
+      where: {
+        user: {
+          email: existingUser.email,
+        },
+      },
+      select: {
+        id: true,
+      },
+    })
+
     if (!existingParticipant) {
       mswServer.use(brevoSendEmail())
     }
@@ -144,7 +144,6 @@ export const joinGroup = async ({
   const participants = group.participants
 
   if (
-    email ||
     existingUser?.email ||
     (administrator?.email &&
       participants.some(({ user }) => user.id === administrator.id))
