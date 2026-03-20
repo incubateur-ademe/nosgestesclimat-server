@@ -366,6 +366,76 @@ describe('Given a NGC user', () => {
           })
         })
       })
+
+      describe('And userId is already attached to another verified account', () => {
+        let emailA: string
+        let emailB: string
+        let userIdA: string
+
+        beforeEach(async () => {
+          emailA = faker.internet.email().toLocaleLowerCase()
+          emailB = faker.internet.email().toLocaleLowerCase()
+          userIdA = faker.string.uuid()
+
+          // Sign up user A with userIdA
+          const signUpCodeA = await createVerificationCode({
+            agent,
+            verificationCode: { email: emailA },
+            mode: VerificationCodeMode.signUp,
+          })
+
+          mswServer.use(brevoUpdateContact(), brevoSendEmail())
+
+          await agent
+            .post(url)
+            .send({
+              userId: userIdA,
+              email: signUpCodeA.email,
+              code: signUpCodeA.code,
+            })
+            .expect(StatusCodes.OK)
+
+          await EventBus.flush()
+
+          // Sign up user B with a different userId
+          const userIdB = faker.string.uuid()
+          const signUpCodeB = await createVerificationCode({
+            agent,
+            verificationCode: { email: emailB },
+            mode: VerificationCodeMode.signUp,
+          })
+
+          mswServer.use(brevoUpdateContact(), brevoSendEmail())
+
+          await agent
+            .post(url)
+            .send({
+              userId: userIdB,
+              email: signUpCodeB.email,
+              code: signUpCodeB.code,
+            })
+            .expect(StatusCodes.OK)
+
+          await EventBus.flush()
+        })
+
+        test(`Then it returns a ${StatusCodes.FORBIDDEN} error`, async () => {
+          const signInCode = await createVerificationCode({
+            agent,
+            verificationCode: { email: emailB },
+            mode: VerificationCodeMode.signIn,
+          })
+
+          await agent
+            .post(url)
+            .send({
+              userId: userIdA,
+              email: signInCode.email,
+              code: signInCode.code,
+            })
+            .expect(StatusCodes.FORBIDDEN)
+        })
+      })
     })
 
     describe('And database failure', () => {
