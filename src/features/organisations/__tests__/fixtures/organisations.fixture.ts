@@ -208,8 +208,6 @@ export const createOrganisationPollSimulation = async ({
     user,
   }
 
-  email = email ?? payload.user?.email
-
   mswServer.use(
     brevoUpdateContact(),
     brevoRemoveFromList(27, { invalid: true })

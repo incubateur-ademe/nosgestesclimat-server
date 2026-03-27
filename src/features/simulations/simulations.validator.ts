@@ -163,10 +163,6 @@ export type ExtendedSituationSchema = z.infer<typeof ExtendedSituationSchema>
 
 const SimulationCreateUser = z
   .object({
-    email: z
-      .email()
-      .transform((email) => email.toLocaleLowerCase())
-      .optional(),
     name: z.string().optional(),
   })
   .strict()
@@ -218,10 +214,6 @@ const SimulationCreateNewsletterList = z
 const SimulationCreateBaseQuery = z
   .object({
     newsletters: SimulationCreateNewsletterList,
-    sendEmail: z
-      .string()
-      .optional()
-      .transform((val) => val === 'true'),
   })
   .extend(LocaleQuery.shape)
   .strict()

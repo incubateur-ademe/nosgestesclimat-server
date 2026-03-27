@@ -187,7 +187,7 @@ export const createSimulation = async ({
     verified: !!verifiedUser,
     newsletters: query.newsletters,
     simulation,
-    sendEmail: query.sendEmail,
+    sendEmail: false,
     locale: query.locale,
     origin,
   })

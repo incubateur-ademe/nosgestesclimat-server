@@ -178,7 +178,7 @@ export const createPollUserSimulation = async (
   simulationDto: SimulationCreateDto,
   { session }: { session: Session }
 ) => {
-  const { userId, pollIdOrSlug, email = simulationDto.user?.email } = params
+  const { userId, pollIdOrSlug, email } = params
   const { id: pollId } = await session.poll.findFirstOrThrow({
     where: {
       OR: [{ id: pollIdOrSlug }, { slug: pollIdOrSlug }],

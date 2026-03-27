@@ -243,7 +243,7 @@ export const createSimulation = async ({
     user,
   }
 
-  if (payload.user?.email || cookie) {
+  if (cookie) {
     mswServer.use(
       brevoUpdateContact(),
       brevoRemoveFromList(22, { invalid: true }),
