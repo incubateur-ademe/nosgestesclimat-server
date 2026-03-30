@@ -12,6 +12,7 @@ import { batchFindMany } from '../../core/batch-find-many.js'
 
 import type { PublicPollParams } from '../organisations/organisations.validator.js'
 import type { UserParams } from '../users/users.validator.js'
+import { DELETED_USER_ID } from './simulation.constant.js'
 import type {
   SimulationCreateDto,
   SimulationParticipantCreateDto,
@@ -342,4 +343,35 @@ export const batchPollSimulations = <
       }),
     { batchSize }
   )
+}
+
+export const softDeleteSimulation = async (
+  { simulationId, userId }: { simulationId: string; userId: string },
+  { session }: { session: Session }
+) => {
+  const simulation = await session.simulation.findUnique({
+    where: { id: simulationId },
+    select: { id: true },
+  })
+
+  if (!simulation) {
+    return null
+  }
+
+  if (simulationId && userId !== DELETED_USER_ID) {
+    const result = await session.simulation.update({
+      where: {
+        id: simulationId,
+        userId,
+      },
+      data: {
+        userId: DELETED_USER_ID,
+      },
+      select: simulationSelection,
+    })
+
+    return result
+  }
+
+  return null
 }

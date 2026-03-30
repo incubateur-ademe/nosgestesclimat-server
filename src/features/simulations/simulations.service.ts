@@ -39,10 +39,8 @@ import {
   fetchVerifiedUser,
 } from '../users/users.repository.js'
 import type { UserParams } from '../users/users.validator.js'
-import type { SimulationAsyncEvent } from './events/SimulationUpserted.event.js'
-import { SimulationUpsertedEvent } from './events/SimulationUpserted.event.js'
-import { carbonMetric, waterMetric } from './simulation.constant.js'
 import {
+  softDeleteSimulation as softDeleteSimulationFunc,
   batchPollSimulations,
   countOrganisationPublicPollSimulations,
   createParticipantSimulation,
@@ -51,6 +49,9 @@ import {
   fetchSimulationById,
   fetchUserSimulations,
 } from './simulations.repository.js'
+import type { SimulationAsyncEvent } from './events/SimulationUpserted.event.js'
+import { SimulationUpsertedEvent } from './events/SimulationUpserted.event.js'
+import { carbonMetric, waterMetric } from './simulation.constant.js'
 import type {
   SimulationCreateDto,
   SimulationCreateQuery,
@@ -235,6 +236,17 @@ export const fetchSimulation = async (params: UserSimulationParams) => {
       throw new EntityNotFoundException('Simulation not found')
     }
     throw e
+  }
+}
+
+export const softDeleteSimulation = async (params: UserSimulationParams) => {
+  const simulation = await transaction(
+    (session) => softDeleteSimulationFunc(params, { session }),
+    prisma
+  )
+
+  if (!simulation) {
+    throw new EntityNotFoundException('Simulation not found')
   }
 }
 

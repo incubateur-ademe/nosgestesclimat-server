@@ -18,6 +18,7 @@ import { sendSimulationUpserted } from './handlers/send-simulation-upserted.js'
 import { updateBrevoContact } from './handlers/update-brevo-contact.js'
 import {
   createSimulation,
+  softDeleteSimulation,
   fetchSimulation,
   fetchSimulations,
 } from './simulations.service.js'
@@ -135,6 +136,31 @@ router
         }
 
         logger.error('Simulation fetch failed', err)
+
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
+      }
+    }
+  )
+
+/**
+ * Soft deletes a simulation by associating it with a deleted user id
+ */
+router
+  .route('/v1/:userId/:simulationId')
+  .delete(
+    authentificationMiddleware(),
+    validateRequest(SimulationFetchValidator),
+    async ({ params }, res) => {
+      try {
+        await softDeleteSimulation(params)
+
+        return res.status(StatusCodes.NO_CONTENT).end()
+      } catch (err) {
+        if (err instanceof EntityNotFoundException) {
+          return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
+        }
+
+        logger.error('Simulation deletion failed', err)
 
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end()
       }
