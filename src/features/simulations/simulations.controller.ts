@@ -159,7 +159,12 @@ router
       try {
         await softDeleteSimulation(params)
 
-        return res.status(StatusCodes.NO_CONTENT).end()
+        return res
+          .status(StatusCodes.ACCEPTED)
+          .send({
+            success: true,
+          })
+          .end()
       } catch (err) {
         if (err instanceof EntityNotFoundException) {
           return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
