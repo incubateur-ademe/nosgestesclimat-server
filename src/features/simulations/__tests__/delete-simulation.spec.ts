@@ -126,7 +126,7 @@ describe('Given a NGC user', () => {
         simulationId = simulation.id
       })
 
-      test(`Then it returns a ${StatusCodes.NO_CONTENT} response`, async () => {
+      test(`Then it returns a ${StatusCodes.ACCEPTED} response`, async () => {
         await agent
           .delete(
             url
@@ -134,7 +134,7 @@ describe('Given a NGC user', () => {
               .replace(':userId', userId)
           )
           .set('cookie', cookie)
-          .expect(StatusCodes.NO_CONTENT)
+          .expect(StatusCodes.ACCEPTED)
       })
 
       test('Then the simulation is associated with the deleted user', async () => {
@@ -145,7 +145,7 @@ describe('Given a NGC user', () => {
               .replace(':userId', userId)
           )
           .set('cookie', cookie)
-          .expect(StatusCodes.NO_CONTENT)
+          .expect(StatusCodes.ACCEPTED)
 
         const simulation = await prisma.simulation.findUniqueOrThrow({
           where: { id: simulationId },
