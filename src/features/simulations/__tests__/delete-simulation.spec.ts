@@ -113,6 +113,26 @@ describe('Given a NGC user', () => {
       })
     })
 
+    describe('And simulation belongs to another user', () => {
+      test(`Then it returns a ${StatusCodes.FORBIDDEN} error`, async () => {
+        const { userId } = await login({ agent })
+        const { cookie: otherCookie } = await login({ agent })
+        const simulation = await createSimulation({
+          agent,
+          cookie: otherCookie,
+        })
+
+        await agent
+          .delete(
+            url
+              .replace(':simulationId', simulation.id)
+              .replace(':userId', userId)
+          )
+          .set('cookie', otherCookie)
+          .expect(StatusCodes.FORBIDDEN)
+      })
+    })
+
     describe('And simulation does exist and belongs to user', () => {
       let simulationId: string
       let userId: string

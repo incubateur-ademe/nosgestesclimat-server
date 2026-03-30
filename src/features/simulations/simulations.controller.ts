@@ -2,6 +2,7 @@ import express from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { config } from '../../config.js'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
+import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
 import { ImmutableSimulationException } from '../../core/errors/ImmutableSimulationException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
 import { withPaginationHeaders } from '../../core/pagination.js'
@@ -151,7 +152,7 @@ router
  * Soft deletes a simulation by associating it with a deleted user id
  */
 router
-  .route('/v1/:userId/:simulationId')
+  .route('/v1/:userId/:simulationId/delete')
   .delete(
     authentificationMiddleware(),
     validateRequest(SimulationFetchValidator),
@@ -168,6 +169,10 @@ router
       } catch (err) {
         if (err instanceof EntityNotFoundException) {
           return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
+        }
+
+        if (err instanceof ForbiddenException) {
+          return res.status(StatusCodes.FORBIDDEN).send(err.message).end()
         }
 
         logger.error('Simulation deletion failed', err)

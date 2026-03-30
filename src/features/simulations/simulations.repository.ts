@@ -9,6 +9,7 @@ import {
 } from '../../adapters/prisma/selection.js'
 import type { Session } from '../../adapters/prisma/transaction.js'
 import { batchFindMany } from '../../core/batch-find-many.js'
+import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
 import { ImmutableSimulationException } from '../../core/errors/ImmutableSimulationException.js'
 
 import type { PublicPollParams } from '../organisations/organisations.validator.js'
@@ -357,14 +358,20 @@ export const softDeleteSimulation = async (
 ) => {
   const simulation = await session.simulation.findUnique({
     where: { id: simulationId },
-    select: { id: true },
+    select: { id: true, userId: true },
   })
 
   if (!simulation) {
     return null
   }
 
-  if (simulationId && userId !== DELETED_USER_ID) {
+  if (simulation.userId !== userId) {
+    throw new ForbiddenException(
+      'You do not have permission to delete this simulation'
+    )
+  }
+
+  if (userId !== DELETED_USER_ID) {
     const result = await session.simulation.update({
       where: {
         id: simulationId,

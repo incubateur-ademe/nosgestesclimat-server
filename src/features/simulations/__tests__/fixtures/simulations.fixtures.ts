@@ -38,7 +38,8 @@ export const FETCH_USER_SIMULATIONS_ROUTE = '/simulations/v1/:userId'
 export const FETCH_USER_SIMULATION_ROUTE =
   '/simulations/v1/:userId/:simulationId'
 
-export const DELETE_SIMULATION_ROUTE = '/simulations/v1/:userId/:simulationId'
+export const DELETE_SIMULATION_ROUTE =
+  '/simulations/v1/:userId/:simulationId/delete'
 
 const defaultModelVersion = modelPackage.version
   .match(/^(\d+\.\d+\.\d+)/)!
