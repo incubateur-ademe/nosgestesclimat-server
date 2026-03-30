@@ -1,0 +1,55 @@
+view AnonSimulation {
+  id              String   @unique @db.Uuid
+  date            DateTime
+  progression     Float    @db.Real
+  model           String
+  computedResults Json
+  actionChoices   Json
+  situation       Json
+  foldedSteps     Json[]
+  userId          String   @db.Uuid
+  userEmail       String?
+  createdAt       DateTime
+  updatedAt       DateTime
+
+  @@map("Simulation")
+  @@schema("ngc_anon")
+}
+
+view AnonVerifiedUser {
+  email                    String   @unique
+  id                       String   @db.Uuid
+  name                     String?
+  telephone                String?
+  position                 String?
+  optedInForCommunications Boolean
+  createdAt                DateTime
+  updatedAt                DateTime
+
+  @@map("VerifiedUser")
+  @@schema("ngc_anon")
+}
+
+view AnonOrganisation {
+  id                    String   @unique
+  name                  String
+  slug                  String
+  type                  OrganisationType
+  numberOfCollaborators Int?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@map("Organisation")
+  @@schema("ngc_anon")
+}
+
+view AnonOrganisationAdministrator {
+  id             String   @unique
+  userEmail      String
+  organisationId String
+  createdAt      DateTime
+  updatedAt      DateTime
+
+  @@map("OrganisationAdministrator")
+  @@schema("ngc_anon")
+}
