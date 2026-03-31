@@ -1,15 +1,7 @@
 import { faker } from '@faker-js/faker'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
-import {
-  afterEach,
-  afterAll,
-  beforeEach,
-  describe,
-  expect,
-  test,
-  vi,
-} from 'vitest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { prisma } from '../../../adapters/prisma/client.js'
 import * as prismaTransactionAdapter from '../../../adapters/prisma/transaction.js'
 import app from '../../../app.js'
@@ -27,19 +19,17 @@ vi.mock('../../../adapters/prisma/transaction', async () => ({
 describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = DELETE_SIMULATION_ROUTE
+  const simulationIds: string[] = []
 
   afterEach(async () => {
     await Promise.all([
+      prisma.simulation.deleteMany({
+        where: { id: { in: simulationIds.splice(0) } },
+      }),
       prisma.user.deleteMany(),
       prisma.verificationCode.deleteMany(),
       prisma.verifiedUser.deleteMany(),
     ])
-  })
-
-  afterAll(async () => {
-    await prisma.simulation.deleteMany({
-      where: { userId: null },
-    })
   })
 
   describe('When deleting a simulation', () => {
@@ -101,13 +91,14 @@ describe('Given a NGC user', () => {
     })
 
     describe('And simulation belongs to another user', () => {
-      test(`Then it returns a ${StatusCodes.FORBIDDEN} error`, async () => {
+      test(`Then it returns a ${StatusCodes.NOT_FOUND} error`, async () => {
         const { userId } = await login({ agent })
         const { cookie: otherCookie } = await login({ agent })
         const simulation = await createSimulation({
           agent,
           cookie: otherCookie,
         })
+        simulationIds.push(simulation.id)
 
         await agent
           .delete(
@@ -131,6 +122,7 @@ describe('Given a NGC user', () => {
         userId = result.userId
         const simulation = await createSimulation({ agent, cookie })
         simulationId = simulation.id
+        simulationIds.push(simulation.id)
       })
 
       test(`Then it returns a ${StatusCodes.ACCEPTED} response`, async () => {
@@ -173,6 +165,7 @@ describe('Given a NGC user', () => {
       test(`Then it returns a ${StatusCodes.INTERNAL_SERVER_ERROR} error`, async () => {
         const { cookie } = await login({ agent })
         const simulation = await createSimulation({ agent, cookie })
+        simulationIds.push(simulation.id)
 
         vi.spyOn(prismaTransactionAdapter, 'transaction').mockRejectedValueOnce(
           databaseError
@@ -191,6 +184,7 @@ describe('Given a NGC user', () => {
       test('Then it logs the exception', async () => {
         const { cookie } = await login({ agent })
         const simulation = await createSimulation({ agent, cookie })
+        simulationIds.push(simulation.id)
 
         vi.spyOn(prismaTransactionAdapter, 'transaction').mockRejectedValueOnce(
           databaseError
