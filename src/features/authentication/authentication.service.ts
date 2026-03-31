@@ -10,6 +10,7 @@ import type { Session } from '../../adapters/prisma/transaction.js'
 import { transaction } from '../../adapters/prisma/transaction.js'
 import { config } from '../../config.js'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
+import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
 import type { Locales } from '../../core/i18n/constant.js'
 import { isPrismaErrorNotFound } from '../../core/typeguards/isPrismaError.js'
@@ -78,6 +79,7 @@ export const login = async ({
 
   const loginEvent = new LoginEvent({
     user,
+    previousUserId: loginDto.userId,
     mode,
     locale,
     origin,
@@ -114,6 +116,24 @@ export async function createAccountOrSignin(loginDto: LoginDto) {
     )
 
     if (existingUser) {
+      // Reject login if the anonymous session userId is already attached
+      // to a different verified account
+      if (existingUser.id !== loginDto.userId) {
+        const conflictingUser = await session.verifiedUser.findFirst({
+          where: {
+            id: loginDto.userId,
+            NOT: { email: loginDto.email },
+          },
+          select: { email: true },
+        })
+
+        if (conflictingUser) {
+          throw new ForbiddenException(
+            'userId is already attached to another verified account'
+          )
+        }
+      }
+
       return [existingUser, VerificationCodeMode.signIn] as const
     }
 

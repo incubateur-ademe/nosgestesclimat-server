@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes'
 import { config } from '../../config.js'
 import { EntityNotFoundException } from '../../core/errors/EntityNotFoundException.js'
 import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
+import { ImmutableSimulationException } from '../../core/errors/ImmutableSimulationException.js'
 import { EventBus } from '../../core/event-bus/event-bus.js'
 import { withPaginationHeaders } from '../../core/pagination.js'
 import logger from '../../logger.js'
@@ -403,6 +404,10 @@ router
 
         return res.status(StatusCodes.CREATED).json(simulation)
       } catch (err) {
+        if (err instanceof ImmutableSimulationException) {
+          return res.status(StatusCodes.BAD_REQUEST).send(err.message).end()
+        }
+
         if (err instanceof EntityNotFoundException) {
           return res.status(StatusCodes.NOT_FOUND).send(err.message).end()
         }
