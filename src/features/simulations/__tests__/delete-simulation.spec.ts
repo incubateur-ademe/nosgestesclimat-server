@@ -4,7 +4,6 @@ import supertest from 'supertest'
 import {
   afterEach,
   afterAll,
-  beforeAll,
   beforeEach,
   describe,
   expect,
@@ -16,7 +15,6 @@ import * as prismaTransactionAdapter from '../../../adapters/prisma/transaction.
 import app from '../../../app.js'
 import logger from '../../../logger.js'
 import { login } from '../../authentication/__tests__/fixtures/login.fixture.js'
-import { DELETED_USER_ID } from '../simulation.constant.js'
 import {
   createSimulation,
   DELETE_SIMULATION_ROUTE,
@@ -30,20 +28,9 @@ describe('Given a NGC user', () => {
   const agent = supertest(app)
   const url = DELETE_SIMULATION_ROUTE
 
-  // Create the deleted user
-  beforeAll(async () => {
-    await prisma.user.upsert({
-      where: { id: DELETED_USER_ID },
-      update: {},
-      create: { id: DELETED_USER_ID },
-    })
-  })
-
   afterEach(async () => {
     await Promise.all([
-      prisma.user.deleteMany({
-        where: { id: { not: DELETED_USER_ID } },
-      }),
+      prisma.user.deleteMany(),
       prisma.verificationCode.deleteMany(),
       prisma.verifiedUser.deleteMany(),
     ])
@@ -51,7 +38,7 @@ describe('Given a NGC user', () => {
 
   afterAll(async () => {
     await prisma.simulation.deleteMany({
-      where: { userId: DELETED_USER_ID },
+      where: { userId: null },
     })
   })
 
@@ -129,7 +116,7 @@ describe('Given a NGC user', () => {
               .replace(':userId', userId)
           )
           .set('cookie', otherCookie)
-          .expect(StatusCodes.FORBIDDEN)
+          .expect(StatusCodes.NOT_FOUND)
       })
     })
 
@@ -157,7 +144,7 @@ describe('Given a NGC user', () => {
           .expect(StatusCodes.ACCEPTED)
       })
 
-      test('Then the simulation is associated with the deleted user', async () => {
+      test('Then the simulation userId is null', async () => {
         await agent
           .delete(
             url
@@ -172,7 +159,7 @@ describe('Given a NGC user', () => {
           select: { userId: true },
         })
 
-        expect(simulation.userId).toBe(DELETED_USER_ID)
+        expect(simulation.userId).toBeNull()
       })
     })
 

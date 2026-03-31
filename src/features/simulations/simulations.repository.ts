@@ -9,12 +9,10 @@ import {
 } from '../../adapters/prisma/selection.js'
 import type { Session } from '../../adapters/prisma/transaction.js'
 import { batchFindMany } from '../../core/batch-find-many.js'
-import { ForbiddenException } from '../../core/errors/ForbiddenException.js'
 import { ImmutableSimulationException } from '../../core/errors/ImmutableSimulationException.js'
 
 import type { PublicPollParams } from '../organisations/organisations.validator.js'
 import type { UserParams } from '../users/users.validator.js'
-import { DELETED_USER_ID } from './simulation.constant.js'
 import type {
   SimulationCreateDto,
   SimulationParticipantCreateDto,
@@ -357,7 +355,7 @@ export const softDeleteSimulation = async (
   { session }: { session: Session }
 ) => {
   const simulation = await session.simulation.findUnique({
-    where: { id: simulationId },
+    where: { id: simulationId, userId },
     select: { id: true, userId: true },
   })
 
@@ -365,26 +363,15 @@ export const softDeleteSimulation = async (
     return null
   }
 
-  if (simulation.userId !== userId) {
-    throw new ForbiddenException(
-      'You do not have permission to delete this simulation'
-    )
-  }
+  const result = await session.simulation.update({
+    where: {
+      id: simulationId,
+    },
+    data: {
+      userId: null,
+    },
+    select: simulationSelection,
+  })
 
-  if (userId !== DELETED_USER_ID) {
-    const result = await session.simulation.update({
-      where: {
-        id: simulationId,
-        userId,
-      },
-      data: {
-        userId: DELETED_USER_ID,
-      },
-      select: simulationSelection,
-    })
-
-    return result
-  }
-
-  return null
+  return result
 }
