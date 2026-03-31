@@ -152,7 +152,7 @@ router
  * Soft deletes a simulation by associating it with a deleted user id
  */
 router
-  .route('/v1/:userId/:simulationId/delete')
+  .route('/v1/:userId/:simulationId')
   .delete(
     authentificationMiddleware(),
     validateRequest(SimulationFetchValidator),
