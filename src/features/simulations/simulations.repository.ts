@@ -349,3 +349,29 @@ export const batchPollSimulations = <
     { batchSize }
   )
 }
+
+export const softDeleteSimulation = async (
+  { simulationId, userId }: { simulationId: string; userId: string },
+  { session }: { session: Session }
+) => {
+  const simulation = await session.simulation.findUnique({
+    where: { id: simulationId, userId },
+    select: { id: true, userId: true },
+  })
+
+  if (!simulation) {
+    return null
+  }
+
+  const result = await session.simulation.update({
+    where: {
+      id: simulationId,
+    },
+    data: {
+      userId: null,
+    },
+    select: simulationSelection,
+  })
+
+  return result
+}
