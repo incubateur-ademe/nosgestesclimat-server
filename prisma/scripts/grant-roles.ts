@@ -1,75 +1,43 @@
 import type { PrismaClient } from '@prisma/client'
-import { Prisma } from '@prisma/client'
+
+const VALID_ROLE = /^[a-zA-Z_][a-zA-Z0-9_-]*$/
+
+const assertValidRole = (role: string) => {
+  if (!VALID_ROLE.test(role)) throw new Error(`Invalid role name: "${role}"`)
+}
+
+const grantReadonlyAccess = async (
+  prisma: PrismaClient,
+  roles: string[],
+  schema: string
+) => {
+  for (const rawRole of roles) {
+    const role = rawRole.trim()
+    assertValidRole(role)
+
+    await prisma.$transaction([
+      prisma.$queryRawUnsafe(`GRANT USAGE ON SCHEMA "${schema}" TO "${role}"`),
+      prisma.$queryRawUnsafe(
+        `GRANT SELECT ON ALL TABLES IN SCHEMA "${schema}" TO "${role}"`
+      ),
+    ])
+  }
+}
 
 export const exec = async ({ prisma }: { prisma: PrismaClient }) => {
-  if (process.env.DATABASE_READONLY_ROLES) {
-    const roles = process.env.DATABASE_READONLY_ROLES.split(',')
-    try {
-      await roles.reduce(
-        (prom, role) =>
-          prom
-            .then(() =>
-              prisma.$queryRaw(
-                Prisma.sql([`GRANT USAGE ON SCHEMA "ngc" TO "${role}";`])
-              )
-            )
-            .then(() =>
-              prisma.$queryRaw(
-                Prisma.sql([
-                  `GRANT SELECT ON ALL TABLES IN SCHEMA "ngc" TO "${role}";`,
-                ])
-              )
-            )
-            .then(() =>
-              prisma.$queryRaw(
-                Prisma.sql([
-                  `ALTER DEFAULT PRIVILEGES IN SCHEMA "ngc" GRANT SELECT ON TABLES TO "${role}";`,
-                ])
-              )
-            ),
-        Promise.resolve()
-      )
-      console.info(`${roles.length} role(s) granted`)
-    } catch (err) {
-      console.error('Grant error', err)
-      throw err
-    }
+  const readonlyRoles = process.env.DATABASE_READONLY_ROLES?.split(',') ?? []
+  const anonRoles = process.env.DATABASE_READONLY_ANON_ROLES?.split(',') ?? []
+
+  if (readonlyRoles.length) {
+    await grantReadonlyAccess(prisma, readonlyRoles, 'ngc')
+    console.info(`${readonlyRoles.length} role(s) granted on ngc`)
   } else {
     console.info('No readonly role to grant')
   }
 
-  if (process.env.DATABASE_READONLY_ANON_ROLES) {
-    const anonRoles = process.env.DATABASE_READONLY_ANON_ROLES.split(',')
-    try {
-      await anonRoles.reduce(
-        (prom, role) =>
-          prom
-            .then(() =>
-              prisma.$queryRaw(
-                Prisma.sql([`GRANT USAGE ON SCHEMA "ngc_anon" TO "${role}";`])
-              )
-            )
-            .then(() =>
-              prisma.$queryRaw(
-                Prisma.sql([
-                  `GRANT SELECT ON ALL TABLES IN SCHEMA "ngc_anon" TO "${role}";`,
-                ])
-              )
-            )
-            .then(() =>
-              prisma.$queryRaw(
-                Prisma.sql([
-                  `ALTER DEFAULT PRIVILEGES IN SCHEMA "ngc_anon" GRANT SELECT ON TABLES TO "${role}";`,
-                ])
-              )
-            ),
-        Promise.resolve()
-      )
-      console.info(`${anonRoles.length} anon role(s) granted`)
-    } catch (err) {
-      console.error('Grant error', err)
-      throw err
-    }
+  if (anonRoles.length) {
+    await grantReadonlyAccess(prisma, anonRoles, 'ngc_anon')
+    console.info(`${anonRoles.length} anon role(s) granted on ngc_anon`)
   } else {
     console.info('No readonly anon role to grant')
   }
