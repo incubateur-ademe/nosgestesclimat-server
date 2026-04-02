@@ -250,7 +250,9 @@ export const SimulationCreateValidator = {
   query: SimulationCreateQuery,
 }
 
-const SimulationsFetchQuery = PaginationQuery.extend(LocaleQuery.shape)
+const SimulationsFetchQuery = PaginationQuery.extend(LocaleQuery.shape).extend({
+  completedOnly: z.stringbool().optional(),
+})
 
 export type SimulationsFetchQuery = z.infer<typeof SimulationsFetchQuery>
 

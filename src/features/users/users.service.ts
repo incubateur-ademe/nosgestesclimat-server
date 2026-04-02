@@ -26,6 +26,7 @@ import {
   createOrUpdateVerifiedUser,
   fetchUser,
   transferOwnershipToUser,
+  transferSimulationsFromUser,
 } from './users.repository.js'
 import type { UserParams, UserUpdateDto } from './users.validator.js'
 
@@ -34,6 +35,20 @@ const userToDto = (
     contact?: BrevoContact
   }
 ) => user
+
+export const reconcileSimulationsAfterLogin = ({
+  user,
+  previousUserId,
+}: {
+  user: { id: string; email: string }
+  previousUserId: string
+}) => {
+  return transaction(
+    (session) =>
+      transferSimulationsFromUser({ user, previousUserId }, { session }),
+    prisma
+  )
+}
 
 export const syncUserData = ({
   user,

@@ -124,7 +124,7 @@ export const defaultPollSelection = {
   updatedAt: true,
 }
 
-export const defaultSimulationSelectionWithoutUserAndPoll = {
+export const defaultSimulationSelection = {
   id: true,
   date: true,
   model: true,
@@ -144,8 +144,8 @@ export const defaultSimulationSelectionWithoutUserAndPoll = {
   updatedAt: true,
 }
 
-export const defaultSimulationSelectionWithoutUser = {
-  ...defaultSimulationSelectionWithoutUserAndPoll,
+export const simulationSelectionWithPolls = {
+  ...defaultSimulationSelection,
   polls: {
     select: {
       pollId: true,
@@ -158,8 +158,17 @@ export const defaultSimulationSelectionWithoutUser = {
   },
 }
 
-export const defaultSimulationSelectionWithoutPoll = {
-  ...defaultSimulationSelectionWithoutUserAndPoll,
+export const simulationSelectionWithGroup = {
+  ...defaultSimulationSelection,
+  groups: {
+    select: {
+      groupId: true,
+    },
+  },
+}
+
+export const simulationSelectionWithUsers = {
+  ...defaultSimulationSelection,
   user: {
     select: {
       id: true,
@@ -173,15 +182,18 @@ export const defaultSimulationSelectionWithoutPoll = {
 }
 
 export const defaultSimulationSelectionWithoutPollAndSituation = {
-  ...defaultSimulationSelectionWithoutPoll,
+  ...simulationSelectionWithUsers,
   situation: false,
   foldedSteps: false,
   actionChoices: false,
 }
 
-export const defaultSimulationSelection = {
-  ...defaultSimulationSelectionWithoutUser,
-  ...defaultSimulationSelectionWithoutPoll,
+export const simulationSelection = {
+  ...defaultSimulationSelection,
+  polls: simulationSelectionWithPolls.polls,
+  user: simulationSelectionWithUsers.user,
+  verifiedUser: simulationSelectionWithUsers.verifiedUser,
+  groups: simulationSelectionWithGroup.groups,
 }
 
 export const defaultEmailWhitelistSelection = {
