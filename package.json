@@ -7,6 +7,9 @@
   "engines": {
     "node": "^22"
   },
+  "prisma": {
+    "schema": "./prisma/schema"
+  },
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "prebuild": "pnpm clean && prisma generate",
