@@ -1,5 +1,5 @@
-import type { Prisma } from '@prisma/client'
 import type { Request } from 'express'
+import type { Prisma } from '../../adapters/prisma/generated.js'
 import {
   defaultOrganisationSelectionWithoutPolls,
   defaultPollSelection,

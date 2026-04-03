@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker'
-import type { BrevoNewsletterStats } from '@prisma/client'
 import dayjs from 'dayjs'
 import { afterEach, beforeEach, describe, expect, test } from 'vitest'
+import type { BrevoNewsletterStats } from '../../../adapters/prisma/generated.js'
 import { formatBrevoDate } from '../../../adapters/brevo/__tests__/fixtures/formatBrevoDate.js'
 import { brevoGetNewsletter } from '../../../adapters/brevo/__tests__/fixtures/server.fixture.js'
 import { ListIds } from '../../../adapters/brevo/constant.js'

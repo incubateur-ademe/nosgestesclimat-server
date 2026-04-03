@@ -1,5 +1,5 @@
-import type { Prisma, User } from '@prisma/client'
 import type { Request } from 'express'
+import type { Prisma, User } from '../../adapters/prisma/generated.js'
 import { defaultUserSelection } from '../../adapters/prisma/selection.js'
 import type {
   FetchEntityResponse,

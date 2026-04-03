@@ -4,7 +4,7 @@ import {
   type VerificationCode,
   VerificationCodeMode,
   type VerifiedUser,
-} from '@prisma/client'
+} from '../../adapters/prisma/generated.js'
 import { prisma } from '../../adapters/prisma/client.js'
 import type { Session } from '../../adapters/prisma/transaction.js'
 import { transaction } from '../../adapters/prisma/transaction.js'
@@ -36,7 +36,7 @@ export function getCookieOptions(origin: string): CookieOptions {
     maxAge: COOKIE_MAX_AGE,
     httpOnly: true,
     secure,
-    sameSite: 'lax',
+    sameSite: secure ? 'none' : 'strict', // Because ngc can be embeded in iframes
     partitioned: secure,
     domain,
   }

@@ -35,7 +35,7 @@ describe('authentication middleware', () => {
     test(`Should return a ${StatusCodes.UNAUTHORIZED} error`, async () => {
       await agent
         .get('/')
-        .set('cookie', 'ngcjwt2=invalid cookie')
+        .set('cookie', 'ngc_server_auth_jwt=invalid cookie')
         .expect(StatusCodes.UNAUTHORIZED)
     })
   })
@@ -43,7 +43,7 @@ describe('authentication middleware', () => {
   describe('With incorrect and invalid cookie', () => {
     test(`Should return a ${StatusCodes.UNAUTHORIZED} error`, async () => {
       const cookies = faker.helpers.arrayElements(
-        ['ngcjwt2=invalid cookie', 'NEXT_LOCALE=fr'],
+        ['ngc_server_auth_jwt=invalid cookie', 'NEXT_LOCALE=fr'],
         2
       )
 
@@ -68,11 +68,14 @@ describe('authentication middleware', () => {
 
       const response = await agent
         .get('/')
-        .set('cookie', `ngcjwt2=${token}`)
+        .set('cookie', `ngc_server_auth_jwt=${token}`)
         .expect(StatusCodes.NO_CONTENT)
 
       const [cookie] = response.headers['set-cookie']
-      const userToken = cookie.split(';').shift()?.replace('ngcjwt2=', '')
+      const userToken = cookie
+        .split(';')
+        .shift()
+        ?.replace('ngc_server_auth_jwt=', '')
 
       expect(jwt.decode(userToken!)).toEqual({
         userId,
@@ -92,7 +95,7 @@ describe('authentication middleware', () => {
       })
 
       const cookies = faker.helpers.arrayElements(
-        [`ngcjwt2=${token}`, 'NEXT_LOCALE=fr'],
+        [`ngc_server_auth_jwt=${token}`, 'NEXT_LOCALE=fr'],
         2
       )
 
@@ -102,7 +105,10 @@ describe('authentication middleware', () => {
         .expect(StatusCodes.NO_CONTENT)
 
       const [cookie] = response.headers['set-cookie']
-      const userToken = cookie.split(';').shift()?.replace('ngcjwt2=', '')
+      const userToken = cookie
+        .split(';')
+        .shift()
+        ?.replace('ngc_server_auth_jwt=', '')
 
       expect(jwt.decode(userToken!)).toEqual({
         userId,
@@ -144,7 +150,7 @@ describe('authentication middleware passIfUnauthorized: true', () => {
     test(`Should return a ${StatusCodes.NO_CONTENT} response with no cookie`, async () => {
       const response = await agent
         .get('/')
-        .set('cookie', 'ngcjwt2=invalid cookie')
+        .set('cookie', 'ngc_server_auth_jwt=invalid cookie')
         .expect(StatusCodes.NO_CONTENT)
 
       expect(response.headers['set-cookie']).toBeUndefined()
@@ -154,7 +160,7 @@ describe('authentication middleware passIfUnauthorized: true', () => {
   describe('With incorrect and invalid cookie', () => {
     test(`Should return a ${StatusCodes.NO_CONTENT} response with no cookie`, async () => {
       const cookies = faker.helpers.arrayElements(
-        ['ngcjwt2=invalid cookie', 'NEXT_LOCALE=fr'],
+        ['ngc_server_auth_jwt=invalid cookie', 'NEXT_LOCALE=fr'],
         2
       )
 
@@ -181,11 +187,14 @@ describe('authentication middleware passIfUnauthorized: true', () => {
 
       const response = await agent
         .get('/')
-        .set('cookie', `ngcjwt2=${token}`)
+        .set('cookie', `ngc_server_auth_jwt=${token}`)
         .expect(StatusCodes.NO_CONTENT)
 
       const [cookie] = response.headers['set-cookie']
-      const userToken = cookie.split(';').shift()?.replace('ngcjwt2=', '')
+      const userToken = cookie
+        .split(';')
+        .shift()
+        ?.replace('ngc_server_auth_jwt=', '')
 
       expect(jwt.decode(userToken!)).toEqual({
         userId,
@@ -205,7 +214,7 @@ describe('authentication middleware passIfUnauthorized: true', () => {
       })
 
       const cookies = faker.helpers.arrayElements(
-        [`ngcjwt2=${token}`, 'NEXT_LOCALE=fr'],
+        [`ngc_server_auth_jwt=${token}`, 'NEXT_LOCALE=fr'],
         2
       )
 
@@ -215,7 +224,10 @@ describe('authentication middleware passIfUnauthorized: true', () => {
         .expect(StatusCodes.NO_CONTENT)
 
       const [cookie] = response.headers['set-cookie']
-      const userToken = cookie.split(';').shift()?.replace('ngcjwt2=', '')
+      const userToken = cookie
+        .split(';')
+        .shift()
+        ?.replace('ngc_server_auth_jwt=', '')
 
       expect(jwt.decode(userToken!)).toEqual({
         userId,

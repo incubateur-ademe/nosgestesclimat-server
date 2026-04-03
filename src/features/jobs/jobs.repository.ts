@@ -1,7 +1,9 @@
-import type { Job as PrismaJob } from '@prisma/client'
-import { JobStatus } from '@prisma/client'
-import type { InputJsonValue } from '@prisma/client/runtime/library'
 import dayjs from 'dayjs'
+import type {
+  Job as PrismaJob,
+  InputJsonValue,
+} from '../../adapters/prisma/generated.js'
+import { JobStatus } from '../../adapters/prisma/generated.js'
 import { defaultJobSelection } from '../../adapters/prisma/selection.js'
 import type { Session } from '../../adapters/prisma/transaction.js'
 import type { ValueOf } from '../../types/types.js'

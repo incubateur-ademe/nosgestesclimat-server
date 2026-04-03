@@ -1,4 +1,4 @@
-import { MatomoStatsSource } from '@prisma/client'
+import { MatomoStatsSource } from '../prisma/generated.js'
 import { config } from '../../config.js'
 import type { ValueOf } from '../../types/types.js'
 import { matomoClientFactory } from './client.js'

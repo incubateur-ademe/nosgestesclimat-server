@@ -1,4 +1,4 @@
-import type { VerifiedUser } from '@prisma/client'
+import type { VerifiedUser } from '../../../adapters/prisma/generated.js'
 import type { OrganisationCreatedEventAttributes } from './OrganisationCreated.event.js'
 import type { OrganisationUpdatedEventAttributes } from './OrganisationUpdated.event.js'
 import type { PollCreatedEventAttributes } from './PollCreated.event.js'

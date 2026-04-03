@@ -1,7 +1,11 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
 import { redis } from '../src/adapters/redis/client.js'
+import { PrismaClient } from './generated/prisma/client.js'
 
-const prisma = new PrismaClient()
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL,
+})
+const prisma = new PrismaClient({ adapter })
 
 const main = async () => {
   // Order matters here
@@ -19,8 +23,8 @@ const main = async () => {
       await script.exec({ prisma, redis })
     }
     process.exit(0)
-  } catch {
-    // Errors are logged in scripts executions
+  } catch (err) {
+    console.error('Post-migrate script failed', err)
     process.exit(1)
   }
 }

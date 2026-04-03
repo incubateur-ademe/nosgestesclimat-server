@@ -1,4 +1,4 @@
-import type { User } from '@prisma/client'
+import type { User } from '../../../adapters/prisma/generated.js'
 import { EventBusEvent } from '../../../core/event-bus/event.js'
 
 export class GroupDeletedEvent extends EventBusEvent<{

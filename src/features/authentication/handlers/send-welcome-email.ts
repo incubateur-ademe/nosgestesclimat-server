@@ -1,4 +1,4 @@
-import { VerificationCodeMode } from '@prisma/client'
+import { VerificationCodeMode } from '../../../adapters/prisma/generated.js'
 import { sendWelcomeEmail } from '../../../adapters/brevo/client.js'
 import type { Handler } from '../../../core/event-bus/handler.js'
 import type { LoginEvent } from '../events/Login.event.js'

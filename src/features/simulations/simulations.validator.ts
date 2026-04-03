@@ -1,8 +1,8 @@
+import { z } from 'zod'
 import {
   PollDefaultAdditionalQuestionType,
   SimulationAdditionalQuestionAnswerType,
-} from '@prisma/client'
-import { z } from 'zod'
+} from '../../adapters/prisma/generated.js'
 import { ListIds } from '../../adapters/brevo/constant.js'
 import { LocaleQuery } from '../../core/i18n/lang.validator.js'
 import { PaginationQuery } from '../../core/pagination.js'

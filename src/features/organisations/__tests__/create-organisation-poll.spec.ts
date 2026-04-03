@@ -1,10 +1,10 @@
 import { faker } from '@faker-js/faker'
 import { StatusCodes } from 'http-status-codes'
 
-import { PollDefaultAdditionalQuestionType } from '@prisma/client'
 import slugify from 'slugify'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { PollDefaultAdditionalQuestionType } from '../../../adapters/prisma/generated.js'
 import {
   brevoRemoveFromList,
   brevoSendEmail,

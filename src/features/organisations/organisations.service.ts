@@ -4,9 +4,9 @@ import {
   PutObjectCommand,
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
-import type { Organisation } from '@prisma/client'
 import type { Request } from 'express'
 import { utils, write } from 'xlsx'
+import type { Organisation } from '../../adapters/prisma/generated.js'
 import { prisma } from '../../adapters/prisma/client.js'
 import type { Session } from '../../adapters/prisma/transaction.js'
 import { transaction } from '../../adapters/prisma/transaction.js'

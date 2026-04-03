@@ -1,5 +1,5 @@
-import { VerificationCodeMode } from '@prisma/client'
 import { z } from 'zod'
+import { VerificationCodeMode } from '../../adapters/prisma/generated.js'
 import { LocaleQuery } from '../../core/i18n/lang.validator.js'
 
 export const VerificationCodeCreateDto = z

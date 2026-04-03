@@ -1,4 +1,4 @@
-import type { ApiScopeName } from '@prisma/client'
+import type { ApiScopeName } from '../../../../adapters/prisma/generated.js'
 import { defaultEmailWhitelistSelection } from '../../../../adapters/prisma/selection.js'
 import type { Session } from '../../../../adapters/prisma/transaction.js'
 import type {

@@ -1,4 +1,4 @@
-import { VerificationCodeMode } from '@prisma/client'
+import { VerificationCodeMode } from '../../../adapters/prisma/generated.js'
 import type { Handler } from '../../../core/event-bus/handler.js'
 import { reconcileSimulationsAfterLogin as reconcileSimulations } from '../../users/users.service.js'
 import type { LoginEvent } from '../events/Login.event.js'

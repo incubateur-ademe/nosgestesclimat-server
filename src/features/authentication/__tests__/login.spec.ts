@@ -1,10 +1,10 @@
 import { faker } from '@faker-js/faker'
-import { VerificationCodeMode } from '@prisma/client'
 import dayjs from 'dayjs'
 import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { VerificationCodeMode } from '../../../adapters/prisma/generated.js'
 import {
   brevoSendEmail,
   brevoUpdateContact,
@@ -112,7 +112,10 @@ describe('Given a NGC user', () => {
           .expect(StatusCodes.OK)
 
         const [cookie] = response.headers['set-cookie']
-        const token = cookie.split(';').shift()?.replace('ngcjwt2=', '')
+        const token = cookie
+          .split(';')
+          .shift()
+          ?.replace('ngc_server_auth_jwt=', '')
         await EventBus.flush()
 
         expect(jwt.decode(token!)).toEqual({

@@ -1,8 +1,8 @@
 import { faker } from '@faker-js/faker'
-import { VerificationCodeMode } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test } from 'vitest'
+import { VerificationCodeMode } from '../../../adapters/prisma/generated.js'
 import {
   brevoSendEmail,
   brevoUpdateContact,

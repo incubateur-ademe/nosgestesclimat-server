@@ -1,12 +1,12 @@
 import { faker } from '@faker-js/faker'
 import modelFunFacts from '@incubateur-ademe/nosgestesclimat/public/funFactsRules.json' with { type: 'json' }
-import {
-  PollDefaultAdditionalQuestionType,
-  SimulationAdditionalQuestionAnswerType,
-} from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import {
+  PollDefaultAdditionalQuestionType,
+  SimulationAdditionalQuestionAnswerType,
+} from '../../../adapters/prisma/generated.js'
 import {
   brevoRemoveFromList,
   brevoSendEmail,

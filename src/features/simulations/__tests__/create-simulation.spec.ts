@@ -1,14 +1,14 @@
 import { faker } from '@faker-js/faker'
 import modelPackage from '@incubateur-ademe/nosgestesclimat/package.json' with { type: 'json' }
-import {
-  PollDefaultAdditionalQuestionType,
-  SimulationAdditionalQuestionAnswerType,
-  VerificationCodeMode,
-} from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import {
+  PollDefaultAdditionalQuestionType,
+  SimulationAdditionalQuestionAnswerType,
+  VerificationCodeMode,
+} from '../../../adapters/prisma/generated.js'
 import {
   brevoRemoveFromList,
   brevoSendEmail,
@@ -1123,7 +1123,10 @@ describe('Given a NGC user', () => {
         })
 
         const [cookie] = response.headers['set-cookie']
-        const userToken = cookie.split(';').shift()?.replace('ngcjwt2=', '')
+        const userToken = cookie
+          .split(';')
+          .shift()
+          ?.replace('ngc_server_auth_jwt=', '')
 
         expect(jwt.decode(userToken!)).toEqual({
           userId,
@@ -1664,7 +1667,10 @@ describe('Given a NGC user', () => {
           })
 
           const [cookie] = response.headers['set-cookie']
-          const userToken = cookie.split(';').shift()?.replace('ngcjwt2=', '')
+          const userToken = cookie
+            .split(';')
+            .shift()
+            ?.replace('ngc_server_auth_jwt=', '')
 
           expect(jwt.decode(userToken!)).toEqual({
             userId: existingUserId,
@@ -1873,7 +1879,7 @@ describe('Given a NGC user', () => {
           const userToken = responseCookie
             .split(';')
             .shift()
-            ?.replace('ngcjwt2=', '')
+            ?.replace('ngc_server_auth_jwt=', '')
 
           expect(jwt.decode(userToken!)).toEqual({
             userId,
