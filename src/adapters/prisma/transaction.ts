@@ -1,8 +1,7 @@
-import type { PrismaClient } from '@prisma/client'
-import type { ITXClientDenyList } from '@prisma/client/runtime/library'
+import type { Prisma } from './generated.js'
 import { prisma } from './client.js'
 
-export type Session = Omit<PrismaClient, ITXClientDenyList>
+export type Session = Prisma.TransactionClient
 
 export type RequestOptionsOrThrow = { session: Session; orThrow: true }
 export type RequestOptionsOrNull = { session: Session; orThrow?: false }

@@ -1,6 +1,6 @@
-import type { VerifiedUser } from '@prisma/client'
 import axios from 'axios'
 import axiosRetry from 'axios-retry'
+import type { VerifiedUser } from '../prisma/generated.js'
 import { config } from '../../config.js'
 import { isNetworkOrTimeoutOrRetryableError } from '../../core/typeguards/isRetryableAxiosError.js'
 import logger from '../../logger.js'

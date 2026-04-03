@@ -1,4 +1,7 @@
-import type { VerificationCodeMode, VerifiedUser } from '@prisma/client'
+import type {
+  VerificationCodeMode,
+  VerifiedUser,
+} from '../../../adapters/prisma/generated.js'
 import { EventBusEvent } from '../../../core/event-bus/event.js'
 import type { Locales } from '../../../core/i18n/constant.js'
 export class LoginEvent extends EventBusEvent<{

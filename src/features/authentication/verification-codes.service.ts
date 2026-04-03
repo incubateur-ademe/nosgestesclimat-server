@@ -1,5 +1,5 @@
-import { VerificationCodeMode } from '@prisma/client'
 import dayjs from 'dayjs'
+import { VerificationCodeMode } from '../../adapters/prisma/generated.js'
 import type { Session } from '../../adapters/prisma/transaction.js'
 import { transaction } from '../../adapters/prisma/transaction.js'
 import { ConflictException } from '../../core/errors/ConflictException.js'

@@ -2,7 +2,7 @@ import type {
   Prisma,
   VerificationCode,
   VerificationCodeMode,
-} from '@prisma/client'
+} from '../../adapters/prisma/generated.js'
 import type { Session } from '../../adapters/prisma/transaction.js'
 
 type SignVerificationCode = {

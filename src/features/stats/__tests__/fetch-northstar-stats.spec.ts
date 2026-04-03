@@ -1,11 +1,15 @@
 import { faker } from '@faker-js/faker'
-import { MatomoStatsDevice, MatomoStatsSource, StatsKind } from '@prisma/client'
 import dayjs from 'dayjs'
 import isoWeek from 'dayjs/plugin/isoWeek.js'
 import utc from 'dayjs/plugin/utc.js'
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import {
+  MatomoStatsDevice,
+  MatomoStatsSource,
+  StatsKind,
+} from '../../../adapters/prisma/generated.js'
 import { prisma } from '../../../adapters/prisma/client.js'
 import app from '../../../app.js'
 import logger from '../../../logger.js'

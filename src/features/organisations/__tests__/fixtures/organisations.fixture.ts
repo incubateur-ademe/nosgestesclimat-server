@@ -1,10 +1,10 @@
 import type supertest from 'supertest'
 
 import { faker } from '@faker-js/faker'
-import { OrganisationType } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import type { JwtPayload } from 'jsonwebtoken'
 import jwt from 'jsonwebtoken'
+import { OrganisationType } from '../../../../adapters/prisma/generated.js'
 import {
   brevoRemoveFromList,
   brevoSendEmail,

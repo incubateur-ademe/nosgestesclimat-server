@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@prisma/client'
+import type { PrismaClient } from '../generated/prisma/client.js'
 
 const VALID_ROLE = /^[a-zA-Z_][a-zA-Z0-9_-]*$/
 
@@ -11,6 +11,17 @@ const grantReadonlyAccess = async (
   roles: string[],
   schema: string
 ) => {
+  const [{ exists }] = await prisma.$queryRaw<Array<{ exists: boolean }>>`
+    SELECT EXISTS (
+      SELECT 1 FROM information_schema.schemata WHERE schema_name = ${schema}
+    ) as "exists"
+  `
+
+  if (!exists) {
+    console.warn(`Schema "${schema}" does not exist, skipping grants`)
+    return
+  }
+
   for (const rawRole of roles) {
     const role = rawRole.trim()
     assertValidRole(role)
@@ -30,14 +41,16 @@ export const exec = async ({ prisma }: { prisma: PrismaClient }) => {
 
   if (readonlyRoles.length) {
     await grantReadonlyAccess(prisma, readonlyRoles, 'ngc')
-    console.info(`${readonlyRoles.length} role(s) granted on ngc`)
+    console.info(`${readonlyRoles.length} readonly role(s) granted on ngc`)
   } else {
     console.info('No readonly role to grant')
   }
 
   if (anonRoles.length) {
     await grantReadonlyAccess(prisma, anonRoles, 'ngc_anon')
-    console.info(`${anonRoles.length} anon role(s) granted on ngc_anon`)
+    console.info(
+      `${anonRoles.length} anon readonly  role(s) granted on ngc_anon`
+    )
   } else {
     console.info('No readonly anon role to grant')
   }

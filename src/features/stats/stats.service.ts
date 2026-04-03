@@ -1,6 +1,10 @@
-import { MatomoStatsDevice, MatomoStatsSource, StatsKind } from '@prisma/client'
 import { isAxiosError } from 'axios'
 import dayjs from 'dayjs'
+import {
+  MatomoStatsDevice,
+  MatomoStatsSource,
+  StatsKind,
+} from '../../adapters/prisma/generated.js'
 import { fetchNewsletter } from '../../adapters/brevo/client.js'
 import { ListIds } from '../../adapters/brevo/constant.js'
 import { ReferrerKind } from '../../adapters/matomo/client.js'

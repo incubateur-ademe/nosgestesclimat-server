@@ -1,7 +1,7 @@
-import { MatomoStatsDevice, StatsKind } from '@prisma/client'
 import axios from 'axios'
 import axiosRetry from 'axios-retry'
 import { z } from 'zod'
+import { MatomoStatsDevice, StatsKind } from '../prisma/generated.js'
 import { isNetworkOrTimeoutOrRetryableError } from '../../core/typeguards/isRetryableAxiosError.js'
 import logger from '../../logger.js'
 

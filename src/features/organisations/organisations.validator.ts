@@ -1,8 +1,8 @@
+import { z } from 'zod'
 import {
   OrganisationType,
   PollDefaultAdditionalQuestionType,
-} from '@prisma/client'
-import { z } from 'zod'
+} from '../../adapters/prisma/generated.js'
 import { LocaleQuery } from '../../core/i18n/lang.validator.js'
 import { PaginationQuery } from '../../core/pagination.js'
 import { UserParams } from '../users/users.validator.js'

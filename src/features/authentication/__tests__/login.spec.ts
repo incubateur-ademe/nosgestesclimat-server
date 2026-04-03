@@ -1,10 +1,10 @@
 import { faker } from '@faker-js/faker'
-import { VerificationCodeMode } from '@prisma/client'
 import dayjs from 'dayjs'
 import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { VerificationCodeMode } from '../../../adapters/prisma/generated.js'
 import {
   brevoSendEmail,
   brevoUpdateContact,

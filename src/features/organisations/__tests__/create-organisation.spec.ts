@@ -1,9 +1,9 @@
 import { faker } from '@faker-js/faker'
-import { OrganisationType } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import slugify from 'slugify'
 import supertest from 'supertest'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { OrganisationType } from '../../../adapters/prisma/generated.js'
 import {
   brevoRemoveFromList,
   brevoSendEmail,

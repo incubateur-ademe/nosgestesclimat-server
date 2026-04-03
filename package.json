@@ -7,9 +7,6 @@
   "engines": {
     "node": "^22"
   },
-  "prisma": {
-    "schema": "./prisma/schema"
-  },
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "prebuild": "pnpm clean && prisma generate",
@@ -38,7 +35,8 @@
     "@aws-sdk/client-s3": "^3.933.0",
     "@aws-sdk/s3-request-presigner": "^3.933.0",
     "@incubateur-ademe/nosgestesclimat": "4.10.2",
-    "@prisma/client": "^6.19.0",
+    "@prisma/adapter-pg": "^7.6.0",
+    "@prisma/client": "^7.6.0",
     "@prisma/driver-adapter-utils": "^6.19.0",
     "@publicodes/tools": "^1.8.0",
     "@sentry/node": "^10.25.0",
@@ -58,7 +56,6 @@
     "morgan": "^1.10.1",
     "multer": "^2.0.2",
     "papaparse": "^5.5.3",
-    "prisma": "^6.19.0",
     "publicodes": "^1.9.1",
     "request-ip": "^3.3.0",
     "slugify": "^1.6.6",
@@ -68,7 +65,8 @@
     "xlsx": "^0.18.5",
     "yaml": "^2.8.1",
     "yargs": "^18.0.0",
-    "zod": "^4.1.12"
+    "zod": "^4.1.12",
+    "prisma": "^7.6.0"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.3.14",

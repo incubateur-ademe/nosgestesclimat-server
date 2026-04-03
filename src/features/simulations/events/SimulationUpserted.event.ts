@@ -4,7 +4,7 @@ import type {
   Poll,
   Simulation,
   User,
-} from '@prisma/client'
+} from '../../../adapters/prisma/generated.js'
 import { EventBusEvent } from '../../../core/event-bus/event.js'
 import type { Locales } from '../../../core/i18n/constant.js'
 import type { ModelToDto } from '../../../types/types.js'

@@ -6,7 +6,7 @@ import {
   PutObjectCommand,
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
-import { ApiScopeName } from '@prisma/client'
+import { ApiScopeName } from '../../../../adapters/prisma/generated.js'
 import { client } from '../../../../adapters/scaleway/client.js'
 import { config } from '../../../../config.js'
 import { EntityNotFoundException } from '../../../../core/errors/EntityNotFoundException.js'

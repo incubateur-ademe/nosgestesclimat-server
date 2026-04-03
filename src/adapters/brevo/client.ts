@@ -1,3 +1,7 @@
+import type { AxiosError } from 'axios'
+import axios, { isAxiosError } from 'axios'
+import axiosRetry from 'axios-retry'
+import { z } from 'zod'
 import type {
   Group,
   Organisation,
@@ -5,11 +9,7 @@ import type {
   Simulation,
   User,
   VerifiedUser,
-} from '@prisma/client'
-import type { AxiosError } from 'axios'
-import axios, { isAxiosError } from 'axios'
-import axiosRetry from 'axios-retry'
-import { z } from 'zod'
+} from '../prisma/generated.js'
 import { config } from '../../config.js'
 import { Locales } from '../../core/i18n/constant.js'
 import { isNetworkOrTimeoutOrRetryableError } from '../../core/typeguards/isRetryableAxiosError.js'
