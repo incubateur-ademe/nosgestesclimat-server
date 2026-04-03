@@ -505,7 +505,10 @@ describe('Given a NGC user', () => {
 
           // Cookies are kept in supertest
           const [, newCookie] = response.headers['set-cookie']
-          const token = newCookie.split(';').shift()?.replace('ngcjwt2=', '')
+          const token = newCookie
+            .split(';')
+            .shift()
+            ?.replace('ngc_server_auth_jwt=', '')
 
           expect(jwt.decode(token!)).toEqual({
             userId,

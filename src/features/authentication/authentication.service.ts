@@ -36,7 +36,7 @@ export function getCookieOptions(origin: string): CookieOptions {
     maxAge: COOKIE_MAX_AGE,
     httpOnly: true,
     secure,
-    sameSite: 'lax',
+    sameSite: 'none', // Because ngc can be embeded in iframes
     partitioned: secure,
     domain,
   }

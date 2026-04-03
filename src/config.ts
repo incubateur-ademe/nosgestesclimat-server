@@ -31,7 +31,9 @@ const AppSchema = z
 
 const SecuritySchema = z
   .object({
-    cookie: z.object({ name: z.string().default('ngcjwt2') }).strict(),
+    cookie: z
+      .object({ name: z.string().default('ngc_server_auth_jwt') })
+      .strict(),
     job: z.object({ secret: z.string() }).strict(),
     jwt: z.object({ secret: z.string() }).strict(),
   })
@@ -151,7 +153,7 @@ const {
     CONNECT_CLIENT_ID,
     CONNECT_CLIENT_SECRET,
     CONNECT_URL,
-    COOKIE_NAME,
+    AUTH_COOKIE_NAME,
     JOB_SECRET,
     JWT_SECRET,
     MATOMO_BETA_SITE_ID,
@@ -194,7 +196,7 @@ export const config = ConfigSchema.parse({
   },
   security: {
     cookie: {
-      name: COOKIE_NAME,
+      name: AUTH_COOKIE_NAME,
     },
     job: {
       secret: JOB_SECRET,

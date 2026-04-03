@@ -19,8 +19,8 @@ const main = async () => {
       await script.exec({ prisma, redis })
     }
     process.exit(0)
-  } catch {
-    // Errors are logged in scripts executions
+  } catch (err) {
+    console.error('Post-migrate script failed', err)
     process.exit(1)
   }
 }
