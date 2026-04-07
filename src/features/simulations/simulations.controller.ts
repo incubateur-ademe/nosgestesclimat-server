@@ -156,8 +156,13 @@ router
   .delete(
     authentificationMiddleware(),
     validateRequest(SimulationFetchValidator),
-    async ({ params }, res) => {
+    async ({ params, user }, res) => {
       try {
+        // User userId should match the one passed in the params
+        if (user && user.userId !== params.userId) {
+          throw new EntityNotFoundException('Simulation not found')
+        }
+
         await softDeleteSimulation(params)
 
         return res

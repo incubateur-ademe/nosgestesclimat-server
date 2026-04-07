@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker'
-import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
+import { StatusCodes } from 'http-status-codes'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { prisma } from '../../../adapters/prisma/client.js'
 import * as prismaTransactionAdapter from '../../../adapters/prisma/transaction.js'
@@ -90,16 +90,17 @@ describe('Given a NGC user', () => {
       })
     })
 
-    describe('And simulation belongs to another user', () => {
+    describe('And simulation was created by another user', () => {
       test(`Then it returns a ${StatusCodes.NOT_FOUND} error`, async () => {
-        const { userId } = await login({ agent })
-        const { cookie: otherCookie } = await login({ agent })
+        const { cookie, userId } = await login({ agent })
+        const { cookie: otherCookie } = await login({
+          agent,
+        })
         const simulation = await createSimulation({
           agent,
-          cookie: otherCookie,
+          cookie,
         })
         simulationIds.push(simulation.id)
-
         await agent
           .delete(
             url
@@ -107,6 +108,28 @@ describe('Given a NGC user', () => {
               .replace(':userId', userId)
           )
           .set('cookie', otherCookie)
+          .expect(StatusCodes.NOT_FOUND)
+      })
+    })
+
+    describe('And a wrong userId is passed in the query params', () => {
+      test(`Then it returns a ${StatusCodes.NOT_FOUND} error`, async () => {
+        const { cookie } = await login({ agent })
+        const { userId: otherUserId } = await login({
+          agent,
+        })
+        const simulation = await createSimulation({
+          agent,
+          cookie,
+        })
+        simulationIds.push(simulation.id)
+        await agent
+          .delete(
+            url
+              .replace(':simulationId', simulation.id)
+              .replace(':userId', otherUserId)
+          )
+          .set('cookie', cookie)
           .expect(StatusCodes.NOT_FOUND)
       })
     })
