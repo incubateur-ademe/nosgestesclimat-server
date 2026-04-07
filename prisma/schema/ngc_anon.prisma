@@ -17,8 +17,8 @@ view AnonSimulation {
 }
 
 view AnonVerifiedUser {
-  email                    String   @unique
-  id                       String   @db.Uuid
+  id                       String   @unique
+  user_id                  String   @db.Uuid
   name                     String?
   telephone                String?
   position                 String?
