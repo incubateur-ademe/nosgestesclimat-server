@@ -7,6 +7,7 @@ import * as prismaTransactionAdapter from '../../../adapters/prisma/transaction.
 import app from '../../../app.js'
 import logger from '../../../logger.js'
 import { login } from '../../authentication/__tests__/fixtures/login.fixture.js'
+import { createGroup } from '../../groups/__tests__/fixtures/groups.fixture.js'
 import {
   createSimulation,
   DELETE_SIMULATION_ROUTE,
@@ -23,6 +24,9 @@ describe('Given a NGC user', () => {
 
   afterEach(async () => {
     await Promise.all([
+      prisma.groupParticipant.deleteMany(),
+      prisma.groupAdministrator.deleteMany(),
+      prisma.group.deleteMany(),
       prisma.simulation.deleteMany({
         where: { id: { in: simulationIds.splice(0) } },
       }),
@@ -175,6 +179,53 @@ describe('Given a NGC user', () => {
         })
 
         expect(simulation.userId).toBeNull()
+      })
+
+      test('Then the group participants are deleted', async () => {
+        const group = await createGroup({
+          agent,
+          group: {
+            administrator: {
+              userId,
+              name: faker.person.fullName(),
+              email: faker.internet.email(),
+            },
+          },
+        })
+
+        await prisma.groupParticipant.create({
+          data: {
+            groupId: group.id,
+            userId,
+            simulationId,
+          },
+        })
+
+        const participantsBefore = await prisma.groupParticipant.findMany({
+          where: {
+            groupId: group.id,
+            userId,
+          },
+        })
+        expect(participantsBefore.length).toBe(1)
+
+        await agent
+          .delete(
+            url
+              .replace(':simulationId', simulationId)
+              .replace(':userId', userId)
+          )
+          .set('cookie', cookie)
+          .expect(StatusCodes.ACCEPTED)
+
+        const groupParticipants = await prisma.groupParticipant.findMany({
+          where: {
+            groupId: group.id,
+            userId,
+          },
+        })
+
+        expect(groupParticipants.length).toBe(0)
       })
     })
 
