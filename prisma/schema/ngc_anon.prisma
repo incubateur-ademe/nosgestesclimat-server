@@ -53,3 +53,31 @@ view AnonOrganisationAdministrator {
   @@map("OrganisationAdministrator")
   @@schema("ngc_anon")
 }
+
+view AnonPoll {
+  id                           String   @unique
+  name                         String
+  slug                         String   @unique
+  funFacts                     Json?
+  computedResults              Json?
+  expectedNumberOfParticipants Int?
+  customAdditionalQuestions    Json
+  computeRealTimeStats         Boolean
+  organisationId               String
+  createdAt                    DateTime
+  updatedAt                    DateTime
+
+  @@map("Poll")
+  @@schema("ngc_anon")
+}
+
+view AnonSimulationPoll {
+  id           String   @unique @db.Uuid
+  pollId       String
+  simulationId String   @db.Uuid
+  createdAt    DateTime
+  updatedAt    DateTime
+
+  @@map("SimulationPoll")
+  @@schema("ngc_anon")
+}
