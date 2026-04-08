@@ -8,6 +8,6 @@ export default {
     path: 'prisma/migrations',
   },
   datasource: {
-    url: env('DATABASE_URL'),
+    url: process.env.CI ? undefined : env('DATABASE_URL'),
   },
 } satisfies PrismaConfig
