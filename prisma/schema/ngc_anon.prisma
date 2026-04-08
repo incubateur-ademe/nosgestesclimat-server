@@ -17,8 +17,8 @@ view AnonSimulation {
 }
 
 view AnonVerifiedUser {
-  email                    String   @unique
-  id                       String   @db.Uuid
+  id                       String   @unique
+  user_id                  String   @db.Uuid
   name                     String?
   telephone                String?
   position                 String?
@@ -51,5 +51,33 @@ view AnonOrganisationAdministrator {
   updatedAt      DateTime
 
   @@map("OrganisationAdministrator")
+  @@schema("ngc_anon")
+}
+
+view AnonPoll {
+  id                           String   @unique
+  name                         String
+  slug                         String   @unique
+  funFacts                     Json?
+  computedResults              Json?
+  expectedNumberOfParticipants Int?
+  customAdditionalQuestions    Json
+  computeRealTimeStats         Boolean
+  organisationId               String
+  createdAt                    DateTime
+  updatedAt                    DateTime
+
+  @@map("Poll")
+  @@schema("ngc_anon")
+}
+
+view AnonSimulationPoll {
+  id           String   @unique @db.Uuid
+  pollId       String
+  simulationId String   @db.Uuid
+  createdAt    DateTime
+  updatedAt    DateTime
+
+  @@map("SimulationPoll")
   @@schema("ngc_anon")
 }
