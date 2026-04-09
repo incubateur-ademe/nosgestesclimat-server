@@ -268,8 +268,8 @@ export const countOrganisationPublicPollSimulations = (
 }
 
 export const fetchPollSimulations = <
-  T extends
-    Prisma.SimulationSelect = typeof defaultSimulationSelectionWithoutPollAndSituation,
+  T extends Prisma.SimulationSelect =
+    typeof defaultSimulationSelectionWithoutPollAndSituation,
 >(
   {
     id,
