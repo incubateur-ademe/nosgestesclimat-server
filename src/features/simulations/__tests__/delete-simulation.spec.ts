@@ -134,7 +134,7 @@ describe('Given a NGC user', () => {
               .replace(':userId', otherUserId)
           )
           .set('cookie', cookie)
-          .expect(StatusCodes.NOT_FOUND)
+          .expect(StatusCodes.FORBIDDEN)
       })
     })
 

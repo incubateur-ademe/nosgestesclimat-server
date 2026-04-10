@@ -158,12 +158,7 @@ router
     validateRequest(SimulationFetchValidator),
     async ({ params, user }, res) => {
       try {
-        // User userId should match the one passed in the params
-        if (user && user.userId !== params.userId) {
-          throw new EntityNotFoundException('Simulation not found')
-        }
-
-        await softDeleteSimulation(params)
+        await softDeleteSimulation({ params, user })
 
         return res
           .status(StatusCodes.ACCEPTED)
