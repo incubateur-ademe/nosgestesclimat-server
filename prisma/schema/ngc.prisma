@@ -303,8 +303,8 @@ model Simulation {
   additionalQuestionsAnswers SimulationAdditionalQuestionAnswer[]
   polls                      SimulationPoll[]
   groups                     GroupParticipant[]
-  userId                     String                               @db.Uuid
-  user                       User                                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                     String?                              @db.Uuid
+  user                       User?                                @relation(fields: [userId], references: [id], onDelete: SetNull)
   userEmail                  String?
   verifiedUser               VerifiedUser?                        @relation(fields: [userEmail], references: [email], onDelete: Cascade)
   createdAt                  DateTime                             @default(now())

@@ -38,10 +38,8 @@ import {
   fetchVerifiedUser,
 } from '../users/users.repository.js'
 import type { UserParams } from '../users/users.validator.js'
-import type { SimulationAsyncEvent } from './events/SimulationUpserted.event.js'
-import { SimulationUpsertedEvent } from './events/SimulationUpserted.event.js'
-import { carbonMetric, waterMetric } from './simulation.constant.js'
 import {
+  softDeleteSimulation as softDeleteSimulationFunc,
   batchPollSimulations,
   countOrganisationPublicPollSimulations,
   createParticipantSimulation,
@@ -50,6 +48,9 @@ import {
   fetchSimulationById,
   fetchUserSimulations,
 } from './simulations.repository.js'
+import type { SimulationAsyncEvent } from './events/SimulationUpserted.event.js'
+import { SimulationUpsertedEvent } from './events/SimulationUpserted.event.js'
+import { carbonMetric, waterMetric } from './simulation.constant.js'
 import type {
   SimulationCreateDto,
   SimulationCreateQuery,
@@ -234,6 +235,48 @@ export const fetchSimulation = async (params: UserSimulationParams) => {
       throw new EntityNotFoundException('Simulation not found')
     }
     throw e
+  }
+}
+
+export const softDeleteSimulation = async ({
+  params,
+  user,
+}: {
+  params: UserSimulationParams
+  user: Request['user']
+}) => {
+  if (!user) {
+    throw new ForbiddenException()
+  }
+
+  // If the authenticated user's id doesn't match the userId in the URL params,
+  // we need to distinguish between two cases:
+  // - The simulation exists for the authenticated user but the URL userId is wrong → 403
+  // - The simulation doesn't exist for the authenticated user → 404
+  if (user.userId !== params.userId) {
+    const existingSimulation = await transaction(
+      (session) =>
+        session.simulation.findUnique({
+          where: { id: params.simulationId, userId: user.userId },
+          select: { id: true },
+        }),
+      prisma
+    )
+
+    if (existingSimulation) {
+      throw new ForbiddenException()
+    }
+
+    throw new EntityNotFoundException('Simulation not found')
+  }
+
+  const simulation = await transaction(
+    (session) => softDeleteSimulationFunc(params, { session }),
+    prisma
+  )
+
+  if (!simulation) {
+    throw new EntityNotFoundException('Simulation not found')
   }
 }
 
