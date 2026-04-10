@@ -1,0 +1,32 @@
+// Dev Container — Docker Compose setup
+{
+  "name": "nosgestesclimat-server",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/nosgestesclimat-server",
+
+  "postCreateCommand": {
+    "pnpm": "corepack enable && corepack install && pnpm install"
+  },
+
+  "postStartCommand": {
+    "db": "pnpm build && pnpm db:migrate && pnpm db:post-migrate"
+  },
+
+  "forwardPorts": [3001, 5432, 6379],
+  "portsAttributes": {
+    "3001": { "label": "App" },
+    "5432": { "label": "PostgreSQL" },
+    "6379": { "label": "Redis" }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "prisma.prisma"
+      ]
+    }
+  }
+}
